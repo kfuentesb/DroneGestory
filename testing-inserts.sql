@@ -1,21 +1,20 @@
 INSERT INTO operadora
 (nombre, id_fiscal, num_operadora, codigo_secreto_rid, path_certificado_easa, path_certificado_no_easa, direccion, cod_postal, poblacion, provincia, email, num_telefono)
 VALUES
-    ('SkyDron España', 12345678, 1001, 999111, '/docs/easa_sky.pdf', '/docs/no_easa_sky.pdf', 'Calle Aerea 123', 28001, 'Madrid', 'Madrid', 'info@skydron.es', 600111222),
-    ('AeroVision SL', 87654321, 1002, 888222, '/docs/easa_aero.pdf', '/docs/no_easa_aero.pdf', 'Av. del Vuelo 45', 41001, 'Sevilla', 'Sevilla', 'contacto@aerovision.es', 600333444);
+    ('DroneTools', 12345678, 1001, 999111, '/docs/easa_sky.pdf', '/docs/no_easa_sky.pdf', 'Calle Aerea 123', 28001, 'Sevilla', 'Sevilla', 'info@dronetools.es', 600111222);
 
 INSERT INTO usuario
 (id_operadora, nombre, apellidos, nombre_usuario, password, correo, num_telefono, path_imagen)
 VALUES
     (1, 'Carlos', 'Martinez Lopez', 'cmartinez', 'pass123', 'carlos@skydron.es', 600111333, '/img/carlos.jpg'),
     (1, 'Lucia', 'Fernandez Ruiz', 'lfernandez', 'pass123', 'lucia@skydron.es', 600111444, '/img/lucia.jpg'),
-    (2, 'Miguel', 'Santos Perez', 'msantos', 'pass123', 'miguel@aerovision.es', 600333555, '/img/miguel.jpg');
+    (1, 'Miguel', 'Santos Perez', 'msantos', 'pass123', 'miguel@aerovision.es', 600333555, '/img/miguel.jpg');
 
 INSERT INTO piloto (id_operadora, id_usuario)
 VALUES
     (1, 1),
     (1, 2),
-    (2, 3);
+    (1, 3);
 
 INSERT INTO certificacion (nombre, tipo)
 VALUES
@@ -44,7 +43,7 @@ INSERT INTO aeronave
 VALUES
     (1, 1, 'SkyOne', 111001, 'Activa', 'DJI', 'Mavic 3', '/img/mavic3.jpg', '2023-06-10'),
     (1, 1, 'SkyPro', 111002, 'Mantenimiento', 'DJI', 'Inspire 2', '/img/inspire2.jpg', '2022-04-15'),
-    (2, 2, 'AeroX', 222001, 'Activa', 'Autel', 'Evo II', '/img/evo2.jpg', '2023-09-01');
+    (1, 2, 'AeroX', 222001, 'Activa', 'Autel', 'Evo II', '/img/evo2.jpg', '2023-09-01');
 
 INSERT INTO operacion
 (id_piloto, id_aeronave, fecha_realizacion, estado, categoria)
