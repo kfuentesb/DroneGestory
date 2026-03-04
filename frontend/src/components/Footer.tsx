@@ -54,7 +54,7 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="bg-light text-center py-2 small text-dark">
+            <div className="bg-light text-center py-2 small text-dark" style={{borderRadius: "6px",border: "2px outset #4d4d4d"}}>
                 Todos los derechos reservados
             </div>
         </footer>
