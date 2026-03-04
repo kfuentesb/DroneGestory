@@ -10,7 +10,7 @@ docker exec -it postgres_aeronaves psql -U admin -d aeronaves_db
 ```
 
 docker compose up -d
-docker exec -it postgres\\\_aeronaves psql -U admin -d aeronaves\\\_db
+docker exec -it postgres_aeronaves psql -U admin -d aeronaves_db
 
 ```
 ## Versión <br>
