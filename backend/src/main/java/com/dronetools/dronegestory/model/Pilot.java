@@ -1,23 +1,16 @@
 package com.dronetools.dronegestory.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
 @Entity
-@Table(name = "pilot")
+@Table(name = "pilots")
+@PrimaryKeyJoinColumn(name = "user_id")
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Pilot extends User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pilot_id")
-    private Long pilotId;
-
-    @Id
-    @Column(name = "userID")
-    private String userID;
+    // add pilot-specific fields here if needed
 }
