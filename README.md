@@ -20,3 +20,4 @@ Variant: TS + React Compiler
 Vite: No
 
 
+npm i react-router
