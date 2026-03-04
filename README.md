@@ -1,7 +1,7 @@
 # DroneGestory
 
 
-DOCKER: 
+## DOCKER: 
 Desde la carpeta donde está el docker-compose.yml:
 
 docker compose up -d
@@ -13,11 +13,13 @@ docker compose up -d
 docker exec -it postgres\\\_aeronaves psql -U admin -d aeronaves\\\_db
 
 ```
-### Versión
-Node: 24.14.0
-Npm: 11.9.0
+## Versión <br>
+Node: 24.14.0 <br>
+npm: 11.9.0
 ```
 npm create vite@latest frontend
+
+npm run dev
 ```
 Framework: React
 Variant: TS + React Compiler
