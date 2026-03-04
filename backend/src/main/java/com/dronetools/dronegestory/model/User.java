@@ -1,4 +1,4 @@
-package com.dronetools.dronegestory.gestordrones.model;
+package com.dronetools.dronegestory.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
