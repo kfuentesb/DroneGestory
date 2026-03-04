@@ -9,11 +9,7 @@ classDiagram
 
     class Piloto {
 	    -int id_piloto
-	    +String nombre
-	    +String apellidos
-	    +String correo
-	    +int num_telefono
-      +String path_imagen
+      -int id_operadora
     }
 
     class Certificacion {
@@ -33,6 +29,7 @@ classDiagram
 
     class AeroNave {
 	    -int id_aeronave
+      -int id_operadora
       -int id_seguro
 	    +String nombre
       +int num_serie
@@ -67,10 +64,23 @@ classDiagram
       +int num_telefono
     }
 
+    class Usuario{
+      -int id_usuario
+      -int id_operadora
+      +string nombre
+      +String apellidos
+      +String nombre_usuario
+      +String password
+      +String correo
+      +int num_telefono
+      +String path_imagen
+    }
+
     Piloto "1" -- "n" HabilitacionNM
     Certificacion "1" -- "n" HabilitacionNM
-    Operacion "n" <|-- "1" Piloto
-    Operacion "n" <|-- "1" AeroNave
+    Piloto "1" -- "n" Operacion
+    AeroNave "1" -- "n" Operacion
     AeroNave "1" -- "n" Aseguradora
-    Piloto "n" <|-- "1" Operadora
+    Piloto "n" --|> "1" Usuario
+    Usuario "n" --|> "1" Operadora
     AeroNave "n" <|-- "1" Operadora
