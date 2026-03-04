@@ -13,13 +13,12 @@ docker compose up -d
 docker exec -it postgres\\\_aeronaves psql -U admin -d aeronaves\\\_db
 
 ```
-Versión
+### Versión
 Node: 24.14.0
 Npm: 11.9.0
 ```
 npm create vite@latest frontend
-
+```
 Framework: React
 Variant: TS + React Compiler
 Vite: No
-```
