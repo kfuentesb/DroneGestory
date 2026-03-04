@@ -1,16 +1,20 @@
 package com.dronetools.dronegestory.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "users")
+@Table(name = "user")
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_ID")
+    @Column(name = "user_id")
     private Integer userID;
 
     @Column(name = "operator_id")
