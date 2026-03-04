@@ -13,12 +13,10 @@ Node: 24.14.0 <br>
 npm: 11.9.0
 ```
 npm create vite@latest frontend
-
 npm run dev
 ```
 Framework: React
 Variant: TS + React Compiler
 Vite: No
-```
 
 
