@@ -1,3 +1,12 @@
+DROP TABLE IF EXISTS operadora CASCADE;
+DROP TABLE IF EXISTS aeronave CASCADE;
+DROP TABLE IF EXISTS certificacion CASCADE;
+DROP TABLE IF EXISTS habilitacion_nm CASCADE;
+DROP TABLE IF EXISTS aseguradora CASCADE;
+DROP TABLE IF EXISTS operacion CASCADE;
+DROP TABLE IF EXISTS piloto CASCADE;
+DROP TABLE IF EXISTS usuario CASCADE;
+
 CREATE TABLE operadora (
    id_operadora SERIAL PRIMARY KEY,
    nombre VARCHAR(150) NOT NULL,
@@ -23,25 +32,13 @@ CREATE TABLE usuario (
      password TEXT NOT NULL,
      correo VARCHAR(150) UNIQUE,
      num_telefono BIGINT,
-     path_imagen TEXT,
-     CONSTRAINT fk_usuario_operadora
-         FOREIGN KEY (id_operadora)
-             REFERENCES operadora(id_operadora)
-             ON DELETE CASCADE
+     path_imagen TEXT
 );
 
 CREATE TABLE piloto (
     id_piloto SERIAL PRIMARY KEY,
     id_operadora INTEGER NOT NULL,
-    id_usuario INTEGER UNIQUE,
-    CONSTRAINT fk_piloto_operadora
-        FOREIGN KEY (id_operadora)
-            REFERENCES operadora(id_operadora)
-            ON DELETE CASCADE,
-    CONSTRAINT fk_piloto_usuario
-        FOREIGN KEY (id_usuario)
-            REFERENCES usuario(id_usuario)
-            ON DELETE CASCADE
+    id_usuario INTEGER UNIQUE
 );
 
 CREATE TABLE certificacion (
@@ -55,15 +52,7 @@ CREATE TABLE habilitacion_nm (
      id_certificacion INTEGER NOT NULL,
      fecha_alta DATE,
      fecha_caducidad DATE,
-     PRIMARY KEY (id_piloto, id_certificacion),
-     CONSTRAINT fk_hab_piloto
-         FOREIGN KEY (id_piloto)
-             REFERENCES piloto(id_piloto)
-             ON DELETE CASCADE,
-     CONSTRAINT fk_hab_certificacion
-         FOREIGN KEY (id_certificacion)
-             REFERENCES certificacion(id_certificacion)
-             ON DELETE CASCADE
+     PRIMARY KEY (id_piloto, id_certificacion)
 );
 
 CREATE TABLE aseguradora (
@@ -84,15 +73,7 @@ CREATE TABLE aeronave (
       fabricante VARCHAR(150),
       modelo VARCHAR(150),
       path_imagen TEXT,
-      fecha_compra DATE,
-      CONSTRAINT fk_aeronave_operadora
-          FOREIGN KEY (id_operadora)
-              REFERENCES operadora(id_operadora)
-              ON DELETE CASCADE,
-      CONSTRAINT fk_aeronave_seguro
-          FOREIGN KEY (id_seguro)
-              REFERENCES aseguradora(id_seguro)
-              ON DELETE SET NULL
+      fecha_compra DATE
 );
 
 
@@ -102,13 +83,21 @@ CREATE TABLE operacion (
    id_aeronave INTEGER NOT NULL,
    fecha_realizacion DATE,
    estado VARCHAR(100),
-   categoria VARCHAR(100),
-   CONSTRAINT fk_operacion_piloto
-       FOREIGN KEY (id_piloto)
-           REFERENCES piloto(id_piloto)
-           ON DELETE CASCADE,
-   CONSTRAINT fk_operacion_aeronave
-       FOREIGN KEY (id_aeronave)
-           REFERENCES aeronave(id_aeronave)
-           ON DELETE CASCADE
+   categoria VARCHAR(100)
 );
+
+ALTER TABLE usuario ADD FOREIGN KEY (id_operadora) REFERENCES operadora(id_operadora) ON DELETE CASCADE;
+
+ALTER TABLE piloto ADD FOREIGN KEY (id_operadora) REFERENCES operadora(id_operadora) ON DELETE CASCADE;
+ALTER TABLE piloto ADD FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE;
+
+ALTER TABLE habilitacion_nm ADD FOREIGN KEY (id_piloto) REFERENCES piloto(id_piloto) ON DELETE CASCADE;
+ALTER TABLE habilitacion_nm ADD FOREIGN KEY (id_certificacion) REFERENCES certificacion(id_certificacion) ON DELETE CASCADE;
+
+ALTER TABLE aeronave ADD FOREIGN KEY (id_operadora) REFERENCES operadora(id_operadora) ON DELETE CASCADE;
+ALTER TABLE aeronave ADD FOREIGN KEY (id_seguro) REFERENCES aseguradora(id_seguro) ON DELETE CASCADE;
+
+ALTER TABLE operacion ADD FOREIGN KEY (id_piloto) REFERENCES piloto(id_piloto) ON DELETE CASCADE;
+ALTER TABLE aeronave ADD FOREIGN KEY (id_aeronave) REFERENCES aeronave(id_aeronave) ON DELETE CASCADE;
+
+\dt
