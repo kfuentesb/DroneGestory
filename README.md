@@ -21,3 +21,10 @@ Vite: No
 
 
 npm i react-router
+
+
+
+
+//TODO LIST
+-Conseguir logo
+-Sustituir logo de arriba de react por el logo de la empresa
