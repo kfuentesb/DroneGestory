@@ -1,0 +1,76 @@
+classDiagram
+
+    class HabilitacionNM {
+	    -int id_piloto
+	    -int id_certificacion
+	    +Date fecha_alta
+	    +Date fecha_caducidad
+    }
+
+    class Piloto {
+	    -int id_piloto
+	    +String nombre
+	    +String apellidos
+	    +String correo
+	    +int num_telefono
+      +String path_imagen
+    }
+
+    class Certificacion {
+	    -int id_certificacion
+	    +String nombre
+	    +String tipo
+    }
+
+    class Operacion {
+	    -int id_operacion
+	    -int id_piloto
+	    -int id_aeronave
+	    +Date fecha_realizacion
+	    +String estado
+	    +String categoría
+    }
+
+    class AeroNave {
+	    -int id_aeronave
+      -int id_seguro
+	    +String nombre
+      +int num_serie
+      +String estado
+      +String fabricante
+      +String modelo
+      +String path_imagen
+      +Date fecha_compra
+    }
+
+    class Aseguradora {
+	    -int id_seguro
+	    +String nombre
+	    +Date fecha_comienzo
+	    +Date fecha_caducidad
+	    +Long importe
+    }
+
+    class Operadora {
+	    -int id_operadora
+	    +String nombre
+      +int id_fidscal
+      +int num_operadora
+      +int codigo_secreto_rid
+      +String path_certificado_easa
+      +String path_certificado_no_easa
+      +String direccion
+      +int cod_postal
+      +String poblacion
+      +String provincia
+      +String email
+      +int num_telefono
+    }
+
+    Piloto "1" -- "n" HabilitacionNM
+    Certificacion "1" -- "n" HabilitacionNM
+    Operacion "n" <|-- "1" Piloto
+    Operacion "n" <|-- "1" AeroNave
+    AeroNave "1" -- "n" Aseguradora
+    Piloto "n" <|-- "1" Operadora
+    AeroNave "n" <|-- "1" Operadora
