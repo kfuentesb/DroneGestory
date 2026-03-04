@@ -1,7 +1,7 @@
 CREATE TABLE operadora (
    id_operadora SERIAL PRIMARY KEY,
    nombre VARCHAR(150) NOT NULL,
-   id_fidscal INTEGER,
+   id_fiscal INTEGER,
    num_operadora INTEGER,
    codigo_secreto_rid INTEGER,
    path_certificado_easa TEXT,
