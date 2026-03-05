@@ -13,6 +13,9 @@ public interface OperationMapper {
 
     @Mapping(target = "pilot", source = "pilot")
     @Mapping(target = "aircraft", source = "aircraft")
+    @Mapping(target = "status", source = "dto.status")
+    @Mapping(target = "category", source = "dto.category")
+    @Mapping(target = "performedAt", source = "dto.performedAt")
     Operation toEntity(OperationRequestDTO dto, Pilot pilot, Aircraft aircraft);
 
     @Mapping(target = "pilotId", source = "pilot.id")
