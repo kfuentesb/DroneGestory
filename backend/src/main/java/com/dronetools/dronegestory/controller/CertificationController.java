@@ -1,7 +1,8 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.model.Certification;
-import com.dronetools.dronegestory.service.CertificationService;
+import com.dronetools.dronegestory.dto.request.CertificationRequestDTO;
+import com.dronetools.dronegestory.dto.response.CertificationResponseDTO;
+import com.dronetools.dronegestory.service.CertificationDtoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,38 +14,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CertificationController {
 
-    private final CertificationService certificationService;
+    private final CertificationDtoService certificationDtoService;
 
     @GetMapping
-    public List<Certification> getAll() {
-        return certificationService.findAll();
+    public List<CertificationResponseDTO> getAll() {
+        return certificationDtoService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Certification> getById(@PathVariable Integer id) {
-        return certificationService.findById(id)
+    public ResponseEntity<CertificationResponseDTO> getById(@PathVariable Integer id) {
+        return certificationDtoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Certification create(@RequestBody Certification certification) {
-        return certificationService.save(certification);
+    public ResponseEntity<CertificationResponseDTO> create(@RequestBody CertificationRequestDTO dto) {
+        return ResponseEntity.ok(certificationDtoService.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Certification> update(@PathVariable Integer id, @RequestBody Certification certification) {
-        return certificationService.findById(id)
-                .map(existing -> {
-                    certification.setId(existing.getId());
-                    return ResponseEntity.ok(certificationService.save(certification));
-                })
+    public ResponseEntity<CertificationResponseDTO> update(@PathVariable Integer id, @RequestBody CertificationRequestDTO dto) {
+        return certificationDtoService.update(id, dto)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        certificationService.deleteById(id);
+        certificationDtoService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

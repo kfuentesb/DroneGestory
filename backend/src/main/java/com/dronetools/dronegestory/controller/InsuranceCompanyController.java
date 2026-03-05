@@ -1,7 +1,8 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.model.InsuranceCompany;
-import com.dronetools.dronegestory.service.InsuranceCompanyService;
+import com.dronetools.dronegestory.dto.request.InsuranceCompanyRequestDTO;
+import com.dronetools.dronegestory.dto.response.InsuranceCompanyResponseDTO;
+import com.dronetools.dronegestory.service.InsuranceCompanyDtoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,38 +14,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InsuranceCompanyController {
 
-    private final InsuranceCompanyService insuranceCompanyService;
+    private final InsuranceCompanyDtoService insuranceCompanyDtoService;
 
     @GetMapping
-    public List<InsuranceCompany> getAll() {
-        return insuranceCompanyService.findAll();
+    public List<InsuranceCompanyResponseDTO> getAll() {
+        return insuranceCompanyDtoService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InsuranceCompany> getById(@PathVariable Integer id) {
-        return insuranceCompanyService.findById(id)
+    public ResponseEntity<InsuranceCompanyResponseDTO> getById(@PathVariable Integer id) {
+        return insuranceCompanyDtoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public InsuranceCompany create(@RequestBody InsuranceCompany insuranceCompany) {
-        return insuranceCompanyService.save(insuranceCompany);
+    public ResponseEntity<InsuranceCompanyResponseDTO> create(@RequestBody InsuranceCompanyRequestDTO dto) {
+        return ResponseEntity.ok(insuranceCompanyDtoService.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<InsuranceCompany> update(@PathVariable Integer id, @RequestBody InsuranceCompany insuranceCompany) {
-        return insuranceCompanyService.findById(id)
-                .map(existing -> {
-                    insuranceCompany.setId(existing.getId());
-                    return ResponseEntity.ok(insuranceCompanyService.save(insuranceCompany));
-                })
+    public ResponseEntity<InsuranceCompanyResponseDTO> update(@PathVariable Integer id, @RequestBody InsuranceCompanyRequestDTO dto) {
+        return insuranceCompanyDtoService.update(id, dto)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        insuranceCompanyService.deleteById(id);
+        insuranceCompanyDtoService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

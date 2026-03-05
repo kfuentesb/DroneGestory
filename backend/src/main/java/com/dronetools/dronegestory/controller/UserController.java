@@ -1,7 +1,8 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.model.User;
-import com.dronetools.dronegestory.service.UserService;
+import com.dronetools.dronegestory.dto.request.UserRequestDTO;
+import com.dronetools.dronegestory.dto.response.UserResponseDTO;
+import com.dronetools.dronegestory.service.UserDtoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,38 +14,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserDtoService userDtoService;
 
     @GetMapping
-    public List<User> getAll() {
-        return userService.findAll();
+    public List<UserResponseDTO> getAll() {
+        return userDtoService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable Integer id) {
-        return userService.findById(id)
+    public ResponseEntity<UserResponseDTO> getById(@PathVariable Integer id) {
+        return userDtoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        return userService.save(user);
+    public ResponseEntity<UserResponseDTO> create(@RequestBody UserRequestDTO dto) {
+        return ResponseEntity.ok(userDtoService.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Integer id, @RequestBody User user) {
-        return userService.findById(id)
-                .map(existing -> {
-                    user.setId(existing.getId());
-                    return ResponseEntity.ok(userService.save(user));
-                })
+    public ResponseEntity<UserResponseDTO> update(@PathVariable Integer id, @RequestBody UserRequestDTO dto) {
+        return userDtoService.update(id, dto)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        userService.deleteById(id);
+        userDtoService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

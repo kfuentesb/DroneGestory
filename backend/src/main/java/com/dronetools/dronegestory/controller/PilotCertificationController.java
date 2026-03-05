@@ -1,8 +1,9 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.model.PilotCertification;
+import com.dronetools.dronegestory.dto.request.PilotCertificationRequestDTO;
+import com.dronetools.dronegestory.dto.response.PilotCertificationResponseDTO;
 import com.dronetools.dronegestory.model.PilotCertificationId;
-import com.dronetools.dronegestory.service.PilotCertificationService;
+import com.dronetools.dronegestory.service.PilotCertificationDtoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,27 +15,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PilotCertificationController {
 
-    private final PilotCertificationService pilotCertificationService;
+    private final PilotCertificationDtoService pilotCertificationDtoService;
 
     @GetMapping
-    public List<PilotCertification> getAll() {
-        return pilotCertificationService.findAll();
+    public List<PilotCertificationResponseDTO> getAll() {
+        return pilotCertificationDtoService.findAll();
     }
 
     @GetMapping("/{pilotId}/{certificationId}")
-    public ResponseEntity<PilotCertification> getById(
+    public ResponseEntity<PilotCertificationResponseDTO> getById(
             @PathVariable Integer pilotId,
             @PathVariable Integer certificationId
     ) {
         PilotCertificationId id = new PilotCertificationId(pilotId, certificationId);
-        return pilotCertificationService.findById(id)
+        return pilotCertificationDtoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public PilotCertification create(@RequestBody PilotCertification pilotCertification) {
-        return pilotCertificationService.save(pilotCertification);
+    public ResponseEntity<PilotCertificationResponseDTO> create(@RequestBody PilotCertificationRequestDTO dto) {
+        return ResponseEntity.ok(pilotCertificationDtoService.create(dto));
     }
 
     @DeleteMapping("/{pilotId}/{certificationId}")
@@ -43,7 +44,7 @@ public class PilotCertificationController {
             @PathVariable Integer certificationId
     ) {
         PilotCertificationId id = new PilotCertificationId(pilotId, certificationId);
-        pilotCertificationService.deleteById(id);
+        pilotCertificationDtoService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }
