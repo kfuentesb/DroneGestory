@@ -13,38 +13,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AircraftController {
 
-    private final AircraftService service;
+    private final AircraftService aircraftService;
 
     @GetMapping
     public List<Aircraft> getAll() {
-        return service.findAll();
+        return aircraftService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Aircraft> getById(@PathVariable Integer id) {
-        return service.findById(id)
+        return aircraftService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Aircraft create(@RequestBody Aircraft aircraft) {
-        return service.save(aircraft);
+        return aircraftService.save(aircraft);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Aircraft> update(@PathVariable Integer id, @RequestBody Aircraft aircraft) {
-        return service.findById(id)
+        return aircraftService.findById(id)
                 .map(existing -> {
                     aircraft.setId(existing.getId());
-                    return ResponseEntity.ok(service.save(aircraft));
+                    return ResponseEntity.ok(aircraftService.save(aircraft));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        service.deleteById(id);
+        aircraftService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

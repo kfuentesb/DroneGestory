@@ -14,11 +14,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PilotCertificationController {
 
-    private final PilotCertificationService service;
+    private final PilotCertificationService pilotCertificationService;
 
     @GetMapping
     public List<PilotCertification> getAll() {
-        return service.findAll();
+        return pilotCertificationService.findAll();
     }
 
     @GetMapping("/{pilotId}/{certificationId}")
@@ -27,14 +27,14 @@ public class PilotCertificationController {
             @PathVariable Integer certificationId
     ) {
         PilotCertificationId id = new PilotCertificationId(pilotId, certificationId);
-        return service.findById(id)
+        return pilotCertificationService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public PilotCertification create(@RequestBody PilotCertification pilotCertification) {
-        return service.save(pilotCertification);
+        return pilotCertificationService.save(pilotCertification);
     }
 
     @DeleteMapping("/{pilotId}/{certificationId}")
@@ -43,7 +43,7 @@ public class PilotCertificationController {
             @PathVariable Integer certificationId
     ) {
         PilotCertificationId id = new PilotCertificationId(pilotId, certificationId);
-        service.deleteById(id);
+        pilotCertificationService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

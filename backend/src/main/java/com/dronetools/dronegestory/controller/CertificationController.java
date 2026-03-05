@@ -13,38 +13,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CertificationController {
 
-    private final CertificationService service;
+    private final CertificationService certificationService;
 
     @GetMapping
     public List<Certification> getAll() {
-        return service.findAll();
+        return certificationService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Certification> getById(@PathVariable Integer id) {
-        return service.findById(id)
+        return certificationService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Certification create(@RequestBody Certification certification) {
-        return service.save(certification);
+        return certificationService.save(certification);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Certification> update(@PathVariable Integer id, @RequestBody Certification certification) {
-        return service.findById(id)
+        return certificationService.findById(id)
                 .map(existing -> {
                     certification.setId(existing.getId());
-                    return ResponseEntity.ok(service.save(certification));
+                    return ResponseEntity.ok(certificationService.save(certification));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        service.deleteById(id);
+        certificationService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

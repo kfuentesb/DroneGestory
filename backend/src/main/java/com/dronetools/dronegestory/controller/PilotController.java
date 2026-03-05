@@ -13,38 +13,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PilotController {
 
-    private final PilotService service;
+    private final PilotService pilotService;
 
     @GetMapping
     public List<Pilot> getAll() {
-        return service.findAll();
+        return pilotService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Pilot> getById(@PathVariable Integer id) {
-        return service.findById(id)
+        return pilotService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Pilot create(@RequestBody Pilot pilot) {
-        return service.save(pilot);
+        return pilotService.save(pilot);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Pilot> update(@PathVariable Integer id, @RequestBody Pilot pilot) {
-        return service.findById(id)
+        return pilotService.findById(id)
                 .map(existing -> {
                     pilot.setId(existing.getId());
-                    return ResponseEntity.ok(service.save(pilot));
+                    return ResponseEntity.ok(pilotService.save(pilot));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        service.deleteById(id);
+        pilotService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

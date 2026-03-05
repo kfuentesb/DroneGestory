@@ -13,38 +13,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OperatorController {
 
-    private final OperatorService service;
+    private final OperatorService operatorService;
 
     @GetMapping
     public List<Operator> getAll() {
-        return service.findAll();
+        return operatorService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Operator> getById(@PathVariable Integer id) {
-        return service.findById(id)
+        return operatorService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Operator create(@RequestBody Operator operator) {
-        return service.save(operator);
+        return operatorService.save(operator);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Operator> update(@PathVariable Integer id, @RequestBody Operator operator) {
-        return service.findById(id)
+        return operatorService.findById(id)
                 .map(existing -> {
                     operator.setId(existing.getId());
-                    return ResponseEntity.ok(service.save(operator));
+                    return ResponseEntity.ok(operatorService.save(operator));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        service.deleteById(id);
+        operatorService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }
