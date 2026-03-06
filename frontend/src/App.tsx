@@ -16,8 +16,6 @@ function App() {
 
       <main>
         <PilotsView />
-        <OperationsView />
-
         {/* <button type="button" className="btn btn-warning">
           Warning
         </button> */}
