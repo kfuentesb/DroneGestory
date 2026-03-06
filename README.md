@@ -1,11 +1,10 @@
 # DroneGestory
 
 
-DOCKER:  Desde la carpeta donde está el docker-compose.yml:
-
+DOCKER:  Desde la carpeta donde está el docker-compose.yml del backend:
 ```
 docker compose up -d
-docker exec -it postgres_aeronaves psql -U admin -d aeronaves_db
+docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 
 ```
 ## Versión <br>
