@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 // import React from 'react';
 //import { Link } from "react-router-dom";
+=======
+import React from 'react';
+import { Link } from "react-router-dom";
+>>>>>>> kevin
 
 export default function Footer() {
     console.log("Footer renderizado");
