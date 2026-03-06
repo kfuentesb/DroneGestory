@@ -4,7 +4,10 @@ spring:
   docker:
     compose:
 #      enabled: false
-      enabled: true
+      enabled: false
+      # importante, cuando se desarrolla el backend, dejarlo en false, asi se puede
+      # usar el postgre en local, y dejarlo en true para cuando se despliega y
+      # se quiere usar el postgre de docker.
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aeronaves_db}
@@ -15,6 +18,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
     show-sql: true
     properties:
       hibernate:
