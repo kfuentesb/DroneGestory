@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-// import React from 'react';
-//import { Link } from "react-router-dom";
-=======
 import React from 'react';
 import { Link } from "react-router-dom";
->>>>>>> kevin
 
 export default function Footer() {
     console.log("Footer renderizado");
@@ -14,7 +9,7 @@ export default function Footer() {
                 <div className="row text-center text-md-start">
 
                     <div className="col-md-4 mb-3">
-                        <h5>DRONE GESTOR</h5>
+                        <h5>DRONETOOLS</h5>
                         <p className="small">
                             Gestor de pilotos, aeronaves y operaciones de vuelo.
                         </p>
@@ -28,23 +23,8 @@ export default function Footer() {
                                 </Link> */}
                             </li>
                             <li>
-                                <a href="https://x.com/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">
-                                    Twitter
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://facebook.com/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">
-                                    Facebook
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://youtube.com/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">
-                                    Youtube
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://instagram.com/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">
-                                    Instagram
+                                <a href="https://dronetools.es/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">
+                                    DroneTools web
                                 </a>
                             </li>
                         </ul>
