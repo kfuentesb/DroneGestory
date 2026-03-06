@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 function LogIn() {
     // Tenemos que crear las llamadas al endpoint desde aquí

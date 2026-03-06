@@ -1,18 +1,18 @@
-import { useState } from 'react';
+// import { useState } from 'react';
 import './App.css';
 import Footer from './components/Footer';
-import LogIn from './components/LogIn';
+// import LogIn from './components/LogIn';
 import PilotsView from './components/PilotsView';
-import OperationsView from './components/OperationsView';
+// import OperationsView from './components/OperationsView';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // const [count, setCount] = useState(0)
 
   return (
     <div className="App">
-      {/* <header className="header">
+      <header className="header">
         <h1>Drone Gestory</h1>
-      </header> */}
+      </header>
 
       <main>
         <PilotsView />
