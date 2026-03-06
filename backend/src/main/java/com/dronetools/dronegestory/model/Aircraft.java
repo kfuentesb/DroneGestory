@@ -20,13 +20,13 @@ public class Aircraft {
     @Column(name = "aircraft_id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "operator_id", nullable = false)
-    private Operator operator;
-
-    @ManyToOne
-    @JoinColumn(name = "insurance_company_id", nullable = false)
-    private InsuranceCompany insuranceCompany;
+//    @ManyToOne
+//    @JoinColumn(name = "operator_id", nullable = false)
+//    private Operator operator;
+//
+//    @ManyToOne
+//    @JoinColumn(name = "insurance_company_id", nullable = false)
+//    private InsuranceCompany insuranceCompany;
 
     @Column(name = "name")
     private String name;
@@ -49,6 +49,6 @@ public class Aircraft {
     @Column(name = "purchase_date")
     private LocalDate purchaseDate;
 
-    @OneToMany(mappedBy = "aircraft")
-    private List<Operation> operations;
+//    @OneToMany(mappedBy = "aircraft")
+//    private List<Operation> operations;
 }

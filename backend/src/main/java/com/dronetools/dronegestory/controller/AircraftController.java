@@ -1,8 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.request.AircraftRequestDTO;
-import com.dronetools.dronegestory.dto.response.AircraftResponseDTO;
-import com.dronetools.dronegestory.service.AircraftDtoService;
+import com.dronetools.dronegestory.model.Aircraft;
+import com.dronetools.dronegestory.service.AircraftService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,35 +13,48 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AircraftController {
 
-    private final AircraftDtoService aircraftDtoService;
+    private final AircraftService aircraftService;
 
+    // Obtener todos los aircrafts
     @GetMapping
-    public List<AircraftResponseDTO> getAll() {
-        return aircraftDtoService.findAll();
+    public List<Aircraft> getAll() {
+        return aircraftService.getAllAircrafts();
     }
 
+    // Obtener un aircraft por id
     @GetMapping("/{id}")
-    public ResponseEntity<AircraftResponseDTO> getById(@PathVariable Integer id) {
-        return aircraftDtoService.findById(id)
+    public ResponseEntity<Aircraft> getById(@PathVariable int id) {
+        return aircraftService.getAircraftById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Crear un nuevo aircraft
     @PostMapping
-    public ResponseEntity<AircraftResponseDTO> create(@RequestBody AircraftRequestDTO dto) {
-        return ResponseEntity.ok(aircraftDtoService.create(dto));
+    public ResponseEntity<Aircraft> create(@RequestBody Aircraft aircraft) {
+        Aircraft created = aircraftService.createAircraft(aircraft);
+        return ResponseEntity.ok(created);
     }
 
+    // Actualizar un aircraft existente
     @PutMapping("/{id}")
-    public ResponseEntity<AircraftResponseDTO> update(@PathVariable Integer id, @RequestBody AircraftRequestDTO dto) {
-        return aircraftDtoService.update(id, dto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Aircraft> update(@PathVariable int id, @RequestBody Aircraft aircraft) {
+        try {
+            Aircraft updated = aircraftService.updateAircraft(id, aircraft);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
+    // Eliminar un aircraft por id
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        aircraftDtoService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        try {
+            aircraftService.deleteAircraft(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

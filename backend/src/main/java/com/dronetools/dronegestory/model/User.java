@@ -18,11 +18,10 @@ public class User {
     @Column(name = "user_id")
     private Integer id;
 
-    /*
-    @ManyToOne
-    @JoinColumn(name = "operator_id", nullable = false)
-    private Operator operator;
-    */
+//    @ManyToOne
+//    @JoinColumn(name = "operator_id", nullable = false)
+//    private Operator operator;
+
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 

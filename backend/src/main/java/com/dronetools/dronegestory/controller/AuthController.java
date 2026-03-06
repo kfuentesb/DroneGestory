@@ -35,7 +35,7 @@ public class AuthController {
                         // Respuesta ok -> 200, userId, operatorId, username
                         "ok", true,
                         "userId", user.getId(),
-                        "operatorId", user.getOperator().getId(),
+//                        "operatorId", user.getOperator().getId(),
                         "username", user.getUsername()
                 )))
                 // Respuesta 401 si falla

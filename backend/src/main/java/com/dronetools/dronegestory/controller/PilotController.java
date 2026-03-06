@@ -1,8 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.request.PilotRequestDTO;
-import com.dronetools.dronegestory.dto.response.PilotResponseDTO;
-import com.dronetools.dronegestory.service.PilotDtoService;
+import com.dronetools.dronegestory.model.Pilot;
+import com.dronetools.dronegestory.service.PilotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,35 +13,48 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PilotController {
 
-    private final PilotDtoService pilotDtoService;
+    private final PilotService pilotService;
 
+    // Obtener todos los pilotos
     @GetMapping
-    public List<PilotResponseDTO> getAll() {
-        return pilotDtoService.findAll();
+    public List<Pilot> getAll() {
+        return pilotService.getAllPilots();
     }
 
+    // Obtener un piloto por id
     @GetMapping("/{id}")
-    public ResponseEntity<PilotResponseDTO> getById(@PathVariable Integer id) {
-        return pilotDtoService.findById(id)
+    public ResponseEntity<Pilot> getById(@PathVariable int id) {
+        return pilotService.getPilotById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Crear un nuevo piloto
     @PostMapping
-    public ResponseEntity<PilotResponseDTO> create(@RequestBody PilotRequestDTO dto) {
-        return ResponseEntity.ok(pilotDtoService.create(dto));
+    public ResponseEntity<Pilot> create(@RequestBody Pilot pilot) {
+        Pilot created = pilotService.createPilot(pilot);
+        return ResponseEntity.ok(created);
     }
 
+    // Actualizar un piloto existente
     @PutMapping("/{id}")
-    public ResponseEntity<PilotResponseDTO> update(@PathVariable Integer id, @RequestBody PilotRequestDTO dto) {
-        return pilotDtoService.update(id, dto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Pilot> update(@PathVariable int id, @RequestBody Pilot pilot) {
+        try {
+            Pilot updated = pilotService.updatePilot(id, pilot);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
+    // Eliminar un piloto por id
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        pilotDtoService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        try {
+            pilotService.deletePilot(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

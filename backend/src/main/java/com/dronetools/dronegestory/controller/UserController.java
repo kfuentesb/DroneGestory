@@ -1,9 +1,6 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.request.UserRequestDTO;
-import com.dronetools.dronegestory.dto.response.UserResponseDTO;
 import com.dronetools.dronegestory.model.User;
-import com.dronetools.dronegestory.service.UserDtoService;
 import com.dronetools.dronegestory.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
