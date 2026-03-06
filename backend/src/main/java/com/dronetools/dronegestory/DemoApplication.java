@@ -1,8 +1,6 @@
 package com.dronetools.dronegestory;
 
-import com.dronetools.dronegestory.model.Operator;
 import com.dronetools.dronegestory.model.User;
-import com.dronetools.dronegestory.repository.OperatorRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
