@@ -4,8 +4,11 @@ type Pilot = {
   id: number;
   firstName: string;
   lastName: string;
-  licenseNumber: string;
-  operatorId: number;
+  username: string;
+  password: string;
+  email: string;
+  phone: number;
+  image: string;
 };
 
 export default function PilotsView() {
@@ -31,7 +34,7 @@ export default function PilotsView() {
       <ul>
         {pilots.map((p) => (
           <li key={p.id}>
-            {p.firstName} {p.lastName} — Licencia: {p.licenseNumber}
+            {p.id} - {p.firstName} {p.lastName} — {p.username} {p.email} {p.phone}
           </li>
         ))}
       </ul>

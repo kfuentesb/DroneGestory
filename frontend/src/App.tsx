@@ -3,6 +3,7 @@ import './App.css';
 import Footer from './components/Footer';
 import LogIn from './components/LogIn';
 import PilotsView from './components/PilotsView';
+import OperationsView from './components/OperationsView';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -14,7 +15,8 @@ function App() {
       </header> */}
 
       <main>
-        <LogIn />
+        <PilotsView />
+        <OperationsView />
 
         {/* <button type="button" className="btn btn-warning">
           Warning
