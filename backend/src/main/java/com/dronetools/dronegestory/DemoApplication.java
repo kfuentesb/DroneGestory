@@ -17,7 +17,6 @@ import java.util.List;
 public class DemoApplication {
 
     private final UserRepository userRepository;
-    private final OperatorRepository operatorRepository;
     private final PasswordEncoder passwordEncoder;
 
     @EventListener(ApplicationReadyEvent.class)
@@ -25,24 +24,7 @@ public class DemoApplication {
         List<User> allUsers = userRepository.findAll();
         log.info("Number of users: {}", allUsers.size());
 
-        Operator operator = operatorRepository.findAll().stream().findFirst()
-                .orElseGet(() -> {
-                    Operator op = new Operator();
-                    op.setName("Default Operator");
-                    op.setEmail("operator@example.com");
-                    op.setFiscalId(12345678);
-                    op.setOperatorNumber(1001);
-                    op.setRidSecretCode(9999);
-                    op.setAddress("Default address");
-                    op.setPostalCode(10000);
-                    op.setCity("Default City");
-                    op.setProvince("Default Province");
-                    op.setPhoneNumber(123456789);
-                    return operatorRepository.save(op);
-                });
-
         User newUser = new User();
-        newUser.setOperator(operator);
         newUser.setFirstName("John");
         newUser.setLastName("Doe");
         newUser.setUsername("john.doe");

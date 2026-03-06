@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import Footer from './components/Footer';
 import LogIn from './components/LogIn';
+import PilotsView from './components/PilotsView';
 
 function App() {
   const [count, setCount] = useState(0)
