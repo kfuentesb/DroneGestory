@@ -2,7 +2,9 @@ package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.dto.request.UserRequestDTO;
 import com.dronetools.dronegestory.dto.response.UserResponseDTO;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.UserDtoService;
+import com.dronetools.dronegestory.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,35 +16,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserDtoService userDtoService;
+    private final UserService userService;
 
     @GetMapping
-    public List<UserResponseDTO> getAll() {
-        return userDtoService.findAll();
+    public List<User> getAll() {
+        return userService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getById(@PathVariable Integer id) {
-        return userDtoService.findById(id)
+    public ResponseEntity<User> getById(@PathVariable Integer id) {
+        return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> create(@RequestBody UserRequestDTO dto) {
-        return ResponseEntity.ok(userDtoService.create(dto));
+    public ResponseEntity<User> create(@RequestBody User user) {
+        return ResponseEntity.ok(userService.create(user));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> update(@PathVariable Integer id, @RequestBody UserRequestDTO dto) {
-        return userDtoService.update(id, dto)
+    public ResponseEntity<User> update(@PathVariable Integer id, @RequestBody User user) {
+        return userService.update(id, user)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        userDtoService.deleteById(id);
+        userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -12,5 +12,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Pilot extends User {
-    // add pilot-specific fields here if needed
+
 }
