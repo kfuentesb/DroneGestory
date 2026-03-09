@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
 
 function LogIn() {
   // Tenemos que crear las llamadas al endpoint desde aquí
@@ -6,6 +7,8 @@ function LogIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Hook de navegación
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +29,11 @@ function LogIn() {
 
       const data = await res.json();
       console.log("Login OK:", data);
+
+      if (data.ok) {
+        localStorage.setItem("username", data.username);
+        navigate("/auth/dashboard")
+      }
 
       // aquí puedes guardar token o userId
       // localStorage.setItem("userId", data.userId);
@@ -102,6 +110,7 @@ function LogIn() {
             >
               {/* Añadido */}
               {loading ? "Cargando..." : "Iniciar Sesión"}
+              
             </button>
           </form>
         </div>
