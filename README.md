@@ -12,13 +12,13 @@ mvn -v
 ```
 
 Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
-```
+```diff
 cd backend
-(tiene que estar up el docker)
+-(tiene que estar up el docker)
 docker compose up -d
-(esto crea las tablas automáticamente)
+-(esto crea las tablas automáticamente)
 mvn spring-boot:run
-(Abre nuevocmd, inserta lo de init.sql en el terminal)
+-(Abre nuevocmd, inserta lo de init.sql en el terminal)
 docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 ```
 
