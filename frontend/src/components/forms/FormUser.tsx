@@ -1,13 +1,57 @@
 import React, { useState,  } from 'react';
+import Select from 'react-select';
 
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    // Allowed file types
+    const allowedTypes = ["image/jpeg", "image/png"];
 
     const type_user: { value: string; label: string }[] = [
-        { value: "pilot", label: "Pilot" },
-        { value: "admin", label: "Admin" }
+        { value: "pilot", label: "Piloto" },
+        { value: "manager", label: "Gestor" },
+        { value: "admin", label: "Administrador" }
     ];
+
+    const backgroundBorderInputsSelect = {
+        control: (provided: any) => ({
+            ...provided,
+            backgroundColor: "#F3F4F6",
+            borderColor: "#D1D5DB"
+        })
+    };
+
+    const backgroundBorderInputs = {
+        backgroundColor: "#F3F4F6",
+        borderColor: "#D1D5DB"
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            setSelectedFile(null);
+            setError("");
+            return;
+        }
+
+        if (!allowedTypes.includes(file.type)) {
+            setError("Only JPG, PNG, and PDF files are allowed.");
+            setSelectedFile(null);
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError("File size must be less than 5MB.");
+            setSelectedFile(null);
+            return;
+        }
+
+        setSelectedFile(file);
+        setError("");
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,43 +100,42 @@ function FormUser() {
                 backgroundColor: "#FFFFFF",
             }}
             >
-
-            <div className="row mb-3 text-start">
-                <div className="col">
-                    <label className="form-label" style={{ color: "#1E1E1E" }}>
-                    Nombre
-                    </label>
-                    <input
-                    type="text"
-                    className="form-control"
-                    style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
-                    />
-                </div>
-
-                <div className="col">
-                    <label className="form-label" style={{ color: "#1E1E1E" }}>
-                    Apellidos
-                    </label>
-                    <input
-                    type="text"
-                    className="form-control"
-                    style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
-                    />
-                </div>
-
-                <div className="col">
-                    <label className="form-label" style={{ color: "#1E1E1E" }}>
-                    Nombre de usuario
-                    </label>
-                    <input
-                    type="text"
-                    className="form-control"
-                    style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
-                    />
-                </div>
-            </div>
-
             <form onSubmit={handleSubmit}>
+                <div className="row mb-3 text-start">
+                    <div className="col">
+                        <label className="form-label" style={{ color: "#1E1E1E" }}>
+                        Nombre
+                        </label>
+                        <input
+                        type="text"
+                        className="form-control"
+                        style={backgroundBorderInputs}
+                        />
+                    </div>
+
+                    <div className="col">
+                        <label className="form-label" style={{ color: "#1E1E1E" }}>
+                        Apellidos
+                        </label>
+                        <input
+                        type="text"
+                        className="form-control"
+                        style={backgroundBorderInputs}
+                        />
+                    </div>
+
+                    <div className="col">
+                        <label className="form-label" style={{ color: "#1E1E1E" }}>
+                        Nombre de usuario
+                        </label>
+                        <input
+                        type="text"
+                        className="form-control"
+                        style={backgroundBorderInputs}
+                        />
+                    </div>
+                </div>
+
                 <div className="row mb-3 text-start">
                     <div className="col">
                         <label className="form-label" style={{ color: "#1E1E1E" }}>
@@ -101,7 +144,7 @@ function FormUser() {
                         <input
                         type="text"
                         className="form-control"
-                        style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
+                        style={backgroundBorderInputs}
                         />
                     </div>
 
@@ -112,29 +155,94 @@ function FormUser() {
                         <input
                         type="text"
                         className="form-control"
-                        style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
+                        style={backgroundBorderInputs}
                         />
                     </div>
                 </div>
 
                 <div className="row mb-3 text-start">
-                    {/* <div className="col">
-                        <Select options={type_user}/>
-                    </div> */}
 
                     <div className="col">
                         <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Correo electrónico
+                        Tipo de usuario
+                        </label>
+                        <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario"/>
+                    </div>
+
+                    <div className="col">
+                        <label className="form-label" style={{ color: "#1E1E1E" }}>
+                        Imagen de perfil
+                        </label>
+                        <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            backgroundColor: "#F3F4F6",
+                            borderRadius: "4px",
+                            border: "1px solid #D1D5DB",
+                            paddingLeft: "10px"
+                        }}
+                        >
+                        <span style={{ flex: 1 ,maxWidth: "150px",overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                            {selectedFile ? selectedFile.name : "No file selected"}
+                        </span>
+
+                        <input
+                            id="file-upload"
+                            type="file"
+                            accept=".jpg,.jpeg,.png"
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                        />
+
+                        <label
+                            htmlFor="file-upload"
+                            style={{
+                            padding: "8px 16px",
+                            backgroundColor: "#2F8F5B",
+                            color: "white",
+                            fontWeight: 500,
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            textAlign: "center",
+                            display: "inline-block",
+                            marginLeft: "auto" // pushes button to the right
+                            }}
+                        >
+                            Seleccionar archivo
+                        </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="row mb-3 text-start">
+                    <div className="col">
+                        <label className="form-label" style={{ color: "#1E1E1E" }}>
+                        Contraseña
                         </label>
                         <input
                         type="text"
                         className="form-control"
-                        style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
+                        style={backgroundBorderInputs}
+                        />
+                    </div>
+
+                    <div className="col">
+                        <label className="form-label" style={{ color: "#1E1E1E" }}>
+                        Confirmación de contraseña
+                        </label>
+                        <input
+                        type="text"
+                        className="form-control"
+                        style={backgroundBorderInputs}
                         />
                     </div>
                 </div>
-                {/* Añadido error */}
+                
+                
                 {error && <p className="text-danger">{error}</p>}
+
                 <button
                 type="submit"
                 className="btn w-100"
@@ -147,7 +255,7 @@ function FormUser() {
                 }}
                 >
                 {/* Añadido */}
-                {loading ? "Cargando..." : "Iniciar Sesión"}
+                {loading ? "Cargando..." : "Registrar usuario"}
                 </button>
             </form>
             </div>

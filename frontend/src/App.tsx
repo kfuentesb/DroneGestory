@@ -12,9 +12,6 @@ function App() {
       <Navbar />
       <main>
         <RouterPrincipal />
-        {/* <button type="button" className="btn btn-warning">
-          Warning
-        </button> */}
       </main>
       <Footer />
     </div>
