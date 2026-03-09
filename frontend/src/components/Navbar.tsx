@@ -28,7 +28,7 @@ function Navbar() {
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
                 <NavLink className="nav-link" to="/home">
-                  Home
+                  Panel
                 </NavLink>
               </li>
               <li className="nav-item">

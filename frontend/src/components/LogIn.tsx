@@ -44,7 +44,7 @@ function LogIn() {
             <div style={{ width: "100%", maxWidth: "400px" }}>
 
                 <h4 className="text-center mb-3 fw-normal">
-                    Inicia sesión en Drone Gestory
+                    Iniciar sesión en Drone Gestor
                 </h4>
 
                 <div
