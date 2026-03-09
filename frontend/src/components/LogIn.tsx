@@ -27,7 +27,7 @@ function LogIn() {
             const data = await res.json();
             console.log("Login OK:", data);
 
-            // aquí puedes guardar token o userId
+            // aquí se puede guardar token o userId
             // localStorage.setItem("userId", data.userId);
         } catch (err: any) {
             setError(err.message);
