@@ -42,19 +42,21 @@ function Navbar() {
                 </NavLink>
               </li>
             </ul>
-            <button
-              className="btn px-4"
-              style={{
-                backgroundColor: "#2F8F5B",
-                color: "white",
-                borderRadius: "6px",
-              }}
-              type="button"
-            >
-              <NavLink className="nav-link" to="/auth/login">
-                  Login
-              </NavLink>
-            </button>
+            <NavLink className="nav-link" to="/auth/login">
+              <button
+                className="btn px-4"
+                style={{
+                  backgroundColor: "#2F8F5B",
+                  color: "white",
+                  borderRadius: "6px",
+                }}
+                type="button"
+              >
+
+                Login
+
+              </button>
+            </NavLink>
           </div>
         </div>
       </nav>
