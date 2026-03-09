@@ -1,6 +1,15 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const username = localStorage.getItem("username");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("username");
+    navigate("/auth/login");
+  };
+  
+
   return (
     <header>
       <nav
@@ -42,6 +51,7 @@ function Navbar() {
                 </NavLink>
               </li>
             </ul>
+            {!username ? (
             <NavLink className="nav-link" to="/auth/login">
               <button
                 className="btn px-4"
@@ -55,6 +65,18 @@ function Navbar() {
                 Acceder
               </button>
             </NavLink>
+            ):(
+            <button className="btn px-4"
+                style={{
+                  backgroundColor: "#F44  ",
+                  color: "white",
+                  borderRadius: "6px",
+                }}
+                type="button"
+                onClick={handleLogout}>
+                  Cerrar Sesión
+                </button>
+                )}
           </div>
         </div>
       </nav>
