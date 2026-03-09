@@ -1,5 +1,19 @@
 # DroneGestory
 
+Requiere Maven Docker npm
+
+Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
+```
+cd backend
+docker compose up -d
+mvn spring-boot:run
+```
+
+En otro terminal entramos en frontend e iniciamos React
+```
+cd ../frontend
+npm run dev
+```
 
 DOCKER:  Desde la carpeta donde está el docker-compose.yml del backend:
 ```
@@ -21,7 +35,7 @@ Vite: No
 
 npm i react-router
 
-
+npm install react-router-dom
 
 
 //TODO LIST

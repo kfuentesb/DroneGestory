@@ -10,7 +10,6 @@ function App() {
   return (
     <div className="App">
       <Navbar />
-      
       <main>
         <RouterPrincipal />
         {/* <button type="button" className="btn btn-warning">
