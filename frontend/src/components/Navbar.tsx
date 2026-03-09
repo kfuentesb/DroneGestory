@@ -27,8 +27,8 @@ function Navbar() {
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <NavLink className="nav-link" to="/home">
-                  Panel
+                <NavLink className="nav-link" to="/auth/dashboard">
+                  Dashboard
                 </NavLink>
               </li>
               <li className="nav-item">

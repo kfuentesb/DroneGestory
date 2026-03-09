@@ -1,8 +1,11 @@
 import React from 'react'
 
 function Dashboard() {
+  const username = localStorage.getItem("username");
   return (
-    <div>Te has logeado correctamente</div>
+    <div>
+      <h1>Bienvenido, {username}</h1>
+    </div>
   )
 }
 
