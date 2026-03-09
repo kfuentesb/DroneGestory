@@ -4,6 +4,7 @@ import com.dronetools.dronegestory.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") // Permitir solicitudes desde React
 public class AuthController {
 
     // Dependencias inyectadas
@@ -24,24 +26,27 @@ public class AuthController {
     // @RequestBody toma el JSON del body y los guardamos en un map
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        // Datos del user
-        String username = body.get("username");
-        String password = body.get("password");
+        try {
+            String username = body.get("username");
+            String password = body.get("password");
 
-        return userRepository.findByUsername(username)
-                // Buscar el usuario y validar su pass
+            return userRepository.findByUsername(username)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .map(user -> ResponseEntity.ok(Map.of(
-                        // Respuesta ok -> 200, userId, operatorId, username
-                        "ok", true,
-                        "userId", user.getId(),
-//                        "operatorId", user.getOperator().getId(),
-                        "username", user.getUsername()
+                    "ok", true,
+                    "userId", user.getId(),
+                    "username", user.getUsername()
                 )))
-                // Respuesta 401 si falla
                 .orElse(ResponseEntity.status(401).body(Map.of(
-                        "ok", false,
-                        "message", "Invalid credentials"
+                    "ok", false,
+                    "message", "Invalid credentials"
                 )));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                "error", "Internal Server Error",
+                "message", e.getMessage()
+            ));
+        }
     }
 }
