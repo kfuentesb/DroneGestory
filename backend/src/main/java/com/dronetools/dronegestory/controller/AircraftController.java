@@ -11,6 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/aircraft")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") // Permitir solicitudes desde React
 public class AircraftController {
 
     private final AircraftService aircraftService;
