@@ -17,13 +17,17 @@ main{
 }
 
 .header{
-  background: #55d77a;
+  background: #2F8F5B;
   color: white;
   padding: 10px;
 }
 
 footer{
-  background: #55d77a;
+  background: #2F8F5B;
   color: white;
   padding: 10px;
+}
+
+.card {
+  background: #F3F4F6;
 }

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function Footer() {
     console.log("Footer renderizado");
     return (
-        <footer className="text-light mt-5 pt-4">
+        <footer className="text-light pt-4">
             <div className="container">
                 <div className="row text-center text-md-start">
 
@@ -39,7 +39,7 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="bg-light text-center py-2 small text-dark" style={{borderRadius: "6px",border: "2px outset #4d4d4d"}}>
+            <div className="bg-light text-center py-2 small text-dark" style={{borderRadius: "6px", border: "2px outset #4d4d4d"}}>
                 Todos los derechos reservados
             </div>
         </footer>

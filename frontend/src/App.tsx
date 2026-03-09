@@ -16,7 +16,6 @@ function App() {
           Warning
         </button> */}
       </main>
-
       <Footer />
     </div>
   )
