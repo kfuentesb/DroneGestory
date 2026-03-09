@@ -1,103 +1,102 @@
-DROP TABLE IF EXISTS operadora CASCADE;
-DROP TABLE IF EXISTS aeronave CASCADE;
-DROP TABLE IF EXISTS certificacion CASCADE;
-DROP TABLE IF EXISTS habilitacion_nm CASCADE;
-DROP TABLE IF EXISTS aseguradora CASCADE;
-DROP TABLE IF EXISTS operacion CASCADE;
-DROP TABLE IF EXISTS piloto CASCADE;
-DROP TABLE IF EXISTS usuario CASCADE;
+DROP TABLE IF EXISTS operator CASCADE;
+DROP TABLE IF EXISTS aircraft CASCADE;
+DROP TABLE IF EXISTS certification CASCADE;
+DROP TABLE IF EXISTS pilot_license CASCADE;
+DROP TABLE IF EXISTS insurance CASCADE;
+DROP TABLE IF EXISTS operation CASCADE;
+DROP TABLE IF EXISTS pilot CASCADE;
+DROP TABLE IF EXISTS app_user CASCADE;
 
-CREATE TABLE operadora (
-   id_operadora SERIAL PRIMARY KEY,
-   nombre VARCHAR(150) NOT NULL,
-   id_fiscal INTEGER,
-   num_operadora INTEGER,
-   codigo_secreto_rid INTEGER,
-   path_certificado_easa TEXT,
-   path_certificado_no_easa TEXT,
-   direccion VARCHAR(255),
-   cod_postal INTEGER,
-   poblacion VARCHAR(150),
-   provincia VARCHAR(150),
+CREATE TABLE operator (
+   operator_id SERIAL PRIMARY KEY,
+   name VARCHAR(150) NOT NULL,
+   fiscal_id INTEGER,
+   operator_number INTEGER,
+   secret_code_rid INTEGER,
+   easa_certificate_path TEXT,
+   non_easa_certificate_path TEXT,
+   address VARCHAR(255),
+   postal_code INTEGER,
+   city VARCHAR(150),
+   province VARCHAR(150),
    email VARCHAR(150),
-   num_telefono BIGINT
+   phone_number BIGINT
 );
 
-CREATE TABLE usuario (
-   id_usuario SERIAL PRIMARY KEY,
-   id_operadora INTEGER NOT NULL,
-   nombre VARCHAR(100),
-   apellidos VARCHAR(150),
-   nombre_usuario VARCHAR(100) UNIQUE,
+CREATE TABLE app_user (
+   user_id SERIAL PRIMARY KEY,
+   operator_id INTEGER NOT NULL,
+   first_name VARCHAR(100),
+   last_name VARCHAR(150),
+   username VARCHAR(100) UNIQUE,
    password TEXT NOT NULL,
-   correo VARCHAR(150) UNIQUE,
-   num_telefono BIGINT,
-   path_imagen TEXT
+   email VARCHAR(150) UNIQUE,
+   phone_number BIGINT,
+   image_path TEXT
 );
 
-CREATE TABLE piloto (
-   id_piloto SERIAL PRIMARY KEY,
-   id_operadora INTEGER NOT NULL,
-   id_usuario INTEGER UNIQUE
+CREATE TABLE pilot (
+   pilot_id SERIAL PRIMARY KEY,
+   operator_id INTEGER NOT NULL,
+   user_id INTEGER UNIQUE
 );
 
-CREATE TABLE certificacion (
-   id_certificacion SERIAL PRIMARY KEY,
-   nombre VARCHAR(150) NOT NULL,
-   tipo VARCHAR(100)
+CREATE TABLE certification (
+   certification_id SERIAL PRIMARY KEY,
+   name VARCHAR(150) NOT NULL,
+   type VARCHAR(100)
 );
 
-CREATE TABLE habilitacion_nm (
-   id_piloto INTEGER NOT NULL,
-   id_certificacion INTEGER NOT NULL,
-   fecha_alta DATE,
-   fecha_caducidad DATE,
-   PRIMARY KEY (id_piloto, id_certificacion)
+CREATE TABLE pilot_license (
+   pilot_id INTEGER NOT NULL,
+   certification_id INTEGER NOT NULL,
+   start_date DATE,
+   expiry_date DATE,
+   PRIMARY KEY (pilot_id, certification_id)
 );
 
-CREATE TABLE aseguradora (
-   id_seguro SERIAL PRIMARY KEY,
-   nombre VARCHAR(150) NOT NULL,
-   fecha_comienzo DATE,
-   fecha_caducidad DATE,
-   importe BIGINT
+CREATE TABLE insurance (
+   insurance_id SERIAL PRIMARY KEY,
+   name VARCHAR(150) NOT NULL,
+   start_date DATE,
+   expiry_date DATE,
+   amount BIGINT
 );
 
-CREATE TABLE aeronave (
-   id_aeronave SERIAL PRIMARY KEY,
-   id_operadora INTEGER NOT NULL,
-   id_seguro INTEGER,
-   nombre VARCHAR(150),
-   num_serie INTEGER,
-   estado VARCHAR(100),
-   fabricante VARCHAR(150),
-   modelo VARCHAR(150),
-   path_imagen TEXT,
-   fecha_compra DATE
+CREATE TABLE aircraft (
+   aircraft_id SERIAL PRIMARY KEY,
+   operator_id INTEGER NOT NULL,
+   insurance_id INTEGER,
+   name VARCHAR(150),
+   serial_number INTEGER,
+   status VARCHAR(100),
+   manufacturer VARCHAR(150),
+   model VARCHAR(150),
+   image_path TEXT,
+   purchase_date DATE
 );
 
-
-CREATE TABLE operacion (
-   id_operacion SERIAL PRIMARY KEY,
-   id_piloto INTEGER NOT NULL,
-   id_aeronave INTEGER NOT NULL,
-   fecha_realizacion DATE,
-   estado VARCHAR(100),
-   categoria VARCHAR(100)
+CREATE TABLE operation (
+   operation_id SERIAL PRIMARY KEY,
+   pilot_id INTEGER NOT NULL,
+   aircraft_id INTEGER NOT NULL,
+   execution_date DATE,
+   status VARCHAR(100),
+   category VARCHAR(100)
 );
 
-ALTER TABLE usuario ADD FOREIGN KEY (id_operadora) REFERENCES operadora(id_operadora) ON DELETE CASCADE;
+ALTER TABLE app_user ADD FOREIGN KEY (operator_id) REFERENCES operator(operator_id) ON DELETE CASCADE;
 
-ALTER TABLE piloto ADD FOREIGN KEY (id_operadora) REFERENCES operadora(id_operadora) ON DELETE CASCADE;
-ALTER TABLE piloto ADD FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE;
+ALTER TABLE pilot ADD FOREIGN KEY (operator_id) REFERENCES operator(operator_id) ON DELETE CASCADE;
+ALTER TABLE pilot ADD FOREIGN KEY (user_id) REFERENCES app_user(user_id) ON DELETE CASCADE;
 
-ALTER TABLE habilitacion_nm ADD FOREIGN KEY (id_piloto) REFERENCES piloto(id_piloto) ON DELETE CASCADE;
-ALTER TABLE habilitacion_nm ADD FOREIGN KEY (id_certificacion) REFERENCES certificacion(id_certificacion) ON DELETE CASCADE;
+ALTER TABLE pilot_license ADD FOREIGN KEY (pilot_id) REFERENCES pilot(pilot_id) ON DELETE CASCADE;
+ALTER TABLE pilot_license ADD FOREIGN KEY (certification_id) REFERENCES certification(certification_id) ON DELETE CASCADE;
 
-ALTER TABLE aeronave ADD FOREIGN KEY (id_operadora) REFERENCES operadora(id_operadora) ON DELETE CASCADE;
-ALTER TABLE aeronave ADD FOREIGN KEY (id_seguro) REFERENCES aseguradora(id_seguro) ON DELETE CASCADE;
+ALTER TABLE aircraft ADD FOREIGN KEY (operator_id) REFERENCES operator(operator_id) ON DELETE CASCADE;
+ALTER TABLE aircraft ADD FOREIGN KEY (insurance_id) REFERENCES insurance(insurance_id) ON DELETE CASCADE;
 
-ALTER TABLE operacion ADD FOREIGN KEY (id_piloto) REFERENCES piloto(id_piloto) ON DELETE CASCADE;
-ALTER TABLE aeronave ADD FOREIGN KEY (id_aeronave) REFERENCES aeronave(id_aeronave) ON DELETE CASCADE;
+ALTER TABLE operation ADD FOREIGN KEY (pilot_id) REFERENCES pilot(pilot_id) ON DELETE CASCADE;
+ALTER TABLE aircraft ADD FOREIGN KEY (aircraft_id) REFERENCES aircraft(aircraft_id) ON DELETE CASCADE;
 
 \dt
