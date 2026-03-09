@@ -6,9 +6,9 @@ VALUES
 INSERT INTO usuario
 (id_operadora, nombre, apellidos, nombre_usuario, password, correo, num_telefono, path_imagen)
 VALUES
-    (1, 'Carlos', 'Martinez Lopez', 'cmartinez', 'pass123', 'carlos@skydron.es', 600111333, '/img/carlos.jpg'),
-    (1, 'Lucia', 'Fernandez Ruiz', 'lfernandez', 'pass123', 'lucia@skydron.es', 600111444, '/img/lucia.jpg'),
-    (1, 'Miguel', 'Santos Perez', 'msantos', 'pass123', 'miguel@aerovision.es', 600333555, '/img/miguel.jpg');
+    (1, 'Carlos', 'Martinez Lopez', 'cmartinez', '$2a$10$uHkHqf3JjKj1LkZcJ6b0Eu0dR8D84G4tHJ3x/5Z9tTq0v6rHfGh1G', 'carlos@skydron.es', 600111333, '/img/carlos.jpg'),
+    (1, 'Lucia', 'Fernandez Ruiz', 'lfernandez', '$2a$10$uHkHqf3JjKj1LkZcJ6b0Eu0dR8D84G4tHJ3x/5Z9tTq0v6rHfGh1G', 'lucia@skydron.es', 600111444, '/img/lucia.jpg'),
+    (1, 'Miguel', 'Santos Perez', 'msantos', '$2a$10$uHkHqf3JjKj1LkZcJ6b0Eu0dR8D84G4tHJ3x/5Z9tTq0v6rHfGh1G', 'miguel@aerovision.es', 600333555, '/img/miguel.jpg');
 
 INSERT INTO piloto (id_operadora, id_usuario)
 VALUES

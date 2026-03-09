@@ -2,10 +2,16 @@
 
 Requiere Maven Docker npm
 
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+scoop install main/maven
+mvn -v
+
 Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
 ```
 cd backend
 docker compose up -d
+(Optional) docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 mvn spring-boot:run
 ```
 
@@ -15,12 +21,6 @@ cd ../frontend
 npm run dev
 ```
 
-DOCKER:  Desde la carpeta donde está el docker-compose.yml del backend:
-```
-docker compose up -d
-docker exec -it aeronaves_db psql -U admin -d aeronaves_db
-
-```
 ## Versión <br>
 Node: 24.14.0 <br>
 npm: 11.9.0

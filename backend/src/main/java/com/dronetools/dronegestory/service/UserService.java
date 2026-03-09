@@ -53,4 +53,18 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
+
+    public Optional<User> login(String username, String password) {
+    Optional<User> userOpt = userRepository.findByUsername(username);
+
+    if (userOpt.isPresent()) {
+        User user = userOpt.get();
+
+        if (user.getPassword().equals(password)) { // simple test login
+            return Optional.of(user);
+        }
+    }
+
+    return Optional.empty();
+}
 }
