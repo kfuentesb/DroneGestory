@@ -4,6 +4,8 @@ Requiere Maven Docker npm
 ```
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+scoop bucket add java
+scoop install java/openjdk
 scoop install main/maven
 mvn -v
 ```
