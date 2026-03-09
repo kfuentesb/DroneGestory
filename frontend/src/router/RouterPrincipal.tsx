@@ -14,7 +14,7 @@ export default class RouterPrincipal extends React.Component {
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
           <Route path="/auth/login" element={<LogIn />} />
-          <Route path="/auth/welcome" element={<Dashboard />} />
+          <Route path="/auth/dashboard" element={<Dashboard />} />
           <Route path="/auth/users" element={<UserList />}></Route>
           <Route path="/auth/pilots" element={<PilotsList />}></Route>
         </Routes>

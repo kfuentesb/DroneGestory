@@ -40,9 +40,9 @@ Variant: TS + React Compiler
 Vite: No
 
 
+npm i react
 npm i react-router
-
-npm install react-router-dom
+npm i react-router-dom
 
 
 //TODO LIST
