@@ -1,6 +1,12 @@
 # DroneGestory
 
 Requiere Maven Docker npm
+```
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+scoop install main/maven
+mvn -v
+```
 
 Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
 ```
@@ -14,11 +20,6 @@ En otro terminal entramos en frontend e iniciamos React
 cd ../frontend
 npm run dev
 ```
-
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-scoop install main/maven
-mvn -v
 
 Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
 ```
