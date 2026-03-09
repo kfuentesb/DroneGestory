@@ -12,28 +12,6 @@ type Pilot = {
 };
 
 export default function PilotsView() {
-<<<<<<< HEAD
-  const [pilots, setPilots] = useState<Pilot[]>([]);
-  const [loading, setLoading] = useState(true);
-  // const [pilotss] = useState<Pilot[]>([
-  //   {
-  //     id: 1,
-  //     firstName: "Ana",
-  //     lastName: "Torres",
-  //     username: "atorres",
-  //     email: "ana@demo.com",
-  //     phone: "600111222",
-  //   },
-  //   {
-  //     id: 2,
-  //     firstName: "Luis",
-  //     lastName: "Martín",
-  //     username: "lmartin",
-  //     email: "luis@demo.com",
-  //     phone: "600333444",
-  //   },
-  // ]);
-=======
   const [pilots] = useState<Pilot[]>([
     {
       id: 1,
@@ -56,7 +34,6 @@ export default function PilotsView() {
       image: "enlace"
     },
   ]);
->>>>>>> kevin
 
   return (
     <div className="container py-4">
