@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users")
+@Table(name = "app_user")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Getter
 @Setter

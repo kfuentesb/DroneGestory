@@ -9,7 +9,8 @@ DROP TABLE IF EXISTS app_user CASCADE;
 
 CREATE TABLE operator (
    operator_id SERIAL PRIMARY KEY,
-   name VARCHAR(150) NOT NULL,
+   first_name VARCHAR(150) NOT NULL,
+   last_name VARCHAR(150) NOT NULL,
    fiscal_id INTEGER,
    operator_number INTEGER,
    secret_code_rid INTEGER,
