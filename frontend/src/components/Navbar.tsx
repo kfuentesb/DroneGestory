@@ -4,12 +4,12 @@ function Navbar() {
   return (
     <header>
       <nav
-        className="navbar navbar-expand-lg w-100"
-        style={{ backgroundColor: "#55d77a" }}
+        className="navbar navbar-expand-lg w-100 shadow-sm"
+        style={{ backgroundColor: "#F3F4F6" }}
       >
         <div className="container-fluid">
-          <NavLink className="navbar-brand" to="/home">
-            Drone Gestory
+          <NavLink className="navbar-brand fw-bold" to="/home" style={{ color: "#1E1E1E" }}>
+            Drone Gestor
           </NavLink>
 
           <button
@@ -25,15 +25,15 @@ function Navbar() {
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul className="navbar-nav">
+            <ul className="navbar-nav me-auto">
               <li className="nav-item">
                 <NavLink className="nav-link" to="/home">
                   Home
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink className="nav-link" to="/auth/login">
-                  Login
+                <NavLink className="nav-link" to="/auth/users">
+                  Usuarios
                 </NavLink>
               </li>
               <li className="nav-item">
@@ -42,7 +42,19 @@ function Navbar() {
                 </NavLink>
               </li>
             </ul>
-            <button className="btn btn-outline-success me-2" type="button">Main button</button>
+            <button
+              className="btn px-4"
+              style={{
+                backgroundColor: "#2F8F5B",
+                color: "white",
+                borderRadius: "6px",
+              }}
+              type="button"
+            >
+              <NavLink className="nav-link" to="/auth/login">
+                  Login
+              </NavLink>
+            </button>
           </div>
         </div>
       </nav>

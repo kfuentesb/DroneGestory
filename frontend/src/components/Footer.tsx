@@ -9,7 +9,7 @@ export default function Footer() {
                 <div className="row text-center text-md-start">
 
                     <div className="col-md-4 mb-3">
-                        <h5>DRONETOOLS</h5>
+                        <h5>DRONE GESTOR</h5>
                         <p className="small">
                             Gestor de pilotos, aeronaves y operaciones de vuelo.
                         </p>
