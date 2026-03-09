@@ -8,17 +8,17 @@ scoop bucket add java
 scoop install java/openjdk
 scoop install main/maven
 mvn -v
-<code style="color : red">(reinicia)</code>
+<span style="color : red">(reinicia)</span>
 ```
 
 Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
 ```
 cd backend
-<code style="color : red">(tiene que estar up el docker)</code>
+<span style="color : red">(tiene que estar up el docker)</span>
 docker compose up -d
-<code style="color : red">(esto crea las tablas automáticamente)</code>
+<span style="color : red">(esto crea las tablas automáticamente)</span>
 mvn spring-boot:run
-<code style="color : red">(Abre nuevocmd, inserta lo de init.sql en el terminal)</code>
+<span style="color : red">(Abre nuevocmd, inserta lo de init.sql en el terminal)</span>
 docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 ```
 
