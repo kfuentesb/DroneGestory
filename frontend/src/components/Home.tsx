@@ -22,7 +22,7 @@ const Home: React.FC = () => {
             <h1 className="fw-bold card p-4 shadow-sm" style={{ color: "#1E1E1E" }}>
               Gestión profesional de drones
             </h1>
-            <p style={{ color: "#6B7280", fontSize: "1.05rem" }}>
+            <p className="" style={{ color: "#6B7280", fontSize: "1.05rem" }}>
               Controla pilotos, aeronaves, operaciones, documentación y trazabilidad
               con una interfaz moderna y segura.
             </p>

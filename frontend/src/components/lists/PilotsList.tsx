@@ -11,7 +11,7 @@ type Pilot = {
   image: string;
 };
 
-export default function PilotsView() {
+export default function PilotsLits() {
   const [pilots] = useState<Pilot[]>([
     {
       id: 1,
@@ -39,8 +39,26 @@ export default function PilotsView() {
     <div className="container py-4">
       <div className="card shadow-sm">
         <div className="card-body">
-          <h2 className="card-title mb-4">Lista de Pilotos</h2>
+          <div>
+            <h2 className="card-title mb-4">Lista de Pilotos</h2>
+          </div>
 
+          {/* Barra de búsqueda */}
+          <div className="d-flex gap-2 mb-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar usuario..."
+              style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
+            />
+            <button
+              className="btn"
+              style={{ backgroundColor: "#2F8F5B", color: "#FFFFFF" }}
+            >
+              Buscar
+            </button>
+          </div>
+          
           <div className="table-responsive">
             <table className="table table-striped table-hover align-middle">
               <thead className="table-dark">

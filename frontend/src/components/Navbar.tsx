@@ -52,9 +52,7 @@ function Navbar() {
                 }}
                 type="button"
               >
-
-                Login
-
+                Acceder
               </button>
             </NavLink>
           </div>
