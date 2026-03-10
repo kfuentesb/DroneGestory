@@ -1,5 +1,5 @@
 export async function apiFetch(url: string, options?: RequestInit) {
-    const res = await fetch(url, options);
+    const res = await fetch(url, options)
 
     if (res.status === 403) {
         window.location.href = "/403";

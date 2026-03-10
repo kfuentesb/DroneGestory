@@ -17,7 +17,9 @@ import { apiFetch } from "../../api";
     useEffect(() => {
       const loadUsers = async () => {
         try {
-          const res = await apiFetch("http://localhost:8080/api/users");
+          const res = await apiFetch("http://localhost:8080/api/auth/users", {
+            credentials: "include"
+          });
 
           if (!res) return; // happens if redirected (403/404)
 
