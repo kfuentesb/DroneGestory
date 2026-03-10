@@ -60,7 +60,7 @@ export default function PilotsLits() {
           </div>
           
           <div className="table-responsive">
-            <table className="table table-striped table-hover align-middle">
+            <table className="table table-hover align-middle">
               <thead className="table-dark">
                 <tr>
                   <th>ID</th>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../api";
+import { useNavigate } from "react-router-dom";
 
   type User = {
     id: number;
@@ -13,6 +14,7 @@ import { apiFetch } from "../../api";
 
   export default function UserList() {
     const [users, setUsers] = useState<User[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
       const loadUsers = async () => {
@@ -79,11 +81,7 @@ import { apiFetch } from "../../api";
               className="table table-hover align-middle"
               style={{ borderColor: "#E5E7EB" }}
             >
-              <thead
-                style={{
-                  backgroundColor: "#1E1E1E",
-                  color: "#FFFFFF",
-                }}
+              <thead className="table-dark"
               >
                 <tr>
                   <th>Nombre</th>
@@ -95,7 +93,11 @@ import { apiFetch } from "../../api";
               </thead>
               <tbody>
                 {users.map((p) => (
-                  <tr key={p.id}>
+                  <tr
+                    key={p.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/auth/users/${p.id}`)}
+                  >
                     <td>
                       {p.firstName} {p.lastName}
                     </td>
@@ -109,7 +111,12 @@ import { apiFetch } from "../../api";
                     <td>
                       <span
                         className="badge"
-                        style={typeColors[p.type] || { backgroundColor: "#E5E7EB", color: "#374151" }}
+                        style={
+                          typeColors[p.type] || {
+                            backgroundColor: "#E5E7EB",
+                            color: "#374151",
+                          }
+                        }
                       >
                         {p.type}
                       </span>
