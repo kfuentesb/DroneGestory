@@ -11,4 +11,6 @@ INSERT INTO app_user
 VALUES
 ('admin', 'Carlos', 'Martinez Lopez', 'cmartinez', 'pass123', 'carlos@skydron.es', 600111333, '/img/carlos.jpg'),
 ('gestor', 'Lucia', 'Fernandez Ruiz', 'lfernandez', 'pass123', 'lucia@skydron.es', 600111444, '/img/lucia.jpg'),
-('pilot', 'Miguel', 'Santos Perez', 'msantos', 'pass123', 'miguel@aerovision.es', 600333555, '/img/miguel.jpg');
+('pilot', 'Miguel', 'Santos Perez', 'msantos', 'pass123', 'miguel@aerovision.es', 600333555, '/img/miguel.jpg'),
+('pilot', 'Dani', 'Marquez Romero', 'dmarquez', 'pass123', 'dani@aerovision.es', 600444666, '/img/dani.jpg'),
+('pilot', 'Juan', 'Sánchez Blanco', 'jsanchez', 'pass123', 'juan@aerovision.es', 600555777, '/img/juan.jpg');
