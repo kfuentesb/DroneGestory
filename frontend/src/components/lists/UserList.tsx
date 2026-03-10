@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../../api";
 
   type User = {
     id: number;
@@ -14,10 +15,19 @@ import { useEffect, useState } from "react";
     const [users, setUsers] = useState<User[]>([]);
 
     useEffect(() => {
-      fetch("http://localhost:8080/api/users")
-        .then((res) => res.json())
-        .then((data) => setUsers(data))
-        .catch((err) => console.error(err));
+      const loadUsers = async () => {
+        try {
+          const res = await apiFetch("http://localhost:8080/api/users");
+
+          if (!res) return; // happens if redirected (403/404)
+
+          const data = await res.json();
+          setUsers(data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      loadUsers();
     }, []);
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {

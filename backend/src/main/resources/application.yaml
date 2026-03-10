@@ -28,6 +28,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  web:
+    error:
+      whitelabel:
+        enabled: false
+
   # COMENTAR ESTA SECCION PARA QUE NO SE INICIALICE LA BASE DE DATOS CUANDO SE EJECUTE EL BACKEND, YA QUE SE QUIERE USAR LA BASE DE DATOS DE DOCKER, Y NO LA DE LOCALHOST
   # sql:
   #   init:

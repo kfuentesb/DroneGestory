@@ -1,6 +1,6 @@
 import { AuthProvider } from './components/AuthProvider';
 import './App.css';
-import Footer from './components/Footer';
+import Footer from './components/commons/Footer';
 import RouterPrincipal from './router/RouterPrincipal';
 import Navbar from './components/Navbar';
 

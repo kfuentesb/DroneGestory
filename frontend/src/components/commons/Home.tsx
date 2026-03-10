@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, Navigate } from "react-router-dom";
-import Dashboard from "./Dashboard";
-import { useAuth } from "./AuthProvider";
+import Dashboard from "../Dashboard";
+import { useAuth } from "../AuthProvider";
 
 const Home: React.FC = () => {
   const { username } = useAuth();
