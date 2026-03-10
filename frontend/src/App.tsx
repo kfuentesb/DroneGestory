@@ -9,12 +9,8 @@ function App() {
     <div className="App">
       <AuthProvider>
       <main>
-        
         <Navbar />
           <RouterPrincipal />
-          {/* <button type="button" className="btn btn-warning">
-          Warning
-        </button> */}
       
       </main>
       <Footer />
