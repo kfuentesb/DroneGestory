@@ -20,6 +20,21 @@ import { useEffect, useState } from "react";
         .catch((err) => console.error(err));
     }, []);
 
+  const typeColors: Record<string, { backgroundColor: string; color: string }> = {
+    admin: {
+      backgroundColor: "#FEE2E2",
+      color: "#991B1B",
+    },
+    gestor: {
+      backgroundColor: "#E0F2FE",
+      color: "#075985",
+    },
+    pilot: {
+      backgroundColor: "#E6F4EC",
+      color: "#1F6B43",
+    },
+  };
+
   return (
     <div className="container py-4">
       <div
@@ -82,10 +97,7 @@ import { useEffect, useState } from "react";
                     <td>
                       <span
                         className="badge"
-                        style={{
-                          backgroundColor: "#E6F4EC",
-                          color: "#1F6B43",
-                        }}
+                        style={typeColors[p.type] || { backgroundColor: "#E5E7EB", color: "#374151" }}
                       >
                         {p.type}
                       </span>
