@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Navigate } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import { useAuth } from "./AuthProvider";
 
@@ -8,9 +8,7 @@ const Home: React.FC = () => {
 
   if (username) {
     // Usuario conectado, mostrar dashboard
-    return <main>
-      <Dashboard />
-    </main>;
+    return <Navigate to="/auth/dashboard" />
   }
   
   return (
