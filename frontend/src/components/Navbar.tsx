@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 
 function Navbar() {
-  const username = localStorage.getItem("username");
   const navigate = useNavigate();
+  const { logout, username } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("username");
+    logout();
     navigate("/auth/login");
   };
   

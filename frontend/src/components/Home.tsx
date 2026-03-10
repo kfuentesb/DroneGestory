@@ -1,11 +1,10 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-// import { useAuth } from "./AuthContext";
 import Dashboard from "./Dashboard";
+import { useAuth } from "./AuthProvider";
 
 const Home: React.FC = () => {
-  const username = localStorage.getItem("username");
-  //const { username } = useAuth();
+  const { username } = useAuth();
 
   if (username) {
     // Usuario conectado, mostrar dashboard

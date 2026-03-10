@@ -18,8 +18,10 @@ const AuthContext = createContext<AuthContextType>({
 // Provider para envolver la App
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [username, setUsername] = useState<string | null>(localStorage.getItem("username"));
+  //console.log("AuthProvider render username =", username); TESTING
 
   const login = (name: string) => {
+    //console.log("AuthProvider.login(name) =", name); TESTING
     localStorage.setItem("username", name);
     setUsername(name);
   };
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("username");
     setUsername(null);
   };
+  
 
   return (
     <AuthContext.Provider value={{ username, login, logout }}>

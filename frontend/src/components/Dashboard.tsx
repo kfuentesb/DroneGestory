@@ -1,7 +1,8 @@
 import React from 'react'
+import { useAuth } from './AuthProvider';
 
 function Dashboard() {
-  const username = localStorage.getItem("username");
+  const {username} = useAuth();
   return (
     <div>
       <h1>Bienvenido, {username}</h1>
