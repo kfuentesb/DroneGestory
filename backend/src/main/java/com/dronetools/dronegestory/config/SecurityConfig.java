@@ -22,7 +22,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/home").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
-                    .requestMatchers("/api/auth/**").authenticated()
+                    .requestMatchers("/api/**").authenticated()
                     .anyRequest().permitAll()
             )
             .formLogin(form -> form.disable());
