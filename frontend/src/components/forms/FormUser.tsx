@@ -127,113 +127,81 @@ function FormUser() {
     };
 
     return (
-        <div
-        className="d-flex align-items-center justify-content-center"
-        style={{ minHeight: "100vh", backgroundColor: "#F3F4F6" }}
-        >
-        <div style={{ width: "100%", maxWidth: "1000px" }}>
-            <h2 className="text-center mb-4 fw-normal" style={{ color: "#1E1E1E"}}>
+        <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
+            <div className="container" style={{ maxWidth: "1000px" }}>
+                <h2 className="text-center mb-4 fw-normal" style={{ color: "#1E1E1E" }}>
                 Formulario Registro Usuario
-            </h2>
+                </h2>
 
-            <div
-            className="card p-4 shadow-sm"
-            style={{
-                borderRadius: "8px",
-                border: "1px solid #E5E7EB",
-                backgroundColor: "#FFFFFF",
-            }}
-            >
-            <form onSubmit={handleSubmit}>
-                <div className="row mb-3 text-start">
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Nombre
-                        </label>
+                <div className="card shadow-sm p-4" style={{ borderRadius: "8px", border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}>
+                <form onSubmit={handleSubmit}>
+                    {/* Row 1: Nombre, Apellidos, Usuario */}
+                    <div className="row mb-3">
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre</label>
                         <input
-                            type="text"
-                            className="form-control"
-                            onChange={(e) =>setFormValues({ ...formValues, nombre: e.target.value })}
-                            style={{...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB"}}
+                        type="text"
+                        className="form-control"
+                        onChange={(e) => setFormValues({ ...formValues, nombre: e.target.value })}
+                        style={{ ...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
                     </div>
 
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Apellidos
-                        </label>
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Apellidos</label>
                         <input
-                            type="text"
-                            className="form-control"
-                            onChange={(e) =>setFormValues({ ...formValues, apellidos: e.target.value })}
-                            style={{...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB"}}
+                        type="text"
+                        className="form-control"
+                        onChange={(e) => setFormValues({ ...formValues, apellidos: e.target.value })}
+                        style={{ ...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
                     </div>
 
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Nombre de usuario
-                        </label>
+                    <div className="col-12 col-md">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre de usuario</label>
                         <input
-                            type="text"
-                            className="form-control"
-                            onChange={(e) =>setFormValues({ ...formValues, username: e.target.value })}
-                            style={{...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB"}}
+                        type="text"
+                        className="form-control"
+                        onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
+                        style={{ ...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
                     </div>
-                </div>
+                    </div>
 
-                <div className="row mb-3 text-start">
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Correo electrónico
-                        </label>
+                    {/* Row 2: Email, Telefono */}
+                    <div className="row mb-3">
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
                         <input
-                            type="text"
-                            className="form-control"
-                            onChange={(e) =>setFormValues({ ...formValues, email: e.target.value })}
-                            style={{...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB"}}
+                        type="text"
+                        className="form-control"
+                        onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
+                        style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
                     </div>
 
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Número de teléfono
-                        </label>
+                    <div className="col-12 col-md">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Número de teléfono</label>
                         <input
-                            type="text"
-                            className="form-control"
-                            onChange={(e) =>setFormValues({ ...formValues, telefono: e.target.value })}
-                            style={{...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB"}}
+                        type="text"
+                        className="form-control"
+                        onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
+                        style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
                     </div>
-                </div>
+                    </div>
 
-                <div className="row mb-3 text-start">
-
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Tipo de usuario
-                        </label>
+                    {/* Row 3: Tipo de usuario, Imagen */}
+                    <div className="row mb-3">
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
                         <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario"/>
                     </div>
 
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Imagen de perfil
-                        </label>
-                        <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            backgroundColor: "#F3F4F6",
-                            borderRadius: "4px",
-                            border: "1px solid #D1D5DB",
-                            paddingLeft: "10px"
-                        }}
-                        >
-                        <span style={{ flex: 1 ,maxWidth: "150px",overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
+                    <div className="col-12 col-md">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Imagen de perfil</label>
+                        <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
                             {selectedFile ? selectedFile.name : "No file selected"}
                         </span>
 
@@ -247,68 +215,37 @@ function FormUser() {
 
                         <label
                             htmlFor="file-upload"
-                            style={{
-                                padding: "8px 16px",
-                                backgroundColor: "#2F8F5B",
-                                color: "white",
-                                fontWeight: 500,
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                textAlign: "center",
-                                display: "inline-block",
-                                marginLeft: "auto" // pushes button to the right
-                            }}
+                            className="btn btn-success ms-auto"
+                            style={{ cursor: "pointer" }}
                         >
                             Seleccionar archivo
                         </label>
                         </div>
                     </div>
-                </div>
-
-                <div className="row mb-3 text-start">
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Contraseña
-                        </label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        style={backgroundBorderInputs}
-                        />
                     </div>
 
-                    <div className="col">
-                        <label className="form-label" style={{ color: "#1E1E1E" }}>
-                        Confirmación de contraseña
-                        </label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        style={backgroundBorderInputs}
-                        />
+                    {/* Row 4: Contraseña */}
+                    <div className="row mb-3">
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
+                        <input type="password" className="form-control" style={backgroundBorderInputs}/>
                     </div>
-                </div>
-                
-                
-                {error && <p className="text-danger">{error}</p>}
 
-                <button
-                type="submit"
-                className="btn w-100"
-                // Añadido disabled loading
-                disabled={loading}
-                style={{
-                    backgroundColor: "#2F8F5B",
-                    color: "white",
-                    fontWeight: "500",
-                }}
-                >
-                {/* Añadido */}
-                {loading ? "Cargando..." : "Registrar usuario"}
-                </button>
-            </form>
+                    <div className="col-12 col-md">
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
+                        <input type="password" className="form-control" style={backgroundBorderInputs}/>
+                    </div>
+                    </div>
+
+                    {/* Error message */}
+                    {error && <p className="text-danger">{error}</p>}
+
+                    <button type="submit" className="btn btn-success w-100">
+                    {loading ? "Cargando..." : "Registrar usuario"}
+                    </button>
+                </form>
+                </div>
             </div>
-        </div>
         </div>
     )
 }
