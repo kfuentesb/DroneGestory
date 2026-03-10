@@ -22,6 +22,9 @@ public class User {
 //    @JoinColumn(name = "operator_id", nullable = false)
 //    private Operator operator;
 
+    @Column(name = "type", nullable = false, length = 50)
+    private String type;
+
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 

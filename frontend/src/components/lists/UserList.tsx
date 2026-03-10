@@ -1,42 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type User = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  password: string;
-  email: string;
-  phone: number;
-  type: string;
-  image: string;
-};
+  type User = {
+    id: number;
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    phoneNumber: number;
+    type: string;
+  };
 
-export default function UserList() {
-  const [users] = useState<User[]>([
-    {
-      id: 1,
-      firstName: "Ana",
-      lastName: "Torres",
-      password: "1234",
-      username: "atorres",
-      email: "ana@demo.com",
-      phone: 123456789,
-      type: "admin",
-      image: "enlace",
-    },
-    {
-      id: 2,
-      firstName: "Luis",
-      lastName: "Martín",
-      password: "12345",
-      username: "lmartin",
-      email: "luis@demo.com",
-      phone: 987654321,
-      type: "empleado",
-      image: "enlace",
-    },
-  ]);
+  export default function UserList() {
+    const [users, setUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+      fetch("http://localhost:8080/api/users")
+        .then((res) => res.json())
+        .then((data) => setUsers(data))
+        .catch((err) => console.error(err));
+    }, []);
 
   return (
     <div className="container py-4">
@@ -82,7 +64,6 @@ export default function UserList() {
                   <th>Email</th>
                   <th>Teléfono</th>
                   <th>Tipo</th>
-                  <th>Imagen</th>
                 </tr>
               </thead>
               <tbody>
@@ -93,7 +74,11 @@ export default function UserList() {
                     </td>
                     <td>{p.username}</td>
                     <td>{p.email}</td>
-                    <td>{p.phone}</td>
+                    <td>
+                      {p.phoneNumber
+                        .toString()
+                        .replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
+                    </td>
                     <td>
                       <span
                         className="badge"
@@ -105,7 +90,6 @@ export default function UserList() {
                         {p.type}
                       </span>
                     </td>
-                    <td>{p.image}</td>
                   </tr>
                 ))}
               </tbody>
