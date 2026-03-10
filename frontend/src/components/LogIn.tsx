@@ -22,6 +22,7 @@ function LogIn() {
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
@@ -31,7 +32,7 @@ function LogIn() {
       }
 
       const data = await res.json();
-      console.log("Login OK:", data);
+      console.log("Login OK:", data); // Aqui vemos el contenido enviado
 
       if (data.ok) {
         login(data.username);
