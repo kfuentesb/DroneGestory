@@ -7,6 +7,7 @@ import Home from "../components/commons/Home";
 import FormUser from "../components/forms/FormUser";
 import Dashboard from "../components/Dashboard";
 import Forbidden from "../components/commons/Forbidden";
+import NotFound from "../components/commons/NotFound";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -21,6 +22,7 @@ export default class RouterPrincipal extends React.Component {
           <Route path="/auth/pilots" element={<PilotsList />}></Route>
           <Route path="/auth/register-user" element={<FormUser />}></Route>
           <Route path="/403" element={<Forbidden />} />
+          <Route path="*" element={<NotFound />}></Route>
         </Routes>
       </div>
     );

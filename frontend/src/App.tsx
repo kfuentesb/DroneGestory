@@ -8,25 +8,12 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-<<<<<<< HEAD
       <main>
         <Navbar />
           <RouterPrincipal />
       
       </main>
       <Footer />
-=======
-        <main>
-
-          <Navbar />
-          <RouterPrincipal />
-          {/* <button type="button" className="btn btn-warning">
-          Warning
-        </button> */}
-
-        </main>
-        <Footer />
->>>>>>> fc3d1b451d83627e82cf121bfcc5b8f22daad4bc
       </AuthProvider>
     </div>
   )
