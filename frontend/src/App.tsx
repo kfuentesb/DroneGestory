@@ -7,16 +7,18 @@ import Navbar from './components/Navbar';
 function App() {
   return (
     <div className="App">
+      <AuthProvider>
       <main>
-        <AuthProvider>
+        
         <Navbar />
           <RouterPrincipal />
           {/* <button type="button" className="btn btn-warning">
           Warning
         </button> */}
-        <Footer />
-      </AuthProvider>
+      
       </main>
+      <Footer />
+      </AuthProvider>
     </div>
   )
 }
