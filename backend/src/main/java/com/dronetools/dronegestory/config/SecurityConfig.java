@@ -20,9 +20,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/**").permitAll()
-                .anyRequest().permitAll()
+                .requestMatchers("/api/home").permitAll()
+                .requestMatchers("/api/auth/login").permitAll()
+                    .requestMatchers("/api/auth/**").authenticated()
+                    .anyRequest().permitAll()
             )
             .formLogin(form -> form.disable());
 
