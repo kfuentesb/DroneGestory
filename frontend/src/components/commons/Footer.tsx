@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from "react-router-dom";
 
 export default function Footer() {
-    console.log("Footer renderizado");
     return (
         <footer className="text-light pt-4">
             <div className="container">
