@@ -18,7 +18,7 @@ function Navbar() {
         style={{ backgroundColor: "#F3F4F6" }}
       >
         <div className="container-fluid">
-          <NavLink className="navbar-brand fw-bold" to="/api/home" style={{ color: "#1E1E1E" }}>
+          <NavLink className="navbar-brand fw-bold" to="/home" style={{ color: "#1E1E1E" }}>
             Drone Gestor
           </NavLink>
 
