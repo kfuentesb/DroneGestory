@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pilots")
+@RequestMapping("/api/auth/pilots")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // Permitir solicitudes desde React
 public class PilotController {

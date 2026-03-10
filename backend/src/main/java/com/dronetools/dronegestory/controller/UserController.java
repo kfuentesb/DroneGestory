@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth/users")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // Permitir solicitudes desde React
 public class UserController {
