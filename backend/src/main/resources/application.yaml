@@ -8,6 +8,8 @@ spring:
       # importante, cuando se desarrolla el backend, dejarlo en false, asi se puede
       # usar el postgre en local, y dejarlo en true para cuando se despliega y
       # se quiere usar el postgre de docker.
+  banner:
+    location: banner.txt
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aeronaves_db}
