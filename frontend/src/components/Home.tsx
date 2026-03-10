@@ -1,7 +1,18 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import Dashboard from "./Dashboard";
+import { useAuth } from "./AuthProvider";
 
 const Home: React.FC = () => {
+  const { username } = useAuth();
+
+  if (username) {
+    // Usuario conectado, mostrar dashboard
+    return <main>
+      <Dashboard />
+    </main>;
+  }
+  
   return (
     <main style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
       {/* HERO */}

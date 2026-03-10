@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 
 function Navbar() {
-  const username = localStorage.getItem("username");
   const navigate = useNavigate();
+  const { logout, username } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("username");
+    logout();
     navigate("/auth/login");
   };
   
@@ -35,11 +36,6 @@ function Navbar() {
 
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
             <ul className="navbar-nav me-auto">
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/auth/dashboard">
-                  Dashboard
-                </NavLink>
-              </li>
               <li className="nav-item">
                 <NavLink className="nav-link" to="/auth/users">
                   Usuarios

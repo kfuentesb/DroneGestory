@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 
 function LogIn() {
   // Tenemos que crear las llamadas al endpoint desde aquí
@@ -9,6 +10,8 @@ function LogIn() {
   const [loading, setLoading] = useState(false);
   // Hook de navegación
   const navigate = useNavigate();
+  // Uso login
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +34,8 @@ function LogIn() {
       console.log("Login OK:", data);
 
       if (data.ok) {
-        localStorage.setItem("username", data.username);
-        navigate("/auth/dashboard")
+        login(data.username);
+        navigate("/home")
       }
 
       // aquí puedes guardar token o userId
