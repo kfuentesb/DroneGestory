@@ -32,7 +32,7 @@ function LogIn() {
 
       if (data.ok) {
         localStorage.setItem("username", data.username);
-        navigate("/auth/dashboard")
+        navigate("/home")
       }
 
       // aquí puedes guardar token o userId

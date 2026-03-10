@@ -1,7 +1,19 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+// import { useAuth } from "./AuthContext";
+import Dashboard from "./Dashboard";
 
 const Home: React.FC = () => {
+  const username = localStorage.getItem("username");
+  //const { username } = useAuth();
+
+  if (username) {
+    // Usuario conectado, mostrar dashboard
+    return <main>
+      <Dashboard />
+    </main>;
+  }
+  
   return (
     <main style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
       {/* HERO */}
