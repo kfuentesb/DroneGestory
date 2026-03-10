@@ -44,6 +44,7 @@ npm i react
 npm i react-router
 npm i react-router-dom
 npm i react-select
+npm i react-error-boundary
 
 
 //TODO LIST
