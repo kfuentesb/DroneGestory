@@ -13,7 +13,9 @@ function Users() {
     const [firstUser, setFirstUser] = useState<User | null>(null);
 
     useEffect(() => {
-    fetch("http://localhost:8080/api/users")
+    fetch("http://localhost:8080/api/users", 
+        {credentials: "include"}
+    )
         .then(response => response.json())
         .then((data: User[]) => {
         if (data.length > 0) {

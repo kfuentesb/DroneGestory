@@ -8,16 +8,16 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-      <main>
-        
-        <Navbar />
+        <main>
+
+          <Navbar />
           <RouterPrincipal />
           {/* <button type="button" className="btn btn-warning">
           Warning
         </button> */}
-      
-      </main>
-      <Footer />
+
+        </main>
+        <Footer />
       </AuthProvider>
     </div>
   )
