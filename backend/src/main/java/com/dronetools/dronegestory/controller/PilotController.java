@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth/pilots")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Permitir solicitudes desde React
+@CrossOrigin(origins = "http://localhost:5173")
 public class PilotController {
 
     private final PilotService pilotService;

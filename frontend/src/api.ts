@@ -1,8 +1,19 @@
 export async function apiFetch(url: string, options?: RequestInit) {
-    const res = await fetch(url, options)
+    const token = localStorage.getItem("token");
+    const headers = new Headers(options?.headers || {});
+    if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    const res = await fetch(url, { ...options, headers })
 
     if (res.status === 403) {
         window.location.href = "/403";
+        return;
+    }
+
+    if (res.status === 401) {
+        window.location.href = "/auth/login";
         return;
     }
 

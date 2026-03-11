@@ -35,15 +35,15 @@ export default function UserList() {
   }, []);
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-    admin: {
+    ADMIN: {
       backgroundColor: "#FEE2E2",
       color: "#991B1B",
     },
-    gestor: {
+    MANAGER: {
       backgroundColor: "#E0F2FE",
       color: "#075985",
     },
-    pilot: {
+    PILOT: {
       backgroundColor: "#E6F4EC",
       color: "#1F6B43",
     },

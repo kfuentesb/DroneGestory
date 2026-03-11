@@ -1,13 +1,12 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.UserResponse;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -22,22 +21,20 @@ import org.springframework.http.HttpHeaders;
 @RestController
 @RequestMapping("/api/auth/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAll() {
-        /* Authentication auth = SecurityContextHolder.getContext().getAuthentication(); TESTING
-         System.out.println("=== getAll() llamado por: " + auth); TESTING */
-        return userService.findAll();
+    public List<UserResponse> getAll() {
+        return userService.findAll().stream().map(this::toResponse).toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable Integer id) {
+    public ResponseEntity<UserResponse> getById(@PathVariable Integer id) {
         return userService.findById(id)
-                .map(ResponseEntity::ok)
+                .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -61,7 +58,13 @@ public class UserController {
 
     @GetMapping("/images/{filename:.+}")// el ":.+" hace que ignore si tiene puntos en la base de datos, y lo tiene
     public ResponseEntity<Resource> getUserImage(@PathVariable String filename) throws IOException {
-        Path file = Paths.get("uploads").resolve(filename); // folder where user images are stored
+        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path file = uploadsDir.resolve(filename).normalize();
+
+        if (!file.startsWith(uploadsDir)) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Resource resource = new UrlResource(file.toUri());
 
         if (!resource.exists() || !resource.isReadable()) {
@@ -75,5 +78,18 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .body(resource);
+    }
+
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getType(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getImagePath()
+        );
     }
 }
