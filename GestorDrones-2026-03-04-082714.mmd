@@ -30,12 +30,16 @@ classDiagram
     class AeroNave {
 	    -int id_aeronave
       -int id_operadora
+		+String fabricante
       -int id_seguro
-	    +String nombre
+	    +String modelo
       +int num_serie
-      +String estado
-      +String fabricante
-      +String modelo
+      +String class
+		+double mtom
+		+double dimension_caracteristica
+		+double velocidad
+		+String configuracion
+		+double energia_impacto
       +String path_imagen
       +Date fecha_compra
     }
