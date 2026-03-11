@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "../AuthProvider";
 
 function Navbar() {
   const navigate = useNavigate();
