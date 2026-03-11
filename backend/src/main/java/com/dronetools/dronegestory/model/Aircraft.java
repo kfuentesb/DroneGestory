@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -67,16 +68,16 @@ public class Aircraft {
     private AircraftClass aircraftClass;
 
     @Column(name = "mtom", precision = 9, scale = 3)
-    private Double mtom;
+    private BigDecimal mtom;
 
     @Column(name = "wingspan", precision = 9, scale = 3)
-    private Double wingspan;
+    private BigDecimal wingspan;
 
     @Column(name = "max_speed", precision = 9, scale = 3)
-    private Double maxSpeed;
+    private BigDecimal maxSpeed;
 
     @Column(name = "impact_energy", precision = 9, scale = 3)
-    private Double impactEnergy;
+    private BigDecimal impactEnergy;
 
     @Min(0)
     @Max(10000)
@@ -90,7 +91,7 @@ public class Aircraft {
     private Boolean tether;
 
     @Column(name="cable_lenght", precision = 9, scale = 3)
-    private Double cableLenght;
+    private BigDecimal cableLenght;
 
     @Column(name="power_source", nullable = false)
     @Enumerated(EnumType.STRING)
