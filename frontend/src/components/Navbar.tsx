@@ -35,18 +35,22 @@ function Navbar() {
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul className="navbar-nav me-auto">
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/auth/users">
-                  Usuarios
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/auth/aircrafts">
-                  Drones
-                </NavLink>
-              </li>
-            </ul>
+            {username ? (
+              <ul className="navbar-nav me-auto">
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/auth/users">
+                    Usuarios
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/auth/aircrafts">
+                    Drones
+                  </NavLink>
+                </li>
+              </ul>
+
+              ):(<ul className="navbar-nav me-auto"></ul>)
+            }
             {!username ? (
             <NavLink className="nav-link" to="/auth/login">
               <button

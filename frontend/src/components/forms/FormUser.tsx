@@ -1,11 +1,14 @@
 import React, { useState,  } from 'react';
 import Select from 'react-select';
 import { apiFetch } from '../../api';
+import { useNavigate } from "react-router-dom";
 
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    const navigate = useNavigate();
 
     const [isHovered, setIsHovered] = useState(false);
 
@@ -109,15 +112,17 @@ function FormUser() {
                 body: JSON.stringify(formValues),
             });
 
+            if (!res) return;
+
             if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.message || "Credenciales incorrectas");
+                const err = await res.json();
+                throw new Error(err.message || "Error creando usuario");
             }
 
             const data = await res.json();
-            console.log("Login OK:", data);
+            console.log("User created:", data);
 
-            // aquí puedes guardar token o userId
+            // aquí se puede guardar token o userId
             // localStorage.setItem("userId", data.userId);
         } catch (err: any) {
             setError(err.message);
@@ -181,7 +186,12 @@ function FormUser() {
                     </div>
 
                     <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Número de teléfono</label>
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                            Número de teléfono{" "}
+                            <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                (Opcional)
+                            </span>
+                        </label>
                         <input
                         type="text"
                         className="form-control"
@@ -199,7 +209,12 @@ function FormUser() {
                     </div>
 
                     <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Imagen de perfil</label>
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                            Imagen de perfil{" "}
+                            <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                (Opcional)
+                            </span>
+                        </label>
                         <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
                         <span className="text-truncate" style={{ maxWidth: "150px" }}>
                             {selectedFile ? selectedFile.name : "No file selected"}
@@ -240,9 +255,19 @@ function FormUser() {
                     {/* Error message */}
                     {error && <p className="text-danger">{error}</p>}
 
-                    <button type="submit" className="btn btn-success w-100">
-                    {loading ? "Cargando..." : "Registrar usuario"}
-                    </button>
+                    <div className="d-flex gap-2 mt-3">
+                        <button type="submit" className="btn btn-success flex-fill">
+                            {loading ? "Cargando..." : "Registrar usuario"}
+                        </button>
+
+                        <button
+                            type="button"
+                            className="btn btn-secondary flex-fill"
+                            onClick={() => navigate("/auth/users")}
+                        >
+                            Volver
+                        </button>
+                    </div>
                 </form>
                 </div>
             </div>

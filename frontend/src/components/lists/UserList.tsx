@@ -60,7 +60,7 @@ import { useNavigate } from "react-router-dom";
       >
         <div className="card-body">
           <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-            Lista de Usuarios
+            Usuarios registrados
           </h2>
 
           {/* Barra búsqueda + Añadir usuario */}
@@ -77,12 +77,17 @@ import { useNavigate } from "react-router-dom";
               }}
             />
 
-            {/* Botón añadir dron */}
             <button
               className="btn"
-              style={{ backgroundColor: "#2F8F5B", color: "#FFFFFF" }}
+              style={{
+                backgroundColor: "#2F8F5B",
+                color: "#FFFFFF",
+                fontWeight: "bold",
+                minWidth: "135px",
+              }}
+              onClick={() => navigate("/auth/register-user")}
             >
-              Buscar
+              + Añadir usuario
             </button>
           </div>
 
