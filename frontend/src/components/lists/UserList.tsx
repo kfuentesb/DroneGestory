@@ -16,12 +16,15 @@ import { useNavigate } from "react-router-dom";
     const [users, setUsers] = useState<User[]>([]);
     const navigate = useNavigate();
 
+    // console.log("UserList MOUNTED"); TESTING
+
     useEffect(() => {
       const loadUsers = async () => {
         try {
           const res = await apiFetch("http://localhost:8080/api/auth/users", {
             credentials: "include"
           });
+          //console.log("Respuesta a /api/auth/users:", res); TESTING
 
           if (!res) return; // happens if redirected (403/404)
 
