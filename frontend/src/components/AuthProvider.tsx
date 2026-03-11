@@ -5,14 +5,14 @@ import React, { createContext, useContext, useState } from "react";
 interface AuthContextType {
   username: string | null;
   login: (name: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>; // async
 }
 
 // Crea el contexto
 const AuthContext = createContext<AuthContextType>({
   username: null,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
 });
 
 // Provider para envolver la App
@@ -26,10 +26,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUsername(name);
   };
 
-  const logout = () => {
+  const logout = async () => {
+  try {
+    await fetch("http://localhost:8080/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    // Manejar error
+  } finally {
     localStorage.removeItem("username");
     setUsername(null);
-  };
+  }
+};
   
 
   return (
