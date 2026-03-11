@@ -30,11 +30,11 @@ public class Aircraft {
 //    @JoinColumn(name = "insurance_company_id", nullable = false)
 //    private InsuranceCompany insuranceCompany;
 
-    @Column(name = "applicant_type")
+    @Column(name = "applicant_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplicantType applicantType;
 
-    @Column(name = "applicant_name", length = 100)
+    @Column(name = "applicant_name", length = 100, nullable = false)
     private String applicantName;
 
     // Si ApplicantType = Manufacturer || To_the_manufacturer
@@ -49,20 +49,20 @@ public class Aircraft {
     @Column(name = "operator_number")
     private Integer operatorNumber;
 
-    @Column(name= "privately_built")
+    @Column(name= "privately_built", nullable = false)
     private Boolean privatelyBuilt;
 
-    @Column(name = "model", length = 100)
+    @Column(name = "model", length = 100, nullable = false)
     private String model;
 
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private AircraftType type;
 
     @Column(name = "serial_number")
     private Integer serialNumber;
 
-    @Column(name = "class")
+    @Column(name = "class", nullable = false)
     @Enumerated(EnumType.STRING)
     private AircraftClass aircraftClass;
 
@@ -83,16 +83,16 @@ public class Aircraft {
     @Column(name = "max_autonomy")
     private Integer maxAutonomy;
 
-    @Column(name="camera")
+    @Column(name="camera", nullable = false)
     private Boolean camera;
 
-    @Column(name="tether")
+    @Column(name="tether", nullable = false)
     private Boolean tether;
 
     @Column(name="cable_lenght", precision = 9, scale = 3)
     private Double cableLenght;
 
-    @Column(name="power_source")
+    @Column(name="power_source", nullable = false)
     @Enumerated(EnumType.STRING)
     private PowerSource powerSource;
 
@@ -111,7 +111,6 @@ public class Aircraft {
 
     @Column(name = "purchase_date")
     private LocalDate purchaseDate;
-
 
 //    @OneToMany(mappedBy = "aircraft")
 //    private List<Operation> operations;
