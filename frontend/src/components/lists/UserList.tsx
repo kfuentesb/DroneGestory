@@ -43,7 +43,6 @@ import { useNavigate } from "react-router-dom";
       color: "#991B1B",
     },
     MANAGER: {
-<<<<<<< HEAD
       backgroundColor: "#E0F2FE",
       color: "#075985",
     },
@@ -51,15 +50,6 @@ import { useNavigate } from "react-router-dom";
       backgroundColor: "#E6F4EC",
       color: "#1F6B43",
     },
-=======
-      backgroundColor: "#FEF3C7",
-      color: "#a36912",
-    },
-    PILOT: {
-      backgroundColor: "#E0F2FE",
-      color: "#075985",
-    },
->>>>>>> kevin
   };
 
   return (
@@ -73,16 +63,6 @@ import { useNavigate } from "react-router-dom";
             Lista de Usuarios
           </h2>
 
-<<<<<<< HEAD
-          {/* Barra de búsqueda */}
-          <div className="d-flex gap-2 mb-4">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar usuario..."
-              style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
-            />
-=======
           {/* Barra búsqueda + Añadir usuario */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             {/* Input de búsqueda */}
@@ -98,7 +78,6 @@ import { useNavigate } from "react-router-dom";
             />
 
             {/* Botón añadir dron */}
->>>>>>> kevin
             <button
               className="btn"
               style={{ backgroundColor: "#2F8F5B", color: "#FFFFFF" }}
