@@ -89,77 +89,86 @@ export default function UserDetail() {
         <div className="container-fluid py-4">
             <div className="card p-4 shadow-sm">
                 <div className="row">
-                {/* Left column: user info */}
-                <div className="col-md-8 col-12">
-                    <div className="d-flex align-items-center mb-3 flex-wrap">
-                        <h2 className="me-3 mb-0">
-                            {user.firstName} {user.lastName}
-                        </h2>
-                        <span
-                            className="px-2 py-1 fw-bold"
-                            style={{
-                            borderRadius: "4px",
-                            fontSize: "0.9rem",
-                            ...typeColors[user.type] || { backgroundColor: "#E5E7EB", color: "#374151" },
-                            }}
-                        >
-                            {user.type}
-                        </span>
-                    </div>
+                
+                    <div className="col-md-8 col-12">
 
-                    <div className="row">
-                        {[
-                            { label: "Id", value: user.id },
-                            { label: "Usuario", value: user.username },
-                            { label: "Email", value: user.email },
-                            { label: "Teléfono", value: user.phoneNumber },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                            { label: "Dato extra", value: "-" },
-                        ].map((field, idx) => (
-                            <div key={idx} className="col-md-6 col-12 mb-3 d-flex justify-content-end">
-                            <div
-                                className="rounded d-flex flex-column"
-                                style={{
-                                    border: "1px solid #6B7280",
-                                    padding: "12px 16px",
-                                    minHeight: "70px",
-                                    width: "100%",
-                                    maxWidth: "350px",
-                                    textAlign: "start",
+                        <div className="d-flex align-items-center mb-4 flex-wrap">
+                            {/* Image */}
+                            <img
+                                src={imageUrl || "/default.png"}
+                                alt={user.username}
+                                onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/default.png";
                                 }}
-                            >
-                                <small className="text-muted">{field.label}</small>
-                                <span className="fw-bold">{field.value}</span>
-                            </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                                    className="rounded me-3 d-none d-sm-block"
+                                    style={{
+                                    width: "90px",
+                                    height: "90px",
+                                    objectFit: "cover",
+                                }}
+                            />
 
-                <div className="col-md-4 col-12 d-flex justify-content-md-end justify-content-start mb-3 mb-md-0">
-                    <img
-                    src={imageUrl || "/default.png"}
-                    alt={user.username}
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/default.png";
-                    }}
-                    className="img-fluid rounded"
-                    style={{
-                        width: "150px",
-                        height: "150px",
-                        objectFit: "cover",
-                        maxWidth: "100%",
-                        marginTop: "3em",
-                        marginRight: "2em"
-                    }}
-                    />
-                </div>
+                            {/* Name + role */}
+                            <div className="d-flex flex-column">
+                                <div className="d-flex align-items-center flex-wrap">
+                                <h2 className="me-3 mb-0">
+                                    {user.firstName} {user.lastName}
+                                </h2>
+
+                                <span
+                                    className="px-2 py-1 fw-bold"
+                                    style={{
+                                    borderRadius: "4px",
+                                    fontSize: "0.9rem",
+                                    ...(typeColors[user.type] || {
+                                        backgroundColor: "#E5E7EB",
+                                        color: "#374151",
+                                    }),
+                                    }}
+                                >
+                                    {user.type}
+                                </span>
+                                </div>
+
+                                <small className="text-muted text-start">@{user.username}</small>
+                            </div>
+                        </div>
+
+                        <div className="row">
+                            {[
+                                { label: "Id", value: user.id },
+                                { label: "Usuario", value: user.username },
+                                { label: "Email", value: user.email },
+                                { label: "Teléfono", value: user.phoneNumber },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                                { label: "Dato extra", value: "-" },
+                            ].map((field, idx) => (
+                                <div key={idx} className="col-md-6 col-12 mb-3 d-flex justify-content-start">
+                                <div
+                                    className="rounded d-flex flex-column"
+                                    style={{
+                                        border: "1px solid #6B7280",
+                                        padding: "12px 16px",
+                                        minHeight: "70px",
+                                        width: "100%",
+                                        maxWidth: "350px",
+                                        textAlign: "start",
+                                    }}
+                                >
+                                    <small className="text-muted">{field.label}</small>
+                                    <span className="fw-bold">{field.value}</span>
+                                </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
 
                 {/* Buttons */}
