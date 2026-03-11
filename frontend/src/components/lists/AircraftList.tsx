@@ -92,7 +92,7 @@ export default function AircraftList() {
                 fontWeight: "bold",
                 minWidth: "135px",
               }}
-              onClick={() => navigate("/auth/register-user")}
+              onClick={() => navigate("/auth/register-aircraft")}
             >
               + Añadir aeronave
             </button>
