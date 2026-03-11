@@ -2,50 +2,53 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 
-type User = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  phoneNumber: number;
-  type: string;
-};
+  type User = {
+    id: number;
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    phoneNumber: number;
+    type: string;
+  };
 
-export default function UserList() {
-  const [users, setUsers] = useState<User[]>([]);
-  const navigate = useNavigate();
+  export default function UserList() {
+    const [users, setUsers] = useState<User[]>([]);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const res = await apiFetch("http://localhost:8080/api/auth/users", {
-          credentials: "include",
-        });
+    // console.log("UserList MOUNTED"); TESTING
 
-        if (!res) return;
+    useEffect(() => {
+      const loadUsers = async () => {
+        try {
+          const res = await apiFetch("http://localhost:8080/api/auth/users", {
+            credentials: "include"
+          });
+          //console.log("Respuesta a /api/auth/users:", res); TESTING
 
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    loadUsers();
-  }, []);
+          if (!res) return; // happens if redirected (403/404)
+
+          const data = await res.json();
+          setUsers(data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      loadUsers();
+    }, []);
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-    admin: {
+    ADMIN: {
       backgroundColor: "#FEE2E2",
       color: "#991B1B",
     },
-    gestor: {
+    MANAGER: {
+      backgroundColor: "#FEF3C7",
+      color: "#a36912",
+    },
+    PILOT: {
       backgroundColor: "#E0F2FE",
       color: "#075985",
-    },
-    pilot: {
-      backgroundColor: "#E6F4EC",
-      color: "#1F6B43",
     },
   };
 
@@ -62,15 +65,19 @@ export default function UserList() {
 
           {/* Barra búsqueda + Añadir usuario */}
           <div className="d-flex justify-content-between align-items-center mb-4">
-            {/* Solo text area (input) */}
+            {/* Input de búsqueda */}
             <input
               type="text"
               className="form-control"
-              placeholder="Buscar usuario..."
-              style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB", maxWidth: 400 }}
+              placeholder="Buscar por usuario..."
+              style={{
+                backgroundColor: "#F3F4F6",
+                borderColor: "#D1D5DB",
+                maxWidth: 400,
+              }}
             />
 
-            {/* Botón añadir usuario */}
+            {/* Botón añadir dron */}
             <button
               className="btn"
               style={{
@@ -90,7 +97,8 @@ export default function UserList() {
               className="table table-hover align-middle"
               style={{ borderColor: "#E5E7EB" }}
             >
-              <thead className="table-dark">
+              <thead className="table-dark"
+              >
                 <tr>
                   <th>Nombre</th>
                   <th>Usuario</th>

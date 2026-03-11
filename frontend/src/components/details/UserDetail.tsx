@@ -42,19 +42,19 @@ export default function UserDetail() {
     if (!user) return <p>Cargando...</p>;
 
     const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-        admin: {
-            backgroundColor: "#FEE2E2",
-            color: "#991B1B",
-        },
-        gestor: {
-            backgroundColor: "#E0F2FE",
-            color: "#075985",
-        },
-        pilot: {
-            backgroundColor: "#E6F4EC",
-            color: "#1F6B43",
-        },
-    };
+    ADMIN: {
+      backgroundColor: "#FEE2E2",
+      color: "#991B1B",
+    },
+    MANAGER: {
+      backgroundColor: "#FEF3C7",
+      color: "#a36912",
+    },
+    PILOT: {
+      backgroundColor: "#E0F2FE",
+      color: "#075985",
+    },
+  };
 
     return (
         <div className="container-fluid py-4">
@@ -67,7 +67,7 @@ export default function UserDetail() {
                             {user.firstName} {user.lastName}
                         </h2>
                         <span
-                            className="px-2 py-1"
+                            className="px-2 py-1 fw-bold"
                             style={{
                             borderRadius: "4px",
                             fontSize: "0.9rem",
