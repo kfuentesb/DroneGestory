@@ -64,7 +64,6 @@ export default function UserDetail() {
     if (!user) return <p>Cargando...</p>;
 
     const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-<<<<<<< HEAD
         ADMIN: {
             backgroundColor: "#FEE2E2",
             color: "#991B1B",
@@ -78,21 +77,6 @@ export default function UserDetail() {
             color: "#1F6B43",
         },
     };
-=======
-    ADMIN: {
-      backgroundColor: "#FEE2E2",
-      color: "#991B1B",
-    },
-    MANAGER: {
-      backgroundColor: "#FEF3C7",
-      color: "#a36912",
-    },
-    PILOT: {
-      backgroundColor: "#E0F2FE",
-      color: "#075985",
-    },
-  };
->>>>>>> kevin
 
     return (
         <div className="container-fluid py-4">
