@@ -11,7 +11,7 @@ function LogIn() {
   // Hook de navegación
   const navigate = useNavigate();
   // Uso login
-  const { login } = useAuth();
+  const { login, setToken } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +22,6 @@ function LogIn() {
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
@@ -36,6 +35,7 @@ function LogIn() {
 
       if (data.ok) {
         login(data.username);
+        setToken(data.token);
         navigate("/home")
       }
 

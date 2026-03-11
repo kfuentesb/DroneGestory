@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../api";
 
 interface User {
     id: number;
@@ -13,10 +14,8 @@ function Users() {
     const [firstUser, setFirstUser] = useState<User | null>(null);
 
     useEffect(() => {
-    fetch("http://localhost:8080/api/auth/users", 
-        {credentials: "include"}
-    )
-        .then(response => response.json())
+    apiFetch("http://localhost:8080/api/auth/users")
+        .then(response => response?.json())
         .then((data: User[]) => {
         if (data.length > 0) {
             setFirstUser(data[0]);

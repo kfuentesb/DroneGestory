@@ -1,5 +1,6 @@
 import React, { useState,  } from 'react';
 import Select from 'react-select';
+import { apiFetch } from '../../api';
 
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
@@ -15,9 +16,9 @@ function FormUser() {
     const allowedTypes = ["image/jpeg", "image/png"];
 
     const type_user: { value: string; label: string }[] = [
-        { value: "pilot", label: "Piloto" },
-        { value: "manager", label: "Gestor" },
-        { value: "admin", label: "Administrador" }
+        { value: "PILOT", label: "Piloto" },
+        { value: "MANAGER", label: "Gestor" },
+        { value: "ADMIN", label: "Administrador" }
     ];
 
     const [formValues, setFormValues] = useState({
@@ -102,10 +103,9 @@ function FormUser() {
                 return;
             }
 
-            const res = await fetch("http://localhost:8080/api/auth/users", {
+            const res = await apiFetch("http://localhost:8080/api/auth/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include", // Validar sesion
                 body: JSON.stringify(formValues),
             });
 

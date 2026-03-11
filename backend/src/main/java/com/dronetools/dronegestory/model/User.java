@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "app_user")
@@ -36,6 +37,7 @@ public class User {
     private String username;
 
     @Column(name = "password_hash", nullable = false, length = 255)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(name = "email", nullable = false, unique = true, length = 120)

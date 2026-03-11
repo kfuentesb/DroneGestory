@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
       const loadUsers = async () => {
         try {
           const res = await apiFetch("http://localhost:8080/api/auth/users", {
-            credentials: "include"
+            headers: { "Content-Type": "application/json" }
           });
           //console.log("Respuesta a /api/auth/users:", res); TESTING
 
@@ -38,15 +38,15 @@ import { useNavigate } from "react-router-dom";
     }, []);
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-    admin: {
+    ADMIN: {
       backgroundColor: "#FEE2E2",
       color: "#991B1B",
     },
-    gestor: {
+    MANAGER: {
       backgroundColor: "#E0F2FE",
       color: "#075985",
     },
-    pilot: {
+    PILOT: {
       backgroundColor: "#E6F4EC",
       color: "#1F6B43",
     },

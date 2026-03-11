@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad request");
     }
 
     @ExceptionHandler(Exception.class)

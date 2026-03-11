@@ -3,20 +3,18 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
+import { useAuth } from "./AuthProvider";
 
 export default function UserDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { token } = useAuth();
     const [user, setUser] = useState<any>(null);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
 
     useEffect(() => {
     const loadUser = async () => {
-        const res = await apiFetch(
-        `http://localhost:8080/api/auth/users/${id}`,
-        {
-            credentials: "include",
-        }
-        );
+        const res = await apiFetch(`http://localhost:8080/api/auth/users/${id}`);
 
         if (!res) return;
 
@@ -27,13 +25,37 @@ export default function UserDetail() {
     loadUser();
     }, [id]);
 
+    useEffect(() => {
+    const loadImage = async () => {
+        if (!user?.imagePath) {
+            setImageUrl(null);
+            return;
+        }
+
+        try {
+            const res = await apiFetch(`http://localhost:8080/api/auth/users/images/${user.imagePath}`);
+            if (!res) return;
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
+        } catch {
+            setImageUrl(null);
+        }
+    };
+
+    loadImage();
+
+    return () => {
+        if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
+    }, [user?.imagePath, token]);
+
     const handleDelete = async () => {
     const confirmDelete = confirm("¿Eliminar usuario?");
     if (!confirmDelete) return;
 
     await apiFetch(`http://localhost:8080/api/auth/users/${id}`, {
         method: "DELETE",
-        credentials: "include",
     });
 
     navigate("/auth/users");
@@ -42,15 +64,15 @@ export default function UserDetail() {
     if (!user) return <p>Cargando...</p>;
 
     const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-        admin: {
+        ADMIN: {
             backgroundColor: "#FEE2E2",
             color: "#991B1B",
         },
-        gestor: {
+        MANAGER: {
             backgroundColor: "#E0F2FE",
             color: "#075985",
         },
-        pilot: {
+        PILOT: {
             backgroundColor: "#E6F4EC",
             color: "#1F6B43",
         },
@@ -115,9 +137,7 @@ export default function UserDetail() {
 
                 <div className="col-md-4 col-12 d-flex justify-content-md-end justify-content-start mb-3 mb-md-0">
                     <img
-                    src={user.imagePath
-                        ? `http://localhost:8080/api/auth/users/images/${user.imagePath}`
-                        : "/default.png"}
+                    src={imageUrl || "/default.png"}
                     alt={user.username}
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = "/default.png";

@@ -1,56 +1,51 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
+import com.dronetools.dronegestory.dto.AuthResponse;
+import com.dronetools.dronegestory.dto.LoginRequest;
+import com.dronetools.dronegestory.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
-// Uso de REST + setup URL + constructor
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // Permitir solicitudes desde React
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    // Dependencias inyectadas
-    private final UserRepository userRepository; // Buscar usuario en BD
-    private final PasswordEncoder passwordEncoder; // Para comparar la pass sin guardar texto plano
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
-    // @RequestBody toma el JSON del body y los guardamos en un map
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest body) {
         try {
-            String username = body.get("username");
-            String password = body.get("password");
+            String username = body.username();
+            String password = body.password();
 
-            // (1) Realiza autenticación Spring
             UsernamePasswordAuthenticationToken authRequest =
                     new UsernamePasswordAuthenticationToken(username, password);
 
             Authentication authentication = authenticationManager.authenticate(authRequest);
+            String token = jwtService.generateToken(
+                    (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal()
+            );
+            List<String> roles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            request.getSession(true); // Asegura la sesión
-
-            return ResponseEntity.ok(Map.of(
-                    "ok", true,
-                    "username", username
-            ));
+            return ResponseEntity.ok(new AuthResponse(true, username, token, roles));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of(
                     "ok", false,
                     "message", "Invalid credentials"
@@ -59,8 +54,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        request.getSession(false).invalidate(); // Elimina la sesión actual
-        return ResponseEntity.ok(Map.of("ok", true, "message", "Sesión cerrada"));
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok(Map.of("ok", true, "message", "Logout client-side"));
     }
 }
