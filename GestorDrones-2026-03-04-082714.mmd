@@ -28,20 +28,31 @@ classDiagram
     }
 
     class AeroNave {
-	    -int id_aeronave
-      -int id_operadora
-		+String fabricante
-      -int id_seguro
-	    +String modelo
-      +int num_serie
-      +String class
-		+double mtom
-		+double dimension_caracteristica
-		+double velocidad
-		+String configuracion
-		+double energia_impacto
-      +String path_imagen
-      +Date fecha_compra
+        -int aircraft_id PK
+        +ApplicantType applicant_type
+        +string applicant_name
+        +string manufacturer_name
+        +string operador_name
+        +int operator_number
+        +boolean privately_built
+        +string model
+        +AircraftType type
+        +int serial_number
+        +AircraftClass class
+        +double mtom
+        +double wingspan
+        +double max_speed
+        +double impact_energy
+        +int max_autonomy
+        +boolean camera
+        +boolean tether
+        +double cable_length
+        +PowerSource power_source
+        +PowerSourceType power_source_type
+        +string accessories
+        +string observations
+        +string image_path
+        +LocalDate purchase_date
     }
 
     class Aseguradora {
