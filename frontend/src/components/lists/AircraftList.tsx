@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
+import SearchBar from "../commons/SearchBar";
+import ButtonProp from "../commons/ButtonProp";
 
 type Aircraft = {
   id: number;
@@ -20,6 +22,7 @@ export default function AircraftList() {
   const [search, setSearch] = useState("");
   const [filteredAircrafts, setFilteredAircrafts] = useState<Aircraft[]>([]);
   const navigate = useNavigate();
+
 
   useEffect(() => {
     // Simulación de datos de ejemplo
@@ -333,32 +336,12 @@ export default function AircraftList() {
           {/* Barra búsqueda + Añadir aeronave */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             {/* Input de búsqueda */}
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar por modelo..."
-              style={{
-                backgroundColor: "#F3F4F6",
-                borderColor: "#D1D5DB",
-                maxWidth: 400,
-              }}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <SearchBar value={search} onChange={setSearch} />
 
-            {/* Botón añadir dron */}
-            <button
-              className="btn"
-              style={{
-                backgroundColor: "#2F8F5B",
-                color: "#FFFFFF",
-                fontWeight: "bold",
-                minWidth: "135px",
-              }}
-              onClick={() => navigate("/auth/register-aircraft")}
-            >
+            {/* Botón añadir aeronave */}
+            <ButtonProp onClick={() => navigate("/auth/register-aircraft")}>
               + Añadir aeronave
-            </button>
+            </ButtonProp>
           </div>
 
           <div className="table-responsive">

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
+import SearchBar from "../commons/SearchBar";
+import ButtonProp from "../commons/ButtonProp";
 
   type User = {
     id: number;
@@ -15,6 +17,7 @@ import { useNavigate } from "react-router-dom";
   export default function UserList() {
     const [users, setUsers] = useState<User[]>([]);
     const navigate = useNavigate();
+    const [search, setSearch] = useState("");
 
     // console.log("UserList MOUNTED"); TESTING
 
@@ -66,24 +69,12 @@ import { useNavigate } from "react-router-dom";
           {/* Barra búsqueda + Añadir usuario */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             {/* Input de búsqueda */}
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar por usuario..."
-              style={{
-                backgroundColor: "#F3F4F6",
-                borderColor: "#D1D5DB",
-                maxWidth: 400,
-              }}
-            />
+            <SearchBar value={search} placeholder="Buscar por usuario..." onChange={setSearch} />
 
-            {/* Botón añadir dron */}
-            <button
-              className="btn"
-              style={{ backgroundColor: "#2F8F5B", color: "#FFFFFF" }}
-            >
-              Buscar
-            </button>
+            {/* Botón añadir aeronave */}
+            <ButtonProp onClick={() => navigate("/auth/register-user")}>
+              + Añadir usuario
+            </ButtonProp>
           </div>
 
           <div className="table-responsive">
