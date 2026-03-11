@@ -47,6 +47,12 @@ npm i react-select
 npm i react-error-boundary
 
 
+> Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
+```
+pip install bcrypt
+```
+
+
 //TODO LIST
 -Conseguir logo
 -Sustituir logo de arriba de react por el logo de la empresa

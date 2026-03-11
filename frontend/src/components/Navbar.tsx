@@ -5,9 +5,9 @@ function Navbar() {
   const navigate = useNavigate();
   const { logout, username } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/api/auth/login");
+  const handleLogout = async () => {
+    await logout();
+    navigate("/auth/login");
   };
   
 

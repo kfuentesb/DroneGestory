@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -20,13 +22,15 @@ import org.springframework.http.HttpHeaders;
 @RestController
 @RequestMapping("/api/auth/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Permitir solicitudes desde React
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping
     public List<User> getAll() {
+        /* Authentication auth = SecurityContextHolder.getContext().getAuthentication(); TESTING
+         System.out.println("=== getAll() llamado por: " + auth); TESTING */
         return userService.findAll();
     }
 

@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Obtener todos los usuarios
@@ -28,6 +31,9 @@ public class UserService {
 
     // Crear un nuevo usuario
     public User create(User user) {
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         return userRepository.save(user);
     }
 
@@ -38,7 +44,9 @@ public class UserService {
                     existingUser.setFirstName(updatedUser.getFirstName());
                     existingUser.setLastName(updatedUser.getLastName());
                     existingUser.setUsername(updatedUser.getUsername());
-                    existingUser.setPassword(updatedUser.getPassword());
+                    if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+                        existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+                    }
                     existingUser.setEmail(updatedUser.getEmail());
                     existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
                     existingUser.setImagePath(updatedUser.getImagePath());
