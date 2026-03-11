@@ -2,40 +2,37 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 
-  type User = {
-    id: number;
-    firstName: string;
-    lastName: string;
-    username: string;
-    email: string;
-    phoneNumber: number;
-    type: string;
-  };
+type User = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phoneNumber: number;
+  type: string;
+};
 
-  export default function UserList() {
-    const [users, setUsers] = useState<User[]>([]);
-    const navigate = useNavigate();
+export default function UserList() {
+  const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
 
-    // console.log("UserList MOUNTED"); TESTING
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const res = await apiFetch("http://localhost:8080/api/auth/users", {
+          credentials: "include",
+        });
 
-    useEffect(() => {
-      const loadUsers = async () => {
-        try {
-          const res = await apiFetch("http://localhost:8080/api/auth/users", {
-            credentials: "include"
-          });
-          //console.log("Respuesta a /api/auth/users:", res); TESTING
+        if (!res) return;
 
-          if (!res) return; // happens if redirected (403/404)
-
-          const data = await res.json();
-          setUsers(data);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      loadUsers();
-    }, []);
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadUsers();
+  }, []);
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {
     admin: {
@@ -63,19 +60,28 @@ import { useNavigate } from "react-router-dom";
             Lista de Usuarios
           </h2>
 
-          {/* Barra de búsqueda */}
-          <div className="d-flex gap-2 mb-4">
+          {/* Barra búsqueda + Añadir usuario */}
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            {/* Solo text area (input) */}
             <input
               type="text"
               className="form-control"
               placeholder="Buscar usuario..."
-              style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
+              style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB", maxWidth: 400 }}
             />
+
+            {/* Botón añadir usuario */}
             <button
               className="btn"
-              style={{ backgroundColor: "#2F8F5B", color: "#FFFFFF" }}
+              style={{
+                backgroundColor: "#2F8F5B",
+                color: "#FFFFFF",
+                fontWeight: "bold",
+                minWidth: "135px",
+              }}
+              onClick={() => navigate("/auth/register-user")}
             >
-              Buscar
+              + Añadir usuario
             </button>
           </div>
 
@@ -84,8 +90,7 @@ import { useNavigate } from "react-router-dom";
               className="table table-hover align-middle"
               style={{ borderColor: "#E5E7EB" }}
             >
-              <thead className="table-dark"
-              >
+              <thead className="table-dark">
                 <tr>
                   <th>Nombre</th>
                   <th>Usuario</th>
