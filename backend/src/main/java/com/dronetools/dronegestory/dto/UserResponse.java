@@ -1,6 +1,6 @@
 package com.dronetools.dronegestory.dto;
 
-import com.dronetools.dronegestory.model.UserType;
+import com.dronetools.dronegestory.model.enums.UserType;
 
 public record UserResponse(
         Integer id,

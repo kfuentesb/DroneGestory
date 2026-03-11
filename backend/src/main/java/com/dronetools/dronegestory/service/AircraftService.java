@@ -35,7 +35,7 @@ public class AircraftService {
     public Aircraft updateAircraft(int id, Aircraft updatedAircraft) {
         return aircraftRepository.findById(id)
                 .map(existingAircraft -> {
-                    existingAircraft.setName(updatedAircraft.getName());
+                    existingAircraft.setModel(updatedAircraft.getModel());
                     existingAircraft.setModel(updatedAircraft.getModel());
 //                    existingAircraft.setCapacity(updatedAircraft.getCapacity());
                     return aircraftRepository.save(existingAircraft);

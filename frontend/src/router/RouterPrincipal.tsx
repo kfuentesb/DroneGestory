@@ -6,6 +6,7 @@ import UserList from "../components/lists/UserList";
 import UserDetail from "../components/details/UserDetail";
 import Home from "../components/commons/Home";
 import FormUser from "../components/forms/FormUser";
+import FormAircraft from "../components/forms/FormAircraft";
 import Dashboard from "../components/Dashboard";
 import Forbidden from "../components/commons/Forbidden";
 import NotFound from "../components/commons/NotFound";
@@ -29,6 +30,7 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Aircrafts */}
         <Route path="/auth/aircrafts" element={<AircraftList />} />
+        <Route path="/auth/register-aircraft" element={<FormAircraft />} />
 
         {/* Error */}
         <Route path="/403" element={<Forbidden />} />
