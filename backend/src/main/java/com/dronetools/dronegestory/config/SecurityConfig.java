@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/home", "/api/auth/login", "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/users/**").hasAnyRole("ADMIN","MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/aircraft/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/pilots/**").hasRole("ADMIN")

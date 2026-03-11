@@ -48,6 +48,7 @@ public class UserService {
                         existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                     }
                     existingUser.setEmail(updatedUser.getEmail());
+                    existingUser.setType(updatedUser.getType());
                     existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
                     existingUser.setImagePath(updatedUser.getImagePath());
                     return userRepository.save(existingUser);
