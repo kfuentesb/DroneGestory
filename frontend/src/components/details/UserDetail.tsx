@@ -2,7 +2,7 @@ import React from "react";
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { apiFetch } from "../api";
+import { apiFetch } from "../../api";
 
 export default function UserDetail() {
     const { id } = useParams();

@@ -42,13 +42,8 @@ function Navbar() {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink className="nav-link" to="/auth/register-user">
-                  Registrar usuarios
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/auth/pilots">
-                  Pilotos
+                <NavLink className="nav-link" to="/auth/aircrafts">
+                  Drones
                 </NavLink>
               </li>
             </ul>
