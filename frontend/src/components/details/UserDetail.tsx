@@ -33,8 +33,15 @@ export default function UserDetail() {
         }
 
         try {
-            const res = await apiFetch(`http://localhost:8080/api/auth/users/images/${user.imagePath}`);
-            if (!res) return;
+            const headers = new Headers();
+            if (token) {
+                headers.set("Authorization", `Bearer ${token}`);
+            }
+            const res = await fetch(`http://localhost:8080/api/auth/users/images/${user.imagePath}`, { headers });
+            if (!res.ok) {
+                setImageUrl(null);
+                return;
+            }
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             setImageUrl(url);
