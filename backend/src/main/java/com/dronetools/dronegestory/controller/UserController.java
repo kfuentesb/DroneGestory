@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,11 +45,23 @@ public class UserController {
         return ResponseEntity.ok(userService.create(user));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Integer id, @RequestBody User user) {
-        return userService.update(id, user)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    // @PutMapping("/{id}")
+    // public ResponseEntity<User> update(@PathVariable Integer id, @RequestBody User user) {
+    //     return userService.update(id, user)
+    //             .map(ResponseEntity::ok)
+    //             .orElse(ResponseEntity.notFound().build());
+    // }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> updateUserWithFile(
+            @PathVariable Integer id,
+            @ModelAttribute User user, // binds form fields
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile // binds uploaded file
+    ) throws IOException {
+
+        User updatedUser = userService.updateWithFile(id, user, imageFile);
+
+        return ResponseEntity.ok(updatedUser);
     }
 
     @DeleteMapping("/{id}")

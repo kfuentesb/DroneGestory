@@ -4,9 +4,15 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 public class UserService {
@@ -53,6 +59,39 @@ public class UserService {
                     existingUser.setImagePath(updatedUser.getImagePath());
                     return userRepository.save(existingUser);
                 });
+    }
+
+    //update with file
+    public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile) throws IOException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        // Update non-null fields
+        if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
+        if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
+        if (updatedUser.getUsername() != null) user.setUsername(updatedUser.getUsername());
+        if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
+        if (updatedUser.getType() != null) user.setType(updatedUser.getType());
+        if (updatedUser.getPhoneNumber() != null) user.setPhoneNumber(updatedUser.getPhoneNumber());
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+
+        // Handle image upload
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String originalName = imageFile.getOriginalFilename();
+            String safeName = (originalName == null || originalName.isBlank())
+                    ? "upload"
+                    : Paths.get(originalName).getFileName().toString();
+            String filename = System.currentTimeMillis() + "_" + safeName;
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Files.createDirectories(uploadDir);
+            Path target = uploadDir.resolve(filename);
+            imageFile.transferTo(target.toFile());
+            user.setImagePath(filename);
+        }
+
+        return userRepository.save(user);
     }
 
     // Eliminar un usuario por id
