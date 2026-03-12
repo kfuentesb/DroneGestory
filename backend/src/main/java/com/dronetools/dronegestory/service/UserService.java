@@ -43,6 +43,28 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // Crear un nuevo usuario con archivo
+    public User createWithFile(User user, MultipartFile imageFile) throws IOException {
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String originalName = imageFile.getOriginalFilename();
+            String safeName = (originalName == null || originalName.isBlank())
+                    ? "upload"
+                    : Paths.get(originalName).getFileName().toString();
+            String filename = System.currentTimeMillis() + "_" + safeName;
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Files.createDirectories(uploadDir);
+            Path target = uploadDir.resolve(filename);
+            imageFile.transferTo(target.toFile());
+            user.setImagePath(filename);
+        }
+
+        return userRepository.save(user);
+    }
+
     // Actualizar un usuario existente
     public Optional<User> update(Integer id, User updatedUser) {
         return userRepository.findById(id)

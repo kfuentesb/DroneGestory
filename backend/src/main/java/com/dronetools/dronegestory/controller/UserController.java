@@ -23,7 +23,6 @@ import org.springframework.http.HttpHeaders;
 @RestController
 @RequestMapping("/api/auth/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;
@@ -50,7 +49,7 @@ public class UserController {
             @ModelAttribute User user,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
-        User createdUser = userService.updateWithFile(null, user, imageFile);
+        User createdUser = userService.createWithFile(user, imageFile);
         return ResponseEntity.ok(createdUser);
     }
 

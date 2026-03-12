@@ -71,7 +71,7 @@ function FormUser() {
         }
 
         if (!allowedTypes.includes(file.type)) {
-            setError("Only JPG, PNG, and PDF files are allowed.");
+            setError("Only JPG and PNG files are allowed.");
             setSelectedFile(null);
             return;
         }
@@ -93,7 +93,7 @@ function FormUser() {
 
         try {
             const telefonoValue = formValues.telefono.trim();
-            const telefonoInvalid = telefonoValue.length > 0 && !/^\d{9}$/.test(telefonoValue);
+            const telefonoInvalid = !/^\d{9}$/.test(telefonoValue);
 
             const newErrors = {
                 nombre: !formValues.nombre.trim(),
@@ -119,6 +119,12 @@ function FormUser() {
                 return;
             }
 
+            if (!selectedFile) {
+                setError("Seleccione una imagen de perfil.");
+                setLoading(false);
+                return;
+            }
+
             if (formValues.password !== formValues.confirmPassword) {
                 setError("Las contraseñas no coinciden.");
                 setLoading(false);
@@ -134,20 +140,14 @@ function FormUser() {
             formData.append("phoneNumber", formValues.telefono);
             formData.append("password", formValues.password);
             formData.append("type", selectedUserType.value);
+            formData.append("imageFile", selectedFile, selectedFile.name);
 
-            if (selectedFile) {
-                formData.append("imageFile", selectedFile, selectedFile.name);
-            }
-
-            const res = await fetch("http://localhost:8080/api/auth/users", {
+            const res = await apiFetch("http://localhost:8080/api/auth/users", {
                 method: "POST",
                 body: formData, // browser automatically sets Content-Type to multipart/form-data
             });
 
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.message || "Error creando usuario");
-            }
+            if (!res) return;
 
             const data = await res.json();
             console.log("User created:", data);
@@ -220,7 +220,7 @@ function FormUser() {
                             <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
                                 (Opcional)
                             </span>
-                        </label>
+                            </label>
                         <input
                         type="text"
                         className="form-control"
@@ -250,7 +250,7 @@ function FormUser() {
                             <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
                                 (Opcional)
                             </span>
-                        </label>
+                            </label>
                         <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
                         <span className="text-truncate" style={{ maxWidth: "150px" }}>
                             {selectedFile ? selectedFile.name : "No file selected"}
@@ -330,3 +330,7 @@ function FormUser() {
 }
 
 export default FormUser
+
+
+
+
