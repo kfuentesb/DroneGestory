@@ -28,7 +28,7 @@ export function ReusableTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="text-start">
           {rows.length === 0 ? (
             <tr>
               <td colSpan={headers.length} className="text-center text-muted">

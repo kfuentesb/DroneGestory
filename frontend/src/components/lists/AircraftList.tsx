@@ -98,8 +98,8 @@ export default function AircraftList() {
               "Nº Serie",
               "Clase",
               "MTOM (Kg)",
-              "Dimensión",
-              "Velocidad (Km/h)",
+              "Dimensión (m)",
+              "Velocidad (m/s)",
               "Configuración",
               "Energía impacto (J)",
               "Tiene cámara",
@@ -115,7 +115,7 @@ export default function AircraftList() {
                 <td>{a.maxSpeed ?? "-"}</td>
                 <td>{a.type}</td>
                 <td>{a.impactEnergy ?? "-"}</td>
-                <td>
+                <td className = "text-center">
                   <span className={`badge ${a.camera ? "bg-success" : "bg-secondary"}`}>
                     {a.camera ? "Sí" : "No"}
                   </span>

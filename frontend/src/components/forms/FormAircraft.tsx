@@ -102,7 +102,7 @@ function FormUser() {
                 return;
             }
 
-            const res = await fetch("http://localhost:8080/api/auth/users", {
+            const res = await fetch("http://localhost:8080/api/auth/aircraft", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include", // Validar sesion
@@ -130,7 +130,7 @@ function FormUser() {
         <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
             <div className="container" style={{ maxWidth: "1000px" }}>
                 <h2 className="text-center mb-4 fw-normal" style={{ color: "#1E1E1E" }}>
-                Formulario Registro Usuario
+                    Registrar aeronave
                 </h2>
 
                 <div className="card shadow-sm p-4" style={{ borderRadius: "8px", border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}>
@@ -138,7 +138,7 @@ function FormUser() {
                     {/* Row 1: Nombre, Apellidos, Usuario */}
                     <div className="row mb-3">
                     <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre</label>
+                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Modelo</label>
                         <input
                         type="text"
                         className="form-control"
