@@ -3,10 +3,14 @@ import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
 
+import checkIcon from '../../assets/check_white.svg';
+import cancelIcon from '../../assets/cancel_white.svg';
+
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedUserType, setSelectedUserType] = useState<{ value: string; label: string } | null>(null);
 
     const navigate = useNavigate();
 
@@ -88,31 +92,57 @@ function FormUser() {
         setError(null);
 
         try {
+            const telefonoValue = formValues.telefono.trim();
+            const telefonoInvalid = telefonoValue.length > 0 && !/^\d{9}$/.test(telefonoValue);
+
             const newErrors = {
                 nombre: !formValues.nombre.trim(),
                 apellidos: !formValues.apellidos.trim(),
                 username: !formValues.username.trim(),
                 email: !formValues.email.trim(),
-                telefono: !formValues.telefono.trim(),
+                telefono: telefonoInvalid,
                 password: !formValues.password.trim(),
                 confirmPassword: !formValues.confirmPassword.trim()
             };
 
             setErrors(newErrors);
 
-            // If any field is invalid, stop submission
             if (Object.values(newErrors).some(Boolean)) {
                 setError("Por favor complete todos los campos obligatorios.");
+                setLoading(false);
                 return;
             }
 
-            const res = await apiFetch("http://localhost:8080/api/auth/users", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formValues),
-            });
+            if (!selectedUserType) {
+                setError("Seleccione un tipo de usuario.");
+                setLoading(false);
+                return;
+            }
 
-            if (!res) return;
+            if (formValues.password !== formValues.confirmPassword) {
+                setError("Las contraseñas no coinciden.");
+                setLoading(false);
+                return;
+            }
+
+            // Use FormData for file upload
+            const formData = new FormData();
+            formData.append("firstName", formValues.nombre);
+            formData.append("lastName", formValues.apellidos);
+            formData.append("username", formValues.username);
+            formData.append("email", formValues.email);
+            formData.append("phoneNumber", formValues.telefono);
+            formData.append("password", formValues.password);
+            formData.append("type", selectedUserType.value);
+
+            if (selectedFile) {
+                formData.append("imageFile", selectedFile, selectedFile.name);
+            }
+
+            const res = await fetch("http://localhost:8080/api/auth/users", {
+                method: "POST",
+                body: formData, // browser automatically sets Content-Type to multipart/form-data
+            });
 
             if (!res.ok) {
                 const err = await res.json();
@@ -122,8 +152,7 @@ function FormUser() {
             const data = await res.json();
             console.log("User created:", data);
 
-            // aquí se puede guardar token o userId
-            // localStorage.setItem("userId", data.userId);
+            navigate("/auth/users"); // redirect to users list after success
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -205,7 +234,14 @@ function FormUser() {
                     <div className="row mb-3">
                     <div className="col-12 col-md mb-3 mb-md-0">
                         <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
-                        <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario"/>
+                        {/* <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario"/> */}
+                        <Select
+                            options={type_user}
+                            styles={backgroundBorderInputsSelect}
+                            placeholder="Seleccione el tipo de usuario"
+                            value={selectedUserType}
+                            onChange={(val) => setSelectedUserType(val)}
+                        />
                     </div>
 
                     <div className="col-12 col-md">
@@ -243,29 +279,47 @@ function FormUser() {
                     <div className="row mb-3">
                     <div className="col-12 col-md mb-3 mb-md-0">
                         <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
-                        <input type="password" className="form-control" style={backgroundBorderInputs}/>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={formValues.password}
+                            onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.password ? "1px solid red" : "1px solid #D1D5DB" }}
+                        />
                     </div>
 
                     <div className="col-12 col-md">
                         <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
-                        <input type="password" className="form-control" style={backgroundBorderInputs}/>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={formValues.confirmPassword}
+                            onChange={(e) => setFormValues({ ...formValues, confirmPassword: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.confirmPassword ? "1px solid red" : "1px solid #D1D5DB" }}
+                        />
                     </div>
                     </div>
 
                     {/* Error message */}
                     {error && <p className="text-danger">{error}</p>}
 
-                    <div className="d-flex gap-2 mt-3">
-                        <button type="submit" className="btn btn-success flex-fill">
-                            {loading ? "Cargando..." : "Registrar usuario"}
+                    <div className="d-flex gap-2 mt-3 justify-content-center">
+                        <button type="submit" className="btn btn-success">
+                            <img src={checkIcon} alt="Check" className="check-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                {loading ? "Cargando..." : "Registrar usuario"}
+                            </span>
                         </button>
 
                         <button
                             type="button"
-                            className="btn btn-secondary flex-fill"
+                            className="btn btn-secondary"
                             onClick={() => navigate("/auth/users")}
                         >
-                            Volver
+                            <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                Cancelar
+                            </span>
                         </button>
                     </div>
                 </form>
