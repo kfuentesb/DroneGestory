@@ -1,5 +1,5 @@
 package com.dronetools.dronegestory.model.enums;
 
-public enum AircraftType {
+public enum AircraftConfig {
     Avion, Multirrotor, Helicoptero, Hibrido, Ligero, Otro
 }

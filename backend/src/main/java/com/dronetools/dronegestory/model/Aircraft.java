@@ -31,16 +31,49 @@ public class Aircraft {
 //    @JoinColumn(name = "insurance_company_id", nullable = false)
 //    private InsuranceCompany insuranceCompany;
 
-    @Column(name = "applicant_type", nullable = false)
+    // ============ CAMPOS OBLIGATORIOS para el cliente ============
+    // Si ApplicantType = Manufacturer || To_the_manufacturer
+    @Column(name = "manufacturer_name", length = 100, nullable = false)
+    private String manufacturer_name;
+
+    @Column(name = "model", length = 100, nullable = false)
+    private String model;
+
+    @Column(name = "serial_number", nullable = false)
+    private Integer serialNumber;
+
+    @Column(name = "class", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AircraftClass aircraftClass;
+
+    @Column(name = "mtom", precision = 9, scale = 3, nullable = false)
+    private BigDecimal mtom;
+
+    @Column(name = "wingspan", precision = 9, scale = 3, nullable = false)
+    private BigDecimal wingspan;
+
+    @Column(name = "max_speed", precision = 9, scale = 3, nullable = false)
+    private BigDecimal maxSpeed;
+
+    @Column(name = "config", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AircraftConfig config;
+
+    @Column(name = "impact_energy", precision = 9, scale = 3, nullable = false)
+    private BigDecimal impactEnergy;
+
+    @Column(name="camera", nullable = false)
+    private Boolean hasCamera;
+
+    // ============ ============ ============
+
+    // ---------- CAMPOS OPCIONALES ------------------
+    @Column(name = "applicant_type")
     @Enumerated(EnumType.STRING)
     private ApplicantType applicantType;
 
-    @Column(name = "applicant_name", length = 100, nullable = false)
+    @Column(name = "applicant_name", length = 100)
     private String applicantName;
-
-    // Si ApplicantType = Manufacturer || To_the_manufacturer
-    @Column(name = "manufacturer_name", length = 100)
-    private String manufacturer_name;
 
     // Si ApplicantType = Operator ||To_the_manufacturer
     @Column(name = "operador_name", length = 100)
@@ -50,50 +83,21 @@ public class Aircraft {
     @Column(name = "operator_number")
     private Integer operatorNumber;
 
-    @Column(name= "privately_built", nullable = false)
+    @Column(name= "privately_built")
     private Boolean privatelyBuilt;
-
-    @Column(name = "model", length = 100, nullable = false)
-    private String model;
-
-    @Column(name = "type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private AircraftType type;
-
-    @Column(name = "serial_number")
-    private Integer serialNumber;
-
-    @Column(name = "class", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private AircraftClass aircraftClass;
-
-    @Column(name = "mtom", precision = 9, scale = 3)
-    private BigDecimal mtom;
-
-    @Column(name = "wingspan", precision = 9, scale = 3)
-    private BigDecimal wingspan;
-
-    @Column(name = "max_speed", precision = 9, scale = 3)
-    private BigDecimal maxSpeed;
-
-    @Column(name = "impact_energy", precision = 9, scale = 3)
-    private BigDecimal impactEnergy;
 
     @Min(0)
     @Max(10000)
     @Column(name = "max_autonomy")
     private Integer maxAutonomy;
 
-    @Column(name="camera", nullable = false)
-    private Boolean camera;
-
-    @Column(name="tether", nullable = false)
+    @Column(name="tether")
     private Boolean tether;
 
     @Column(name="cable_lenght", precision = 9, scale = 3)
     private BigDecimal cableLenght;
 
-    @Column(name="power_source", nullable = false)
+    @Column(name="power_source")
     @Enumerated(EnumType.STRING)
     private PowerSource powerSource;
 
@@ -107,11 +111,13 @@ public class Aircraft {
     @Column(name = "observations")
     private String observations;
 
+    @Column(name = "purchase_date")
+    private LocalDate purchaseDate;
+
     @Column(name = "image_path")
     private String imagePath;
 
-    @Column(name = "purchase_date")
-    private LocalDate purchaseDate;
+    // ------------------------------------
 
 //    @OneToMany(mappedBy = "aircraft")
 //    private List<Operation> operations;
