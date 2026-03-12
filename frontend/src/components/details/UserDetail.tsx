@@ -3,6 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { useAuth } from "../AuthProvider";
 
+import DetailView from "./DetailView";
+import { userFields }from "./UserFields";
+import DetailEdit from "./DetailEdit";
+
 export default function UserDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -80,11 +84,11 @@ export default function UserDetail() {
     const validateForm = () => {
         const newErrors: Record<string, boolean> = {};
 
-        fields.forEach((field) => {
-            if (field.validate) {
-            newErrors[field.key] = !field.validate(formValues[field.key]);
-            }
-        });
+        // fields.forEach((field) => {
+        //     if (field.validate) {
+        //     newErrors[field.key] = !field.validate(formValues[field.key]);
+        //     }
+        // });
 
         setErrors(newErrors);
 
@@ -98,52 +102,6 @@ export default function UserDetail() {
         MANAGER: { backgroundColor: "#E0F2FE", color: "#075985" },
         PILOT: { backgroundColor: "#E6F4EC", color: "#1F6B43" },
     };
-
-    const fields = [
-        {
-            label: "Nombre",
-            key: "firstName",
-            type: "text",
-            validate: (v: string) => v.trim().length >= 2,
-            error: "El nombre debe tener al menos 2 caracteres"
-        },
-        {
-            label: "Apellidos",
-            key: "lastName",
-            type: "text",
-            validate: (v: string) => v.trim().length >= 2,
-            error: "Los apellidos deben tener al menos 2 caracteres"
-        },
-        {
-            label: "Usuario",
-            key: "username",
-            type: "text",
-            validate: (v: string) => v.trim().length >= 4,
-            error: "El usuario debe tener al menos 4 caracteres"
-        },
-        {
-            label: "Email",
-            key: "email",
-            type: "email",
-            validate: (v: string) => /\S+@\S+\.\S+/.test(v),
-            error: "Email inválido"
-        },
-        {
-            label: "Teléfono",
-            key: "phoneNumber",
-            type: "text",
-            validate: (v: string) => /^[0-9]{9}$/.test(v),
-            error: "Debe tener 9 números"
-        },
-        {
-            label: "Tipo de usuario",
-            key: "type",
-            type: "select",
-            options: ["ADMIN", "MANAGER", "PILOT"],
-            validate: (v: string) => !!v,
-            error: "Selecciona un tipo"
-        }
-    ];
 
     return (
         <div className="container-fluid py-4">
@@ -182,72 +140,21 @@ export default function UserDetail() {
 
                         {/* View or Edit Mode */}
                         {!editing ? (
-                            <div className="row">
-                                {fields.map((field) => (
-                                    <div key={field.key} className="col-md-6 col-12 mb-3 d-flex justify-content-start">
-                                        <div
-                                            className="rounded d-flex flex-column"
-                                            style={{
-                                                border: "1px solid #6B7280",
-                                                padding: "12px 16px",
-                                                minHeight: "70px",
-                                                width: "100%",
-                                                maxWidth: "350px",
-                                                textAlign: "start",
-                                            }}
-                                        >
-                                            <small className="text-muted">{field.label}</small>
-                                            <span className="fw-bold">{user[field.key]}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+
+                            <DetailView
+                                data={user}
+                                fields={userFields}
+                            />
+
                         ) : (
-                            <div className="row">
-                                {fields.map((field) => (
-                                    <div key={field.key} className="col-md-6 col-12 mb-3">
-                                    <label className="text-muted d-block text-start ps-3">{field.label}</label>
-                                    {field.type === "select" ? (
-                                        <select
-                                        className="form-select"
-                                        value={formValues[field.key] || ""}
-                                        onChange={(e) =>
-                                            setFormValues({
-                                            ...formValues,
-                                            [field.key]: e.target.value
-                                            })
-                                        }
-                                        >
-                                        {field.options?.map((opt) => (
-                                            <option key={opt} value={opt}>
-                                            {opt}
-                                            </option>
-                                        ))}
-                                        </select>
-                                    ) : (
-                                        <>
-                                            <input
-                                                type={field.type}
-                                                className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
-                                                value={formValues[field.key] || ""}
-                                                onChange={(e) =>
-                                                    setFormValues({
-                                                        ...formValues,
-                                                        [field.key]: e.target.value
-                                                    })
-                                                }
-                                            />
-                                            
-                                            {field.type === "select" && errors[field.key] && (
-                                                <div className="text-danger small mt-1">
-                                                    {errors[field.key]}
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                    </div>
-                                ))}
-                            </div>
+
+                            <DetailEdit
+                                values={formValues}
+                                setValues={setFormValues}
+                                fields={userFields}
+                                errors={errors}
+                            />
+                            
                         )}
 
                     </div>
