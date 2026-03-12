@@ -1,7 +1,7 @@
-import React, { useState,  } from 'react';
+import React, { useState, } from 'react';
 import Select from 'react-select';
 
-function FormUser() {
+function FormAircraft() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -14,30 +14,45 @@ function FormUser() {
     // Allowed file types
     const allowedTypes = ["image/jpeg", "image/png"];
 
-    const type_user: { value: string; label: string }[] = [
-        { value: "pilot", label: "Piloto" },
-        { value: "manager", label: "Gestor" },
-        { value: "admin", label: "Administrador" }
-    ];
 
     const [formValues, setFormValues] = useState({
-        nombre: "",
-        apellidos: "",
-        username: "",
-        email: "",
-        telefono: "",
-        password: "",
-        confirmPassword: ""
+        aircraftClass: "",           // string, enum: "C2", "C1"...
+        applicantName: "",           // string
+        applicantType: "",           // string, enum: "Operator", "Manufacturer", etc.
+        cableLenght: "",             // string numérica, ej: "40.7"
+        camera: false,               // boolean
+        imagePath: "",               // string URL o nombre de archivo
+        impactEnergy: "",            // string numérica, ej: "350.8"
+        manufacturerName: "",        // string
+        maxAutonomy: "",             // string numérica, ej: "90"
+        maxSpeed: "",                // string numérica, ej: "70.5"
+        model: "",                   // string
+        mtom: "",                    // string numérica
+        observations: "",            // string
+        operadorName: "",            // string
+        operatorNumber: "",          // string o number (según API)
+        powerSource: "",             // string, enum: "Electric", "Non_Electric"
+        powerSourceType: "",         // string, enum: "Hydrogen", "Gasoline"
+        privatelyBuilt: false,       // boolean
+        purchaseDate: "",            // string formato "YYYY-MM-DD"
+        serialNumber: "",            // string o number
+        tether: false,               // boolean
+        type: "",                    // string, enum: "Multirrotor", "Avion", etc.
+        wingspan: "",                // string numérica
+                accessories: "",             // string (ej: "Paracaídas")
     });
 
     const [errors, setErrors] = useState({
-        nombre: false,
-        apellidos: false,
-        username: false,
-        email: false,
-        telefono: false,
-        password: false,
-        confirmPassword: false
+        fabricante: false,
+        modelo: false,
+        serial: false,
+        clase: false,
+        mtom: false,
+        dimension: false,
+        velocidad: false,
+        configuracion: false,
+        energia: false,
+        camara: false,
     });
 
     const backgroundBorderInputsSelect = {
@@ -85,13 +100,16 @@ function FormUser() {
 
         try {
             const newErrors = {
-                nombre: !formValues.nombre.trim(),
-                apellidos: !formValues.apellidos.trim(),
-                username: !formValues.username.trim(),
-                email: !formValues.email.trim(),
-                telefono: !formValues.telefono.trim(),
-                password: !formValues.password.trim(),
-                confirmPassword: !formValues.confirmPassword.trim()
+                fabricante: !formValues.fabricante.trim(),
+                modelo: !formValues.modelo.trim(),
+                serial: !formValues.serial.trim(),
+                clase: !formValues.clase.trim(),
+                mtom: !formValues.mtom.trim(),
+                dimesion: !formValues.dimension.trim(),
+                velocidad: !formValues.velocidad.trim(),
+                configuracion: !formValues.configuracion.trim(),
+                energia: !formValues.energia.trim(),
+                camara: !formValues.camara.trim()
             };
 
             setErrors(newErrors);
@@ -102,7 +120,7 @@ function FormUser() {
                 return;
             }
 
-            const res = await fetch("http://localhost:8080/api/auth/users", {
+            const res = await fetch("http://localhost:8080/api/auth/aircraft", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include", // Validar sesion
@@ -110,8 +128,8 @@ function FormUser() {
             });
 
             if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.message || "Credenciales incorrectas");
+                const err = await res.json();
+                throw new Error(err.message || "Credenciales incorrectas");
             }
 
             const data = await res.json();
@@ -130,124 +148,124 @@ function FormUser() {
         <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
             <div className="container" style={{ maxWidth: "1000px" }}>
                 <h2 className="text-center mb-4 fw-normal" style={{ color: "#1E1E1E" }}>
-                Formulario Registro Usuario
+                    Registrar aeronave
                 </h2>
 
                 <div className="card shadow-sm p-4" style={{ borderRadius: "8px", border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}>
-                <form onSubmit={handleSubmit}>
-                    {/* Row 1: Nombre, Apellidos, Usuario */}
-                    <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, nombre: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
+                    <form onSubmit={handleSubmit}>
+                        {/* Row 1: Nombre, Apellidos, Usuario */}
+                        <div className="row mb-3">
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Modelo</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    onChange={(e) => setFormValues({ ...formValues, nombre: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB" }}
+                                />
+                            </div>
 
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Apellidos</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, apellidos: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Apellidos</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    onChange={(e) => setFormValues({ ...formValues, apellidos: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB" }}
+                                />
+                            </div>
 
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre de usuario</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-                    </div>
-
-                    {/* Row 2: Email, Telefono */}
-                    <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Número de teléfono</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-                    </div>
-
-                    {/* Row 3: Tipo de usuario, Imagen */}
-                    <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
-                        <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario"/>
-                    </div>
-
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Imagen de perfil</label>
-                        <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
-                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                            {selectedFile ? selectedFile.name : "No file selected"}
-                        </span>
-
-                        <input
-                            id="file-upload"
-                            type="file"
-                            accept=".jpg,.jpeg,.png"
-                            onChange={handleFileChange}
-                            style={{ display: "none" }}
-                        />
-
-                        <label
-                            htmlFor="file-upload"
-                            className="btn btn-success ms-auto"
-                            style={{ cursor: "pointer" }}
-                        >
-                            Seleccionar archivo
-                        </label>
+                            <div className="col-12 col-md">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre de usuario</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB" }}
+                                />
+                            </div>
                         </div>
-                    </div>
-                    </div>
 
-                    {/* Row 4: Contraseña */}
-                    <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
-                        <input type="password" className="form-control" style={backgroundBorderInputs}/>
-                    </div>
+                        {/* Row 2: Email, Telefono */}
+                        <div className="row mb-3">
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
+                                />
+                            </div>
 
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
-                        <input type="password" className="form-control" style={backgroundBorderInputs}/>
-                    </div>
-                    </div>
+                            <div className="col-12 col-md">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Número de teléfono</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
+                                />
+                            </div>
+                        </div>
 
-                    {/* Error message */}
-                    {error && <p className="text-danger">{error}</p>}
+                        {/* Row 3: Tipo de usuario, Imagen */}
+                        <div className="row mb-3">
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
+                                <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario" />
+                            </div>
 
-                    <button type="submit" className="btn btn-success w-100">
-                    {loading ? "Cargando..." : "Registrar usuario"}
-                    </button>
-                </form>
+                            <div className="col-12 col-md">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Imagen de perfil</label>
+                                <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                    <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                        {selectedFile ? selectedFile.name : "No file selected"}
+                                    </span>
+
+                                    <input
+                                        id="file-upload"
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png"
+                                        onChange={handleFileChange}
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="btn btn-success ms-auto"
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        Seleccionar archivo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Row 4: Contraseña */}
+                        <div className="row mb-3">
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
+                                <input type="password" className="form-control" style={backgroundBorderInputs} />
+                            </div>
+
+                            <div className="col-12 col-md">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
+                                <input type="password" className="form-control" style={backgroundBorderInputs} />
+                            </div>
+                        </div>
+
+                        {/* Error message */}
+                        {error && <p className="text-danger">{error}</p>}
+
+                        <button type="submit" className="btn btn-success w-100">
+                            {loading ? "Cargando..." : "Registrar usuario"}
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     )
 }
 
-export default FormUser
+export default FormAircraft

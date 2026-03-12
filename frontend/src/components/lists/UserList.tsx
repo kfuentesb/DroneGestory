@@ -86,12 +86,12 @@ export default function UserList() {
                 <td>{p.firstName} {p.lastName}</td>
                 <td>{p.username}</td>
                 <td>{p.email}</td>
-                <td>
+                <td >
                   {p.phoneNumber
                     .toString()
                     .replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
                 </td>
-                <td>
+                <td className="text-center">
                   <span
                     className="badge"
                     style={

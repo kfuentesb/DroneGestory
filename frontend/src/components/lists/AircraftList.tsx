@@ -7,22 +7,25 @@ import { ReusableTable } from "../commons/props/ReusableTable";
 
 type Aircraft = {
   id: number;
-  applicantType: "Manufacturer" | "Operator" | "To_the_Manufacturer";
-  applicantName: string;
+  // Obligatorios
   manufacturerName?: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
-  operadorName?: string;         // Sólo si ApplicantType es Operator o To_the_Manufacturer
-  operatorNumber?: number;       // Sólo si ApplicantType es Operator
-  privatelyBuilt: boolean;
   model: string;
-  type: "Avion" | "Multirrotor" | "Helicoptero" | "Hibrido" | "Ligero" | "Otro";
   serialNumber?: number;
   aircraftClass: "NO" | "C0" | "C1" | "C2" | "C3" | "C4" | "C5" | "C6";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
   wingspan?: number;             // En metros (BigDecimal)
   maxSpeed?: number;             // En km/h (BigDecimal)
+  config: "Avion" | "Multirrotor" | "Helicoptero" | "Hibrido" | "Ligero" | "Otro";
   impactEnergy?: number;         // En Julios (BigDecimal)
+  hasCamera: boolean;
+  
+  // Opcionales -> Más detalles
+  applicantType: "Manufacturer" | "Operator" | "To_the_Manufacturer";
+  applicantName: string;
+  operadorName?: string;         // Sólo si ApplicantType es Operator o To_the_Manufacturer
+  operatorNumber?: number;       // Sólo si ApplicantType es Operator
+  privatelyBuilt: boolean;
   maxAutonomy?: number;          // En minutos
-  camera: boolean;
   tether: boolean;
   cableLenght?: number;          // En metros (BigDecimal)
   powerSource: "Electric" | "Non_Electric";
@@ -98,8 +101,8 @@ export default function AircraftList() {
               "Nº Serie",
               "Clase",
               "MTOM (Kg)",
-              "Dimensión",
-              "Velocidad (Km/h)",
+              "Dimensión (m)",
+              "Velocidad (m/s)",
               "Configuración",
               "Energía impacto (J)",
               "Tiene cámara",
@@ -113,11 +116,11 @@ export default function AircraftList() {
                 <td>{a.mtom ?? "-"}</td>
                 <td>{a.wingspan ?? "-"}</td>
                 <td>{a.maxSpeed ?? "-"}</td>
-                <td>{a.type}</td>
+                <td>{a.config}</td>
                 <td>{a.impactEnergy ?? "-"}</td>
-                <td>
-                  <span className={`badge ${a.camera ? "bg-success" : "bg-secondary"}`}>
-                    {a.camera ? "Sí" : "No"}
+                <td className = "text-center">
+                  <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
+                    {a.hasCamera ? "Sí" : "No"}
                   </span>
                 </td>
               </>
