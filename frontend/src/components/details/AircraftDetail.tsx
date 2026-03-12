@@ -3,183 +3,205 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { useAuth } from "../AuthProvider";
 
+import DetailView from "../commons/props/DetailView";
+import { userFields }from "./UserFields";
+import DetailEdit from "../commons/props/DetailEdit";
+import { aircraftFields } from "./AircraftFields";
+
 export default function AircraftDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { token } = useAuth();
+
     const [aircraft, setAircraft] = useState<any>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [editing, setEditing] = useState(false);
+    const [formValues, setFormValues] = useState<any>({});
 
+    const [errors, setErrors] = useState<Record<string, string | null>>({});
+    
+
+    // Load user
     useEffect(() => {
-        const loadAircraft = async () => {
-            const res = await apiFetch(`http://localhost:8080/api/aircraft/${id}`);
-
-            if (!res) return;
-
-            const data = await res.json();
-            setAircraft(data);
-        };
-        loadAircraft();
+    const loadUser = async () => {
+        const res = await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`);
+        if (!res) return;
+        const data = await res.json();
+        setAircraft(data);
+        setFormValues(data); // initialize editable values
+    };
+    loadUser();
     }, [id]);
 
+    // Load image
     useEffect(() => {
-        const loadImage = async () => {
-            if (!aircraft?.imagePath) {
-                setImageUrl(null);
-                return;
-            }
+    const loadImage = async () => {
+        if (!aircraft?.imagePath) return setImageUrl(null);
 
-            try {
-                const headers = new Headers();
-                if (token) {
-                    headers.set("Authorization", `Bearer ${token}`);
-                }
-                const res = await fetch(`http://localhost:8080/api/aircraft/images/${aircraft.imagePath}`, { headers });
-                if (!res.ok) {
-                    setImageUrl(null);
-                    return;
-                }
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                setImageUrl(url);
-            } catch {
-                setImageUrl(null);
-            }
-        };
-
-        loadImage();
-
-        return () => {
-            if (imageUrl) URL.revokeObjectURL(imageUrl);
-        };
+        try {
+        const headers = new Headers();
+        if (token) headers.set("Authorization", `Bearer ${token}`);
+        const res = await fetch(
+            `http://localhost:8080/api/auth/aircraft/images/${aircraft.imagePath}`,
+            { headers }
+        );
+        if (!res.ok) return setImageUrl(null);
+        const blob = await res.blob();
+        setImageUrl(URL.createObjectURL(blob));
+        } catch {
+        setImageUrl(null);
+        }
+    };
+    loadImage();
+    return () => {
+        if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
     }, [aircraft?.imagePath, token]);
 
+    // Delete user
     const handleDelete = async () => {
-        const confirmDelete = confirm("¿Eliminar aeronave?");
-        if (!confirmDelete) return;
+    if (!confirm("¿Eliminar usuario?")) return;
+    await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`, { method: "DELETE" });
+    navigate("/auth/users");
+    };
 
-        await apiFetch(`http://localhost:8080/api/aircraft/${id}`, {
-            method: "DELETE",
+    // Confirm update
+    const handleUpdate = async () => {
+        if (!validateForm()) return;
+        if (!confirm("¿Confirmar cambios?")) return;
+
+        const formData = new FormData();
+
+        Object.entries(formValues).forEach(([key, value]) => {
+            if (value instanceof File) {
+                formData.append(key, value, value.name);
+            } else if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
         });
 
-        navigate("/auth/aircrafts");
+        const res = await fetch(`http://localhost:8080/api/auth/aircraft/${id}`, {
+            method: "PUT",
+            headers: {
+            Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        });
+
+        if (!res.ok) {
+            alert("Error actualizando usuario");
+            return;
+        }
+
+        const updated = await res.json();
+        setAircraft(updated);
+        setEditing(false);
+    };
+
+    const validateForm = () => {
+        const newErrors: Record<string, string | null> = {};
+
+        userFields.forEach((field) => {
+            if (field.validate) {
+                const valid = field.validate(formValues[field.key]);
+                newErrors[field.key] = valid ? null : field.error || "Campo inválido";
+            }
+        });
+
+        setErrors(newErrors);
+
+        return !Object.values(newErrors).some((e) => e !== null);
     };
 
     if (!aircraft) return <p>Cargando...</p>;
 
-    // Puedes editar este objeto para mapear los "tipos" de aeronaves a colores si aplica
     const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-        JET: {
-            backgroundColor: "#E0F2FE",
-            color: "#075985",
-        },
-        TURBOPROP: {
-            backgroundColor: "#E6F4EC",
-            color: "#1F6B43",
-        },
-        HELICOPTER: {
-            backgroundColor: "#FEE2E2",
-            color: "#991B1B",
-        },
+        ADMIN: { backgroundColor: "#FEE2E2", color: "#991B1B" },
+        MANAGER: { backgroundColor: "#E0F2FE", color: "#075985" },
+        PILOT: { backgroundColor: "#E6F4EC", color: "#1F6B43" },
     };
-
-    // Mapea aquí los campos reales de tu modelo Aircraft
-    const aircraftFields = [
-        { label: "Id", value: aircraft.id },
-        { label: "Matrícula", value: aircraft.registration },
-        { label: "Modelo", value: aircraft.model },
-        { label: "Fabricante", value: aircraft.manufacturer },
-        { label: "Año de fabricación", value: aircraft.year },
-        { label: "Tipo", value: aircraft.type },
-        { label: "Capacidad", value: aircraft.capacity },
-        // Añade o quita acá los campos que correspondan según tu backend...
-        { label: "Dato extra", value: "-" },
-        { label: "Dato extra", value: "-" },
-    ];
 
     return (
         <div className="container-fluid py-4">
             <div className="card p-4 shadow-sm">
                 <div className="row">
-                    {/* Información de la aeronave */}
                     <div className="col-md-8 col-12">
-                        <div className="d-flex align-items-center mb-3 flex-wrap">
-                            <h2 className="me-3 mb-0">
-                                {aircraft.model} {aircraft.registration}
-                            </h2>
-                            <span
-                                className="px-2 py-1 fw-bold"
-                                style={{
-                                    borderRadius: "4px",
-                                    fontSize: "0.9rem",
-                                    ...(typeColors[aircraft.type] || { backgroundColor: "#E5E7EB", color: "#374151" }),
+                        
+                        <div className="d-flex align-items-center mb-4 flex-wrap">
+                            <img
+                                src={imageUrl || "/default-user.jpg"}
+                                alt={aircraft.username}
+                                onError={(e) => ((e.target as HTMLImageElement).src = "/default-user.jpg")}
+                                className="rounded me-3 d-none d-sm-block"
+                                style={{ width: "90px", height: "90px", objectFit: "cover" }}
+                            />
+
+                            <div className="d-flex flex-column">
+                            <div className="d-flex align-items-center flex-wrap">
+                                <h2 className="me-3 mb-0">
+                                {aircraft.firstName} {aircraft.lastName}
+                                </h2>
+                                <span
+                                    className="px-2 py-1 fw-bold"
+                                    style={{
+                                        borderRadius: "4px",
+                                        fontSize: "0.9rem",
+                                        ...(typeColors[aircraft.type] || { backgroundColor: "#E5E7EB", color: "#374151" }),
                                 }}
-                            >
+                                >
                                 {aircraft.type}
-                            </span>
+                                </span>
+                            </div>
+                            <small className="text-muted text-start">@{aircraft.username}</small>
+                            </div>
                         </div>
 
-                        <div className="row">
-                            {aircraftFields.map((field, idx) => (
-                                <div key={idx} className="col-md-6 col-12 mb-3 d-flex justify-content-end">
-                                    <div
-                                        className="rounded d-flex flex-column"
-                                        style={{
-                                            border: "1px solid #6B7280",
-                                            padding: "12px 16px",
-                                            minHeight: "70px",
-                                            width: "100%",
-                                            maxWidth: "350px",
-                                            textAlign: "start",
-                                        }}
-                                    >
-                                        <small className="text-muted">{field.label}</small>
-                                        <span className="fw-bold">{field.value}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                        {/* View or Edit Mode */}
+                        {!editing ? (
 
-                    <div className="col-md-4 col-12 d-flex justify-content-md-end justify-content-start mb-3 mb-md-0">
-                        <img
-                            src={imageUrl || "/default-aircraft.png"}
-                            alt={aircraft.model}
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/default-aircraft.png";
-                            }}
-                            className="img-fluid rounded"
-                            style={{
-                                width: "150px",
-                                height: "150px",
-                                objectFit: "cover",
-                                maxWidth: "100%",
-                                marginTop: "3em",
-                                marginRight: "2em",
-                            }}
-                        />
+                            <DetailView
+                                data={aircraft}
+                                fields={aircraftFields}
+                            />
+
+                        ) : (
+
+                            <DetailEdit
+                                values={formValues}
+                                setValues={setFormValues}
+                                fields={aircraftFields}
+                                errors={errors}
+                            />
+                            
+                        )}
+
                     </div>
                 </div>
 
-                {/* Botones */}
+                {/* Buttons */}
                 <div className="d-flex gap-2 mt-3 flex-wrap">
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => navigate(`/auth/aircrafts/edit/${id}`)}
-                    >
+                    {!editing ? (
+                    <>
+                        <button className="btn btn-primary" onClick={() => setEditing(true)}>
                         Modificar
-                    </button>
-
-                    <button className="btn btn-danger" onClick={handleDelete}>
+                        </button>
+                        <button className="btn btn-danger" onClick={handleDelete}>
                         Eliminar
-                    </button>
-
-                    <button
-                        className="btn btn-secondary"
-                        onClick={() => navigate("/auth/aircrafts")}
-                    >
+                        </button>
+                        <button className="btn btn-secondary" onClick={() => navigate("/auth/aircraft")}>
                         Volver
-                    </button>
+                        </button>
+                    </>
+                    ) : (
+                    <>
+                        <button className="btn btn-success" onClick={handleUpdate}>
+                        Confirmar cambios
+                        </button>
+                        <button className="btn btn-secondary" onClick={() => setEditing(false)}>
+                        Cancelar
+                        </button>
+                    </>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 import type { FieldConfig } from "./FieldConfig";
 
-export const userFields: FieldConfig[] = [
+export const aircraftFields: FieldConfig[] = [
     {
         label: "Nombre",
         key: "firstName",
