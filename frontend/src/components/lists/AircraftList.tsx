@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
-import SearchBar from "../commons/SearchBar";
-import ButtonProp from "../commons/ButtonProp";
+import SearchBar from "../commons/props/SearchBar";
+import ButtonProp from "../commons/props/ButtonProp";
 
 type Aircraft = {
   id: number;

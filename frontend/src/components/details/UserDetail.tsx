@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { useAuth } from "../AuthProvider";
 
-import DetailView from "./DetailView";
+import DetailView from "../commons/props/DetailView";
 import { userFields }from "./UserFields";
-import DetailEdit from "./DetailEdit";
+import DetailEdit from "../commons/props/DetailEdit";
 
 export default function UserDetail() {
     const { id } = useParams();
