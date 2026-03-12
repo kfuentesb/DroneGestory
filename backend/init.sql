@@ -18,13 +18,7 @@ INSERT INTO aircraft (
     1001, 'Paracaídas; Faro LED', 'C2', 'DroneCorp', 'Operator', 35.700, true, 'img/drones/drone1.png', 410.325,
     NULL, 90, 120.500, 'Falcon One', 7.120, 'Operativo en área urbana', 'Equipos Remotos SL', 30255,
     'Electric', 'Hydrogen', false, '2025-07-16', 987654, false, 'Multirrotor', 1.780
-);
-
-INSERT INTO aircraft (
-    aircraft_id, accessories, class, applicant_name, applicant_type, cable_lenght, camera, image_path, impact_energy,
-    manufacturer_name, max_autonomy, max_speed, model, mtom, observations, operador_name, operator_number,
-    power_source, power_source_type, privately_built, purchase_date, serial_number, tether, type, wingspan
-) VALUES (
+),(
     1002, 'Batería de repuesto', 'NO', 'AeroMaker', 'Manufacturer', NULL, false, NULL, 85.000,
     'AeroMaker Industries', 45, 60.300, 'Glider X', 2.050, 'Prototipo para pruebas', NULL, NULL,
     'Non_Electric', 'Gasoline', true, '2026-01-05', 764321, true, 'Avion', 2.950
