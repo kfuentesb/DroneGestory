@@ -33,7 +33,12 @@ export default function UserDetail() {
         if (!res) return;
         const data = await res.json();
         setUser(data);
-        setFormValues(data); // initialize editable values
+        // esto va a permitir que phone sea nulo
+        setFormValues({
+            ...data,
+            phoneNumber: data.phoneNumber ?? "",
+            imagePath: data.imagePath ?? "",
+        });
     };
     loadUser();
     }, [id]);
@@ -157,7 +162,7 @@ export default function UserDetail() {
                                 {user.type}
                                 </span>
                             </div>
-                            <small className="text-muted text-start">@{user.username}</small>
+                                <small className="text-muted text-start">@{user.username}</small>
                             </div>
                         </div>
 

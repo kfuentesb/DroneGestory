@@ -93,7 +93,7 @@ function FormUser() {
 
         try {
             const telefonoValue = formValues.telefono.trim();
-            const telefonoInvalid = !/^\d{9}$/.test(telefonoValue);
+            const telefonoInvalid = telefonoValue !== "" && !/^\d{9}$/.test(telefonoValue);
 
             const newErrors = {
                 nombre: !formValues.nombre.trim(),
@@ -119,12 +119,6 @@ function FormUser() {
                 return;
             }
 
-            if (!selectedFile) {
-                setError("Seleccione una imagen de perfil.");
-                setLoading(false);
-                return;
-            }
-
             if (formValues.password !== formValues.confirmPassword) {
                 setError("Las contraseñas no coinciden.");
                 setLoading(false);
@@ -137,10 +131,14 @@ function FormUser() {
             formData.append("lastName", formValues.apellidos);
             formData.append("username", formValues.username);
             formData.append("email", formValues.email);
-            formData.append("phoneNumber", formValues.telefono);
             formData.append("password", formValues.password);
             formData.append("type", selectedUserType.value);
-            formData.append("imageFile", selectedFile, selectedFile.name);
+            if (telefonoValue !== "") {
+                formData.append("phoneNumber", telefonoValue);
+            }
+            if (selectedFile) {
+                formData.append("imageFile", selectedFile, selectedFile.name);
+            }
 
             const res = await apiFetch("http://localhost:8080/api/auth/users", {
                 method: "POST",
