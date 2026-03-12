@@ -17,7 +17,7 @@ export default function UserDetail() {
     const [editing, setEditing] = useState(false);
     const [formValues, setFormValues] = useState<any>({});
 
-    const [errors, setErrors] = useState<Record<string, boolean>>({});
+    const [errors, setErrors] = useState<Record<string, string | null>>({});
     
 
     // Load user
@@ -66,33 +66,50 @@ export default function UserDetail() {
 
     // Confirm update
     const handleUpdate = async () => {
-    if (!validateForm()) return;
-    if (!confirm("¿Confirmar cambios?")) return;
+        if (!validateForm()) return;
+        if (!confirm("¿Confirmar cambios?")) return;
 
-    const res = await apiFetch(`http://localhost:8080/api/auth/users/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formValues),
-    });
+        const formData = new FormData();
 
-    if (!res) return;
+        Object.entries(formValues).forEach(([key, value]) => {
+            if (value instanceof File) {
+                formData.append(key, value, value.name);
+            } else if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
+        });
 
-    setUser(formValues);
-    setEditing(false);
+        const res = await fetch(`http://localhost:8080/api/auth/users/${id}`, {
+            method: "PUT",
+            headers: {
+            Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        });
+
+        if (!res.ok) {
+            alert("Error actualizando usuario");
+            return;
+        }
+
+        const updated = await res.json();
+        setUser(updated);
+        setEditing(false);
     };
 
     const validateForm = () => {
-        const newErrors: Record<string, boolean> = {};
+        const newErrors: Record<string, string | null> = {};
 
-        // fields.forEach((field) => {
-        //     if (field.validate) {
-        //     newErrors[field.key] = !field.validate(formValues[field.key]);
-        //     }
-        // });
+        userFields.forEach((field) => {
+            if (field.validate) {
+                const valid = field.validate(formValues[field.key]);
+                newErrors[field.key] = valid ? null : field.error || "Campo inválido";
+            }
+        });
 
         setErrors(newErrors);
 
-        return !Object.values(newErrors).some(Boolean);
+        return !Object.values(newErrors).some((e) => e !== null);
     };
 
     if (!user) return <p>Cargando...</p>;
