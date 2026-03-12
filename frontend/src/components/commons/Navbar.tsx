@@ -43,7 +43,7 @@ function Navbar() {
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/auth/aircrafts">
+                  <NavLink className="nav-link" to="/auth/aircraft">
                     Aeronaves
                   </NavLink>
                 </li>

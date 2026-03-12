@@ -8,13 +8,13 @@ import { ReusableTable } from "../commons/props/ReusableTable";
 type Aircraft = {
   id: number;
   // Obligatorios
-  manufacturerName?: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
+  manufacturer?: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
   model: string;
-  serialNumber?: number;
-  aircraftClass: "NO" | "C0" | "C1" | "C2" | "C3" | "C4" | "C5" | "C6";
+  serialNumber?: string;
+  aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "C5" | "C6";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
   wingspan?: number;             // En metros (BigDecimal)
-  maxSpeed?: number;             // En km/h (BigDecimal)
+  maxSpeed?: number;             // En m/s (BigDecimal)
   config: "Avion" | "Multirrotor" | "Helicoptero" | "Hibrido" | "Ligero" | "Otro";
   impactEnergy?: number;         // En Julios (BigDecimal)
   hasCamera: boolean;
@@ -97,6 +97,7 @@ export default function AircraftList() {
 
           <ReusableTable
             headers={[
+              "Fabricante",
               "Modelo",
               "Nº Serie",
               "Clase",
@@ -110,6 +111,7 @@ export default function AircraftList() {
             rows={filteredAircrafts}
             renderRow={(a) => (
               <>
+                <td>{a.manufacturer}</td>
                 <td>{a.model}</td>
                 <td>{a.serialNumber ?? "-"}</td>
                 <td>{a.aircraftClass}</td>
@@ -125,7 +127,7 @@ export default function AircraftList() {
                 </td>
               </>
             )}
-            onRowClick={(a) => navigate(`/auth/aircraft/${a.id}`)}
+            onRowClick={(a) => navigate(`/auth/aircrafts/${a.id}`)}
             emptyText="No hay aeronaves registradas."
           />
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>

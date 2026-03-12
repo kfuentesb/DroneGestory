@@ -4,7 +4,6 @@ import { apiFetch } from "../../api";
 import { useAuth } from "../AuthProvider";
 
 import DetailView from "../commons/props/DetailView";
-import { userFields }from "./UserFields";
 import DetailEdit from "../commons/props/DetailEdit";
 import { aircraftFields } from "./AircraftFields";
 
@@ -21,16 +20,16 @@ export default function AircraftDetail() {
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     
 
-    // Load user
+    // Load Aircraft
     useEffect(() => {
-    const loadUser = async () => {
+    const loadAircraft = async () => {
         const res = await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`);
         if (!res) return;
         const data = await res.json();
         setAircraft(data);
         setFormValues(data); // initialize editable values
     };
-    loadUser();
+    loadAircraft();
     }, [id]);
 
     // Load image
@@ -62,7 +61,7 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
     if (!confirm("¿Eliminar usuario?")) return;
     await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`, { method: "DELETE" });
-    navigate("/auth/users");
+    navigate("/auth/aircraft");
     };
 
     // Confirm update
@@ -101,7 +100,7 @@ export default function AircraftDetail() {
     const validateForm = () => {
         const newErrors: Record<string, string | null> = {};
 
-        userFields.forEach((field) => {
+        aircraftFields.forEach((field) => {
             if (field.validate) {
                 const valid = field.validate(formValues[field.key]);
                 newErrors[field.key] = valid ? null : field.error || "Campo inválido";

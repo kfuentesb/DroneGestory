@@ -37,13 +37,16 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // ALL
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/home", "/api/auth/login", "/api/auth/logout").permitAll()
+                        // ROLES
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/users/**").hasAnyRole("ADMIN","MANAGER")
-                        .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/aircraft/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/auth/aircrafts/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/auth/aircrafts/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/pilots/**").hasRole("ADMIN")
+                        // ANY
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

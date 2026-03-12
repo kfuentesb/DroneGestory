@@ -33,8 +33,8 @@ public class Aircraft {
 
     // ============ CAMPOS OBLIGATORIOS para el cliente ============
     // Si ApplicantType = Manufacturer || To_the_manufacturer
-    @Column(name = "manufacturer_name", length = 100, nullable = false)
-    private String manufacturer_name;
+    @Column(name = "manufacturer", length = 100, nullable = false)
+    private String manufacturer;
 
     @Column(name = "model", length = 100, nullable = false)
     private String model;
