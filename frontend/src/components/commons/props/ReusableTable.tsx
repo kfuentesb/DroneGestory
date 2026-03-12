@@ -18,7 +18,7 @@ export function ReusableTable<T>({
   return (
     <div className="table-responsive">
       <table
-        className="table table-hover align-middle"
+        className="table table-bordered table-hover align-center"
         style={{ borderColor: "#E5E7EB" }}
       >
         <thead className="table-dark">

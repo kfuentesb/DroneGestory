@@ -77,7 +77,7 @@ export default function AircraftList() {
       >
         <div className="card-body">
           <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-            Lista de Aeronaves
+            Aeronaves registradas
           </h2>
 
           {/* Barra búsqueda + Añadir aeronave */}

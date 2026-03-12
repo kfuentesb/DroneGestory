@@ -3,42 +3,43 @@ import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
+import { ReusableTable } from "../commons/props/ReusableTable";
 
-  type User = {
-    id: number;
-    firstName: string;
-    lastName: string;
-    username: string;
-    email: string;
-    phoneNumber: number;
-    type: string;
-  };
+type User = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phoneNumber: number;
+  type: string;
+};
 
-  export default function UserList() {
-    const [users, setUsers] = useState<User[]>([]);
-    const navigate = useNavigate();
-    const [search, setSearch] = useState("");
+export default function UserList() {
+  const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
 
-    // console.log("UserList MOUNTED"); TESTING
+  // console.log("UserList MOUNTED"); TESTING
 
-    useEffect(() => {
-      const loadUsers = async () => {
-        try {
-          const res = await apiFetch("http://localhost:8080/api/auth/users", {
-            headers: { "Content-Type": "application/json" }
-          });
-          //console.log("Respuesta a /api/auth/users:", res); TESTING
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const res = await apiFetch("http://localhost:8080/api/auth/users", {
+          headers: { "Content-Type": "application/json" }
+        });
+        //console.log("Respuesta a /api/auth/users:", res); TESTING
 
-          if (!res) return; // happens if redirected (403/404)
+        if (!res) return; // happens if redirected (403/404)
 
-          const data = await res.json();
-          setUsers(data);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      loadUsers();
-    }, []);
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadUsers();
+  }, []);
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {
     ADMIN: {
@@ -77,56 +78,36 @@ import ButtonProp from "../commons/props/ButtonProp";
             </ButtonProp>
           </div>
 
-          <div className="table-responsive">
-            <table
-              className="table table-hover align-middle"
-              style={{ borderColor: "#E5E7EB" }}
-            >
-              <thead className="table-dark"
-              >
-                <tr>
-                  <th>Nombre</th>
-                  <th>Usuario</th>
-                  <th>Email</th>
-                  <th>Teléfono</th>
-                  <th>Tipo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((p) => (
-                  <tr
-                    key={p.id}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`/auth/users/${p.id}`)}
+          <ReusableTable
+            headers={["Nombre", "Usuario", "Email", "Teléfono", "Tipo"]}
+            rows={users}
+            renderRow={(p) => (
+              <>
+                <td>{p.firstName} {p.lastName}</td>
+                <td>{p.username}</td>
+                <td>{p.email}</td>
+                <td>
+                  {p.phoneNumber
+                    .toString()
+                    .replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
+                </td>
+                <td>
+                  <span
+                    className="badge"
+                    style={
+                      typeColors[p.type] || {
+                        backgroundColor: "#E5E7EB",
+                        color: "#374151",
+                      }
+                    }
                   >
-                    <td>
-                      {p.firstName} {p.lastName}
-                    </td>
-                    <td>{p.username}</td>
-                    <td>{p.email}</td>
-                    <td>
-                      {p.phoneNumber
-                        .toString()
-                        .replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
-                    </td>
-                    <td>
-                      <span
-                        className="badge"
-                        style={
-                          typeColors[p.type] || {
-                            backgroundColor: "#E5E7EB",
-                            color: "#374151",
-                          }
-                        }
-                      >
-                        {p.type}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    {p.type}
+                  </span>
+                </td>
+              </>
+            )}
+            onRowClick={(p) => navigate(`/auth/users/${p.id}`)}
+          />
 
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
         </div>
