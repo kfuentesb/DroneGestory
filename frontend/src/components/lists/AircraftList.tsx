@@ -3,6 +3,7 @@ import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
+import { ReusableTable } from "../commons/props/ReusableTable";
 
 type Aircraft = {
   id: number;
@@ -40,22 +41,22 @@ export default function AircraftList() {
 
 
   useEffect(() => {
-      const loadAircrafts = async () => {
-        try {
-          const res = await apiFetch("http://localhost:8080/api/auth/aircraft", {
-            headers: { "Content-Type": "application/json" }
-          });
+    const loadAircrafts = async () => {
+      try {
+        const res = await apiFetch("http://localhost:8080/api/auth/aircraft", {
+          headers: { "Content-Type": "application/json" }
+        });
 
-          if (!res) return; // happens if redirected (403/404)
+        if (!res) return; // happens if redirected (403/404)
 
-          const data = await res.json();
-          setAircrafts(data);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      loadAircrafts();
-    }, []);
+        const data = await res.json();
+        setAircrafts(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadAircrafts();
+  }, []);
 
   useEffect(() => {
     if (search.trim() === "") {
@@ -91,61 +92,39 @@ export default function AircraftList() {
             </ButtonProp>
           </div>
 
-          <div className="table-responsive">
-            <table
-              className="table table-hover align-middle"
-              style={{ borderColor: "#E5E7EB" }}
-            >
-              <thead className="table-dark">
-                <tr>
-                  <th>Modelo</th>
-                  <th>Nº Serie</th>
-                  <th>Clase</th>
-                  <th>MTOM (Kg)</th>
-                  <th>Dimensión</th>
-                  <th>Velocidad (Km/h)</th>
-                  <th>Configuración</th>
-                  <th>Energía impacto (J)</th>
-                  <th>Tiene cámara</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAircrafts.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="text-center text-muted">
-                      No hay aeronaves registradas.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredAircrafts.map((a) => (
-                    <tr
-                      key={a.id}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => navigate(`/auth/aircraft/${a.id}`)}
-                    >
-                      <td>{a.model}</td>
-                      <td>{a.serialNumber}</td>
-                      <td>{a.aircraftClass}</td>
-                      <td>{a.mtom}</td>
-                      <td>{a.wingspan}</td>
-                      <td>{a.maxSpeed}</td>
-                      <td>{a.type}</td>
-                      <td>{a.impactEnergy}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            a.camera ? "bg-success" : "bg-secondary"
-                          }`}
-                        >
-                          {a.camera ? "Sí" : "No"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <ReusableTable
+            headers={[
+              "Modelo",
+              "Nº Serie",
+              "Clase",
+              "MTOM (Kg)",
+              "Dimensión",
+              "Velocidad (Km/h)",
+              "Configuración",
+              "Energía impacto (J)",
+              "Tiene cámara",
+            ]}
+            rows={filteredAircrafts}
+            renderRow={(a) => (
+              <>
+                <td>{a.model}</td>
+                <td>{a.serialNumber ?? "-"}</td>
+                <td>{a.aircraftClass}</td>
+                <td>{a.mtom ?? "-"}</td>
+                <td>{a.wingspan ?? "-"}</td>
+                <td>{a.maxSpeed ?? "-"}</td>
+                <td>{a.type}</td>
+                <td>{a.impactEnergy ?? "-"}</td>
+                <td>
+                  <span className={`badge ${a.camera ? "bg-success" : "bg-secondary"}`}>
+                    {a.camera ? "Sí" : "No"}
+                  </span>
+                </td>
+              </>
+            )}
+            onRowClick={(a) => navigate(`/auth/aircraft/${a.id}`)}
+            emptyText="No hay aeronaves registradas."
+          />
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
         </div>
       </div>

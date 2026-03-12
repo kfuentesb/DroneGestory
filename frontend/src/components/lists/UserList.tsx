@@ -107,6 +107,7 @@ export default function UserList() {
               </>
             )}
             onRowClick={(p) => navigate(`/auth/users/${p.id}`)}
+            emptyText="No hay usuarios registrados."
           />
 
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
