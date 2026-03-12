@@ -1,17 +1,11 @@
-export type FieldConfig = {
-    label: string;
-    key: string;
-    type?: "text" | "email" | "select";
-    options?: string[];
-    validate?: (v: any) => boolean;
-    error?: string;
-};
+import type { FieldConfig } from "../../details/FieldConfig";
 
 type Props = {
     values: any;
     setValues: (v: any) => void;
     fields: FieldConfig[];
-    errors: Record<string, boolean>;
+    errors: Record<string, string | null>;
+    format?: (v: any) => string;
 };
 
 export default function DetailEdit({ values, setValues, fields, errors }: Props) {
@@ -23,23 +17,56 @@ export default function DetailEdit({ values, setValues, fields, errors }: Props)
             {field.label}
             </label>
 
-            {field.type === "select" ? (
-            <select
-                className="form-select"
-                value={values[field.key] || ""}
-                onChange={(e) =>
-                setValues({
-                    ...values,
-                    [field.key]: e.target.value,
-                })
-                }
-            >
-                {field.options?.map((opt) => (
-                <option key={opt} value={opt}>
-                    {opt}
-                </option>
-                ))}
-            </select>
+            {field.type === "file" ? (
+                <div
+                    className="d-flex align-items-center rounded"
+                    style={{
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #D1D5DB",
+                    paddingLeft: "10px"
+                    }}
+                >
+                    <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                    {values[field.key]?.name || "No file selected"}
+                    </span>
+
+                    <input
+                    id={`file-${field.key}`}
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setValues({ ...values, [field.key]: file });
+                    }}
+                    />
+
+                    <label
+                    htmlFor={`file-${field.key}`}
+                    className="btn btn-success ms-auto"
+                    style={{ cursor: "pointer" }}
+                    >
+                    Seleccionar archivo
+                    </label>
+                </div>
+            ) : field.type === "select" ? (
+                <select
+                    className="form-select"
+                    value={values[field.key] || ""}
+                    onChange={(e) =>
+                    setValues({
+                        ...values,
+                        [field.key]: e.target.value,
+                    })
+                    }
+                >
+                    {field.options?.map((opt) => (
+                    <option key={opt} value={opt}>
+                        {opt}
+                    </option>
+                    ))}
+                </select>
+            
             ) : (
             <input
                 type={field.type || "text"}
