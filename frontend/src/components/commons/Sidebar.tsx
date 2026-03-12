@@ -7,6 +7,8 @@ import ArrowBack from '../../assets/arrow_back_white.svg';
 import ArrowForward from '../../assets/arrow_forward_white.svg';
 import UsersIcon from '../../assets/group_white.svg';
 import DroneIcon from '../../assets/drone_white.svg';
+import FlyIcon from '../../assets/fly_white.svg';
+import IdentityIcon from '../../assets/identity_white.svg';
 
 export default function SidebarMenu() {
     const navigate = useNavigate();
@@ -67,7 +69,13 @@ export default function SidebarMenu() {
                     Inicio
                 </MenuItem>
 
-                {/* SubMenu with popper for floating when collapsed */}
+                <MenuItem 
+                onClick={() => navigate("/auth/users")}
+                    icon={<img src={IdentityIcon} alt="Profile" style={{ width: "18px", height: "18px" }} />}
+                >
+                    Ver perfil
+                </MenuItem>
+
                 <SubMenu
                     label="Administrar usuarios"
                     icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
@@ -76,12 +84,22 @@ export default function SidebarMenu() {
                     <MenuItem onClick={() => navigate("/auth/register-user")}>Registrar usuario</MenuItem>
                 </SubMenu>
 
-                <MenuItem
-                    onClick={() => navigate("/auth/aircrafts")}
+                <SubMenu
+                    label="Administrar aeronaves"
                     icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                 >
-                    Aeronaves
-                </MenuItem>
+                    <MenuItem onClick={() => navigate("/auth/aircrafts")}>Listar Aeronaves</MenuItem>
+                    <MenuItem onClick={() => navigate("/#")}>Registrar Aeronave</MenuItem>
+                </SubMenu>
+
+                <SubMenu
+                    label="Operaciones"
+                    icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
+                >
+                    <MenuItem onClick={() => navigate("/#")}>Listar operaciones (admin)</MenuItem>
+                    <MenuItem onClick={() => navigate("/#")}>Listar mis operaciones</MenuItem>
+                    <MenuItem onClick={() => navigate("/#")}>Registrar operacion</MenuItem>
+                </SubMenu>
             </Menu>
         </Sidebar>
     );
