@@ -1,0 +1,245 @@
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../AuthProvider";
+import DetailView from "../commons/props/DetailView";
+import DetailEdit from "../commons/props/DetailEdit";
+
+import editIcon from '../../assets/edit_white.svg';
+import deleteIcon from '../../assets/delete_white.svg';
+import arroBackIcon from '../../assets/arrow_back_white.svg';
+import checkIcon from '../../assets/check_white.svg';
+import cancelIcon from '../../assets/cancel_white.svg';
+
+interface DetailsComponentProps {
+    id: string | undefined
+    endpoint: string
+    imageEndpoint?: string
+    fields: any[]
+
+    allowEdit?: boolean
+    allowDelete?: boolean
+
+    onDelete?: () => Promise<void>
+    onBack?: () => void
+
+    validateForm?: (values: any) => Record<string, string | null>
+}
+export default function DetailsComponent({
+        id,
+        endpoint,
+        fields,
+        imageEndpoint,
+        allowEdit,
+        allowDelete,
+        onDelete,
+        onBack,
+        validateForm
+    }:DetailsComponentProps) {
+    const { token } = useAuth();
+
+    const [data, setData] = useState<any>(null);
+    const [editing, setEditing] = useState(false);
+    const [formValues, setFormValues] = useState<any>({});
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [errors, setErrors] = useState<Record<string, string | null>>({});
+
+    useEffect(() => {
+        const loadData = async () => {
+            const url = id ? `${endpoint}/${id}` : endpoint;
+            const res = await fetch(url, {
+                headers: {
+                Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!res.ok) return;
+
+            const json = await res.json();
+            setData(json);
+            setFormValues(json);
+        };
+
+        loadData();
+    }, [id, endpoint, token]);
+
+    useEffect(() => {
+
+        let objectUrl: string | null = null;
+
+        const loadImage = async () => {
+            if (!data?.imagePath || !imageEndpoint) return;
+
+            const res = await fetch(`${imageEndpoint}/${data.imagePath}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) return;
+
+            const blob = await res.blob();
+            objectUrl = URL.createObjectURL(blob);
+            setImageUrl(objectUrl);
+        };
+
+        loadImage();
+
+        return () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
+
+    }, [data?.imagePath, token, imageEndpoint]);
+
+    const handleUpdate = async () => {
+
+        if (validateForm) {
+            const newErrors = validateForm(formValues)
+            setErrors(newErrors)
+
+            const hasErrors = Object.values(newErrors).some(e => e !== null)
+            if (hasErrors) return
+        }
+
+        if (!confirm("¿Confirmar cambios?")) return
+
+        const formData = new FormData()
+
+        Object.entries(formValues).forEach(([key, value]) => {
+            if (value instanceof File) {
+            formData.append(key, value)
+            } else if (value !== undefined && value !== null) {
+            formData.append(key, value.toString())
+            }
+        })
+
+        const res = await fetch(`${endpoint}/${id}`, {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+        })
+
+        if (!res.ok) {
+            alert("Error actualizando")
+            return
+        }
+
+        const updated = await res.json()
+        setData(updated)
+        setEditing(false)
+    }
+
+    if (!data) return <p>Loading...</p>;
+
+    const typeColors: Record<string, { backgroundColor: string; color: string }> = {
+        ADMIN: { backgroundColor: "#FEE2E2", color: "#991B1B" },
+        MANAGER: { backgroundColor: "#E0F2FE", color: "#075985" },
+        PILOT: { backgroundColor: "#E6F4EC", color: "#1F6B43" },
+    };
+
+    return (
+        <div className="container-fluid py-4">
+            <div className="card p-4 shadow-sm">
+                <div className="row">
+                    <div className="col-md-8 col-12">
+                        {/* {imageUrl && (
+                            <img
+                            src={imageUrl}
+                            style={{ width: "90px", height: "90px", objectFit: "cover" }}
+                            />
+                        )} */}
+
+                        
+                        <div className="d-flex align-items-center mb-4 flex-wrap">
+                            <img
+                                src={imageUrl || "/default-user.jpg"}
+                                alt={data.username}
+                                onError={(e) => ((e.target as HTMLImageElement).src = "/default-user.jpg")}
+                                className="rounded me-3 d-none d-sm-block"
+                                style={{ width: "90px", height: "90px", objectFit: "cover" }}
+                            />
+
+                            <div className="d-flex flex-column">
+                            <div className="d-flex align-items-center flex-wrap">
+                                <h2 className="me-3 mb-0">
+                                {data.firstName} {data.lastName}
+                                </h2>
+                                <span
+                                    className="px-2 py-1 fw-bold"
+                                    style={{
+                                        borderRadius: "4px",
+                                        fontSize: "0.9rem",
+                                        ...(typeColors[data.type] || { backgroundColor: "#E5E7EB", color: "#374151" }),
+                                }}
+                                >
+                                {data.type}
+                                </span>
+                            </div>
+                                <small className="text-muted text-start">@{data.username}</small>
+                            </div>
+                        </div>
+                        
+
+
+                        {!editing ? (
+                            <DetailView data={data} fields={fields} />
+                        ) : (
+                            <DetailEdit
+                            values={formValues}
+                            setValues={setFormValues}
+                            fields={fields}
+                            errors={errors}
+                            />
+                        )}
+
+                        {/* Buttons */}
+                        <div className="d-flex gap-2 mt-3">
+
+                            {!editing && allowEdit && (
+                                <button className="btn btn-primary" onClick={() => setEditing(true)}>
+                                    <img src={editIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
+                                    <span className="d-none d-sm-block">
+                                        Editar
+                                    </span>
+                                </button>
+                            )}
+
+                            {!editing && allowDelete && onDelete && (
+                                <button className="btn btn-danger" onClick={onDelete}>
+                                    <img src={deleteIcon} alt="Delete" className="delete-icon d-inline d-sm-none" />
+                                    <span className="d-none d-sm-block">
+                                        Borrar
+                                    </span>
+                                </button>
+                            )}
+
+                            {!editing && onBack && (
+                                <button className="btn btn-secondary" onClick={onBack}>
+                                    <img src={arroBackIcon} alt="ArroBack" className="arrow-back-icon d-inline d-sm-none ms-2" />
+                                    <span className="d-none d-sm-block">
+                                        Volver
+                                    </span>
+                                </button>
+                            )}
+
+                            {editing && (
+                                <>
+                                <button className="btn btn-success" onClick={handleUpdate}>
+                                    <img src={checkIcon} alt="Check" className="check-icon d-inline d-sm-none" />
+                                    <span className="d-none d-sm-block">
+                                        Confirmar cambios
+                                    </span>
+                                </button>
+
+                                <button className="btn btn-secondary" onClick={() => setEditing(false)}>
+                                    <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
+                                    <span className="d-none d-sm-block">
+                                        Cancelar
+                                    </span>
+                                </button>
+                                </>
+                            )}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

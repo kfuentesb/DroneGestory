@@ -40,13 +40,18 @@ public class SecurityConfig {
                         // ALL
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/home", "/api/auth/login", "/api/auth/logout").permitAll()
-                        // ROLES
+
+                        .requestMatchers(HttpMethod.GET, "/api/auth/users/me").authenticated()
+
+                        // Endpoints para gestión de usuarios (solo ADMIN y MANAGER)
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/users").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/users/**").hasAnyRole("ADMIN","MANAGER")
-                        .requestMatchers(HttpMethod.GET, "/api/auth/aircrafts/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/aircrafts/**").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/pilots/**").hasRole("ADMIN")
-                        // ANY
+
+                        .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/auth/pilots/**").hasAnyRole("ADMIN", "MANAGER")
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

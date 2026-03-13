@@ -1,6 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthProvider";
 
+import LoginIcon from "../../assets/login_white.svg";
+import LogoutIcon from "../../assets/logout_white.svg";
+
 function Navbar() {
   const navigate = useNavigate();
   const { logout, username } = useAuth();
@@ -60,14 +63,18 @@ function Navbar() {
                 <button
                   className="btn px-4"
                   style={{
-                    backgroundColor: "#1F6B43", // darker green button
+                    backgroundColor: "#1F6B43",
                     color: "white",
                     borderRadius: "6px",
                     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
                   }}
                   type="button"
                 >
-                  Acceder
+                  {/* <img src={LoginIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
+                  <span className="d-none d-sm-block">
+                      Acceder
+                  </span> */}
+                  <img src={LoginIcon} alt="Edit" className="edit-icon" />
                 </button>
               </NavLink>
             ) : (
@@ -82,7 +89,11 @@ function Navbar() {
                 type="button"
                 onClick={handleLogout}
               >
-                Cerrar Sesión
+                {/* <img src={LogoutIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
+                  <span className="d-none d-sm-block">
+                      Cerrar Sesión
+                  </span> */}
+                  <img src={LogoutIcon} alt="Edit" className="edit-icon" />
               </button>
             )}
           </div>

@@ -14,7 +14,7 @@ const ButtonProp: React.FC<ButtonProp> = ({
      * EJEMPLOS PARA REUSO
         //Añadir aeronave
         <ButtonProp onClick={() => navigate("/auth/register-aircraft")}>
-         + Añadir aeronave
+            + Añadir aeronave
         </ButtonProp>
 
         // Registrar usuario
@@ -30,7 +30,7 @@ const ButtonProp: React.FC<ButtonProp> = ({
         backgroundColor: "#2F8F5B",
         color: "#FFFFFF",
         fontWeight: "bold",
-        minWidth: "135px",
+        minWidth: "50px",
     },
     type = "button",
     disabled = false,

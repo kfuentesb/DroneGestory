@@ -35,6 +35,10 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public Optional<User> findByUsername(String username){
+        return userRepository.findByUsername(username);
+    }
+
     // Crear un nuevo usuario
     public User create(User user) {
         if (user.getPassword() != null && !user.getPassword().isBlank()) {

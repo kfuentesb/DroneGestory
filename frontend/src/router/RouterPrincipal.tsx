@@ -11,7 +11,11 @@ import Dashboard from "../components/Dashboard";
 import Forbidden from "../components/commons/Forbidden";
 import NotFound from "../components/commons/NotFound";
 import AircraftList from "../components/lists/AircraftList";
+<<<<<<< HEAD
 import AircraftDetail from "../components/details/AircraftDetail";
+=======
+import ProfileDetail from "../components/details/ProfileDetails";
+>>>>>>> andres
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -28,6 +32,8 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/auth/users" element={<UserList />} />
         <Route path="/auth/users/:id" element={<UserDetail />} />
         <Route path="/auth/register-user" element={<FormUser />} />
+
+        <Route path="/profile/:id" element={<ProfileDetail />} />
 
         {/* Aircrafts */}
         <Route path="/auth/aircrafts" element={<AircraftList />} />

@@ -31,7 +31,7 @@ function LogIn() {
       }
 
       const data = await res.json();
-      console.log("Login OK:", data); // Aqui vemos el contenido enviado
+      // console.log("Login OK:", data);
 
       if (data.ok) {
         login(data.username);
