@@ -181,13 +181,13 @@ export default function FormAircraft() {
     };
 
     // Datos opcionales, sólo se agregan si tienen valor (incluso null para SelectOption OK):
-    if (formValues.applicantType)       payload.applicantType = formValues.applicantType.value;
-    if (formValues.applicantName.trim())payload.applicantName = formValues.applicantName.trim();
-    if (formValues.powerSource)         payload.powerSource = formValues.powerSource.value;
-    if (formValues.powerSourceType && !isElectric) payload.powerSourceType = formValues.powerSourceType.value;
-    if (formValues.observaciones.trim())payload.observations = formValues.observaciones.trim();
-    if (formValues.accesorios.trim())   payload.accessories = formValues.accesorios.trim();
-    if (formValues.purchaseDate)        payload.purchaseDate = formValues.purchaseDate;
+    // if (formValues.applicantType)       payload.applicantType = formValues.applicantType.value;
+    // if (formValues.applicantName.trim())payload.applicantName = formValues.applicantName.trim();
+    // if (formValues.powerSource)         payload.powerSource = formValues.powerSource.value;
+    // if (formValues.powerSourceType && !isElectric) payload.powerSourceType = formValues.powerSourceType.value;
+    // if (formValues.observaciones.trim())payload.observations = formValues.observaciones.trim();
+    // if (formValues.accesorios.trim())   payload.accessories = formValues.accesorios.trim();
+    // if (formValues.purchaseDate)        payload.purchaseDate = formValues.purchaseDate;
 
     // Adjuntar imagen
     const formData = new FormData();
@@ -197,18 +197,22 @@ export default function FormAircraft() {
     }
 
     try {
+      // Testing consultar token
+      const token = localStorage.getItem('jwt');
+      console.log("JWT enviado:", token);
+      
       const res = await fetch("http://localhost:8080/api/auth/aircraft", {
         method: "POST",
         body: formData // browser sets multipart/form-data
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Error al registrar aeronave");
-      }
+      if (!res) return;
 
-      await res.json();
-      navigate("/auth/aircrafts");
+      const data = await res.json();
+      console.log("Aircraft created:", data);
+
+      navigate("/auth/aircrafts"); // redirect to users list after success
+      
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -370,7 +374,7 @@ export default function FormAircraft() {
               </div>
             </div>
 
-            {/* ----- OPCIONALES ----- */}
+            {/* ----- OPCIONALES -----
             <div className="mb-3">
               <button
                 type="button"
@@ -468,7 +472,7 @@ export default function FormAircraft() {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {error && <p className="text-danger">{error}</p>}
 
