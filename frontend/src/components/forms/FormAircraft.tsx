@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from '../../api';
 
 const applicantTypes = [
   { value: "Manufacturer", label: "Fabricante" },
@@ -197,18 +198,22 @@ export default function FormAircraft() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/aircraft", {
+      // Testing consultar token
+      // const token = localStorage.getItem('jwt');
+      // console.log("JWT enviado:", token);
+      
+      const res = await apiFetch("http://localhost:8080/api/auth/aircraft", {
         method: "POST",
         body: formData // browser sets multipart/form-data
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Error al registrar aeronave");
-      }
+      if (!res) return;
 
-      await res.json();
-      navigate("/auth/aircrafts");
+      const data = await res.json();
+      console.log("Aircraft created:", data);
+
+      navigate("/auth/aircrafts"); // redirect to users list after success
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -479,7 +484,7 @@ export default function FormAircraft() {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate("/auth/aircraft")}
+                onClick={() => navigate("/auth/aircrafts")}
                 disabled={loading}
               >
                 Cancelar

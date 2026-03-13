@@ -61,7 +61,7 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
     if (!confirm("¿Eliminar aeronave?")) return;
     await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`, { method: "DELETE" });
-    navigate("/auth/aircraft");
+    navigate("/auth/aircrafts");
     };
 
     // Confirm update

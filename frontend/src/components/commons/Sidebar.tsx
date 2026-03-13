@@ -105,7 +105,7 @@ export default function SidebarMenu() {
                     icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                 >
                     <MenuItem onClick={() => navigate("/auth/aircrafts")}>Listar Aeronaves</MenuItem>
-                    <MenuItem onClick={() => navigate("/#")}>Registrar Aeronave</MenuItem>
+                    <MenuItem onClick={() => navigate("/auth/register-aircraft")}>Registrar Aeronave</MenuItem>
                 </SubMenu>
 
                 <SubMenu

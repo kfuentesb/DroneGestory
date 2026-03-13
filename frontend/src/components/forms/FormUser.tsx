@@ -140,6 +140,9 @@ function FormUser() {
                 formData.append("imageFile", selectedFile, selectedFile.name);
             }
 
+            // Testing consultar token
+            // const token = localStorage.getItem('jwt');
+            // console.log("JWT enviado:", token);
             const res = await apiFetch("http://localhost:8080/api/auth/users", {
                 method: "POST",
                 body: formData, // browser automatically sets Content-Type to multipart/form-data
@@ -149,8 +152,9 @@ function FormUser() {
 
             const data = await res.json();
             console.log("User created:", data);
-
+            
             navigate("/auth/users"); // redirect to users list after success
+
         } catch (err: any) {
             setError(err.message);
         } finally {
