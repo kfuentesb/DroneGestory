@@ -89,7 +89,7 @@ export default function AircraftDetail() {
         const res = await fetch(`http://localhost:8080/api/auth/aircraft/${id}`, {
             method: "PUT",
             headers: {
-            Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: formData,
         });

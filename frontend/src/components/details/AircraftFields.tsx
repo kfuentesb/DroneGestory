@@ -43,7 +43,7 @@ export const aircraftFields: FieldConfig[] = [
         error: "MTOM debe ser un número válido mayor que 0"
     },
     {
-        label: "Dimensión característica",
+        label: "Dimensión característica (m)",
         key: "wingspan",
         type: "number",
         validate: (v: any) => {
