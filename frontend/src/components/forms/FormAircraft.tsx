@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from '../../api';
 
 const applicantTypes = [
   { value: "Manufacturer", label: "Fabricante" },
@@ -181,13 +182,13 @@ export default function FormAircraft() {
     };
 
     // Datos opcionales, sólo se agregan si tienen valor (incluso null para SelectOption OK):
-    // if (formValues.applicantType)       payload.applicantType = formValues.applicantType.value;
-    // if (formValues.applicantName.trim())payload.applicantName = formValues.applicantName.trim();
-    // if (formValues.powerSource)         payload.powerSource = formValues.powerSource.value;
-    // if (formValues.powerSourceType && !isElectric) payload.powerSourceType = formValues.powerSourceType.value;
-    // if (formValues.observaciones.trim())payload.observations = formValues.observaciones.trim();
-    // if (formValues.accesorios.trim())   payload.accessories = formValues.accesorios.trim();
-    // if (formValues.purchaseDate)        payload.purchaseDate = formValues.purchaseDate;
+    if (formValues.applicantType)       payload.applicantType = formValues.applicantType.value;
+    if (formValues.applicantName.trim())payload.applicantName = formValues.applicantName.trim();
+    if (formValues.powerSource)         payload.powerSource = formValues.powerSource.value;
+    if (formValues.powerSourceType && !isElectric) payload.powerSourceType = formValues.powerSourceType.value;
+    if (formValues.observaciones.trim())payload.observations = formValues.observaciones.trim();
+    if (formValues.accesorios.trim())   payload.accessories = formValues.accesorios.trim();
+    if (formValues.purchaseDate)        payload.purchaseDate = formValues.purchaseDate;
 
     // Adjuntar imagen
     const formData = new FormData();
@@ -198,10 +199,10 @@ export default function FormAircraft() {
 
     try {
       // Testing consultar token
-      const token = localStorage.getItem('jwt');
-      console.log("JWT enviado:", token);
+      // const token = localStorage.getItem('jwt');
+      // console.log("JWT enviado:", token);
       
-      const res = await fetch("http://localhost:8080/api/auth/aircraft", {
+      const res = await apiFetch("http://localhost:8080/api/auth/aircraft", {
         method: "POST",
         body: formData // browser sets multipart/form-data
       });
@@ -212,7 +213,7 @@ export default function FormAircraft() {
       console.log("Aircraft created:", data);
 
       navigate("/auth/aircrafts"); // redirect to users list after success
-      
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -374,7 +375,7 @@ export default function FormAircraft() {
               </div>
             </div>
 
-            {/* ----- OPCIONALES -----
+            {/* ----- OPCIONALES ----- */}
             <div className="mb-3">
               <button
                 type="button"
@@ -472,7 +473,7 @@ export default function FormAircraft() {
                   </div>
                 </div>
               </div>
-            )} */}
+            )}
 
             {error && <p className="text-danger">{error}</p>}
 
@@ -483,7 +484,7 @@ export default function FormAircraft() {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate("/auth/aircraft")}
+                onClick={() => navigate("/auth/aircrafts")}
                 disabled={loading}
               >
                 Cancelar
