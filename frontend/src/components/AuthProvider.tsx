@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
 
-// Define la forma del contexto.
-// TO DO pendiente de rehacer
 interface AuthContextType {
   username: string | null;
   token: string | null;
@@ -23,10 +21,8 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [username, setUsername] = useState<string | null>(localStorage.getItem("username"));
   const [token, setTokenState] = useState<string | null>(localStorage.getItem("token"));
-  //console.log("AuthProvider render username =", username); TESTING
 
   const login = (name: string) => {
-    //console.log("AuthProvider.login(name) =", name); TESTING
     localStorage.setItem("username", name);
     setUsername(name);
   };

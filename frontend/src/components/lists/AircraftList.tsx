@@ -5,6 +5,8 @@ import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
 
+import DronePlusIcon from "../../assets/drone_plus_white.svg";
+
 type Aircraft = {
   id: number;
   // Obligatorios
@@ -91,7 +93,7 @@ export default function AircraftList() {
 
             {/* Botón añadir aeronave */}
             <ButtonProp onClick={() => navigate("/auth/register-aircraft")}>
-              + Añadir aeronave
+              <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
             </ButtonProp>
           </div>
 

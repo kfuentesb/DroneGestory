@@ -20,6 +20,8 @@ import java.nio.file.Paths;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 
+import org.springframework.security.core.Authentication;
+
 @RestController
 @RequestMapping("/api/auth/users")
 @RequiredArgsConstructor
@@ -35,6 +37,14 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getById(@PathVariable Integer id) {
         return userService.findById(id)
+                .map(user -> ResponseEntity.ok(toResponse(user)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
+        String username = authentication.getName(); // comes from JWT
+        return userService.findByUsername(username)
                 .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
     }

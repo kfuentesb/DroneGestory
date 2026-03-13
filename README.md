@@ -62,3 +62,4 @@ pip install bcrypt
 - Cuando un usuario cambie de imagen de perfil, borrar la previa imagen.
 - Si se quiere modificar un usuario, el nº de telefono es obligatorio, lo cual es un error
 - Cuando se esconde la sidebar y se hace click a un submenu, esta por debajo del eje z
+- Un usuario piloto puede acceder a el form de dar de alta usuario, pero no puede dar de alta, hacer que no muestre el form

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthProvider";
 
 import HomeIcon from '../../assets/home_white.svg';
 import ArrowBack from '../../assets/arrow_back_white.svg';
@@ -15,6 +16,28 @@ export default function SidebarMenu() {
     const [collapsed, setCollapsed] = useState(false);
 
     const toggleSidebar = () => setCollapsed(!collapsed);
+
+    const { username, token } = useAuth();
+
+    const goToProfile = async () => {
+
+        if (!username) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/auth/users/me?username=${username}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!res.ok) return;
+
+        const user = await res.json();
+
+        navigate(`/profile/${user.id}`);
+    };
 
     return (
         <Sidebar
@@ -62,15 +85,8 @@ export default function SidebarMenu() {
                     {collapsed ? "" : "Menú"}
                 </MenuItem>
 
-                <MenuItem
-                    onClick={() => navigate("/")}
-                    icon={<img src={HomeIcon} alt="Home" style={{ width: "18px", height: "18px" }} />}
-                >
-                    Inicio
-                </MenuItem>
-
                 <MenuItem 
-                onClick={() => navigate("/auth/users")}
+                    onClick={goToProfile}
                     icon={<img src={IdentityIcon} alt="Profile" style={{ width: "18px", height: "18px" }} />}
                 >
                     Ver perfil
