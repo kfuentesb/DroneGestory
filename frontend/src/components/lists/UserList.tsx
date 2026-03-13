@@ -11,7 +11,7 @@ type User = {
   lastName: string;
   username: string;
   email: string;
-  phoneNumber: number;
+  phoneNumber: number |null;
   type: string;
 };
 
@@ -28,7 +28,6 @@ export default function UserList() {
         const res = await apiFetch("http://localhost:8080/api/auth/users", {
           headers: { "Content-Type": "application/json" }
         });
-        //console.log("Respuesta a /api/auth/users:", res); TESTING
 
         if (!res) return; // happens if redirected (403/404)
 
@@ -86,10 +85,12 @@ export default function UserList() {
                 <td>{p.firstName} {p.lastName}</td>
                 <td>{p.username}</td>
                 <td>{p.email}</td>
-                <td >
+                <td>
                   {p.phoneNumber
-                    .toString()
-                    .replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}
+                    ? p.phoneNumber
+                        .toString()
+                        .replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")
+                    : "-"}
                 </td>
                 <td className="text-center">
                   <span

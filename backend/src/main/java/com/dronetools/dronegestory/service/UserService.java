@@ -43,6 +43,28 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // Crear un nuevo usuario con archivo
+    public User createWithFile(User user, MultipartFile imageFile) throws IOException {
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String originalName = imageFile.getOriginalFilename();
+            String safeName = (originalName == null || originalName.isBlank())
+                    ? "upload"
+                    : Paths.get(originalName).getFileName().toString();
+            String filename = System.currentTimeMillis() + "_" + safeName;
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Files.createDirectories(uploadDir);
+            Path target = uploadDir.resolve(filename);
+            imageFile.transferTo(target.toFile());
+            user.setImagePath(filename);
+        }
+
+        return userRepository.save(user);
+    }
+
     // Actualizar un usuario existente
     public Optional<User> update(Integer id, User updatedUser) {
         return userRepository.findById(id)
@@ -63,6 +85,7 @@ public class UserService {
 
     //update with file
     public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile) throws IOException {
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
@@ -73,22 +96,38 @@ public class UserService {
         if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
         if (updatedUser.getType() != null) user.setType(updatedUser.getType());
         if (updatedUser.getPhoneNumber() != null) user.setPhoneNumber(updatedUser.getPhoneNumber());
+
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
 
         // Handle image upload
         if (imageFile != null && !imageFile.isEmpty()) {
+
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Files.createDirectories(uploadDir);
+
+            // nos guardamos la antigua, para luego poder borrarla
+            String oldImage = user.getImagePath();
+
             String originalName = imageFile.getOriginalFilename();
             String safeName = (originalName == null || originalName.isBlank())
                     ? "upload"
                     : Paths.get(originalName).getFileName().toString();
-            String filename = System.currentTimeMillis() + "_" + safeName;
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Files.createDirectories(uploadDir);
+
+            // String filename = System.currentTimeMillis() + "_" + safeName;
+            String filename = updatedUser.getUsername() + "_" + safeName;
+
             Path target = uploadDir.resolve(filename);
             imageFile.transferTo(target.toFile());
+
             user.setImagePath(filename);
+
+            // Delete old image if it exists
+            if (oldImage != null && !oldImage.isBlank()) {
+                Path oldFile = uploadDir.resolve(oldImage).normalize();
+                Files.deleteIfExists(oldFile);
+            }
         }
 
         return userRepository.save(user);

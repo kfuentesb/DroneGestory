@@ -7,6 +7,12 @@ import DetailView from "../commons/props/DetailView";
 import { userFields }from "./UserFields";
 import DetailEdit from "../commons/props/DetailEdit";
 
+import editIcon from '../../assets/edit_white.svg';
+import deleteIcon from '../../assets/delete_white.svg';
+import arroBackIcon from '../../assets/arrow_back_white.svg';
+import checkIcon from '../../assets/check_white.svg';
+import cancelIcon from '../../assets/cancel_white.svg';
+
 export default function UserDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -27,7 +33,12 @@ export default function UserDetail() {
         if (!res) return;
         const data = await res.json();
         setUser(data);
-        setFormValues(data); // initialize editable values
+        // esto va a permitir que phone sea nulo
+        setFormValues({
+            ...data,
+            phoneNumber: data.phoneNumber ?? "",
+            imagePath: data.imagePath ?? "",
+        });
     };
     loadUser();
     }, [id]);
@@ -151,7 +162,7 @@ export default function UserDetail() {
                                 {user.type}
                                 </span>
                             </div>
-                            <small className="text-muted text-start">@{user.username}</small>
+                                <small className="text-muted text-start">@{user.username}</small>
                             </div>
                         </div>
 
@@ -178,26 +189,41 @@ export default function UserDetail() {
                 </div>
 
                 {/* Buttons */}
-                <div className="d-flex gap-2 mt-3 flex-wrap">
+                <div className="d-flex gap-2 mt-3 flex-wrap justify-content-start justify-content-sm-start justify-content-center">
                     {!editing ? (
                     <>
                         <button className="btn btn-primary" onClick={() => setEditing(true)}>
-                        Modificar
+                            <img src={editIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                Editar
+                            </span>
                         </button>
                         <button className="btn btn-danger" onClick={handleDelete}>
-                        Eliminar
+                            <img src={deleteIcon} alt="Delete" className="delete-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                Borrar
+                            </span>
                         </button>
                         <button className="btn btn-secondary" onClick={() => navigate("/auth/users")}>
-                        Volver
+                            <img src={arroBackIcon} alt="ArroBack" className="arrow-back-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                Volver
+                            </span>
                         </button>
                     </>
                     ) : (
                     <>
                         <button className="btn btn-success" onClick={handleUpdate}>
-                        Confirmar cambios
+                            <img src={checkIcon} alt="Check" className="check-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                Confirmar cambios
+                            </span>
                         </button>
                         <button className="btn btn-secondary" onClick={() => setEditing(false)}>
-                        Cancelar
+                            <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
+                            <span className="d-none d-sm-block">
+                                Cancelar
+                            </span>
                         </button>
                     </>
                     )}

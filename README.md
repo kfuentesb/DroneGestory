@@ -45,7 +45,7 @@ npm i react-router
 npm i react-router-dom
 npm i react-select
 npm i react-error-boundary
-
+npm i react-pro-sidebar
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
 ```

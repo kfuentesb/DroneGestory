@@ -23,7 +23,6 @@ import org.springframework.http.HttpHeaders;
 @RestController
 @RequestMapping("/api/auth/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;
@@ -40,9 +39,18 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
-        return ResponseEntity.ok(userService.create(user));
+    // @PostMapping
+    // public ResponseEntity<User> create(@RequestBody User user) {
+    //     return ResponseEntity.ok(userService.create(user));
+    // }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> createUserWithFile(
+            @ModelAttribute User user,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+    ) throws IOException {
+        User createdUser = userService.createWithFile(user, imageFile);
+        return ResponseEntity.ok(createdUser);
     }
 
     // @PutMapping("/{id}")
