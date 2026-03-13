@@ -11,11 +11,8 @@ import Dashboard from "../components/Dashboard";
 import Forbidden from "../components/commons/Forbidden";
 import NotFound from "../components/commons/NotFound";
 import AircraftList from "../components/lists/AircraftList";
-<<<<<<< HEAD
-import AircraftDetail from "../components/details/AircraftDetail";
-=======
 import ProfileDetail from "../components/details/ProfileDetails";
->>>>>>> andres
+import AircraftDetail from "../components/details/AircraftDetail";
 
 export default class RouterPrincipal extends React.Component {
   render() {
