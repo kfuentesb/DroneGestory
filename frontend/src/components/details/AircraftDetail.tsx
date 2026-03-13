@@ -27,7 +27,11 @@ export default function AircraftDetail() {
         if (!res) return;
         const data = await res.json();
         setAircraft(data);
-        setFormValues(data); // initialize editable values
+        // Normalize hasCamera boolean to "Sí"/"No" for the select input
+        setFormValues({
+            ...data,
+            hasCamera: data.hasCamera ? "Sí" : "No",
+        });
     };
     loadAircraft();
     }, [id]);
@@ -72,7 +76,10 @@ export default function AircraftDetail() {
         const formData = new FormData();
 
         Object.entries(formValues).forEach(([key, value]) => {
-            if (value instanceof File) {
+            if (key === "hasCamera") {
+                // Convert "Sí"/"No" string back to boolean string for the backend
+                formData.append(key, value === "Sí" ? "true" : "false");
+            } else if (value instanceof File) {
                 formData.append(key, value, value.name);
             } else if (value !== undefined && value !== null) {
                 formData.append(key, value.toString());
