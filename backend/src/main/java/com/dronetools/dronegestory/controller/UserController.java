@@ -63,8 +63,8 @@ public class UserController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> updateUserWithFile(
             @PathVariable Integer id,
-            @ModelAttribute User user, // binds form fields
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile // binds uploaded file
+            @ModelAttribute User user,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
 
         User updatedUser = userService.updateWithFile(id, user, imageFile);
