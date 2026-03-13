@@ -30,7 +30,7 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/auth/register-user" element={<FormUser />} />
 
         {/* Aircrafts */}
-        <Route path="/auth/aircraft" element={<AircraftList />} />
+        <Route path="/auth/aircrafts" element={<AircraftList />} />
         <Route path="/auth/aircrafts/:id" element={<AircraftDetail />} />
         <Route path="/auth/register-aircraft" element={<FormAircraft />} />
 

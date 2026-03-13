@@ -59,7 +59,7 @@ export default function AircraftDetail() {
 
     // Delete user
     const handleDelete = async () => {
-    if (!confirm("¿Eliminar usuario?")) return;
+    if (!confirm("¿Eliminar aeronave?")) return;
     await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`, { method: "DELETE" });
     navigate("/auth/aircraft");
     };
@@ -187,7 +187,7 @@ export default function AircraftDetail() {
                         <button className="btn btn-danger" onClick={handleDelete}>
                         Eliminar
                         </button>
-                        <button className="btn btn-secondary" onClick={() => navigate("/auth/aircraft")}>
+                        <button className="btn btn-secondary" onClick={() => navigate("/auth/aircrafts")}>
                         Volver
                         </button>
                     </>
