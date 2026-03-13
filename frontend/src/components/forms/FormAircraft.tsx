@@ -208,7 +208,7 @@ export default function FormAircraft() {
       }
 
       await res.json();
-      navigate("/auth/aircraft");
+      navigate("/auth/aircrafts");
     } catch (err: any) {
       setError(err.message);
     } finally {
