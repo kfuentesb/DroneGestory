@@ -8,8 +8,10 @@ import lombok.Data;
 @Data
 public class OperationAnnex7 {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JoinColumn(name = "annex7_id")
     private Long id;
+
+    private String status;
 
 }

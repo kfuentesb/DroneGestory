@@ -11,6 +11,8 @@ public class OperationAnnex4 {
     @Id
     private Long id;
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "operation_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JoinColumn(name = "annex4_id")
     private Operation operation;
+
 }
