@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "operation")
 @Getter
@@ -14,24 +16,22 @@ public class Operation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="operation_id")
-    private Long id;
+    @Column(name="id_operacion")
+    private Long idOperacion;
 
-    @Column(name = "operation")
-    private String operation;
+    @Column(name = "nombre_operacion", nullable = false, length = 255)
+    private String nombreOperacion;
+
+    @Column(name = "fechaActual")
+    private LocalDate fechaActual;
+
+    @Column(name = "paso_actual")
+    private int pasoActual;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false) // FK a app_user.user_id
+    private User user;
 
     @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private OperationAnnex4 annex4;
-
-    @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL)
-    private OperationAnnex5 annex5;
-
-    @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL)
-    private OperationAnnex6 annex6;
-
-    @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL)
-    private OperationAnnex7 annex7;
-
-    @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL)
-    private OperationAnnex8 annex8;
+    private Anexo4 anexo4;
 }
