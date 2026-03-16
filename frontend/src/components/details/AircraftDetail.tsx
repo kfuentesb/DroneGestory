@@ -5,7 +5,7 @@ import { userFields } from "./UserFields"
 import { aircraftFields } from "./AircraftFields"
 
 
-// esta es la vista que ve un admin cuando selecciona un usario de la lista de usuarios
+// esta es la vista que ve un admin cuando selecciona un dron de la lista de drones
 export default function AircraftDetail() {
 
     const { id } = useParams()
