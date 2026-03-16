@@ -12,4 +12,7 @@ public class OperationAnnex7 {
     @Column(nullable = false)
     private Long id;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "operation_id")
+    private Operation operation;
 }

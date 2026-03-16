@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "operation_annex4")
+@Table(name = "operation_annex8")
 @Data
 public class OperationAnnex8 {
     @Id
@@ -12,4 +12,7 @@ public class OperationAnnex8 {
     @Column(nullable = false)
     private Long id;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "operation_id")
+    private Operation operation;
 }
