@@ -30,8 +30,6 @@ classDiagram
       -int id_operacion
       +String descripcion_objetivos
       +Date fecha_hora_prevista
-      +int id_tabla_personal_nm
-      +int id_drones_nm
       +String medios_materiales
       +String direccion
       +String coords
@@ -62,7 +60,6 @@ classDiagram
       -int id_anexo4
       -int id_usuario
       +String rol
-      +String licencias
     }
 
     class Anexo4_dronesNM{
@@ -72,22 +69,22 @@ classDiagram
     }
 
     class Anexo5{
-      -int id_anexo_1
+      -int id_anexo_5
       -int id_operacion
     }
 
     class Anexo6{
-      -int id_anexo_1
+      -int id_anexo_6
       -int id_operacion
     }
 
     class Anexo7{
-      -int id_anexo_1
+      -int id_anexo_7
       -int id_operacion
     }
 
     class Anexo8{
-      -int id_anexo_1
+      -int id_anexo_8
       -int id_operacion
     }
 
@@ -160,7 +157,7 @@ classDiagram
     Certificacion "1" -- "n" HabilitacionNM
     Piloto "1" -- "n" Operacion
     AeroNave "1" -- "n" Operacion
-    AeroNave "1" -- "n" Aseguradora
+    AeroNave "1" -- "1" Aseguradora
     Piloto "n" --|> "1" Usuario
     Usuario "n" --|> "1" Operadora
     AeroNave "n" <|-- "1" Operadora
