@@ -1,12 +1,15 @@
 import SidebarMenu from "../commons/Sidebar";
+import { useAuth } from "../AuthProvider";  
 
 export default function MainLayout({ children }: any) {
+    const { username } = useAuth();
     return (
         <div className="d-flex" style={{ minHeight: "100vh" }}>
-            {/* Sidebar solo visible en md o más grande */}
-            <div className="d-none d-md-block">
-                <SidebarMenu />
-            </div>
+            {username && (
+                <div className="d-none d-md-block">
+                    <SidebarMenu />
+                </div>
+            )}
 
             <div
                 className="flex-grow-1 p-2"

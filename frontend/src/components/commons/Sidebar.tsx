@@ -50,6 +50,7 @@ export default function SidebarMenu() {
                 height: "100vh",
                 position: "sticky",
                 top: 0,
+                zIndex: 1000 ,
             }}
         >
             <Menu
