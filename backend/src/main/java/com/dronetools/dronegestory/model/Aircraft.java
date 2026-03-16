@@ -62,6 +62,7 @@ public class Aircraft {
     @Column(name = "impact_energy", precision = 9, scale = 3, nullable = false)
     private BigDecimal impactEnergy;
 
+    @Setter(lombok.AccessLevel.NONE)
     @Column(name="camera", nullable = false)
     private Boolean hasCamera;
 
@@ -121,4 +122,13 @@ public class Aircraft {
 
 //    @OneToMany(mappedBy = "aircraft")
 //    private List<Operation> operations;
+
+    public void setHasCamera(Object value) {
+        if (value instanceof Boolean) {
+            this.hasCamera = (Boolean) value;
+        } else if (value instanceof String) {
+            String s = ((String) value).trim().toLowerCase();
+            this.hasCamera = s.equals("sí") || s.equals("si") || s.equals("true");
+        }
+    }
 }

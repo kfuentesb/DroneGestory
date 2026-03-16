@@ -88,7 +88,7 @@ public class UserService {
     }
 
     //update with file
-    public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile) throws IOException {
+    public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile, boolean phoneNumberPresent) throws IOException {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -99,7 +99,11 @@ public class UserService {
         if (updatedUser.getUsername() != null) user.setUsername(updatedUser.getUsername());
         if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
         if (updatedUser.getType() != null) user.setType(updatedUser.getType());
-        if (updatedUser.getPhoneNumber() != null) user.setPhoneNumber(updatedUser.getPhoneNumber());
+        if (updatedUser.getPhoneNumber() != null) {
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+        } else if (phoneNumberPresent) {
+            user.setPhoneNumber(null);
+        }
 
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));

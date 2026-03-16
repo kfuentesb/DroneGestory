@@ -2,6 +2,8 @@ package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.service.AircraftService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -39,13 +41,6 @@ public class AircraftController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-//    // Crear un nuevo aircraft
-//    @PostMapping
-//    public ResponseEntity<Aircraft> create(@RequestBody Aircraft aircraft) {
-//        Aircraft created = aircraftService.createAircraft(aircraft);
-//        return ResponseEntity.ok(created);
-//    }
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> createAircraftWithFile(
             @ModelAttribute Aircraft aircraft,
@@ -55,21 +50,10 @@ public class AircraftController {
         return ResponseEntity.ok(createdAircraft);
     }
 
-//    // Actualizar un aircraft existente
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Aircraft> update(@PathVariable int id, @RequestBody Aircraft aircraft) {
-//        try {
-//            Aircraft updated = aircraftService.updateAircraft(id, aircraft);
-//            return ResponseEntity.ok(updated);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
-
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> updateAircraftAWithFile(
             @PathVariable Integer id,
-            @ModelAttribute Aircraft aircraft, // binds form fields
+            @Valid@ModelAttribute Aircraft aircraft, // binds form fields
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile // binds uploaded file
     ) throws IOException {
 

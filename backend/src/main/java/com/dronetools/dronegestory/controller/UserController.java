@@ -21,6 +21,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.security.core.Authentication;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth/users")
@@ -74,10 +75,12 @@ public class UserController {
     public ResponseEntity<User> updateUserWithFile(
             @PathVariable Integer id,
             @ModelAttribute User user,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            HttpServletRequest request
     ) throws IOException {
 
-        User updatedUser = userService.updateWithFile(id, user, imageFile);
+        boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
+        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent);
 
         return ResponseEntity.ok(updatedUser);
     }

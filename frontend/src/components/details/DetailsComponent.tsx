@@ -121,17 +121,25 @@ export default function DetailsComponent({
             // Build FormData
             const formData = new FormData();
             Object.entries(formValues).forEach(([key, value]) => {
+                // Si el valor es null o undefined, no lo enviamos
                 if (value === null || value === undefined) return;
-                
+
                 if (value instanceof File) {
                     if (value.size > 0) formData.append(key, value);
                 } else {
-                    // const valToSend = typeof value === 'string' ? value.trim() : value;
-                    // formData.append(key, valToSend.toString());
                     const stringValue = value.toString().trim();
-                    if (stringValue === "" && (key === "serialNumber" || key === "mtom")) {
+                    
+                    // Si se manda "" un Integer en Java, da error 400. Mejor no enviarlo o mandar null.
+                    const isNumericField = ["serialNumber", "mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(key);
+                    
+                    if (isNumericField && stringValue === "") {
                         return;
                     }
+
+                    // Limpieza de decimales (cambiar coma por punto si el usuario la puso)
+                    const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
+                    
+                    formData.append(key, finalValue);
                 }
             });
             console.log(`${endpoint}/${id}`);
@@ -148,6 +156,7 @@ export default function DetailsComponent({
 
             const updated = await res.json();
             setData(updated);
+            setFormValues(updated);
             setEditing(false);
         }
 
