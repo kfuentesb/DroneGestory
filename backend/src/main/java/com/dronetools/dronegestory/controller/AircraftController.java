@@ -3,12 +3,18 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.service.AircraftService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -81,5 +87,29 @@ public class AircraftController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/images/{filename:.+}")// el ":.+" hace que ignore si tiene puntos en la base de datos, y lo tiene
+    public ResponseEntity<Resource> getAircraftImage(@PathVariable String filename) throws IOException {
+        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path file = uploadsDir.resolve(filename).normalize();
+
+        if (!file.startsWith(uploadsDir)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Resource resource = new UrlResource(file.toUri());
+
+        if (!resource.exists() || !resource.isReadable()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Detect content type
+        String contentType = Files.probeContentType(file);
+        if (contentType == null) contentType = "application/octet-stream";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .body(resource);
     }
 }
