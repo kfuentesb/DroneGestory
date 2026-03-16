@@ -11,6 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new StringToBooleanConverter());
+        registry.addConverterFactory(new StringToEnumConverterFactory());
     }
 
     public static class StringToBooleanConverter implements Converter<String, Boolean> {
