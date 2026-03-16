@@ -13,6 +13,7 @@ import NotFound from "../components/commons/NotFound";
 import AircraftList from "../components/lists/AircraftList";
 import ProfileDetail from "../components/details/ProfileDetail";
 import AircraftDetail from "../components/details/AircraftDetail";
+import OperationList from "../components/lists/OperationList";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -36,6 +37,11 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/auth/aircrafts" element={<AircraftList />} />
         <Route path="/auth/aircrafts/:id" element={<AircraftDetail />} />
         <Route path="/auth/register-aircraft" element={<FormAircraft />} />
+
+        {/* Operations */}
+        <Route path="/auth/operations" element={<OperationList />} />
+        <Route path="/auth/operations/:id" element={<OperationList />} />
+        <Route path="/auth/register-operation" element={<OperationList />} />
 
         {/* Error */}
         <Route path="/403" element={<Forbidden />} />
