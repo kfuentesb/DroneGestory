@@ -93,10 +93,21 @@ export default function DetailsComponent({
 
 
     const handleConfirmClick = () => {
+        if (validateForm) {
+            const formErrors = validateForm(formValues);
+            setErrors(formErrors);
+
+            const hasErrors = Object.values(formErrors).some(error => error !== null);
+            
+            if (hasErrors) {
+                alert("Por favor, corrige los errores antes de guardar.");
+                return;
+            }
+        }
+
         setConfirmAction("update");
         setShowConfirm(true);
     };
-
     const handleConfirmDelete = () => {
         setConfirmAction("delete");
         setShowConfirm(true);
@@ -109,9 +120,14 @@ export default function DetailsComponent({
             // Build FormData
             const formData = new FormData();
             Object.entries(formValues).forEach(([key, value]) => {
-                if (!value) return;
-                if (value instanceof File && value.size > 0) formData.append(key, value);
-                else if (!(value instanceof File)) formData.append(key, value.toString());
+                if (value === null || value === undefined) return;
+                
+                if (value instanceof File) {
+                    if (value.size > 0) formData.append(key, value);
+                } else {
+                    const valToSend = typeof value === 'string' ? value.trim() : value;
+                    formData.append(key, valToSend.toString());
+                }
             });
 
             const res = await fetch(`${endpoint}/${id}`, {

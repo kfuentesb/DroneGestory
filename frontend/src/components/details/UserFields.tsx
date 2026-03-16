@@ -33,12 +33,19 @@ export const userFields: FieldConfig[] = [
         label: "Teléfono",
         key: "phoneNumber",
         type: "text",
-        validate: (v: string) => {
-            if (!v || v.trim() === "") return true; // optional
-            return /^[0-9]{9}$/.test(v);
+        validate: (v: string | null | undefined) => {
+            // Si no hay valor o está vacío, es válido (opcional)
+            if (!v || v.toString().trim() === "") return true; 
+            const str = v.toString().trim();
+            // Si hay algo, debe ser exactamente 9 números
+            return /^[0-9]{9}$/.test(str); 
         },
-        error: "Debe tener 9 números",
-        format: (v: string) => `+34 ${v?.toString().replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}`
+        error: "Debe tener 9 números o estar vacío",
+        format: (v: any) => {
+            const str = v?.toString().trim() || "";
+            if (str.length !== 9) return str;
+            return `+34 ${str.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}`;
+        }
     },
     {
         label: "Tipo de usuario",
