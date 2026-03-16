@@ -131,8 +131,9 @@ export default function DetailsComponent({
             // Build FormData
             const formData = new FormData();
             Object.entries(formValues).forEach(([key, value]) => {
-                if (value === null || value === undefined) return;
-                
+                if (value === null || value === undefined) {
+                    return;
+                }
                 if (value instanceof File) {
                     if (value.size > 0) formData.append(key, value);
                 } else {
