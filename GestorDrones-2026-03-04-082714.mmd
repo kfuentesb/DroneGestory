@@ -20,11 +20,50 @@ classDiagram
 
     class Operacion {
 	    -int id_operacion
-	    -int id_piloto
-	    -int id_aeronave
-	    +Date fecha_realizacion
-	    +String estado
-	    +String categoría
+	    -int id_usuario
+      +String nombre_operacion
+	    +int current_step
+    }
+
+    class Anexo4{
+      -int id_anexo_1
+      -int id_operacion
+      +String descripcion_objetivos
+      +Date fecha_hora_prevista
+      +int id_tabla_personal_nm
+      +int id_drones_nm
+      +String medios_materiales
+      +String direccion
+      +String coords
+      +String imagen_espacio_aereo
+    }
+
+    class Anexo4_personal{
+      -int id_anexo4
+      -int id_usuario
+      +String rol
+      +String licencias
+    }
+
+    class Anexo4_drones{
+      -int id_anexo4
+      -int id_aeronave
+      +String uso_previsto
+    }
+
+    class Anexo5{
+      -int id_anexo_1
+      -int id_operacion
+    }
+
+    class Anexo6{
+      -int id_anexo_1
+      -int id_operacion
+    }
+
+    class Anexo7{
+      -int id_anexo_1
+      -int id_operacion
     }
 
     class AeroNave {
@@ -100,3 +139,11 @@ classDiagram
     Piloto "n" --|> "1" Usuario
     Usuario "n" --|> "1" Operadora
     AeroNave "n" <|-- "1" Operadora
+
+    --OPERACIONES
+
+    Operacion "1" -- "1" Anexo4 : contiene
+    Anexo4 "1" -- "*" Anexo4_Personal : asigna
+    Usuario "1" -- "*" Anexo4_Personal : participa
+    Anexo4 "1" -- "*" Anexo4_Aeronaves : utiliza
+    AeroNave "1" -- "*" Anexo4_Aeronaves : es_usada
