@@ -18,8 +18,10 @@ public class WebConfig implements WebMvcConfigurer {
         @Override
         public Boolean convert(String source) {
             if (source == null || source.isBlank()) return null;
-            String value = source.trim().toLowerCase();
-            if (value.equals("sí") || value.equals("si") || value.equals("true") || value.equals("1")) {
+            String value = java.text.Normalizer.normalize(source.trim().toLowerCase(), java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "");
+            if (value.equals("null")) return null;
+            if (value.equals("si") || value.equals("true") || value.equals("1")) {
                 return true;
             }
             if (value.equals("no") || value.equals("false") || value.equals("0")) {

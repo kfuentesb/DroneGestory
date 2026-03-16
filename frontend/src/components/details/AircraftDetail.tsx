@@ -12,7 +12,7 @@ export default function AircraftDetail() {
     const navigate = useNavigate()
 
     const handleDelete = async () => {
-        if (!confirm("¿Eliminar usuario?")) return
+        if (!confirm("¿Eliminar dron?")) return
 
         await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`, {
         method: "DELETE"
@@ -27,10 +27,10 @@ export default function AircraftDetail() {
 
         aircraftFields.forEach(field => {
 
-        if (field.validate) {
-            const valid = field.validate(values[field.key])
-            errors[field.key] = valid ? null : field.error || "Campo inválido"
-        }
+            if (field.validate) {
+                const valid = field.validate(values[field.key])
+                errors[field.key] = valid ? null : field.error || "Campo inválido"
+            }
 
         })
 

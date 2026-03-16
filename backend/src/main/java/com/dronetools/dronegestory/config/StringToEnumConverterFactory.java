@@ -24,11 +24,29 @@ public class StringToEnumConverterFactory implements ConverterFactory<String, En
             }
 
             String trimmed = source.trim();
-            if (trimmed.isEmpty()) {
+            if (trimmed.isEmpty() || "null".equalsIgnoreCase(trimmed)) {
                 return null;
             }
 
-            return (T) Enum.valueOf(enumType, trimmed);
+            try {
+                return (T) Enum.valueOf(enumType, trimmed);
+            } catch (IllegalArgumentException ex) {
+                String normalized = normalize(trimmed);
+                for (T constant : enumType.getEnumConstants()) {
+                    String constantName = normalize(constant.name());
+                    if (constantName.equalsIgnoreCase(normalized)) {
+                        return constant;
+                    }
+                }
+                throw ex;
+            }
+        }
+
+        private String normalize(String value) {
+            String normalized = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "");
+            normalized = normalized.trim().replace(' ', '_').replace('-', '_');
+            return normalized;
         }
     }
 }

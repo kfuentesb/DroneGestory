@@ -121,7 +121,13 @@ export default function DetailsComponent({
 
             // Build FormData
             const formData = new FormData();
-            Object.entries(formValues).forEach(([key, value]) => {
+            const allowedKeys = new Set(fields.map((f) => f.key));
+            if (formValues?.imageFile instanceof File) {
+                allowedKeys.add("imageFile");
+            }
+
+            Array.from(allowedKeys).forEach((key) => {
+                const value = formValues[key];
                 // Si el valor es null o undefined, no lo enviamos
                 if (value === null || value === undefined) return;
 

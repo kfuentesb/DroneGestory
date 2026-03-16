@@ -26,10 +26,10 @@ export default function UserDetail() {
 
         userFields.forEach(field => {
 
-        if (field.validate) {
-            const valid = field.validate(values[field.key])
-            errors[field.key] = valid ? null : field.error || "Campo inválido"
-        }
+            if (field.validate) {
+                const valid = field.validate(values[field.key])
+                errors[field.key] = valid ? null : field.error || "Campo inválido"
+            }
 
         })
 

@@ -9,6 +9,16 @@ type Props = {
 };
 
 export default function DetailEdit({ values, setValues, fields, errors }: Props) {
+    const normalize = (v: string) =>
+        v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
+    const mapBooleanToOption = (opts: string[] | undefined, value: boolean) => {
+        if (!opts || opts.length === 0) return value ? "true" : "false";
+        const target = value ? "si" : "no";
+        const found = opts.find((opt) => normalize(opt) === target);
+        return found ?? opts[0];
+    };
+
     return (
     <div className="row">
         {fields.map((field) => (
@@ -52,7 +62,11 @@ export default function DetailEdit({ values, setValues, fields, errors }: Props)
             ) : field.type === "select" ? (
                 <select
                     className="form-select"
-                    value={values[field.key] || ""}
+                    value={
+                        typeof values[field.key] === "boolean"
+                            ? mapBooleanToOption(field.options, values[field.key])
+                            : values[field.key] || ""
+                    }
                     onChange={(e) =>
                     setValues({
                         ...values,

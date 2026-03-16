@@ -1,4 +1,4 @@
-﻿package com.dronetools.dronegestory.config.binding;
+package com.dronetools.dronegestory.config.binding;
 
 import java.beans.PropertyEditorSupport;
 import java.math.BigDecimal;
@@ -12,7 +12,7 @@ public class FlexibleBigDecimalEditor extends PropertyEditorSupport {
         }
 
         String trimmed = text.trim();
-        if (trimmed.isEmpty()) {
+        if (trimmed.isEmpty() || "null".equalsIgnoreCase(trimmed)) {
             setValue(null);
             return;
         }

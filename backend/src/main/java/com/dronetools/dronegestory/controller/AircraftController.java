@@ -53,8 +53,8 @@ public class AircraftController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> updateAircraftAWithFile(
             @PathVariable Integer id,
-            @Valid@ModelAttribute Aircraft aircraft, // binds form fields
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile // binds uploaded file
+            @Valid@ModelAttribute Aircraft aircraft,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
 
         Aircraft updatedAircraft = aircraftService.updateWithFile(id, aircraft, imageFile);
