@@ -89,7 +89,7 @@ export default function DetailsComponent({
     }, [data?.imagePath, token, imageEndpoint]);
 
     const [showConfirm, setShowConfirm] = useState(false);
-    const [confirmAction, setConfirmAction] = useState<"update" | "delete" | null>(null);
+    const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
 
 
     const handleConfirmClick = () => {
@@ -100,7 +100,8 @@ export default function DetailsComponent({
             const hasErrors = Object.values(formErrors).some(error => error !== null);
             
             if (hasErrors) {
-                alert("Por favor, corrige los errores antes de guardar.");
+                setConfirmAction("validationError");
+                setShowConfirm(true);
                 return;
             }
         }
@@ -266,11 +267,22 @@ export default function DetailsComponent({
 
                     <ConfirmModal
                         show={showConfirm}
-                        title={confirmAction === "update" ? "Confirmar cambios" : "Eliminar usuario"}
-                        message={confirmAction === "update" 
-                            ? "¿Estás seguro de que quieres guardar los cambios?" 
-                            : "¿Estás seguro de que quieres eliminar este usuario?"}
-                        onConfirm={handleConfirm}
+                        variant={
+                            confirmAction === "delete" ? "danger" : 
+                            confirmAction === "validationError" ? "warning" : 
+                            "primary"
+                        }
+                        title={
+                            confirmAction === "update" ? "Confirmar cambios" : 
+                            confirmAction === "delete" ? "Eliminar registro" : 
+                            "Errores de validación"
+                        }
+                        message={
+                            confirmAction === "update" ? "¿Estás seguro de que quieres guardar los cambios?" :
+                            confirmAction === "delete" ? "¿Estás seguro de que quieres eliminar este registro?" :
+                            "Por favor, corrige los campos marcados en rojo antes de guardar."
+                        }
+                        onConfirm={confirmAction === "validationError" ? () => setShowConfirm(false) : handleConfirm}
                         onCancel={() => setShowConfirm(false)}
                     />
                 </div>
