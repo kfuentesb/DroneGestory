@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from "react-router-dom";
+import YoutubeIcon from "../../assets/footer/youtube_video_white.svg";
 
 export default function Footer() {
     return (
@@ -24,6 +25,16 @@ export default function Footer() {
                             <li>
                                 <a href="https://dronetools.es/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">
                                     DroneTools web
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="https://www.youtube.com/user/oinomedemonio"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-decoration-none text-light"
+                                >
+                                    <img alt="Canal de youtube" src={YoutubeIcon} style={{ width: "18px", height: "18px" }}/>
                                 </a>
                             </li>
                         </ul>

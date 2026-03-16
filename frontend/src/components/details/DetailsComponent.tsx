@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
+import ConfirmModal from "../commons/ConfirmModal";
 
 import editIcon from '../../assets/edit_white.svg';
 import deleteIcon from '../../assets/delete_white.svg';
@@ -87,43 +88,54 @@ export default function DetailsComponent({
 
     }, [data?.imagePath, token, imageEndpoint]);
 
-    const handleUpdate = async () => {
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<"update" | "delete" | null>(null);
 
-        if (validateForm) {
-            const newErrors = validateForm(formValues)
-            setErrors(newErrors)
 
-            const hasErrors = Object.values(newErrors).some(e => e !== null)
-            if (hasErrors) return
-        }
+    const handleConfirmClick = () => {
+        setConfirmAction("update");
+        setShowConfirm(true);
+    };
 
-        if (!confirm("¿Confirmar cambios?")) return
+    const handleConfirmDelete = () => {
+        setConfirmAction("delete");
+        setShowConfirm(true);
+    };
 
-        const formData = new FormData()
+    const handleConfirm = async () => {
+        setShowConfirm(false);
 
-        Object.entries(formValues).forEach(([key, value]) => {
-            if (value instanceof File) {
-            formData.append(key, value)
-            } else if (value !== undefined && value !== null) {
-            formData.append(key, value.toString())
+        if (confirmAction === "update") {
+            // Build FormData
+            const formData = new FormData();
+            Object.entries(formValues).forEach(([key, value]) => {
+                if (!value) return;
+                if (value instanceof File && value.size > 0) formData.append(key, value);
+                else if (!(value instanceof File)) formData.append(key, value.toString());
+            });
+
+            const res = await fetch(`${endpoint}/${id}`, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+
+            if (!res.ok) {
+                alert("Error actualizando");
+                return;
             }
-        })
 
-        const res = await fetch(`${endpoint}/${id}`, {
-            method: "PUT",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData
-        })
-
-        if (!res.ok) {
-            alert("Error actualizando")
-            return
+            const updated = await res.json();
+            setData(updated);
+            setEditing(false);
         }
 
-        const updated = await res.json()
-        setData(updated)
-        setEditing(false)
-    }
+        if (confirmAction === "delete" && onDelete) {
+            await onDelete();
+        }
+
+        setConfirmAction(null);
+    };
 
     if (!data) return <p>Loading...</p>;
 
@@ -138,13 +150,6 @@ export default function DetailsComponent({
             <div className="card p-4 shadow-sm">
                 <div className="row">
                     <div className="col-md-8 col-12">
-                        {/* {imageUrl && (
-                            <img
-                            src={imageUrl}
-                            style={{ width: "90px", height: "90px", objectFit: "cover" }}
-                            />
-                        )} */}
-
                         
                         <div className="d-flex align-items-center mb-4 flex-wrap">
                             <img
@@ -194,50 +199,50 @@ export default function DetailsComponent({
                             {!editing && allowEdit && (
                                 <button className="btn btn-primary" onClick={() => setEditing(true)}>
                                     <img src={editIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
-                                    <span className="d-none d-sm-block">
-                                        Editar
-                                    </span>
+                                    <span className="d-none d-sm-block">Editar</span>
                                 </button>
                             )}
 
                             {!editing && allowDelete && onDelete && (
-                                <button className="btn btn-danger" onClick={onDelete}>
+                                <button className="btn btn-danger" onClick={handleConfirmDelete}>
                                     <img src={deleteIcon} alt="Delete" className="delete-icon d-inline d-sm-none" />
-                                    <span className="d-none d-sm-block">
-                                        Borrar
-                                    </span>
+                                    <span className="d-none d-sm-block">Borrar</span>
                                 </button>
                             )}
 
                             {!editing && onBack && (
                                 <button className="btn btn-secondary" onClick={onBack}>
                                     <img src={arroBackIcon} alt="ArroBack" className="arrow-back-icon d-inline d-sm-none ms-2" />
-                                    <span className="d-none d-sm-block">
-                                        Volver
-                                    </span>
+                                    <span className="d-none d-sm-block">Volver</span>
                                 </button>
                             )}
 
                             {editing && (
                                 <>
-                                <button className="btn btn-success" onClick={handleUpdate}>
+                                <button className="btn btn-success" onClick={handleConfirmClick}>
                                     <img src={checkIcon} alt="Check" className="check-icon d-inline d-sm-none" />
-                                    <span className="d-none d-sm-block">
-                                        Confirmar cambios
-                                    </span>
+                                    <span className="d-none d-sm-block">Confirmar cambios</span>
                                 </button>
 
                                 <button className="btn btn-secondary" onClick={() => setEditing(false)}>
                                     <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
-                                    <span className="d-none d-sm-block">
-                                        Cancelar
-                                    </span>
+                                    <span className="d-none d-sm-block">Cancelar</span>
                                 </button>
                                 </>
                             )}
 
                         </div>
                     </div>
+
+                    <ConfirmModal
+                        show={showConfirm}
+                        title={confirmAction === "update" ? "Confirmar cambios" : "Eliminar usuario"}
+                        message={confirmAction === "update" 
+                            ? "¿Estás seguro de que quieres guardar los cambios?" 
+                            : "¿Estás seguro de que quieres eliminar este usuario?"}
+                        onConfirm={handleConfirm}
+                        onCancel={() => setShowConfirm(false)}
+                    />
                 </div>
             </div>
         </div>
