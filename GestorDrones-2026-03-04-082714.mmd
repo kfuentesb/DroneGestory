@@ -58,14 +58,14 @@ classDiagram
       +Date fecha_filled_form
     }
 
-    class Anexo4_personal{
+    class Anexo4_personalNM{
       -int id_anexo4
       -int id_usuario
       +String rol
       +String licencias
     }
 
-    class Anexo4_drones{
+    class Anexo4_dronesNM{
       -int id_anexo4
       -int id_aeronave
       +String uso_previsto
@@ -82,6 +82,11 @@ classDiagram
     }
 
     class Anexo7{
+      -int id_anexo_1
+      -int id_operacion
+    }
+
+    class Anexo8{
       -int id_anexo_1
       -int id_operacion
     }
@@ -161,7 +166,12 @@ classDiagram
     AeroNave "n" <|-- "1" Operadora
 
     Operacion "1" -- "1" Anexo4 : contiene
-    Anexo4 "1" -- "*" Anexo4_personal : asigna
-    Usuario "1" -- "*" Anexo4_personal : participa
-    Anexo4 "1" -- "*" Anexo4_drones : utiliza
-    AeroNave "1" -- "*" Anexo4_drones : es_usada
+    Anexo4 "1" -- "*" Anexo4_personalNM : asigna
+    Usuario "1" -- "*" Anexo4_personalNM : participa
+    Anexo4 "1" -- "*" Anexo4_dronesNM : utiliza
+    AeroNave "1" -- "*" Anexo4_dronesNM : es_usada
+
+    Operacion "1" -- "1" Anexo5 : contiene
+    Operacion "1" -- "1" Anexo6 : contiene
+    Operacion "1" -- "1" Anexo7 : contiene
+    Operacion "1" -- "1" Anexo8 : contiene
