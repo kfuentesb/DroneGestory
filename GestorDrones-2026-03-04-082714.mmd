@@ -141,7 +141,7 @@ classDiagram
     AeroNave "n" <|-- "1" Operadora
 
     Operacion "1" -- "1" Anexo4 : contiene
-    Anexo4 "1" -- "*" Anexo4_Personal : asigna
-    Usuario "1" -- "*" Anexo4_Personal : participa
-    Anexo4 "1" -- "*" Anexo4_Aeronaves : utiliza
-    AeroNave "1" -- "*" Anexo4_Aeronaves : es_usada
+    Anexo4 "1" -- "*" Anexo4_personal : asigna
+    Usuario "1" -- "*" Anexo4_personal : participa
+    Anexo4 "1" -- "*" Anexo4_drones : utiliza
+    AeroNave "1" -- "*" Anexo4_drones : es_usada
