@@ -65,3 +65,4 @@ pip install bcrypt
 -Registrar drone no acepta imagen ni los campos opcionales
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios)
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo.
+-Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos
