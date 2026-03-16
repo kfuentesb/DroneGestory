@@ -1,4 +1,4 @@
-﻿package com.dronetools.dronegestory.config;
+package com.dronetools.dronegestory.config;
 
 import com.dronetools.dronegestory.config.binding.FlexibleBigDecimalEditor;
 import com.dronetools.dronegestory.config.binding.FlexibleBooleanEditor;

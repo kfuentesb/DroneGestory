@@ -126,7 +126,7 @@ export default function SidebarMenu() {
                     onClick={() => setOpenOps(!openOps)}
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
-                    <MenuItem onClick={() => navigate("/#")}>Listar operaciones (admin)</MenuItem>
+                    <MenuItem onClick={() => navigate("/auth/operations")}>Listar operaciones (admin)</MenuItem>
                     <MenuItem onClick={() => navigate("/#")}>Listar mis operaciones</MenuItem>
                     <MenuItem onClick={() => navigate("/#")}>Registrar operacion</MenuItem>
                 </SubMenu>

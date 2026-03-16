@@ -1,4 +1,4 @@
-﻿package com.dronetools.dronegestory.config.binding;
+package com.dronetools.dronegestory.config.binding;
 
 import java.beans.PropertyEditorSupport;
 import java.text.Normalizer;
