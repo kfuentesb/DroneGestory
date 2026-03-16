@@ -117,16 +117,6 @@ export default function DetailsComponent({
         setShowConfirm(false);
 
         if (confirmAction === "update") {
-            // const formData = new FormData();
-            // Object.entries(formValues).forEach(([key, value]) => {
-            //     if (value === undefined || value === null) return;
-
-            //     if (value instanceof File) {
-            //         if (value.size > 0) formData.append(key, value);
-            //     } else {
-            //         formData.append(key, value.toString());
-            //     }
-            // });
 
             // Build FormData
             const formData = new FormData();
@@ -136,8 +126,12 @@ export default function DetailsComponent({
                 if (value instanceof File) {
                     if (value.size > 0) formData.append(key, value);
                 } else {
-                    const valToSend = typeof value === 'string' ? value.trim() : value;
-                    formData.append(key, valToSend.toString());
+                    // const valToSend = typeof value === 'string' ? value.trim() : value;
+                    // formData.append(key, valToSend.toString());
+                    const stringValue = value.toString().trim();
+                    if (stringValue === "" && (key === "serialNumber" || key === "mtom")) {
+                        return;
+                    }
                 }
             });
             console.log(`${endpoint}/${id}`);

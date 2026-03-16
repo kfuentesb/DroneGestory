@@ -5,24 +5,24 @@ export const aircraftFields: FieldConfig[] = [
         label: "Fabricante",
         key: "manufacturer",
         type: "text",
-        //validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
+        validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
         error: "El fabricante debe tener entre 2 y 100 caracteres"
     },
     {
         label: "Modelo",
         key: "model",
         type: "text",
-        //validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
+        validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
         error: "El modelo debe tener entre 2 y 100 caracteres"
     },
     {
         label: "Número de Serie",
         key: "serialNumber",
         type: "text",
-        // validate: (v: any) => {
-        //     const n = Number(v?.toString().trim());
-        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && Number.isInteger(n);
-        // },
+        validate: (v: any) => {
+            const n = Number(v?.toString().trim());
+            return v !== undefined && v !== null && v !== "" && !isNaN(n) && Number.isInteger(n);
+        },
         error: "El número de serie debe ser un número entero válido"
     },
     {
@@ -36,30 +36,30 @@ export const aircraftFields: FieldConfig[] = [
         label: "MTOM (Kg)",
         key: "mtom",
         type: "number",
-        // validate: (v: any) => {
-        //     const n = Number(v);
-        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
-        // },
+        validate: (v: any) => {
+            const n = Number(v);
+            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        },
         error: "MTOM debe ser un número válido mayor que 0"
     },
     {
         label: "Dimensión característica (m)",
         key: "wingspan",
         type: "number",
-        // validate: (v: any) => {
-        //     const n = Number(v);
-        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
-        // },
+        validate: (v: any) => {
+            const n = Number(v);
+            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        },
         error: "La dimensión debe ser un número válido mayor que 0"
     },
     {
         label: "Velocidad máxima",
         key: "maxSpeed",
         type: "number",
-        // validate: (v: any) => {
-        //     const n = Number(v);
-        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
-        // },
+        validate: (v: any) => {
+            const n = Number(v);
+            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        },
         error: "La velocidad máxima debe ser un número válido mayor que 0"
     },
     {
@@ -72,10 +72,10 @@ export const aircraftFields: FieldConfig[] = [
         label: "Energía de impacto",
         key: "impactEnergy",
         type: "number",
-        // validate: (v: any) => {
-        //     const n = Number(v);
-        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n >= 0;
-        // },
+        validate: (v: any) => {
+            const n = Number(v);
+            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n >= 0;
+        },
         error: "La energía de impacto debe ser un número válido"
     },
     {
@@ -83,21 +83,25 @@ export const aircraftFields: FieldConfig[] = [
         key: "hasCamera",
         type: "select",
         options: ["Sí", "No"],
-        format: (v: boolean) => v ? "Sí" : "No", // para la vista
-
+        format: (v: any) => {
+            if (v === true) return "Sí";
+            if (v === false) return "No";
+            return "No especificado";
+        },
+        error: "Seleccione una opción válida"
     },
     {
     label: "Imagen de perfil",
     key: "imageFile",
     type: "file",
-    // validate: (file: File | null) => {
-    //     if (!file) return true;
+    validate: (file: File | null) => {
+        if (!file) return true;
 
-    //     const maxSize = 5 * 1024 * 1024; // 5MB
-    //     const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
 
-    //     return file.size <= maxSize && allowedTypes.includes(file.type);
-    // },
+        return file.size <= maxSize && allowedTypes.includes(file.type);
+    },
     error: "La imagen debe ser JPG o PNG y pesar menos de 5MB"
     }
 ];
