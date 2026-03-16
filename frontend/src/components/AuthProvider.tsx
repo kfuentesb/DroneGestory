@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState } from "react";
 
 interface AuthContextType {
   username: string | null;
@@ -9,7 +9,7 @@ interface AuthContextType {
 }
 
 // Crea el contexto
-const AuthContext = createContext<AuthContextType>({
+export const AuthContext = createContext<AuthContextType>({
   username: null,
   token: null,
   login: () => {},
@@ -59,7 +59,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook para usar el contexto en cualquier componente
-export function useAuth() {
-  return useContext(AuthContext);
-}

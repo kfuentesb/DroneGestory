@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./commons/hooks/useAuth";
 // Si tienes iconos de Bootstrap instalados, puedes usar <i className="bi ..." />
 // o puedes reemplazar por SVGs/otros iconos
 
