@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./commons/hooks/useAuth";
 
 function LogIn() {
   // Tenemos que crear las llamadas al endpoint desde aquí
@@ -124,3 +124,4 @@ function LogIn() {
 }
 
 export default LogIn;
+

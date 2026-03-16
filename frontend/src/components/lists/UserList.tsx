@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
+import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 
 type User = {
   id: number;
@@ -55,6 +56,14 @@ export default function UserList() {
     },
   };
 
+  const filteredUsers = useSearchFilter(users, search, (u) => [
+    `${u.firstName} ${u.lastName}`,
+    u.username,
+    u.email,
+    u.phoneNumber ?? "",
+    u.type,
+  ]);
+
   return (
     <div className="container py-4">
       <div
@@ -79,7 +88,7 @@ export default function UserList() {
 
           <ReusableTable
             headers={["Nombre", "Usuario", "Email", "Teléfono", "Tipo"]}
-            rows={users}
+            rows={filteredUsers}
             renderRow={(p) => (
               <>
                 <td>{p.firstName} {p.lastName}</td>

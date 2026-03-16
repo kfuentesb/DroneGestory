@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DetailsComponent from "./DetailsComponent";
 import { apiFetch } from "../../api";
 import { userFields } from "./UserFields";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "../commons/hooks/useAuth";
 
 export default function ProfileDetail() {
 

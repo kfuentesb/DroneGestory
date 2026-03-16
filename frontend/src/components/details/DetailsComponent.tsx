@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
 import ConfirmModal from "../commons/ConfirmModal";
@@ -296,3 +296,4 @@ export default function DetailsComponent({
         </div>
     );
 }
+

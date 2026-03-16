@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
+import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 
 import DronePlusIcon from "../../assets/drone_plus_white.svg";
 
@@ -41,7 +42,6 @@ type Aircraft = {
 export default function AircraftList() {
   const [aircrafts, setAircrafts] = useState<Aircraft[]>([]);
   const [search, setSearch] = useState("");
-  const [filteredAircrafts, setFilteredAircrafts] = useState<Aircraft[]>([]);
   const navigate = useNavigate();
 
 
@@ -63,17 +63,13 @@ export default function AircraftList() {
     loadAircrafts();
   }, []);
 
-  useEffect(() => {
-    if (search.trim() === "") {
-      setFilteredAircrafts(aircrafts);
-    } else {
-      setFilteredAircrafts(
-        aircrafts.filter((a) =>
-          a.model.toLowerCase().includes(search.trim().toLowerCase())
-        )
-      );
-    }
-  }, [search, aircrafts]);
+  const filteredAircrafts = useSearchFilter(aircrafts, search, (a) => [
+    a.manufacturer ?? "",
+    a.model,
+    a.serialNumber ?? "",
+    a.aircraftClass,
+    a.config,
+  ]);
 
   return (
     <div className="container py-4">

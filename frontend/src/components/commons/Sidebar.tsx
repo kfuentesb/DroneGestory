@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "./hooks/useAuth";
 
 import HomeIcon from '../../assets/sidebar/home_white.svg';
 import ArrowBack from '../../assets/arrow_back_white.svg';

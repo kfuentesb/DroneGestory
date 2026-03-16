@@ -1,5 +1,5 @@
 import SidebarMenu from "../commons/Sidebar";
-import { useAuth } from "../AuthProvider";  
+import { useAuth } from "../commons/hooks/useAuth";  
 
 export default function MainLayout({ children }: any) {
     const { username } = useAuth();
