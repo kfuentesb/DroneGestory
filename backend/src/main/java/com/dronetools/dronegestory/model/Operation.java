@@ -16,19 +16,22 @@ public class Operation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="operation_id")
-    private Long operationId;
+    @Column(name="id_operacion")
+    private Long idOperacion;
 
-    @Column(name = "operation_name", nullable = false, length = 255)
-    private String operationName;
+    @Column(name = "nombre_operacion", nullable = false, length = 255)
+    private String nombreOperacion;
 
-    @Column(name = "date")
-    private LocalDate date;
+    @Column(name = "fechaActual")
+    private LocalDate fechaActual;
 
-    @Column(name = "current_step")
-    private int current_step;
+    @Column(name = "paso_actual")
+    private int pasoActual;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK a app_user.user_id
     private User user;
+
+    @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Anexo4 anexo4;
 }
