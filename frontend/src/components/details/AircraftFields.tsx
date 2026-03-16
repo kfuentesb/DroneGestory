@@ -5,24 +5,24 @@ export const aircraftFields: FieldConfig[] = [
         label: "Fabricante",
         key: "manufacturer",
         type: "text",
-        validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
+        //validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
         error: "El fabricante debe tener entre 2 y 100 caracteres"
     },
     {
         label: "Modelo",
         key: "model",
         type: "text",
-        validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
+        //validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
         error: "El modelo debe tener entre 2 y 100 caracteres"
     },
     {
         label: "Número de Serie",
         key: "serialNumber",
         type: "text",
-        validate: (v: any) => {
-            const n = Number(v?.toString().trim());
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && Number.isInteger(n);
-        },
+        // validate: (v: any) => {
+        //     const n = Number(v?.toString().trim());
+        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && Number.isInteger(n);
+        // },
         error: "El número de serie debe ser un número entero válido"
     },
     {
@@ -36,30 +36,30 @@ export const aircraftFields: FieldConfig[] = [
         label: "MTOM (Kg)",
         key: "mtom",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
-        },
+        // validate: (v: any) => {
+        //     const n = Number(v);
+        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        // },
         error: "MTOM debe ser un número válido mayor que 0"
     },
     {
         label: "Dimensión característica (m)",
         key: "wingspan",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
-        },
+        // validate: (v: any) => {
+        //     const n = Number(v);
+        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        // },
         error: "La dimensión debe ser un número válido mayor que 0"
     },
     {
         label: "Velocidad máxima",
         key: "maxSpeed",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
-        },
+        // validate: (v: any) => {
+        //     const n = Number(v);
+        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        // },
         error: "La velocidad máxima debe ser un número válido mayor que 0"
     },
     {
@@ -72,10 +72,10 @@ export const aircraftFields: FieldConfig[] = [
         label: "Energía de impacto",
         key: "impactEnergy",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n >= 0;
-        },
+        // validate: (v: any) => {
+        //     const n = Number(v);
+        //     return v !== undefined && v !== null && v !== "" && !isNaN(n) && n >= 0;
+        // },
         error: "La energía de impacto debe ser un número válido"
     },
     {

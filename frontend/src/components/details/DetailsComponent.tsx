@@ -117,6 +117,17 @@ export default function DetailsComponent({
         setShowConfirm(false);
 
         if (confirmAction === "update") {
+            // const formData = new FormData();
+            // Object.entries(formValues).forEach(([key, value]) => {
+            //     if (value === undefined || value === null) return;
+
+            //     if (value instanceof File) {
+            //         if (value.size > 0) formData.append(key, value);
+            //     } else {
+            //         formData.append(key, value.toString());
+            //     }
+            // });
+
             // Build FormData
             const formData = new FormData();
             Object.entries(formValues).forEach(([key, value]) => {
@@ -129,7 +140,7 @@ export default function DetailsComponent({
                     formData.append(key, valToSend.toString());
                 }
             });
-
+            console.log(`${endpoint}/${id}`);
             const res = await fetch(`${endpoint}/${id}`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` },
