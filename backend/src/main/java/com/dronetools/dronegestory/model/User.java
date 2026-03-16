@@ -49,4 +49,7 @@ public class User {
 
     @Column(name = "image_path")
     private String imagePath;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private java.util.List<Operation> operations;
 }
