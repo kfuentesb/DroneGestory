@@ -33,7 +33,10 @@ export const userFields: FieldConfig[] = [
         label: "Teléfono",
         key: "phoneNumber",
         type: "text",
-        validate: (v: string) => /^[0-9]{9}$/.test(v),
+        validate: (v: string) => {
+            if (!v || v.trim() === "") return true; // optional
+            return /^[0-9]{9}$/.test(v);
+        },
         error: "Debe tener 9 números",
         format: (v: string) => `+34 ${v?.toString().replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}`
     },
