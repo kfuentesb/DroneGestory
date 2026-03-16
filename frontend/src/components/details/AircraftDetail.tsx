@@ -25,7 +25,7 @@ export default function AircraftDetail() {
 
         const errors: Record<string,string|null> = {}
 
-        userFields.forEach(field => {
+        aircraftFields.forEach(field => {
 
         if (field.validate) {
             const valid = field.validate(values[field.key])
