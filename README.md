@@ -61,7 +61,7 @@ pip install bcrypt
 -Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria
 -Buscar una fuente de letra diferente (pero que siga siendo profesional)
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos
-- Cuando un usuario cambie de imagen de perfil, borrar la previa imagen.
-- Si se quiere modificar un usuario, el nº de telefono es obligatorio, lo cual es un error
-- Cuando se esconde la sidebar y se hace click a un submenu, esta por debajo del eje z
-- Un usuario piloto puede acceder a el form de dar de alta usuario, pero no puede dar de alta, hacer que no muestre el form
+-Modificar ver detalles de aircraft, opcion de modificar imagen y añadir datos opcionales
+-Registrar drone no acepta imagen ni los campos opcionales
+-Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios)
+-Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo.
