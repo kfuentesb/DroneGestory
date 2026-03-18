@@ -21,19 +21,19 @@ export default function MultiStepsForm() {
     ];
 
     const anexo5Fields: FieldConfig[] = [
-        { name: "texto_prueba_5", label: "Texto de prueba", type: "text", required: true },
+        { name: "campoAnexo5", label: "Texto de prueba", type: "text", required: true },
     ];
 
     const anexo6Fields: FieldConfig[] = [
-        { name: "texto_prueba_6", label: "Texto de prueba", type: "text", required: true },
+        { name: "campoAnexo6", label: "Texto de prueba", type: "text", required: true },
     ];
 
     const anexo7Fields: FieldConfig[] = [
-        { name: "texto_prueba_7", label: "Texto de prueba", type: "text", required: true },
+        { name: "campoAnexo7", label: "Texto de prueba", type: "text", required: true },
     ];
 
     const anexo8Fields: FieldConfig[] = [
-        { name: "texto_prueba_8", label: "Texto de prueba", type: "text", required: true },
+        { name: "campoAnexo8", label: "Texto de prueba", type: "text", required: true },
     ];
 
     const handleNext = (data: any) => {
@@ -46,18 +46,18 @@ export default function MultiStepsForm() {
         setStep((s) => s - 1);
     };
 
-    // Paso 1. HandleNextCrearOperacion 
+    // Paso 0. HandleNextCrearOperacion 
     const handleNextCreateOperation = async (data: any) => {
         try {
             const fd = new FormData();
             fd.append("nombreOperacion", data.nombreOperacion);
 
-            const res = await apiFetch("/api/auth/operations", {
+            const res = await apiFetch("http://localhost:8080/api/auth/operations", {
                 method: "POST",
                 body: fd
             });
             if (!res) {
-                return;
+                throw new Error("No se recibió respuesta del servidor");
             }
             const op = await res.json();
             setOperationId(op.idOperacion);
@@ -68,8 +68,44 @@ export default function MultiStepsForm() {
             console.error(err);
         }
     };
-    // Pasos 2-6. Todos los HandleNextAnexos
+    // Pasos 1
     const handleNextAnexo4 = async (data: any) => {
+        if (!operationId) {
+            alert("No hay operación creada.");
+            return;
+        }
+        try {
+            const fd = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    fd.append(key, value as string);
+                }
+            });
+            
+            const res = await apiFetch(
+                `http://localhost:8080/api/auth/operations/${operationId}/anexo4`,
+                {
+                    method: "POST",
+                    body: fd,
+                }
+            );
+            if (!res) {
+                throw new Error("No se recibió respuesta del servidor");
+            }
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Error ${res.status}: ${errorText}`);
+            }
+            setFormData((prev: any) => ({ ...prev, ...data }));
+            setStep((s) => s + 1);
+        } catch (err) {
+            alert("Error guardando el Anexo 4");
+            console.error(err);
+        }
+    };
+
+    // PASO 2: Anexo 5
+    const handleNextAnexo5 = async (data: any) => {
         if (!operationId) {
             alert("No hay operación creada.");
             return;
@@ -83,19 +119,147 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `/api/auth/operations/${operationId}/anexo4`,
+                `http://localhost:8080/api/auth/operations/${operationId}/anexo5`,
                 {
                     method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
                     body: fd,
                 }
             );
+            
+            if (!res) {
+                throw new Error("No se recibió respuesta del servidor");
+            }
+            
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Error ${res.status}: ${errorText}`);
+            }
+            
             setFormData((prev: any) => ({ ...prev, ...data }));
             setStep((s) => s + 1);
+            
         } catch (err) {
-            alert("Error guardando el Anexo 4");
+            alert("Error guardando el Anexo 5");
+            console.error(err);
+        }
+    };
+
+    // PASO 3: Anexo 6
+    const handleNextAnexo6 = async (data: any) => {
+        if (!operationId) {
+            alert("No hay operación creada.");
+            return;
+        }
+        try {
+            const fd = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    fd.append(key, value as string);
+                }
+            });
+
+            const res = await apiFetch(
+                `http://localhost:8080/api/auth/operations/${operationId}/anexo6`,
+                {
+                    method: "POST",
+                    body: fd,
+                }
+            );
+            
+            if (!res) {
+                throw new Error("No se recibió respuesta del servidor");
+            }
+            
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Error ${res.status}: ${errorText}`);
+            }
+            
+            setFormData((prev: any) => ({ ...prev, ...data }));
+            setStep((s) => s + 1);
+            
+        } catch (err) {
+            alert("Error guardando el Anexo 6");
+            console.error(err);
+        }
+    };
+
+    // PASO 4: Anexo 7
+    const handleNextAnexo7 = async (data: any) => {
+        if (!operationId) {
+            alert("No hay operación creada.");
+            return;
+        }
+        try {
+            const fd = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    fd.append(key, value as string);
+                }
+            });
+
+            const res = await apiFetch(
+                `http://localhost:8080/api/auth/operations/${operationId}/anexo7`,
+                {
+                    method: "POST",
+                    body: fd,
+                }
+            );
+            
+            if (!res) {
+                throw new Error("No se recibió respuesta del servidor");
+            }
+            
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Error ${res.status}: ${errorText}`);
+            }
+            
+            setFormData((prev: any) => ({ ...prev, ...data }));
+            setStep((s) => s + 1);
+            
+        } catch (err) {
+            alert("Error guardando el Anexo 7");
+            console.error(err);
+        }
+    };
+
+    // PASO 5: Anexo 8 (último paso)
+    const handleNextAnexo8 = async (data: any) => {
+        if (!operationId) {
+            alert("No hay operación creada.");
+            return;
+        }
+        try {
+            const fd = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    fd.append(key, value as string);
+                }
+            });
+
+            const res = await apiFetch(
+                `http://localhost:8080/api/auth/operations/${operationId}/anexo8`,
+                {
+                    method: "POST",
+                    body: fd,
+                }
+            );
+            
+            if (!res) {
+                throw new Error("No se recibió respuesta del servidor");
+            }
+            
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Error ${res.status}: ${errorText}`);
+            }
+            
+            setFormData((prev: any) => ({ ...prev, ...data }));
+            setStep((s) => s + 1); // Avanza al resumen final (step 6)
+            
+        } catch (err) {
+            alert("Error guardando el Anexo 8");
             console.error(err);
         }
     };
@@ -126,7 +290,7 @@ export default function MultiStepsForm() {
                 <BaseForm
                     title="Apéndice 5: Formato lista verificación prevuelo operacional"
                     fields={anexo5Fields} 
-                    onSubmit={handleNext} 
+                    onSubmit={handleNextAnexo5} 
                     onBack={handleBack}
                 />
             )}
@@ -135,7 +299,7 @@ export default function MultiStepsForm() {
                 <BaseForm 
                     title="Apéndice 6: Formato lista verificación prevuelo UAS"
                     fields={anexo6Fields} 
-                    onSubmit={handleNext} 
+                    onSubmit={handleNextAnexo6} 
                     onBack={handleBack}
                 />
             )}
@@ -144,7 +308,7 @@ export default function MultiStepsForm() {
                 <BaseForm 
                     title="Apéndice 7: Formato lista verificación posvuelo UAS"
                     fields={anexo7Fields} 
-                    onSubmit={handleNext} 
+                    onSubmit={handleNextAnexo7} 
                     onBack={handleBack}
                 />
             )}
@@ -153,7 +317,7 @@ export default function MultiStepsForm() {
                 <BaseForm 
                     title="Apéndice 8: Formato lista verificación posvuelo operacional"
                     fields={anexo8Fields} 
-                    onSubmit={handleNext} 
+                    onSubmit={handleNextAnexo8} 
                     onBack={handleBack}
                 />
             )}

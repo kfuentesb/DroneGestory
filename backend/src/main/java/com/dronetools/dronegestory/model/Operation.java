@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,19 +32,23 @@ public class Operation {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "user_id", nullable = false) // FK a app_user.user_id
 //    private User user;
-
+    @JsonIgnore  // ← NO incluir en el JSON
     @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Anexo4 anexo4;
 
+    @JsonIgnore  // ← NO incluir en el JSON
     @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Anexo5 anexo5;
 
+    @JsonIgnore  // ← NO incluir en el JSON
     @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Anexo6 anexo6;
 
+    @JsonIgnore  // ← NO incluir en el JSON
     @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Anexo7 anexo7;
 
+    @JsonIgnore  // ← NO incluir en el JSON
     @OneToOne(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Anexo8 anexo8;
 
