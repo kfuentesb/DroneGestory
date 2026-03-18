@@ -62,8 +62,7 @@ pip install bcrypt
 -Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria <br>
 -Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
--Modificar ver detalles de aircraft, opcion de modificar imagen y añadir datos opcionales <br>
--Registrar drone no acepta imagen ni los campos opcionales <br>
+-Añadir datos opcionales <br>
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 -Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
