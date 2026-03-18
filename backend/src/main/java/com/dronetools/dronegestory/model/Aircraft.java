@@ -40,7 +40,7 @@ public class Aircraft {
     private String model;
 
     @Column(name = "serial_number", nullable = false)
-    private Integer serialNumber;
+    private String serialNumber;
 
     @Column(name = "class", nullable = false)
     @Enumerated(EnumType.STRING)
