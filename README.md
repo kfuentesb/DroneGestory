@@ -68,3 +68,4 @@ pip install bcrypt
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 -Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
 -Actualmente un usuario piloto, no admin o manager, no puede acceder a sus datos de perfil, por orden de seguridad de srpingboot<br>
+-VALIDACIONES DE DRON TANTO EN MODIFICAR COMO REGISTRAR<br>
