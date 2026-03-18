@@ -3,10 +3,7 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.service.OperationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,5 +18,11 @@ public class OperationController {
     @GetMapping
     public List<Operation> getAll(){
         return operationService.getAllOperations();
+    }
+
+    @PostMapping
+    public Operation create(@RequestBody Operation op) {
+        // Aquí solo pides los campos mínimos; si usas sólo nombre, basta.
+        return operationService.saveOperation(op);
     }
 }
