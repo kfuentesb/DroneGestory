@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom"
 import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
-import { userFields } from "./UserFields"
+
 import { aircraftFields } from "./AircraftFields"
 
 
@@ -51,6 +51,7 @@ export default function AircraftDetail() {
         onBack={() => navigate("/auth/aircrafts")}
 
         validateForm={validateForm}
+
         />
     )
 }

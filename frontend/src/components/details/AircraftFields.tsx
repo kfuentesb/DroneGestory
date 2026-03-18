@@ -5,14 +5,17 @@ export const aircraftFields: FieldConfig[] = [
         label: "Fabricante",
         key: "manufacturer",
         type: "text",
-        validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
+        validate: (v: string) => typeof v === "string" 
+            && v.trim().length >= 2 && v.trim().length <= 100,
         error: "El fabricante debe tener entre 2 y 100 caracteres"
     },
     {
         label: "Modelo",
         key: "model",
         type: "text",
-        validate: (v: string) => typeof v === "string" && v.trim().length >= 2 && v.trim().length <= 100,
+        validate: (v: string) => typeof v === "string" 
+            && v.trim().length >= 2 
+            && v.trim().length <= 100,
         error: "El modelo debe tener entre 2 y 100 caracteres"
     },
     {
@@ -20,10 +23,17 @@ export const aircraftFields: FieldConfig[] = [
         key: "serialNumber",
         type: "text",
         validate: (v: any) => {
-            const n = Number(v?.toString().trim());
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && Number.isInteger(n);
+            const value = v?.toString().trim();
+            // Alfanumérico, mínimo 2, máximo 25 caracteres
+            return (
+                value &&
+                typeof value === "string" &&
+                /^[a-zA-Z0-9]+$/.test(value) &&
+                value.length >= 2 &&
+                value.length <= 25
+            );
         },
-        error: "El número de serie debe ser un número entero válido"
+        error: "El número de serie debe ser alfanumérico (solo letras y números), entre 2 y 25 caracteres"
     },
     {
         label: "Clase",
@@ -82,26 +92,26 @@ export const aircraftFields: FieldConfig[] = [
         label: "Cámara",
         key: "hasCamera",
         type: "select",
-        options: ["No","Sí"],
+        options: ["No", "Sí"],
         format: (v: any) => {
             if (v === true) return "Sí";
             if (v === false) return "No";
             return "No especificado";
         },
         error: "Seleccione una opción válida"
+    },
+    {
+    label: "Imagen de perfil",
+    key: "imageFile",
+    type: "file",
+    validate: (file: File | null) => {
+        if (!file) return true;
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+        return file.size <= maxSize && allowedTypes.includes(file.type);
+    },
+    error: "La imagen debe ser JPG o PNG y pesar menos de 5MB"
     }
-    // {
-    // label: "Imagen de perfil",
-    // key: "imageFile",
-    // type: "file",
-    // validate: (file: File | null) => {
-    //     if (!file) return true;
-
-    //     const maxSize = 5 * 1024 * 1024; // 5MB
-    //     const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-
-    //     return file.size <= maxSize && allowedTypes.includes(file.type);
-    // },
-    // error: "La imagen debe ser JPG o PNG y pesar menos de 5MB"
-    // }
 ];

@@ -23,6 +23,7 @@ interface DetailsComponentProps {
     onBack?: () => void
 
     validateForm?: (values: any) => Record<string, string | null>
+    // Linea para elegir la posición de la imagen
 }
 export default function DetailsComponent({
         id,
@@ -33,7 +34,7 @@ export default function DetailsComponent({
         allowDelete,
         onDelete,
         onBack,
-        validateForm
+        validateForm,
     }:DetailsComponentProps) {
     const { token } = useAuth();
 

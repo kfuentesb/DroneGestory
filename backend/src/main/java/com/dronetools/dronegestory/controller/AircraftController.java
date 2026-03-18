@@ -53,7 +53,7 @@ public class AircraftController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> updateAircraftAWithFile(
             @PathVariable Integer id,
-            @Valid@ModelAttribute Aircraft aircraft,
+            @Valid @ModelAttribute Aircraft aircraft,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
 

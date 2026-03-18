@@ -51,7 +51,7 @@ public class AircraftService {
             Files.createDirectories(uploadDir);
             Path target = uploadDir.resolve(filename);
             imageFile.transferTo(target.toFile());
-            // aircraft.setImagePath(filename);
+            aircraft.setImagePath(filename);
         }
 
         return aircraftRepository.save(aircraft);
@@ -89,32 +89,32 @@ public class AircraftService {
         // if (updatedAircraft.getPurchaseDate() != null) aircraft.setPurchaseDate(updatedAircraft.getPurchaseDate());
 
         // --- Manejo de imagen ---
-        // if (imageFile != null && !imageFile.isEmpty()) {
-        //     Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-        //     Files.createDirectories(uploadDir);
+         if (imageFile != null && !imageFile.isEmpty()) {
+             Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+             Files.createDirectories(uploadDir);
 
-        //     // Guarda nombre anterior para borrado
-        //     String oldImage = aircraft.getImagePath();
+             // Guarda nombre anterior para borrado
+             String oldImage = aircraft.getImagePath();
 
-        //     String originalName = imageFile.getOriginalFilename();
-        //     String safeName = (originalName == null || originalName.isBlank())
-        //             ? "upload"
-        //             : Paths.get(originalName).getFileName().toString();
+             String originalName = imageFile.getOriginalFilename();
+             String safeName = (originalName == null || originalName.isBlank())
+                     ? "upload"
+                     : Paths.get(originalName).getFileName().toString();
 
-        //     // Ejemplo: modelo_serie_nombreImagen.jpg
-        //     String filename = aircraft.getModel() + "_" + aircraft.getSerialNumber() + "_" + safeName;
+             // Ejemplo: modelo_serie_nombreImagen.jpg
+             String filename = aircraft.getModel() + "_" + aircraft.getSerialNumber() + "_" + safeName;
 
-        //     Path target = uploadDir.resolve(filename);
-        //     imageFile.transferTo(target.toFile());
+             Path target = uploadDir.resolve(filename);
+             imageFile.transferTo(target.toFile());
 
-        //     aircraft.setImagePath(filename);
+             aircraft.setImagePath(filename);
 
-        //     // Elimina la imagen anterior, si existe
-        //     if (oldImage != null && !oldImage.isBlank()) {
-        //         Path oldFile = uploadDir.resolve(oldImage).normalize();
-        //         Files.deleteIfExists(oldFile);
-        //     }
-        // }
+             // Elimina la imagen anterior, si existe
+             if (oldImage != null && !oldImage.isBlank()) {
+                 Path oldFile = uploadDir.resolve(oldImage).normalize();
+                 Files.deleteIfExists(oldFile);
+             }
+         }
 
         return aircraftRepository.save(aircraft);
     }

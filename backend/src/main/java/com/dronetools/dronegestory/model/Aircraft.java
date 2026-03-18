@@ -4,6 +4,7 @@ import com.dronetools.dronegestory.model.enums.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,7 +33,6 @@ public class Aircraft {
 //    private InsuranceCompany insuranceCompany;
 
     // ============ CAMPOS OBLIGATORIOS para el cliente ============
-    // Si ApplicantType = Manufacturer || To_the_manufacturer
     @Column(name = "manufacturer", length = 100, nullable = false)
     private String manufacturer;
 
@@ -40,7 +40,8 @@ public class Aircraft {
     private String model;
 
     @Column(name = "serial_number", nullable = false)
-    private Integer serialNumber;
+    @Pattern(regexp = "^[a-zA-Z0-9]{2,25}$", message = "El número de serie debe ser alfanumérico (2-25 caracteres)")
+    private String serialNumber;
 
     @Column(name = "class", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -64,6 +65,9 @@ public class Aircraft {
 
     @Column(name="camera", nullable = false)
     private Boolean hasCamera;
+
+    @Column(name = "image_path")
+    private String imagePath;
 
     // ============ ============ ============
 
@@ -113,9 +117,6 @@ public class Aircraft {
 
     // @Column(name = "purchase_date")
     // private LocalDate purchaseDate;
-
-    // @Column(name = "image_path")
-    // private String imagePath;
 
     // ------------------------------------
 

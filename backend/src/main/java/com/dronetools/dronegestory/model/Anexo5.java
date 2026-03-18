@@ -5,23 +5,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "anexo4")
+@Table(name = "anexo5")
 @Getter @Setter @NoArgsConstructor
-public class Anexo4 {
+public class Anexo5 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_anexo4")
+    @Column(name = "id_anexo5")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_operacion", nullable = false, unique = true)
     private Operation operation;
 
-    @Column(name = "campo_anexo4")
-    private String campoAnexo4;
+    @Column(name = "campo_anexo5")
+    private String campoAnexo5;
 
 //    @Column(name = "fecha_hora_prevista")
 //    private LocalDateTime fechaHoraPrevista;
