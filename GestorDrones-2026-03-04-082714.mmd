@@ -163,13 +163,11 @@ classDiagram
     Usuario "n" --|> "1" Operadora
     AeroNave "n" <|-- "1" Operadora
 
-    Operacion "1" -- "1" Anexo4 : contiene
     Operacion "1" -- "*" Op_Personal_NM
     Operacion "1" -- "*" Op_Drones_NM
     Anexo4 --|> Operacion : "Lee de"
     Anexo5 --|> Operacion : "Confirma en"
 
-    Operacion "1" -- "1" Anexo5 : contiene
     Operacion "1" -- "1" Anexo6 : contiene
     Operacion "1" -- "1" Anexo7 : contiene
     Operacion "1" -- "1" Anexo8 : contiene
