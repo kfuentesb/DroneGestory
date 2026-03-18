@@ -3,12 +3,6 @@ import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';
 
-const applicantTypes = [
-  { value: "Manufacturer", label: "Fabricante" },
-  { value: "Operator", label: "Operador" },
-  { value: "To_the_Manufacturer", label: "Para Fabricante" }
-];
-
 const aircraftClasses = [
   { value: "No", label: "No tiene" },
   { value: "C0", label: "C0" },
@@ -29,16 +23,6 @@ const configs = [
   { value: "Otro", label: "Otro" }
 ];
 
-const powerSources = [
-  { value: "Electric", label: "Eléctrico" },
-  { value: "Non_Electric", label: "No Eléctrico" }
-];
-
-const powerSourceTypes = [
-  { value: "Hydrogen", label: "Hidrógeno" },
-  { value: "Gasoline", label: "Gasolina" }
-];
-
 type SelectOption = { value: string; label: string };
 
 export default function FormAircraft() {
@@ -57,17 +41,10 @@ export default function FormAircraft() {
     impactEnergy: "",
     hasCamera: null as SelectOption | null,
     image: null as File | null,
-
-    // Opcionales
-    applicantType: null as SelectOption | null,
-    applicantName: "",
-    powerSource: null as SelectOption | null,
-    powerSourceType: null as SelectOption | null,
-    observaciones: "",
-    accesorios: "",
-    purchaseDate: "",
   });
-  const [errors, setErrors] = useState({
+
+  // Mantenemos tu estado de errores, pero añadimos soporte para mensajes de texto
+  const [errors, setErrors] = useState<any>({
     manufacturer: false,
     model: false,
     serialNumber: false,
@@ -78,13 +55,9 @@ export default function FormAircraft() {
     config: false,
     impactEnergy: false,
     hasCamera: false,
-    image: false,
   });
 
-  const [showOpcionales, setShowOpcionales] = useState(false);
-
   const navigate = useNavigate();
-
   const allowedTypes = ["image/jpeg", "image/png"];
 
   const backgroundBorderInputsSelect = {
@@ -100,41 +73,22 @@ export default function FormAircraft() {
     borderColor: "#D1D5DB"
   };
 
-  // Lógica para deshabilitar tipo fuente
-  const isElectric = formValues.powerSource?.value === "Electric";
-
-  // Si selecciona Eléctrico se borra el tipo de fuente automáticamente
-  React.useEffect(() => {
-    if (isElectric && formValues.powerSourceType) {
-      setFormValues(fv => ({ ...fv, powerSourceType: null }));
-    }
-    // eslint-disable-next-line
-  }, [isElectric]);
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
     if (!file) {
       setSelectedFile(null);
       setFormValues({ ...formValues, image: null });
       setError("");
       return;
     }
-
     if (!allowedTypes.includes(file.type)) {
       setError("Solo se permiten imágenes JPG o PNG.");
-      setSelectedFile(null);
-      setFormValues({ ...formValues, image: null });
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       setError("La imagen debe pesar menos de 5MB.");
-      setSelectedFile(null);
-      setFormValues({ ...formValues, image: null });
       return;
     }
-
     setSelectedFile(file);
     setFormValues({ ...formValues, image: file });
     setError("");
@@ -145,74 +99,60 @@ export default function FormAircraft() {
     setLoading(true);
     setError(null);
 
-    // Validación campos principales
-    const newErrors = {
-      manufacturer: !formValues.manufacturer.trim(),
-      model: !formValues.model.trim(),
-      serialNumber: !formValues.serialNumber.trim(),
-      aircraftClass: !formValues.aircraftClass,
-      mtom: !formValues.mtom.trim() || isNaN(Number(formValues.mtom)),
-      wingspan: !formValues.wingspan.trim() || isNaN(Number(formValues.wingspan)),
-      maxSpeed: !formValues.maxSpeed.trim() || isNaN(Number(formValues.maxSpeed)),
-      config: !formValues.config,
-      impactEnergy: !formValues.impactEnergy.trim() || isNaN(Number(formValues.impactEnergy)),
-      hasCamera: !formValues.hasCamera,
-      image: false,
-    };
-
-    setErrors(newErrors);
-    if (Object.values(newErrors).some(Boolean)) {
-      setError("Por favor complete los campos obligatorios correctamente.");
-      setLoading(false);
-      return;
-    }
-
-    // Construir payload sólo con los campos principales y opcionales si están presentes
-    const payload: any = {
-      manufacturer: formValues.manufacturer,
-      model: formValues.model,
-      serialNumber: formValues.serialNumber,
-      aircraftClass: formValues.aircraftClass?.value ?? "",
-      mtom: Number(formValues.mtom),
-      wingspan: Number(formValues.wingspan),
-      maxSpeed: Number(formValues.maxSpeed),
-      config: formValues.config?.value ?? "",
-      impactEnergy: Number(formValues.impactEnergy),
-      hasCamera: formValues.hasCamera?.value === "true"
-    };
-
-    // Datos opcionales, sólo se agregan si tienen valor (incluso null para SelectOption OK):
-    if (formValues.applicantType)       payload.applicantType = formValues.applicantType.value;
-    if (formValues.applicantName.trim())payload.applicantName = formValues.applicantName.trim();
-    if (formValues.powerSource)         payload.powerSource = formValues.powerSource.value;
-    if (formValues.powerSourceType && !isElectric) payload.powerSourceType = formValues.powerSourceType.value;
-    if (formValues.observaciones.trim())payload.observations = formValues.observaciones.trim();
-    if (formValues.accesorios.trim())   payload.accessories = formValues.accesorios.trim();
-    if (formValues.purchaseDate)        payload.purchaseDate = formValues.purchaseDate;
-
-    // Adjuntar imagen
-    const formData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => formData.append(key, value as string));
-    if (selectedFile) {
-      formData.append("imageFile", selectedFile, selectedFile.name);
-    }
+    // Expresión regular que coincide con tu @Pattern de Java
+    const serialRegex = /^[a-zA-Z0-9]{2,25}$/;
 
     try {
-      // Testing consultar token
-      // const token = localStorage.getItem('jwt');
-      // console.log("JWT enviado:", token);
+      // Validación campos principales (Mejorada)
+      const newErrors = {
+        manufacturer: !formValues.manufacturer.trim(),
+        model: !formValues.model.trim(),
+        // Validamos que no esté vacío Y que cumpla el formato
+        serialNumber: !formValues.serialNumber.trim() || !serialRegex.test(formValues.serialNumber),
+        aircraftClass: !formValues.aircraftClass,
+        mtom: !formValues.mtom.trim() || isNaN(Number(formValues.mtom)),
+        wingspan: !formValues.wingspan.trim() || isNaN(Number(formValues.wingspan)),
+        maxSpeed: !formValues.maxSpeed.trim() || isNaN(Number(formValues.maxSpeed)),
+        config: !formValues.config,
+        impactEnergy: !formValues.impactEnergy.trim() || isNaN(Number(formValues.impactEnergy)),
+        hasCamera: !formValues.hasCamera,
+      };
+
+      setErrors(newErrors);
       
+      if (Object.values(newErrors).some(Boolean)) {
+        let msg = "Por favor complete los campos correctamente.";
+        if (newErrors.serialNumber && formValues.serialNumber.trim()) {
+            msg = "El número de serie solo permite letras y números (2-25 carac.).";
+        }
+        setError(msg);
+        setLoading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("manufacturer", formValues.manufacturer);
+      formData.append("model", formValues.model);
+      formData.append("serialNumber", formValues.serialNumber);
+      formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
+      formData.append("mtom", formValues.mtom);
+      formData.append("wingspan", formValues.wingspan);
+      formData.append("maxSpeed", formValues.maxSpeed);
+      formData.append("config", formValues.config?.value ?? "");
+      formData.append("impactEnergy", formValues.impactEnergy);
+      formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
+
+      if (selectedFile) {
+        formData.append("imageFile", selectedFile, selectedFile.name);
+      }
+
       const res = await apiFetch("http://localhost:8080/api/auth/aircraft", {
         method: "POST",
-        body: formData // browser sets multipart/form-data
+        body: formData
       });
 
       if (!res) return;
-
-      const data = await res.json();
-      console.log("Aircraft created:", data);
-
-      navigate("/auth/aircrafts"); // redirect to users list after success
+      navigate("/auth/aircrafts");
 
     } catch (err: any) {
       setError(err.message);
@@ -257,6 +197,7 @@ export default function FormAircraft() {
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="Ej: ABC12345 (2-25 carac.)"
                   value={formValues.serialNumber}
                   onChange={e => setFormValues({ ...formValues, serialNumber: e.target.value })}
                   style={{ ...backgroundBorderInputs, border: errors.serialNumber ? "1px solid red" : "1px solid #D1D5DB" }}
@@ -335,7 +276,7 @@ export default function FormAircraft() {
             </div>
 
             {/* Row 4: Cámara, Imagen */}
-            <div className="row mb-3">
+            <div className="row mb-4">
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label">Cámara</label>
                 <Select
@@ -371,119 +312,18 @@ export default function FormAircraft() {
                     Seleccionar archivo
                   </label>
                 </div>
-                {errors.image && <div className="text-danger small">Campo requerido</div>}
               </div>
             </div>
 
-            {/* ----- OPCIONALES ----- */}
-            <div className="mb-3">
-              <button
-                type="button"
-                className="btn btn-link"
-                onClick={() => setShowOpcionales(v => !v)}
-                style={{ textDecoration: "none", color: "#16a34a" }}
-              >
-                {showOpcionales ? "▲ Ocultar detalles adicionales" : "▼ Añadir más detalles"}
-              </button>
-            </div>
-
-            {showOpcionales && (
-              <div className="card card-body mb-3" style={{ background: "#F9FAFB" }}>
-                <div className="row mb-3">
-                  <div className="col-12 col-md-6 mb-3 mb-md-0">
-                    <label className="form-label">Tipo de aplicante</label>
-                    <Select
-                      options={applicantTypes}
-                      styles={backgroundBorderInputsSelect}
-                      placeholder="Seleccione tipo"
-                      value={formValues.applicantType}
-                      isClearable
-                      onChange={val => setFormValues({ ...formValues, applicantType: val })}
-                    />
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">Nombre de aplicante</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formValues.applicantName}
-                      onChange={e => setFormValues({ ...formValues, applicantName: e.target.value })}
-                      style={backgroundBorderInputs}
-                    />
-                  </div>
-                </div>
-
-                <div className="row mb-3">
-                  <div className="col-12 col-md-6 mb-3 mb-md-0">
-                    <label className="form-label">Fuente de poder</label>
-                    <Select
-                      options={powerSources}
-                      styles={backgroundBorderInputsSelect}
-                      placeholder="Seleccione fuente"
-                      value={formValues.powerSource}
-                      isClearable
-                      onChange={val => setFormValues({ ...formValues, powerSource: val })}
-                    />
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">Tipo de fuente</label>
-                    <Select
-                      options={powerSourceTypes}
-                      isDisabled={isElectric}
-                      styles={backgroundBorderInputsSelect}
-                      placeholder={isElectric ? "Eléctrico (automático)" : "Seleccione subtipo"}
-                      value={formValues.powerSourceType}
-                      isClearable
-                      onChange={val => setFormValues({ ...formValues, powerSourceType: val })}
-                    />
-                  </div>
-                </div>
-
-                <div className="row mb-3">
-                  <div className="col-12 col-md-6 mb-3 mb-md-0">
-                    <label className="form-label">Observaciones</label>
-                    <textarea
-                      className="form-control"
-                      value={formValues.observaciones}
-                      onChange={e => setFormValues({ ...formValues, observaciones: e.target.value })}
-                      style={backgroundBorderInputs}
-                    />
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">Accesorios</label>
-                    <textarea
-                      className="form-control"
-                      value={formValues.accesorios}
-                      onChange={e => setFormValues({ ...formValues, accesorios: e.target.value })}
-                      style={backgroundBorderInputs}
-                    />
-                  </div>
-                </div>
-
-                <div className="row mb-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">Fecha de compra</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={formValues.purchaseDate}
-                      onChange={e => setFormValues({ ...formValues, purchaseDate: e.target.value })}
-                      style={backgroundBorderInputs}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {error && <p className="text-danger">{error}</p>}
+            {error && <p className="text-danger text-center">{error}</p>}
 
             <div className="d-flex gap-2 mt-3 justify-content-center">
-              <button type="submit" className="btn btn-success" disabled={loading}>
+              <button type="submit" className="btn btn-success px-4" disabled={loading}>
                 {loading ? "Cargando..." : "Registrar aeronave"}
               </button>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary px-4"
                 onClick={() => navigate("/auth/aircrafts")}
                 disabled={loading}
               >

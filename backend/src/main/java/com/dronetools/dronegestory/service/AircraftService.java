@@ -1,10 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.model.Aircraft;
-import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.AircraftRepository;
-import com.dronetools.dronegestory.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,11 +31,6 @@ public class AircraftService {
         return aircraftRepository.findById(id);
     }
 
-//    // Crear un nuevo aircraft
-//    public Aircraft createAircraft(Aircraft aircraft) {
-//        return aircraftRepository.save(aircraft);
-//    }
-
     // Crear un nueva aeronave con archivo
     public Aircraft createWithFile(Aircraft aircraft, MultipartFile imageFile) throws IOException {
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -57,82 +49,77 @@ public class AircraftService {
         return aircraftRepository.save(aircraft);
     }
 
-    public Aircraft updateWithFile(Integer id, Aircraft updatedAircraft, MultipartFile imageFile) throws IOException {
+    public Aircraft updateWithFile(
+        Integer id, 
+        Aircraft updatedAircraft, 
+        MultipartFile imageFile, 
+        boolean mtomPresent, 
+        boolean wingspanPresent,
+        boolean maxSpeedPresent,
+        boolean impactEnergyPresent
+    ) throws IOException {
+        
         Aircraft aircraft = aircraftRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aircraft not found with id: " + id));
 
-        // Obligatorios
+        // --- Campos de Texto (se mantienen si no llegan nulos) ---
         if (updatedAircraft.getManufacturer() != null) aircraft.setManufacturer(updatedAircraft.getManufacturer());
         if (updatedAircraft.getModel() != null) aircraft.setModel(updatedAircraft.getModel());
         if (updatedAircraft.getSerialNumber() != null) aircraft.setSerialNumber(updatedAircraft.getSerialNumber());
         if (updatedAircraft.getAircraftClass() != null) aircraft.setAircraftClass(updatedAircraft.getAircraftClass());
-        if (updatedAircraft.getMtom() != null) aircraft.setMtom(updatedAircraft.getMtom());
-        if (updatedAircraft.getWingspan() != null) aircraft.setWingspan(updatedAircraft.getWingspan());
-        if (updatedAircraft.getMaxSpeed() != null) aircraft.setMaxSpeed(updatedAircraft.getMaxSpeed());
         if (updatedAircraft.getConfig() != null) aircraft.setConfig(updatedAircraft.getConfig());
-        if (updatedAircraft.getImpactEnergy() != null) aircraft.setImpactEnergy(updatedAircraft.getImpactEnergy());
         if (updatedAircraft.getHasCamera() != null) aircraft.setHasCamera(updatedAircraft.getHasCamera());
 
-        // Opcionales
-        // if (updatedAircraft.getApplicantType() != null) aircraft.setApplicantType(updatedAircraft.getApplicantType());
-        // if (updatedAircraft.getApplicantName() != null) aircraft.setApplicantName(updatedAircraft.getApplicantName());
-        // if (updatedAircraft.getOperadorName() != null) aircraft.setOperadorName(updatedAircraft.getOperadorName());
-        // if (updatedAircraft.getOperatorNumber() != null) aircraft.setOperatorNumber(updatedAircraft.getOperatorNumber());
-        // if (updatedAircraft.getPrivatelyBuilt() != null) aircraft.setPrivatelyBuilt(updatedAircraft.getPrivatelyBuilt());
-        // if (updatedAircraft.getMaxAutonomy() != null) aircraft.setMaxAutonomy(updatedAircraft.getMaxAutonomy());
-        // if (updatedAircraft.getTether() != null) aircraft.setTether(updatedAircraft.getTether());
-        // if (updatedAircraft.getCableLenght() != null) aircraft.setCableLenght(updatedAircraft.getCableLenght());
-        // if (updatedAircraft.getPowerSource() != null) aircraft.setPowerSource(updatedAircraft.getPowerSource());
-        // if (updatedAircraft.getPowerSourceType() != null) aircraft.setPowerSourceType(updatedAircraft.getPowerSourceType());
-        // if (updatedAircraft.getAccessories() != null) aircraft.setAccessories(updatedAircraft.getAccessories());
-        // if (updatedAircraft.getObservations() != null) aircraft.setObservations(updatedAircraft.getObservations());
-        // if (updatedAircraft.getPurchaseDate() != null) aircraft.setPurchaseDate(updatedAircraft.getPurchaseDate());
+        
+        // MTOM
+        if (updatedAircraft.getMtom() != null) {
+            aircraft.setMtom(updatedAircraft.getMtom());
+        } else if (mtomPresent) {
+            aircraft.setMtom(null);
+        }
 
-        // --- Manejo de imagen ---
-         if (imageFile != null && !imageFile.isEmpty()) {
-             Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-             Files.createDirectories(uploadDir);
+        // WINGSPAN
+        if (updatedAircraft.getWingspan() != null) {
+            aircraft.setWingspan(updatedAircraft.getWingspan());
+        } else if (wingspanPresent) {
+            aircraft.setWingspan(null);
+        }
 
-             // Guarda nombre anterior para borrado
-             String oldImage = aircraft.getImagePath();
+        // MAX SPEED
+        if (updatedAircraft.getMaxSpeed() != null) {
+            aircraft.setMaxSpeed(updatedAircraft.getMaxSpeed());
+        } else if (maxSpeedPresent) {
+            aircraft.setMaxSpeed(null);
+        }
 
-             String originalName = imageFile.getOriginalFilename();
-             String safeName = (originalName == null || originalName.isBlank())
-                     ? "upload"
-                     : Paths.get(originalName).getFileName().toString();
+        // IMPACT ENERGY
+        if (updatedAircraft.getImpactEnergy() != null) {
+            aircraft.setImpactEnergy(updatedAircraft.getImpactEnergy());
+        } else if (impactEnergyPresent) {
+            aircraft.setImpactEnergy(null);
+        }
 
-             // Ejemplo: modelo_serie_nombreImagen.jpg
-             String filename = aircraft.getModel() + "_" + aircraft.getSerialNumber() + "_" + safeName;
+        // --- Lógica de Imagen ---
+        if (imageFile != null && !imageFile.isEmpty()) {
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Files.createDirectories(uploadDir);
+            String oldImage = aircraft.getImagePath();
+            String originalName = imageFile.getOriginalFilename();
+            String safeName = (originalName == null || originalName.isBlank()) ? "upload" : Paths.get(originalName).getFileName().toString();
+            
+            String filename = aircraft.getModel() + "_" + aircraft.getSerialNumber() + "_" + safeName;
+            Path target = uploadDir.resolve(filename);
+            imageFile.transferTo(target.toFile());
+            aircraft.setImagePath(filename);
 
-             Path target = uploadDir.resolve(filename);
-             imageFile.transferTo(target.toFile());
-
-             aircraft.setImagePath(filename);
-
-             // Elimina la imagen anterior, si existe
-             if (oldImage != null && !oldImage.isBlank()) {
-                 Path oldFile = uploadDir.resolve(oldImage).normalize();
-                 Files.deleteIfExists(oldFile);
-             }
-         }
+            if (oldImage != null && !oldImage.isBlank()) {
+                Path oldFile = uploadDir.resolve(oldImage).normalize();
+                Files.deleteIfExists(oldFile);
+            }
+        }
 
         return aircraftRepository.save(aircraft);
     }
-
-
-//    // Actualizar un aircraft existente
-//    public Aircraft updateAircraft(int id, Aircraft updatedAircraft) {
-//        return aircraftRepository.findById(id)
-//                .map(existingAircraft -> {
-//                    existingAircraft.setModel(updatedAircraft.getModel());
-//                    existingAircraft.setModel(updatedAircraft.getModel());
-////                    existingAircraft.setCapacity(updatedAircraft.getCapacity());
-//                    return aircraftRepository.save(existingAircraft);
-//                })
-//                .orElseThrow(() -> new RuntimeException("Aircraft no encontrado con id: " + id));
-//    }
-
-
 
     // Eliminar un aircraft por ID
     public void deleteAircraft(int id) {

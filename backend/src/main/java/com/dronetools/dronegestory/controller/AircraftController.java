@@ -3,17 +3,22 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.service.AircraftService;
 
-import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.beans.PropertyEditorSupport;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,13 +48,15 @@ public class AircraftController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> createAircraftWithFile(
-            @ModelAttribute Aircraft aircraft,
+            @ModelAttribute Aircraft aircraft, // Spring vincula los campos de texto aquí
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
+        // Si quieres depurar, añade estos logs:
+        System.out.println("Modelo recibido: " + aircraft.getModel());
         if (imageFile != null) {
-            System.out.println(">> Archivo recibido: " + imageFile.getOriginalFilename()
-                    + " | tamaño: " + imageFile.getSize() + " bytes");
+            System.out.println("Archivo: " + imageFile.getOriginalFilename());
         }
+        
         Aircraft createdAircraft = aircraftService.createWithFile(aircraft, imageFile);
         return ResponseEntity.ok(createdAircraft);
     }
@@ -57,15 +64,25 @@ public class AircraftController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> updateAircraftAWithFile(
             @PathVariable Integer id,
-            @Valid @ModelAttribute Aircraft aircraft,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @ModelAttribute Aircraft aircraft,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            HttpServletRequest request
     ) throws IOException {
-        if (imageFile != null) {
-            System.out.println(">> Archivo recibido: " + imageFile.getOriginalFilename()
-                    + " | tamaño: " + imageFile.getSize() + " bytes");
-        }
 
-        Aircraft updatedAircraft = aircraftService.updateWithFile(id, aircraft, imageFile);
+        boolean mtomPresent = request.getParameterMap().containsKey("mtom");
+        boolean wingspanPresent = request.getParameterMap().containsKey("wingspan");
+        boolean maxSpeedPresent = request.getParameterMap().containsKey("maxSpeed");
+        boolean impactEnergyPresent = request.getParameterMap().containsKey("impactEnergy");
+
+        Aircraft updatedAircraft = aircraftService.updateWithFile(
+            id, 
+            aircraft, 
+            imageFile, 
+            mtomPresent, 
+            wingspanPresent, 
+            maxSpeedPresent, 
+            impactEnergyPresent
+        );
 
         return ResponseEntity.ok(updatedAircraft);
     }
@@ -103,5 +120,23 @@ public class AircraftController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .body(resource);
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        // 1. Convierte Strings vacíos ("") en null para que no rompan los números
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+        
+        // 2. Manejador específico para BigDecimal por si llegan vacíos
+        binder.registerCustomEditor(BigDecimal.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.trim().isEmpty()) {
+                    setValue(null);
+                } else {
+                    setValue(new BigDecimal(text.replace(',', '.'))); // Soporta comas y puntos
+                }
+            }
+        });
     }
 }

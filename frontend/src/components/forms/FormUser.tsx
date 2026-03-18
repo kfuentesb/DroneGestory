@@ -145,7 +145,7 @@ function FormUser() {
             // console.log("JWT enviado:", token);
             const res = await apiFetch("http://localhost:8080/api/auth/users", {
                 method: "POST",
-                body: formData, // browser automatically sets Content-Type to multipart/form-data
+                body: formData,
             });
 
             if (!res) return;
