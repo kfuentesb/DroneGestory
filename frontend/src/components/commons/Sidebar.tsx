@@ -8,7 +8,7 @@ import ArrowBack from '../../assets/arrow_back_white.svg';
 import ArrowForward from '../../assets/arrow_forward_white.svg';
 import UsersIcon from '../../assets/sidebar/group_white.svg';
 import DroneIcon from '../../assets/sidebar/drone_white.svg';
-import FlyIcon from '../../assets/sidebar/fly_white.svg';
+import FlyIcon from '../../assets/sidebar/fly_drone_white.svg';
 import IdentityIcon from '../../assets/sidebar/identity_white.svg';
 
 export default function SidebarMenu() {
