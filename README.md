@@ -47,6 +47,7 @@ npm i react-router-dom
 npm i react-select
 npm i react-error-boundary
 npm i react-pro-sidebar
+npm i react-hook-form
 ```
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
@@ -57,12 +58,13 @@ pip install bcrypt
 
 //TODO LIST
 -Conseguir logo
--Sustituir logo de arriba de react por el logo de la empresa
--Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria
--Buscar una fuente de letra diferente (pero que siga siendo profesional)
--Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos
--Modificar ver detalles de aircraft, opcion de modificar imagen y añadir datos opcionales
--Registrar drone no acepta imagen ni los campos opcionales
--Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios)
--Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo.
--Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos
+-Sustituir logo de arriba de react por el logo de la empresa <br>
+-Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria <br>
+-Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
+-Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
+-Modificar ver detalles de aircraft, opcion de modificar imagen y añadir datos opcionales <br>
+-Registrar drone no acepta imagen ni los campos opcionales <br>
+-Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
+-Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
+-Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
+-Actualmente un usuario piloto, no admin o manager, no puede acceder a sus datos de perfil, por orden de seguridad de srpingboot<br>
