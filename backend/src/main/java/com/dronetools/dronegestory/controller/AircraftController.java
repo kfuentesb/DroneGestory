@@ -46,6 +46,10 @@ public class AircraftController {
             @ModelAttribute Aircraft aircraft,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
+        if (imageFile != null) {
+            System.out.println(">> Archivo recibido: " + imageFile.getOriginalFilename()
+                    + " | tamaño: " + imageFile.getSize() + " bytes");
+        }
         Aircraft createdAircraft = aircraftService.createWithFile(aircraft, imageFile);
         return ResponseEntity.ok(createdAircraft);
     }
@@ -56,6 +60,10 @@ public class AircraftController {
             @Valid @ModelAttribute Aircraft aircraft,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
+        if (imageFile != null) {
+            System.out.println(">> Archivo recibido: " + imageFile.getOriginalFilename()
+                    + " | tamaño: " + imageFile.getSize() + " bytes");
+        }
 
         Aircraft updatedAircraft = aircraftService.updateWithFile(id, aircraft, imageFile);
 
