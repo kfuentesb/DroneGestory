@@ -15,5 +15,30 @@ public class OperationService {
         this.operationRepository = operationRepository;
     }
 
-    public List<Operation> getAllOperations(){ return operationRepository.findAll(); }
+    public List<Operation> getAllOperations() {
+        return operationRepository.findAll();
+    }
+
+    public Operation saveOperation(Operation op) {
+        // Guarda una nueva operación o actualiza (según si el ID está presente)
+        return operationRepository.save(op);
+    }
+
+    public Operation updateOperation(Long operationId, Operation opActualizada) {
+        Operation op = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operation not found"));
+        op.setNombreOperacion(opActualizada.getNombreOperacion());
+        // Añade aquí otros campos editables en el futuro
+        return operationRepository.save(op);
+    }
+
+    public Operation findById(Long operationId) {
+        return operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operation not found"));
+    }
+
+    public void deleteOperation(Long operationId) {
+        operationRepository.deleteById(operationId);
+    }
 }
+
