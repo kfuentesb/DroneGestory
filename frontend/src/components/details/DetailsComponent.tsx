@@ -115,50 +115,129 @@ export default function DetailsComponent({
         setShowConfirm(true);
     };
 
+    // const handleConfirm = async () => {
+    //     setShowConfirm(false);
+
+    //     if (confirmAction === "update") {
+
+    //         // Build FormData
+    //         const formData = new FormData();
+    //         const allowedKeys = new Set(fields.map((f) => f.key));
+    //         // if (formValues?.imageFile instanceof File) {
+    //         //     formData.append("imageFile", formValues.imageFile);
+    //         // }
+    //         const imageField = fields.find(f => f.type === 'file');
+    //         const file = imageField ? formValues[imageField.key] : null;
+
+    //         if (file instanceof File && file.size > 0) {
+    //             formData.append("imageFile", file);
+    //         }
+
+    //         Array.from(allowedKeys).forEach((key) => {
+
+    //             if (key.type === 'file') return;
+
+    //             const value = formValues[key];
+    //             // Si el valor es null o undefined, no lo enviamos
+    //             if (value === null || value === undefined) return;
+
+    //             // if (value instanceof File) {
+    //             //     if (value.size > 0) formData.append(key, value);
+    //             // } else {
+    //                 const stringValue = value.toString().trim();
+                    
+    //                 // Si se manda "" un Integer en Java, da error 400. Mejor no enviarlo o mandar null.
+    //                 const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(key);
+                    
+    //                 if (isNumericField && stringValue === "") {
+    //                     return;
+    //                 }
+
+    //                 // Limpieza de decimales (cambiar coma por punto si el usuario la puso)
+    //                 const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
+                    
+    //                 formData.append(key, finalValue);
+    //             // }
+    //         });
+    //         console.log(`${endpoint}/${id}`);
+    //         const res = await fetch(`${endpoint}/${id}`, {
+    //             method: "PUT",
+    //             headers: { Authorization: `Bearer ${token}` },
+    //             body: formData,
+    //         });
+
+    //         if (!res.ok) {
+    //             alert("Error actualizando");
+    //             return;
+    //         }
+
+    //         const updated = await res.json();
+    //         setData(updated);
+    //         setFormValues(updated);
+    //         setEditing(false);
+    //     }
+
+    //     if (confirmAction === "delete" && onDelete) {
+    //         await onDelete();
+    //     }
+
+    //     setConfirmAction(null);
+    // };
+
     const handleConfirm = async () => {
         setShowConfirm(false);
 
         if (confirmAction === "update") {
-
-            // Build FormData
             const formData = new FormData();
-            const allowedKeys = new Set(fields.map((f) => f.key));
-            if (formValues?.imageFile instanceof File) {
-                allowedKeys.add("imageFile");
+            
+            // 1. Manejo de la Imagen (imageFile)
+            // Buscamos el campo que es de tipo 'file' en nuestra configuración de campos
+            const imageFieldConfig = fields.find(f => f.type === 'file');
+            if (imageFieldConfig) {
+                const file = formValues[imageFieldConfig.key];
+                if (file instanceof File && file.size > 0) {
+                    // USAMOS LA KEY DEL CAMPO (ej: "imageFile" o "file")
+                    formData.append(imageFieldConfig.key, file); 
+                }
             }
 
-            Array.from(allowedKeys).forEach((key) => {
-                const value = formValues[key];
-                // Si el valor es null o undefined, no lo enviamos
-                if (value === null || value === undefined) return;
+            // 2. Manejo de los demás campos
+            fields.forEach((field) => {
+                // Saltamos el campo de archivo porque ya lo manejamos arriba
+                if (field.type === 'file') return;
 
-                if (value instanceof File) {
-                    if (value.size > 0) formData.append(key, value);
-                } else {
-                    const stringValue = value.toString().trim();
-                    
-                    // Si se manda "" un Integer en Java, da error 400. Mejor no enviarlo o mandar null.
-                    const isNumericField = ["serialNumber", "mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(key);
-                    
-                    if (isNumericField && stringValue === "") {
-                        return;
-                    }
-
-                    // Limpieza de decimales (cambiar coma por punto si el usuario la puso)
-                    const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
-                    
-                    formData.append(key, finalValue);
+                const value = formValues[field.key];
+                
+                // Si es null, undefined o string vacío, no lo enviamos (permite nulos en BD)
+                if (value === null || value === undefined || value.toString().trim() === "") {
+                    return;
                 }
+
+                const stringValue = value.toString().trim();
+                const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(field.key);
+
+                // Limpieza y formato
+                const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
+                
+                formData.append(field.key, finalValue);
             });
-            console.log(`${endpoint}/${id}`);
+
+            // Debug para que veas qué se envía antes de que falle
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
             const res = await fetch(`${endpoint}/${id}`, {
                 method: "PUT",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}` }, // NO añadas Content-Type manualmente
                 body: formData,
             });
 
             if (!res.ok) {
-                alert("Error actualizando");
+                // Si falla, intenta ver el error real en consola
+                const errorText = await res.text();
+                console.error("Error del servidor:", errorText);
+                alert("Error actualizando: " + errorText);
                 return;
             }
 

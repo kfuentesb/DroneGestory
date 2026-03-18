@@ -3,6 +3,7 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.service.AircraftService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -57,15 +58,25 @@ public class AircraftController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Aircraft> updateAircraftAWithFile(
             @PathVariable Integer id,
-            @Valid @ModelAttribute Aircraft aircraft,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @ModelAttribute Aircraft aircraft,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            HttpServletRequest request
     ) throws IOException {
-        if (imageFile != null) {
-            System.out.println(">> Archivo recibido: " + imageFile.getOriginalFilename()
-                    + " | tamaño: " + imageFile.getSize() + " bytes");
-        }
 
-        Aircraft updatedAircraft = aircraftService.updateWithFile(id, aircraft, imageFile);
+        boolean mtomPresent = request.getParameterMap().containsKey("mtom");
+        boolean wingspanPresent = request.getParameterMap().containsKey("wingspan");
+        boolean maxSpeedPresent = request.getParameterMap().containsKey("maxSpeed");
+        boolean impactEnergyPresent = request.getParameterMap().containsKey("impactEnergy");
+
+        Aircraft updatedAircraft = aircraftService.updateWithFile(
+            id, 
+            aircraft, 
+            imageFile, 
+            mtomPresent, 
+            wingspanPresent, 
+            maxSpeedPresent, 
+            impactEnergyPresent
+        );
 
         return ResponseEntity.ok(updatedAircraft);
     }
