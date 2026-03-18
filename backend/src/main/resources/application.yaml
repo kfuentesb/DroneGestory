@@ -1,4 +1,15 @@
+server:
+  max-http-request-header-size: 16KB
+  tomcat:
+    max-swallow-size: 50MB
+
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+
   application:
     name: DroneGestory
   docker:
@@ -32,12 +43,6 @@ spring:
     error:
       whitelabel:
         enabled: false
-
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 5MB
-      max-request-size: 6MB
 
 jwt:
   secret: ${JWT_SECRET:change-this-in-prod-min-32-chars}

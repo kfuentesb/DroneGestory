@@ -34,11 +34,6 @@ public class AircraftService {
         return aircraftRepository.findById(id);
     }
 
-//    // Crear un nuevo aircraft
-//    public Aircraft createAircraft(Aircraft aircraft) {
-//        return aircraftRepository.save(aircraft);
-//    }
-
     // Crear un nueva aeronave con archivo
     public Aircraft createWithFile(Aircraft aircraft, MultipartFile imageFile) throws IOException {
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -56,6 +51,29 @@ public class AircraftService {
 
         return aircraftRepository.save(aircraft);
     }
+
+    // public Aircraft createWithFile(Aircraft aircraft, MultipartFile imageFile) throws IOException {
+    //     if (imageFile != null && !imageFile.isEmpty()) {
+    //         String originalName = imageFile.getOriginalFilename();
+    //         // Limpiamos el nombre para evitar espacios o caracteres raros
+    //         String safeName = (originalName == null || originalName.isBlank()) 
+    //             ? "upload.png" 
+    //             : originalName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+                
+    //         String filename = System.currentTimeMillis() + "_" + safeName;
+    //         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            
+    //         if (!Files.exists(uploadDir)) {
+    //             Files.createDirectories(uploadDir);
+    //         }
+            
+    //         Path target = uploadDir.resolve(filename);
+    //         imageFile.transferTo(target.toFile());
+    //         aircraft.setImagePath(filename);
+    //     }
+    //     return aircraftRepository.save(aircraft);
+    // }
+
 
     public Aircraft updateWithFile(
         Integer id, 
