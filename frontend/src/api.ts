@@ -23,6 +23,7 @@ export async function apiFetch(url: string, options?: RequestInit) {
     }
 
     if (!res.ok) {
+        console.error(`HTTP Error ${res.status}: ${res.statusText}`);
         throw new Error("API error");
     }
 
