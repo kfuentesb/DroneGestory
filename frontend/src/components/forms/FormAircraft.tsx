@@ -43,7 +43,8 @@ export default function FormAircraft() {
     image: null as File | null,
   });
 
-  const [errors, setErrors] = useState({
+  // Mantenemos tu estado de errores, pero añadimos soporte para mensajes de texto
+  const [errors, setErrors] = useState<any>({
     manufacturer: false,
     model: false,
     serialNumber: false,
@@ -74,24 +75,20 @@ export default function FormAircraft() {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
     if (!file) {
       setSelectedFile(null);
       setFormValues({ ...formValues, image: null });
       setError("");
       return;
     }
-
     if (!allowedTypes.includes(file.type)) {
       setError("Solo se permiten imágenes JPG o PNG.");
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       setError("La imagen debe pesar menos de 5MB.");
       return;
     }
-
     setSelectedFile(file);
     setFormValues({ ...formValues, image: file });
     setError("");
@@ -102,44 +99,53 @@ export default function FormAircraft() {
     setLoading(true);
     setError(null);
 
-    // Validación campos principales
-    const newErrors = {
-      manufacturer: !formValues.manufacturer.trim(),
-      model: !formValues.model.trim(),
-      serialNumber: !formValues.serialNumber.trim(),
-      aircraftClass: !formValues.aircraftClass,
-      mtom: !formValues.mtom.trim() || isNaN(Number(formValues.mtom)),
-      wingspan: !formValues.wingspan.trim() || isNaN(Number(formValues.wingspan)),
-      maxSpeed: !formValues.maxSpeed.trim() || isNaN(Number(formValues.maxSpeed)),
-      config: !formValues.config,
-      impactEnergy: !formValues.impactEnergy.trim() || isNaN(Number(formValues.impactEnergy)),
-      hasCamera: !formValues.hasCamera,
-    };
-
-    setErrors(newErrors);
-    if (Object.values(newErrors).some(Boolean)) {
-      setError("Por favor complete los campos obligatorios correctamente.");
-      setLoading(false);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("manufacturer", formValues.manufacturer);
-    formData.append("model", formValues.model);
-    formData.append("serialNumber", formValues.serialNumber);
-    formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
-    formData.append("mtom", formValues.mtom);
-    formData.append("wingspan", formValues.wingspan);
-    formData.append("maxSpeed", formValues.maxSpeed);
-    formData.append("config", formValues.config?.value ?? "");
-    formData.append("impactEnergy", formValues.impactEnergy);
-    formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
-
-    if (selectedFile) {
-      formData.append("imageFile", selectedFile);
-    }
+    // Expresión regular que coincide con tu @Pattern de Java
+    const serialRegex = /^[a-zA-Z0-9]{2,25}$/;
 
     try {
+      // Validación campos principales (Mejorada)
+      const newErrors = {
+        manufacturer: !formValues.manufacturer.trim(),
+        model: !formValues.model.trim(),
+        // Validamos que no esté vacío Y que cumpla el formato
+        serialNumber: !formValues.serialNumber.trim() || !serialRegex.test(formValues.serialNumber),
+        aircraftClass: !formValues.aircraftClass,
+        mtom: !formValues.mtom.trim() || isNaN(Number(formValues.mtom)),
+        wingspan: !formValues.wingspan.trim() || isNaN(Number(formValues.wingspan)),
+        maxSpeed: !formValues.maxSpeed.trim() || isNaN(Number(formValues.maxSpeed)),
+        config: !formValues.config,
+        impactEnergy: !formValues.impactEnergy.trim() || isNaN(Number(formValues.impactEnergy)),
+        hasCamera: !formValues.hasCamera,
+      };
+
+      setErrors(newErrors);
+      
+      if (Object.values(newErrors).some(Boolean)) {
+        let msg = "Por favor complete los campos correctamente.";
+        if (newErrors.serialNumber && formValues.serialNumber.trim()) {
+            msg = "El número de serie solo permite letras y números (2-25 carac.).";
+        }
+        setError(msg);
+        setLoading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("manufacturer", formValues.manufacturer);
+      formData.append("model", formValues.model);
+      formData.append("serialNumber", formValues.serialNumber);
+      formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
+      formData.append("mtom", formValues.mtom);
+      formData.append("wingspan", formValues.wingspan);
+      formData.append("maxSpeed", formValues.maxSpeed);
+      formData.append("config", formValues.config?.value ?? "");
+      formData.append("impactEnergy", formValues.impactEnergy);
+      formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
+
+      if (selectedFile) {
+        formData.append("imageFile", selectedFile, selectedFile.name);
+      }
+
       const res = await apiFetch("http://localhost:8080/api/auth/aircraft", {
         method: "POST",
         body: formData
@@ -191,6 +197,7 @@ export default function FormAircraft() {
                 <input
                   type="text"
                   className="form-control"
+                  placeholder="Ej: ABC12345 (2-25 carac.)"
                   value={formValues.serialNumber}
                   onChange={e => setFormValues({ ...formValues, serialNumber: e.target.value })}
                   style={{ ...backgroundBorderInputs, border: errors.serialNumber ? "1px solid red" : "1px solid #D1D5DB" }}

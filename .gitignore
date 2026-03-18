@@ -34,3 +34,8 @@ build/
 
 ### Others ###
 *.zip
+
+
+## BACKEND
+
+/backend/uploads/*

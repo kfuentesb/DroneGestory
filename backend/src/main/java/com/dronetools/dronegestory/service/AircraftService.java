@@ -1,10 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.model.Aircraft;
-import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.AircraftRepository;
-import com.dronetools.dronegestory.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,29 +48,6 @@ public class AircraftService {
 
         return aircraftRepository.save(aircraft);
     }
-
-    // public Aircraft createWithFile(Aircraft aircraft, MultipartFile imageFile) throws IOException {
-    //     if (imageFile != null && !imageFile.isEmpty()) {
-    //         String originalName = imageFile.getOriginalFilename();
-    //         // Limpiamos el nombre para evitar espacios o caracteres raros
-    //         String safeName = (originalName == null || originalName.isBlank()) 
-    //             ? "upload.png" 
-    //             : originalName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
-                
-    //         String filename = System.currentTimeMillis() + "_" + safeName;
-    //         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-            
-    //         if (!Files.exists(uploadDir)) {
-    //             Files.createDirectories(uploadDir);
-    //         }
-            
-    //         Path target = uploadDir.resolve(filename);
-    //         imageFile.transferTo(target.toFile());
-    //         aircraft.setImagePath(filename);
-    //     }
-    //     return aircraftRepository.save(aircraft);
-    // }
-
 
     public Aircraft updateWithFile(
         Integer id, 

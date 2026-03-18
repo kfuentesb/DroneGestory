@@ -2,6 +2,8 @@ server:
   max-http-request-header-size: 16KB
   tomcat:
     max-swallow-size: 50MB
+    max-part-count: 100
+    max-part-header-size: 2048
 
 spring:
   servlet:
@@ -41,6 +43,8 @@ spring:
 
   web:
     error:
+      include-message: always
+      include-binding-errors: always
       whitelabel:
         enabled: false
 
