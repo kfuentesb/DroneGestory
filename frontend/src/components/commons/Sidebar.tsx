@@ -128,7 +128,7 @@ export default function SidebarMenu() {
                 >
                     <MenuItem onClick={() => navigate("/auth/operations")}>Listar operaciones (admin)</MenuItem>
                     <MenuItem onClick={() => navigate("/#")}>Listar mis operaciones</MenuItem>
-                    <MenuItem onClick={() => navigate("/#")}>Registrar operacion</MenuItem>
+                    <MenuItem onClick={() => navigate("/auth/register-operation")}>Registrar operacion</MenuItem>
                 </SubMenu>
             </Menu>
         </Sidebar>

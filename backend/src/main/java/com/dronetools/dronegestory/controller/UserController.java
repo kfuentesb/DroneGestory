@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -35,6 +35,7 @@ public class UserController {
         return userService.findAll().stream().map(this::toResponse).toList();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getById(@PathVariable Integer id) {
         return userService.findById(id)
@@ -50,11 +51,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // @PostMapping
-    // public ResponseEntity<User> create(@RequestBody User user) {
-    //     return ResponseEntity.ok(userService.create(user));
-    // }
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> createUserWithFile(
             @ModelAttribute User user,
@@ -63,13 +59,6 @@ public class UserController {
         User createdUser = userService.createWithFile(user, imageFile);
         return ResponseEntity.ok(createdUser);
     }
-
-    // @PutMapping("/{id}")
-    // public ResponseEntity<User> update(@PathVariable Integer id, @RequestBody User user) {
-    //     return userService.update(id, user)
-    //             .map(ResponseEntity::ok)
-    //             .orElse(ResponseEntity.notFound().build());
-    // }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> updateUserWithFile(
