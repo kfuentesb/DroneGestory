@@ -51,7 +51,7 @@ export default function AircraftDetail() {
         onBack={() => navigate("/auth/aircrafts")}
 
         validateForm={validateForm}
-        imageSide="right"
+
         />
     )
 }

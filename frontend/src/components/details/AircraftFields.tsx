@@ -99,19 +99,19 @@ export const aircraftFields: FieldConfig[] = [
             return "No especificado";
         },
         error: "Seleccione una opción válida"
+    },
+    {
+    label: "Imagen de perfil",
+    key: "imageFile",
+    type: "file",
+    validate: (file: File | null) => {
+        if (!file) return true;
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+        return file.size <= maxSize && allowedTypes.includes(file.type);
+    },
+    error: "La imagen debe ser JPG o PNG y pesar menos de 5MB"
     }
-    // {
-    // label: "Imagen de perfil",
-    // key: "imageFile",
-    // type: "file",
-    // validate: (file: File | null) => {
-    //     if (!file) return true;
-
-    //     const maxSize = 5 * 1024 * 1024; // 5MB
-    //     const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-
-    //     return file.size <= maxSize && allowedTypes.includes(file.type);
-    // },
-    // error: "La imagen debe ser JPG o PNG y pesar menos de 5MB"
-    // }
 ];

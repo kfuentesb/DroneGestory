@@ -24,7 +24,6 @@ interface DetailsComponentProps {
 
     validateForm?: (values: any) => Record<string, string | null>
     // Linea para elegir la posición de la imagen
-    imageSide?: "right" | "left", 
 }
 export default function DetailsComponent({
         id,
@@ -36,7 +35,6 @@ export default function DetailsComponent({
         onDelete,
         onBack,
         validateForm,
-        imageSide = "left", // Default: left
     }:DetailsComponentProps) {
     const { token } = useAuth();
 
