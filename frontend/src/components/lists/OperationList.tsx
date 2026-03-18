@@ -7,11 +7,11 @@ import { ReusableTable } from "../commons/props/ReusableTable";
 
 import DronePlusIcon from "../../assets/drone_plus_white.svg";
 
+// Coincide con los campos que tienes en tu backend (Operation.java)
 type Operation = {
-  id: number;
-  // Obligatorios
-  operation: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
-}
+  idOperacion: number;
+  nombreOperacion: string;
+};
 
 export default function OperationList() {
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -19,9 +19,8 @@ export default function OperationList() {
   const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
   const navigate = useNavigate();
 
-
   useEffect(() => {
-    const loadAircrafts = async () => {
+    const loadOperations = async () => {
       try {
         const res = await apiFetch("http://localhost:8080/api/auth/operations", {
           headers: { "Content-Type": "application/json" }
@@ -35,7 +34,7 @@ export default function OperationList() {
         console.error(err);
       }
     };
-    loadAircrafts();
+    loadOperations();
   }, []);
 
   useEffect(() => {
@@ -44,7 +43,7 @@ export default function OperationList() {
     } else {
       setFilteredOperations(
         operations.filter((o) =>
-          o.operation.toLowerCase().includes(search.trim().toLowerCase())
+          o.nombreOperacion.toLowerCase().includes(search.trim().toLowerCase())
         )
       );
     }
@@ -61,31 +60,28 @@ export default function OperationList() {
             Operaciones registradas
           </h2>
 
-          {/* Barra búsqueda + Añadir aeronave */}
+          {/* Barra búsqueda + Añadir operación */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             {/* Input de búsqueda */}
-            <SearchBar value={search} placeholder="Buscar por operacion..." onChange={setSearch} />
+            <SearchBar value={search} placeholder="Buscar por nombre..." onChange={setSearch} />
 
-            {/* Botón añadir aeronave */}
+            {/* Botón añadir operación */}
             <ButtonProp onClick={() => navigate("/auth/register-operation")}>
-              <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
+              <img src={DronePlusIcon} style={{ width: "40px", height: "40px" }} />
             </ButtonProp>
           </div>
 
           <ReusableTable
-            headers={[
-              "Id",
-              "Operación",
-            ]}
+            headers={["Id", "Nombre operación"]}
             rows={filteredOperations}
             renderRow={(o) => (
               <>
-                <td>{o.id}</td>
-                <td>{o.operation}</td>
+                <td>{o.idOperacion}</td>
+                <td>{o.nombreOperacion}</td>
               </>
             )}
-            onRowClick={(o) => navigate(`/auth/aircrafts/${o.id}`)}
-            emptyText="No hay aeronaves registradas."
+            onRowClick={(o) => navigate(`/auth/operations/${o.idOperacion}`)}
+            emptyText="No hay operaciones registradas."
           />
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
         </div>

@@ -1,3 +1,5 @@
+package com.dronetools.dronegestory.controller;
+
 import com.dronetools.dronegestory.model.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.Anexo4Repository;
@@ -19,7 +21,7 @@ public class Anexo4Controller {
 
     // GUARDAR (create/update anexo4 for an operation - idempotente)
     @PostMapping
-    public Anexo4 saveAnexo4(@PathVariable Long operationId, @RequestBody Anexo4 input) {
+    public Anexo4 saveAnexo4(@PathVariable Long operationId, @ModelAttribute Anexo4 input) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         input.setOperation(op);
@@ -29,7 +31,7 @@ public class Anexo4Controller {
 
     // OPCIONAL: Si quieres guardar “avances” parciales, puedes hacer un PUT que actualice lo existente:
     @PutMapping
-    public Anexo4 updateAnexo4(@PathVariable Long operationId, @RequestBody Anexo4 input) {
+    public Anexo4 updateAnexo4(@PathVariable Long operationId, @ModelAttribute Anexo4 input) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         Anexo4 existente = anexo4Repository.findByOperation(op)

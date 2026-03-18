@@ -23,13 +23,13 @@ public class OperationController {
 
     // Crear una nueva operación
     @PostMapping
-    public Operation create(@RequestBody Operation op) {
+    public Operation create(@ModelAttribute Operation op) {
         return operationService.saveOperation(op);
     }
 
     // Actualizar una operación existente
     @PutMapping("/{operationId}")
-    public Operation update(@PathVariable Long operationId, @RequestBody Operation op) {
+    public Operation update(@PathVariable Long operationId, @ModelAttribute Operation op) {
         return operationService.updateOperation(operationId, op);
     }
 
