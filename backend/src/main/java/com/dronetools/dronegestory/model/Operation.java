@@ -25,7 +25,7 @@ public class Operation {
 
 //    @Column(name = "fechaActual")
 //    private LocalDate fechaActual;
-//
+
 //    @Column(name = "paso_actual")
 //    private int pasoActual;
 
