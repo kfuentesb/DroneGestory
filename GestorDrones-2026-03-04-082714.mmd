@@ -56,16 +56,17 @@ classDiagram
       +Date fecha_filled_form
     }
 
-    class Anexo4_personalNM{
-      -int id_anexo4
-      -int id_usuario
-      +String rol
+    class Op_Personal_NM {
+        +int id_operacion
+        +int id_usuario
+        +boolean es_definitivo
+        +String rol
     }
-
-    class Anexo4_dronesNM{
-      -int id_anexo4
-      -int id_aeronave
-      +String uso_previsto
+    class Op_Drones_NM {
+        +int id_operacion
+        +int id_aeronave
+        +boolean es_definitivo
+        +String uso_previsto
     }
 
     class Anexo5{
@@ -163,10 +164,10 @@ classDiagram
     AeroNave "n" <|-- "1" Operadora
 
     Operacion "1" -- "1" Anexo4 : contiene
-    Anexo4 "1" -- "*" Anexo4_personalNM : asigna
-    Usuario "1" -- "*" Anexo4_personalNM : participa
-    Anexo4 "1" -- "*" Anexo4_dronesNM : utiliza
-    AeroNave "1" -- "*" Anexo4_dronesNM : es_usada
+    Operacion "1" -- "*" Op_Personal_NM
+    Operacion "1" -- "*" Op_Drones_NM
+    Anexo4 --|> Operacion : "Lee de"
+    Anexo5 --|> Operacion : "Confirma en"
 
     Operacion "1" -- "1" Anexo5 : contiene
     Operacion "1" -- "1" Anexo6 : contiene
