@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.dto.UserResponse;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.UserService;
@@ -31,27 +32,35 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public List<UserResponse> getAll() {
         return userService.findAll().stream().map(this::toResponse).toList();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
     public ResponseEntity<UserResponse> getById(@PathVariable Integer id) {
         return userService.findById(id)
                 .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/names")
+    @PreAuthorize("isAuthenticated()")
+    public List<UserNameResponse> getAllNames() {
+        return userService.findAllNames();
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
-        String username = authentication.getName(); // comes from JWT
+        String username = authentication.getName();
         return userService.findByUsername(username)
                 .map(user -> ResponseEntity.ok(toResponse(user)))
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(401).build());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<User> createUserWithFile(
             @ModelAttribute User user,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
@@ -61,6 +70,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
     public ResponseEntity<User> updateUserWithFile(
             @PathVariable Integer id,
             @ModelAttribute User user,
@@ -75,12 +85,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/images/{filename:.+}")// el ":.+" hace que ignore si tiene puntos en la base de datos, y lo tiene
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> getUserImage(@PathVariable String filename) throws IOException {
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadsDir.resolve(filename).normalize();
