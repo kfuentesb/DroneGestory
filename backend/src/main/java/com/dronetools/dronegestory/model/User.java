@@ -51,7 +51,7 @@ public class User implements UserDetails{
     private String email;
 
     @Column(name = "phone_number")
-    private Integer phoneNumber;
+    private Integer phoneNumber; // TODO cambiar a string
 
     @Column(name = "image_path")
     private String imagePath;
