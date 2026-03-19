@@ -1,22 +1,20 @@
 package com.dronetools.dronegestory.controller;
 
-import org.springframework.http.ResponseEntity;
+import com.dronetools.dronegestory.dto.DashboardDTO;
+import com.dronetools.dronegestory.service.DashboardService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:5173")
 public class DashboardController {
 
+    @Autowired private DashboardService dashboardService;
+
     @GetMapping("/dashboard")
-    public ResponseEntity<?> dashboard() {
-        // Aquí debes usar algún mecanismo para identificar quién está logueado.
-        // Si no tienes JWT o sesión, solo devolverá OK siempre (No_tiene SEGURO).
-        return ResponseEntity.ok(
-                java.util.Map.of(
-                        "status", "authenticated",
-                        "message", "Bienvenido al dashboard protegido"
-                )
-        );
+    public DashboardDTO getDashboard() {
+        return dashboardService.getDashboard();
     }
 }

@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/pilots/**").hasAnyRole("ADMIN", "MANAGER")
 
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
@@ -95,7 +96,7 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true); // HE PUESTO TRUE para que funcione DASHBOARD
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
