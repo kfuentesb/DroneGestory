@@ -56,7 +56,7 @@ pip install bcrypt
 ```
 
 
-//TODO LIST
+//TODO LIST<br>
 -Conseguir logo. Sustituir logo de arriba de react por el logo de la empresa <br>
 -Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria <br>
 -Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
@@ -65,7 +65,6 @@ pip install bcrypt
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 -Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
-<<<<<<< HEAD
 -Arreglar usuario piloto, actualmente no puede modificar su perfil.<br>
 -VALIDACIONES DE DRON TANTO EN MODIFICAR COMO REGISTRAR<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
@@ -73,7 +72,5 @@ pip install bcrypt
 -Reestructurar la carpeta del backend /uploads, que tenga una con /users y otra con /aircraft, además aquí se guardaran las licencias y documentaciones a futuro<br>
 -Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
 -Añadir ver operación en detalle<br>
-=======
--Actualmente un usuario piloto, no admin o manager, no puede acceder a sus datos de perfil, por orden de seguridad de srpingboot<br> Andrés
--Implementar lista de usuarios para clickar y añadir al anexo
->>>>>>> kevin
+-Implementar lista de usuarios para clickar y añadir al anexo<br>
+-Añadir paginación a las vistas con tablas.<br>
