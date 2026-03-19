@@ -67,7 +67,6 @@ pip install bcrypt
 -Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
 -Arreglar usuario piloto, actualmente no puede modificar su perfil.<br>
 -VALIDACIONES DE DRON TANTO EN MODIFICAR COMO REGISTRAR<br>
--Cualquier usuario con opcion a realizar una operacion tiene que tener disponible el fetch de nombres de usuarios y drones (aka id)<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Añadir posibilidad de borrar imagen en modificar, tanto para usuario como para dron<br>
 -Reestructurar la carpeta del backend /uploads, que tenga una con /users y otra con /aircraft, además aquí se guardaran las licencias y documentaciones a futuro<br>
