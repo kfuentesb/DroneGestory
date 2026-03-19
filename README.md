@@ -64,8 +64,6 @@ pip install bcrypt
 -Añadir datos opcionales en aircraft <br>
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
--Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
--Arreglar usuario piloto, actualmente no puede modificar su perfil.<br>
 -VALIDACIONES DE DRON TANTO EN MODIFICAR COMO REGISTRAR<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Añadir posibilidad de borrar imagen en modificar, tanto para usuario como para dron<br>
