@@ -1,27 +1,26 @@
-package com.dronetools.dronegestory.model;
+package com.dronetools.dronegestory.model.anexos;
 
+import com.dronetools.dronegestory.model.Operation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "anexo4")
+@Table(name = "anexo7")
 @Getter @Setter @NoArgsConstructor
-public class Anexo4 {
+public class Anexo7 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_anexo4")
+    @Column(name = "id_anexo7")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_operacion", nullable = false, unique = true)
     private Operation operation;
 
-    @Column(name = "campo_anexo4")
-    private String campoAnexo4;
+    @Column(name = "campo_anexo7")
+    private String campoAnexo7;
 
 //    @Column(name = "fecha_hora_prevista")
 //    private LocalDateTime fechaHoraPrevista;

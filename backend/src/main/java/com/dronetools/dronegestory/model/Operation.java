@@ -1,12 +1,11 @@
 package com.dronetools.dronegestory.model;
 
+import com.dronetools.dronegestory.model.anexos.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "operation")
