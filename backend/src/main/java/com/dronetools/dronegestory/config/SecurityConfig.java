@@ -96,7 +96,7 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // HE PUESTO TRUE para que funcione DASHBOARD
+        config.setAllowCredentials(false); // HE PUESTO TRUE para que funcione DASHBOARD
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

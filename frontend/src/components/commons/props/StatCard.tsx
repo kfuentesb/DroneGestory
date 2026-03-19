@@ -32,11 +32,12 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay })
       }`}
     >
       <div
-        className="card border-0 shadow-sm h-100 overflow-hidden position-relative"
+        className="card border-1 shadow-sm h-100 overflow-hidden position-relative"
         style={{
           borderRadius: "16px",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          cursor: "pointer"
+          cursor: "pointer",
+          //backgroundColor: #F3F4F6 // El color del fondo de las cartas
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-4px)";
