@@ -23,6 +23,15 @@ const configs = [
   { value: "Otro", label: "Otro" }
 ];
 
+const LIMITS = {
+  MIN_MTOM: 0.01,        // grams
+  MAX_MTOM: 150,         // kg
+  MIN_WINGSPAN: 0.05,    // cm
+  MAX_WINGSPAN: 50,      // meters
+  MAX_SPEED: 360,        // m/s
+  MAX_ENERGY: 5000       // Joules
+};
+
 type SelectOption = { value: string; label: string };
 
 export default function FormAircraft() {
@@ -34,11 +43,11 @@ export default function FormAircraft() {
     model: "",
     serialNumber: "",
     aircraftClass: null as SelectOption | null,
-    mtom: "",
-    wingspan: "",
-    maxSpeed: "",
+    mtom: 0,
+    wingspan: 0,
+    maxSpeed: 0,
     config: null as SelectOption | null,
-    impactEnergy: "",
+    impactEnergy: 0,
     hasCamera: null as SelectOption | null,
     image: null as File | null,
   });
@@ -102,44 +111,62 @@ export default function FormAircraft() {
     // Expresión regular que coincide con tu @Pattern de Java
     const serialRegex = /^[a-zA-Z0-9]{2,25}$/;
 
-    try {
-      // Validación campos principales (Mejorada)
-      const newErrors = {
-        manufacturer: !formValues.manufacturer.trim(),
-        model: !formValues.model.trim(),
-        // Validamos que no esté vacío Y que cumpla el formato
-        serialNumber: !formValues.serialNumber.trim() || !serialRegex.test(formValues.serialNumber),
-        aircraftClass: !formValues.aircraftClass,
-        mtom: !formValues.mtom.trim() || isNaN(Number(formValues.mtom)),
-        wingspan: !formValues.wingspan.trim() || isNaN(Number(formValues.wingspan)),
-        maxSpeed: !formValues.maxSpeed.trim() || isNaN(Number(formValues.maxSpeed)),
-        config: !formValues.config,
-        impactEnergy: !formValues.impactEnergy.trim() || isNaN(Number(formValues.impactEnergy)),
-        hasCamera: !formValues.hasCamera,
-      };
-
-      setErrors(newErrors);
+    const newErrors = {
+      manufacturer: !formValues.manufacturer.trim(),
+      model: !formValues.model.trim(),
+      serialNumber: !formValues.serialNumber.trim() || !serialRegex.test(formValues.serialNumber),
+      aircraftClass: !formValues.aircraftClass,
       
-      if (Object.values(newErrors).some(Boolean)) {
-        let msg = "Por favor complete los campos correctamente.";
-        if (newErrors.serialNumber && formValues.serialNumber.trim()) {
-            msg = "El número de serie solo permite letras y números (2-25 carac.).";
-        }
-        setError(msg);
-        setLoading(false);
-        return;
-      }
+      // MTOM Validation: Check if empty, NaN, or outside [0.01, 150]
+      mtom: formValues.mtom === 0 || 
+            isNaN(Number(formValues.mtom)) || 
+            Number(formValues.mtom) < LIMITS.MIN_MTOM || 
+            Number(formValues.mtom) > LIMITS.MAX_MTOM,
 
+      // Wingspan Validation: Check if empty, NaN, or outside [0.05, 50]
+      wingspan: formValues.wingspan === 0 || 
+                isNaN(Number(formValues.wingspan)) || 
+                Number(formValues.wingspan) < LIMITS.MIN_WINGSPAN || 
+                Number(formValues.wingspan) > LIMITS.MAX_WINGSPAN,
+
+      // Max Speed Validation: Check if empty, NaN, or outside [0, 250]
+      maxSpeed: formValues.maxSpeed === 0 || 
+                isNaN(Number(formValues.maxSpeed)) || 
+                Number(formValues.maxSpeed) < 0 || 
+                Number(formValues.maxSpeed) > LIMITS.MAX_SPEED,
+
+      // Impact Energy Validation: Check if empty, NaN, or outside [0, 5000]
+      impactEnergy: formValues.impactEnergy === 0 || 
+                    isNaN(Number(formValues.impactEnergy)) || 
+                    Number(formValues.impactEnergy) < 0 || 
+                    Number(formValues.impactEnergy) > LIMITS.MAX_ENERGY,
+
+      config: !formValues.config,
+      hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
+    };
+
+    setErrors(newErrors);
+    
+    if (Object.values(newErrors).some(Boolean)) {
+      let msg = "Por favor complete los campos correctamente.";
+      if (newErrors.serialNumber && formValues.serialNumber.trim()) {
+          msg = "El número de serie solo permite letras y números (2-25 carac.).";
+      }
+      setError(msg);
+      setLoading(false);
+      return;
+    }
+    try {
       const formData = new FormData();
       formData.append("manufacturer", formValues.manufacturer);
       formData.append("model", formValues.model);
       formData.append("serialNumber", formValues.serialNumber);
       formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
-      formData.append("mtom", formValues.mtom);
-      formData.append("wingspan", formValues.wingspan);
-      formData.append("maxSpeed", formValues.maxSpeed);
+      formData.append("mtom", String(formValues.mtom));
+      formData.append("wingspan", String(formValues.wingspan));
+      formData.append("maxSpeed", String(formValues.maxSpeed));
       formData.append("config", formValues.config?.value ?? "");
-      formData.append("impactEnergy", formValues.impactEnergy);
+      formData.append("impactEnergy", String(formValues.impactEnergy));
       formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
 
       if (selectedFile) {
@@ -224,9 +251,14 @@ export default function FormAircraft() {
                   type="number"
                   className="form-control"
                   value={formValues.mtom}
-                  onChange={e => setFormValues({ ...formValues, mtom: e.target.value })}
+                  onChange={e => setFormValues({ ...formValues, mtom: e.target.value === "" ? 0 : Number(e.target.value) })}
                   style={{ ...backgroundBorderInputs, border: errors.mtom ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
+                {errors.mtom && (
+                  <div className="text-danger small">
+                    Rango permitido: {LIMITS.MIN_MTOM} - {LIMITS.MAX_MTOM} kg
+                  </div>
+                )}
               </div>
               <div className="col-12 col-md">
                 <label className="form-label">Dimensión (m)</label>
@@ -234,9 +266,14 @@ export default function FormAircraft() {
                   type="number"
                   className="form-control"
                   value={formValues.wingspan}
-                  onChange={e => setFormValues({ ...formValues, wingspan: e.target.value })}
+                  onChange={e => setFormValues({ ...formValues, wingspan: e.target.value === "" ? 0 : Number(e.target.value) })}
                   style={{ ...backgroundBorderInputs, border: errors.wingspan ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
+                {errors.wingspan && (
+                  <div className="text-danger small">
+                    Rango permitido: {LIMITS.MIN_WINGSPAN} - {LIMITS.MAX_WINGSPAN} m
+                  </div>
+                )}
               </div>
             </div>
 
@@ -248,9 +285,14 @@ export default function FormAircraft() {
                   type="number"
                   className="form-control"
                   value={formValues.maxSpeed}
-                  onChange={e => setFormValues({ ...formValues, maxSpeed: e.target.value })}
+                  onChange={e => setFormValues({ ...formValues, maxSpeed: e.target.value === "" ? 0 : Number(e.target.value) })}
                   style={{ ...backgroundBorderInputs, border: errors.maxSpeed ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
+                {errors.maxSpeed && (
+                  <div className="text-danger small">
+                    Máximo permitido: {LIMITS.MAX_SPEED} m/s
+                  </div>
+                )}
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label">Configuración</label>
@@ -269,9 +311,14 @@ export default function FormAircraft() {
                   type="number"
                   className="form-control"
                   value={formValues.impactEnergy}
-                  onChange={e => setFormValues({ ...formValues, impactEnergy: e.target.value })}
+                  onChange={e => setFormValues({ ...formValues, impactEnergy: e.target.value === "" ? 0 : Number(e.target.value) })}
                   style={{ ...backgroundBorderInputs, border: errors.impactEnergy ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
+                {errors.impactEnergy && (
+                  <div className="text-danger small">
+                    Máximo permitido: {LIMITS.MAX_ENERGY} Julios
+                  </div>
+                )}
               </div>
             </div>
 

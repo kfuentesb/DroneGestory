@@ -95,7 +95,7 @@ export default function Dashboard() {
                 icon="bi-person-badge-fill"
                 value={summary.totalPilotos}
                 label="Pilotos Activos"
-                color="green"
+                color="red"
                 delay={100}
               />
               <StatCard

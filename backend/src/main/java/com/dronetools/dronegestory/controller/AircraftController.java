@@ -124,10 +124,8 @@ public class AircraftController {
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        // 1. Convierte Strings vacíos ("") en null para que no rompan los números
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
         
-        // 2. Manejador específico para BigDecimal por si llegan vacíos
         binder.registerCustomEditor(BigDecimal.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
