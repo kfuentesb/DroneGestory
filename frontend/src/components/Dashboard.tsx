@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "./commons/hooks/useAuth";
 import { apiFetch } from "../api";
+import { useNavigate } from "react-router-dom";
 
 // Tipos
 interface DashboardData {
@@ -172,6 +173,7 @@ export default function Dashboard() {
   const { username } = useAuth();
   const [summary, setSummary] = useState<SummaryState>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     apiFetch("http://localhost:8080/api/auth/dashboard")
@@ -251,19 +253,21 @@ export default function Dashboard() {
                   })}
                 </span>
               </button>
-              <button 
-                className="btn btn-primary d-flex align-items-center gap-2"
-                style={{ 
-                  borderRadius: "10px", 
-                  padding: "0.625rem 1.25rem",
-                  backgroundColor: "#3B82F6",
-                  border: "none",
-                  boxShadow: "0 4px 6px -1px rgba(59, 130, 246, 0.2)"
-                }}
-              >
-                <i className="bi bi-plus-lg" />
-                <span>Nueva Operación</span>
-              </button>
+                <button 
+                  className="btn btn-primary d-flex align-items-center gap-2"
+                  style={{ 
+                    borderRadius: "10px", 
+                    padding: "0.625rem 1.25rem",
+                    backgroundColor: "#3B82F6",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgba(59, 130, 246, 0.2)"
+                    
+                  }}
+                    onClick={() => navigate("/auth/register-operation")}
+                >
+                  <i className="bi bi-plus-lg" />
+                  <span>Nueva Operación</span>
+                </button>
             </div>
           </div>
         </div>
@@ -358,7 +362,7 @@ export default function Dashboard() {
       </div>
 
       {/* Sección adicional (placeholder para futuras features) */}
-      <div className="row g-4">
+      {/* <div className="row g-4">
         <div className="col-12 col-lg-8">
           <div 
             className="card border-0 shadow-sm"
@@ -437,7 +441,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </main>
   );
 }
