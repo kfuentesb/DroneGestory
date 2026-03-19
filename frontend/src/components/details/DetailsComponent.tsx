@@ -139,82 +139,12 @@ export default function DetailsComponent({
         setShowConfirm(true);
     };
 
-    // const handleConfirm = async () => {
-    //     setShowConfirm(false);
-
-    //     if (confirmAction === "update") {
-
-    //         // Build FormData
-    //         const formData = new FormData();
-    //         const allowedKeys = new Set(fields.map((f) => f.key));
-    //         // if (formValues?.imageFile instanceof File) {
-    //         //     formData.append("imageFile", formValues.imageFile);
-    //         // }
-    //         const imageField = fields.find(f => f.type === 'file');
-    //         const file = imageField ? formValues[imageField.key] : null;
-
-    //         if (file instanceof File && file.size > 0) {
-    //             formData.append("imageFile", file);
-    //         }
-
-    //         Array.from(allowedKeys).forEach((key) => {
-
-    //             if (key.type === 'file') return;
-
-    //             const value = formValues[key];
-    //             // Si el valor es null o undefined, no lo enviamos
-    //             if (value === null || value === undefined) return;
-
-    //             // if (value instanceof File) {
-    //             //     if (value.size > 0) formData.append(key, value);
-    //             // } else {
-    //                 const stringValue = value.toString().trim();
-                    
-    //                 // Si se manda "" un Integer en Java, da error 400. Mejor no enviarlo o mandar null.
-    //                 const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(key);
-                    
-    //                 if (isNumericField && stringValue === "") {
-    //                     return;
-    //                 }
-
-    //                 // Limpieza de decimales (cambiar coma por punto si el usuario la puso)
-    //                 const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
-                    
-    //                 formData.append(key, finalValue);
-    //             // }
-    //         });
-    //         console.log(`${endpoint}/${id}`);
-    //         const res = await fetch(`${endpoint}/${id}`, {
-    //             method: "PUT",
-    //             headers: { Authorization: `Bearer ${token}` },
-    //             body: formData,
-    //         });
-
-    //         if (!res.ok) {
-    //             alert("Error actualizando");
-    //             return;
-    //         }
-
-    //         const updated = await res.json();
-    //         setData(updated);
-    //         setFormValues(updated);
-    //         setEditing(false);
-    //     }
-
-    //     if (confirmAction === "delete" && onDelete) {
-    //         await onDelete();
-    //     }
-
-    //     setConfirmAction(null);
-    // };
-
     const handleConfirm = async () => {
         setShowConfirm(false);
 
         if (confirmAction === "update") {
             const formData = new FormData();
             
-            // 1. Manejo de la Imagen (imageFile)
             // Buscamos el campo que es de tipo 'file' en nuestra configuración de campos
             const imageFieldConfig = fields.find(f => f.type === 'file');
             if (imageFieldConfig) {
@@ -225,7 +155,6 @@ export default function DetailsComponent({
                 }
             }
 
-            // 2. Manejo de los demás campos
             fields.forEach((field) => {
                 // Saltamos el campo de archivo porque ya lo manejamos arriba
                 if (field.type === 'file') return;
@@ -253,12 +182,11 @@ export default function DetailsComponent({
 
             const res = await fetch(`${endpoint}/${id}`, {
                 method: "PUT",
-                headers: { Authorization: `Bearer ${token}` }, // NO añadas Content-Type manualmente
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
             });
 
             if (!res.ok) {
-                // Si falla, intenta ver el error real en consola
                 const errorText = await res.text();
                 console.error("Error del servidor:", errorText);
                 alert("Error actualizando: " + errorText);
