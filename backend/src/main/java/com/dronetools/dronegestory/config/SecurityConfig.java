@@ -50,10 +50,10 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/me").authenticated()
 
-                        // Endpoints para gestión de usuarios (solo ADMIN y MANAGER)
-                        .requestMatchers(HttpMethod.GET, "/api/auth/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Endpoints para gestión de usuarios
+                        .requestMatchers(HttpMethod.GET, "/api/auth/users/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/users").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/users/**").hasAnyRole("ADMIN","MANAGER")
+                        .requestMatchers("/api/auth/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")

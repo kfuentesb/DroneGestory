@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.service;
 
+import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,6 +38,12 @@ public class UserService {
 
     public Optional<User> findByUsername(String username){
         return userRepository.findByUsername(username);
+    }
+
+    public List<UserNameResponse> findAllNames() {
+        return userRepository.findAll().stream()
+                .map(u -> new UserNameResponse(u.getId(), u.getFirstName(), u.getLastName()))
+                .toList();
     }
 
     // Crear un nuevo usuario

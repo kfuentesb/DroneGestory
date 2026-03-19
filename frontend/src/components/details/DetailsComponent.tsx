@@ -3,6 +3,8 @@ import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
 import ConfirmModal from "../commons/ConfirmModal";
+import Forbidden from "../commons/Forbidden";
+import NotFound from "../commons/NotFound";
 
 import editIcon from '../../assets/edit_white.svg';
 import deleteIcon from '../../assets/delete_white.svg';
@@ -15,6 +17,7 @@ interface DetailsComponentProps {
     endpoint: string
     imageEndpoint?: string
     fields: any[]
+    initialData?: any;
 
     allowEdit?: boolean
     allowDelete?: boolean
@@ -29,6 +32,7 @@ export default function DetailsComponent({
         id,
         endpoint,
         fields,
+        initialData,
         imageEndpoint,
         allowEdit,
         allowDelete,
@@ -38,26 +42,40 @@ export default function DetailsComponent({
     }:DetailsComponentProps) {
     const { token } = useAuth();
 
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<any>(initialData || null);
+    const [status, setStatus] = useState<number>(200);
+    const [loading, setLoading] = useState(!initialData);
     const [editing, setEditing] = useState(false);
-    const [formValues, setFormValues] = useState<any>({});
+    const [formValues, setFormValues] = useState<any>(initialData || {});
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
 
     useEffect(() => {
+        if (initialData) {
+            setLoading(false);
+            return; 
+        }
         const loadData = async () => {
+            setLoading(true);
             const url = id ? `${endpoint}/${id}` : endpoint;
-            const res = await fetch(url, {
-                headers: {
-                Authorization: `Bearer ${token}`,
-                },
-            });
+            try{
+                const res = await fetch(url, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            if (!res.ok) return;
+                setStatus(res.status);
 
-            const json = await res.json();
-            setData(json);
-            setFormValues(json);
+                if (res.ok) {
+                    const json = await res.json();
+                    setData(json);
+                    setFormValues(json);
+                }
+            }catch (error) {
+                console.error("Fetch error:", error);
+                setStatus(500);
+            } finally {
+                setLoading(false);
+            }
         };
 
         loadData();
@@ -91,6 +109,12 @@ export default function DetailsComponent({
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
+
+    if (loading) return <p className="p-4 text-center">Cargando...</p>;
+    if (status === 403) return <Forbidden />;
+    if (status === 404 || (!data && !loading)) return <NotFound />;
+    if (status >= 500) return <div className="text-center p-5">Error interno del servidor</div>;
+    if (!data) return <NotFound />;
 
 
     const handleConfirmClick = () => {
