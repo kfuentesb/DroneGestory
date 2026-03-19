@@ -20,9 +20,9 @@ export default function SidebarMenu() {
 
     // fix para el bug de primera vez se abre el submenu, se cierra solo, en vez
     // de dejar la libreria hacerlo, lo controlamos nosotros
-    // const [openUsers, setOpenUsers] = useState(false);
-    // const [openAircraft, setOpenAircraft] = useState(false);
-    // const [openOps, setOpenOps] = useState(false);
+    const [openUsers, setOpenUsers] = useState(false);
+    const [openAircraft, setOpenAircraft] = useState(false);
+    const [openOps, setOpenOps] = useState(false);
 
     const [openMenu, setOpenMenu] = useState(null); 
 
@@ -108,7 +108,7 @@ export default function SidebarMenu() {
                 <SubMenu
                     label="Administrar usuarios"
                     open={openMenu === "users"}
-                    // onClick={() => setOpenUsers(!openUsers)}
+                    onClick={() => setOpenUsers(!openUsers)}
                     onOpenChange={() => handleToggle("users")}
                     icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
                 >
@@ -119,7 +119,7 @@ export default function SidebarMenu() {
                 <SubMenu
                     label="Administrar aeronaves"
                     open={openMenu === "aircraft"}
-                    // onClick={() => setOpenAircraft(!openAircraft)}
+                    onClick={() => setOpenAircraft(!openAircraft)}
                     onOpenChange={() => handleToggle("aircraft")}
                     icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                 >
@@ -130,7 +130,7 @@ export default function SidebarMenu() {
                 <SubMenu
                     label="Operaciones"
                     open={openMenu === "operations"}
-                    // onClick={() => setOpenOps(!openOps)}
+                    onClick={() => setOpenOps(!openOps)}
                     onOpenChange={() => handleToggle("operations")}
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
