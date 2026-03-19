@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/pilots/**").hasAnyRole("ADMIN", "MANAGER")
 
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

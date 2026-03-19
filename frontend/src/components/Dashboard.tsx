@@ -8,7 +8,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("localhost:8080/api/auth/dashboard")
+    fetch("http://localhost:8080/api/auth/dashboard")
       .then((res) => {
         if (!res.ok) throw new Error("Error cargando resumen");
         return res.json();
