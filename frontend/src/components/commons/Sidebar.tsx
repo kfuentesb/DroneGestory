@@ -14,16 +14,21 @@ import IdentityIcon from '../../assets/sidebar/identity_white.svg';
 export default function SidebarMenu() {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
+    const { username, token } = useAuth();
 
     const toggleSidebar = () => setCollapsed(!collapsed);
 
     // fix para el bug de primera vez se abre el submenu, se cierra solo, en vez
     // de dejar la libreria hacerlo, lo controlamos nosotros
-    const [openUsers, setOpenUsers] = useState(false);
-    const [openAircraft, setOpenAircraft] = useState(false);
-    const [openOps, setOpenOps] = useState(false);
+    // const [openUsers, setOpenUsers] = useState(false);
+    // const [openAircraft, setOpenAircraft] = useState(false);
+    // const [openOps, setOpenOps] = useState(false);
 
-    const { username, token } = useAuth();
+    const [openMenu, setOpenMenu] = useState(null); 
+
+    const handleToggle = (menuName: any) => {
+        setOpenMenu(openMenu === menuName ? null : menuName);
+    };
 
     const goToProfile = async () => {
 
@@ -102,8 +107,9 @@ export default function SidebarMenu() {
 
                 <SubMenu
                     label="Administrar usuarios"
-                    open={openUsers}
-                    onClick={() => setOpenUsers(!openUsers)}
+                    open={openMenu === "users"}
+                    // onClick={() => setOpenUsers(!openUsers)}
+                    onOpenChange={() => handleToggle("users")}
                     icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
                 >
                     <MenuItem onClick={() => navigate("/auth/users")}>Listar usuarios</MenuItem>
@@ -112,8 +118,9 @@ export default function SidebarMenu() {
 
                 <SubMenu
                     label="Administrar aeronaves"
-                    open={openAircraft}
-                    onClick={() => setOpenAircraft(!openAircraft)}
+                    open={openMenu === "aircraft"}
+                    // onClick={() => setOpenAircraft(!openAircraft)}
+                    onOpenChange={() => handleToggle("aircraft")}
                     icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                 >
                     <MenuItem onClick={() => navigate("/auth/aircrafts")}>Listar Aeronaves</MenuItem>
@@ -122,8 +129,9 @@ export default function SidebarMenu() {
 
                 <SubMenu
                     label="Operaciones"
-                    open={openOps}
-                    onClick={() => setOpenOps(!openOps)}
+                    open={openMenu === "operations"}
+                    // onClick={() => setOpenOps(!openOps)}
+                    onOpenChange={() => handleToggle("operations")}
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
                     <MenuItem onClick={() => navigate("/auth/operations")}>Listar operaciones (admin)</MenuItem>
