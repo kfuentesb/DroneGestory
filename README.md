@@ -57,15 +57,19 @@ pip install bcrypt
 
 
 //TODO LIST
--Conseguir logo
--Sustituir logo de arriba de react por el logo de la empresa <br>
+-Conseguir logo. Sustituir logo de arriba de react por el logo de la empresa <br>
 -Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria <br>
 -Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
--Añadir datos opcionales <br>
+-Añadir datos opcionales en aircraft <br>
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 -Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
--Actualmente un usuario piloto, no admin o manager, no puede acceder a sus datos de perfil, por orden de seguridad de srpingboot<br>
+-Arreglar usuario piloto, actualmente no puede modificar su perfil.<br>
 -VALIDACIONES DE DRON TANTO EN MODIFICAR COMO REGISTRAR<br>
 -Cualquier usuario con opcion a realizar una operacion tiene que tener disponible el fetch de nombres de usuarios y drones (aka id)<br>
+-Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
+-Añadir posibilidad de borrar imagen en modificar, tanto para usuario como para dron<br>
+-Reestructurar la carpeta del backend /uploads, que tenga una con /users y otra con /aircraft, además aquí se guardaran las licencias y documentaciones a futuro<br>
+-Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
+-Añadir ver operación en detalle<br>
