@@ -1,9 +1,9 @@
 // Anexo8Service.java
-package com.dronetools.dronegestory.service;
+package com.dronetools.dronegestory.service.anexos;
 
-import com.dronetools.dronegestory.model.Anexo8;
+import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.Anexo8Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.stereotype.Service;
 

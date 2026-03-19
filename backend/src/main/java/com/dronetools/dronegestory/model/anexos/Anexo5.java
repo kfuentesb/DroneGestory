@@ -1,5 +1,6 @@
-package com.dronetools.dronegestory.model;
+package com.dronetools.dronegestory.model.anexos;
 
+import com.dronetools.dronegestory.model.Operation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

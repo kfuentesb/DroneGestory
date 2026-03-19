@@ -1,9 +1,9 @@
 // Anexo6Service.java
-package com.dronetools.dronegestory.service;
+package com.dronetools.dronegestory.service.anexos;
 
-import com.dronetools.dronegestory.model.Anexo6;
+import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.Anexo6Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.stereotype.Service;
 

@@ -1,9 +1,9 @@
 // Anexo6Controller.java
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.model.Anexo6;
+import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.Anexo6Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.web.bind.annotation.*;
 
