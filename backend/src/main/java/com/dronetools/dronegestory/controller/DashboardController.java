@@ -3,12 +3,11 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.dto.DashboardDTO;
 import com.dronetools.dronegestory.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:5173")
 public class DashboardController {
 
