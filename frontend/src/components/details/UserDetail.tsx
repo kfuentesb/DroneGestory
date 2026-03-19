@@ -11,10 +11,8 @@ export default function UserDetail() {
     const navigate = useNavigate()
 
     const handleDelete = async () => {
-        if (!confirm("¿Eliminar usuario?")) return
-
         await apiFetch(`http://localhost:8080/api/auth/users/${id}`, {
-        method: "DELETE"
+            method: "DELETE"
         })
 
         navigate("/auth/users")

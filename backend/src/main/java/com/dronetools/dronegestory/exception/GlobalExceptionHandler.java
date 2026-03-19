@@ -39,7 +39,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "Bad request");
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage()); 
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(org.springframework.dao.DataIntegrityViolationException ex) {
+        return buildResponse(HttpStatus.CONFLICT, "El identificador ya está en uso, porfavor cambielo.");
     }
 
     @ExceptionHandler(Exception.class)

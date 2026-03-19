@@ -145,6 +145,7 @@ export default function DetailsComponent({
         if (confirmAction === "update") {
             const formData = new FormData();
             
+            // 1. Manejo de la Imagen (imageFile)
             // Buscamos el campo que es de tipo 'file' en nuestra configuración de campos
             const imageFieldConfig = fields.find(f => f.type === 'file');
             if (imageFieldConfig) {
@@ -155,6 +156,7 @@ export default function DetailsComponent({
                 }
             }
 
+            // 2. Manejo de los demás campos
             fields.forEach((field) => {
                 // Saltamos el campo de archivo porque ya lo manejamos arriba
                 if (field.type === 'file') return;
@@ -182,11 +184,12 @@ export default function DetailsComponent({
 
             const res = await fetch(`${endpoint}/${id}`, {
                 method: "PUT",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}` }, // NO añadas Content-Type manualmente
                 body: formData,
             });
 
             if (!res.ok) {
+                // Si falla, intenta ver el error real en consola
                 const errorText = await res.text();
                 console.error("Error del servidor:", errorText);
                 alert("Error actualizando: " + errorText);

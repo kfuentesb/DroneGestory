@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -85,7 +86,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
@@ -114,6 +115,12 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .body(resource);
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        // Esto permite que si llega un string vacío, lo convierta a null en vez de fallar
+        binder.registerCustomEditor(Integer.class, new org.springframework.beans.propertyeditors.CustomNumberEditor(Integer.class, true));
     }
 
     private UserResponse toResponse(User user) {
