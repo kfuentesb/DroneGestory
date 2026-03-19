@@ -66,6 +66,5 @@ pip install bcrypt
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 -Mejorar pantalla principal con estadisticas de operaciones del usuario registrado. Y si es un administrador o manager, mostrar estadisticas generales de toda la base de datos <br>
--Actualmente un usuario piloto, no admin o manager, no puede acceder a sus datos de perfil, por orden de seguridad de srpingboot<br>
--VALIDACIONES DE DRON TANTO EN MODIFICAR COMO REGISTRAR<br>
--Cualquier usuario con opcion a realizar una operacion tiene que tener disponible el fetch de nombres de usuarios y drones (aka id)<br>
+-Actualmente un usuario piloto, no admin o manager, no puede acceder a sus datos de perfil, por orden de seguridad de srpingboot<br> Andrés
+-Implementar lista de usuarios para clickar y añadir al anexo
