@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 import LogIn from "../components/LogIn";
 import UserList from "../components/lists/UserList";
@@ -28,7 +29,14 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/auth/dashboard" element={<Dashboard />} />
 
         {/* Users */}
-        <Route path="/auth/users" element={<UserList />} />
+        <Route 
+          path="/auth/users" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <UserList />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/auth/users/:id" element={<UserDetail />} />
         <Route path="/auth/register-user" element={<FormUser />} />
 
@@ -37,7 +45,14 @@ export default class RouterPrincipal extends React.Component {
         {/* Aircrafts */}
         <Route path="/auth/aircrafts" element={<AircraftList />} />
         <Route path="/auth/aircrafts/:id" element={<AircraftDetail />} />
-        <Route path="/auth/register-aircraft" element={<FormAircraft />} />
+        <Route 
+          path="/auth/register-aircraft" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormAircraft />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Operations */}
         <Route path="/auth/operations" element={<OperationList />} />
