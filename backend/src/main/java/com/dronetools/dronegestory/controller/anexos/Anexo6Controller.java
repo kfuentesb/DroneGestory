@@ -1,5 +1,5 @@
 // Anexo6Controller.java
-package com.dronetools.dronegestory.controller;
+package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.model.Operation;
