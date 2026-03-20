@@ -63,11 +63,10 @@ VISUAL<br>
 -Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
+-Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 FUNCIONAL<br>
 -Añadir datos opcionales en aircraft <br>
 -Navbar y sidebar muestran opciones limitadas a ciertos usuario (PILOTOS no deben de ver listas usuarios) <br>
--Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
--VALIDACIONES DE DRON EN MODIFICAR<br>
 -Añadir posibilidad de borrar imagen en modificar, tanto para usuario como para dron<br>
 -Reestructurar la carpeta del backend /uploads, que tenga una con /users y otra con /aircraft, además aquí se guardaran las licencias y documentaciones a futuro<br>
 -Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
