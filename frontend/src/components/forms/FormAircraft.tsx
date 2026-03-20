@@ -2,35 +2,7 @@ import React, { useState } from 'react';
 import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';
-
-const aircraftClasses = [
-  { value: "No", label: "No tiene" },
-  { value: "C0", label: "C0" },
-  { value: "C1", label: "C1" },
-  { value: "C2", label: "C2" },
-  { value: "C3", label: "C3" },
-  { value: "C4", label: "C4" },
-  { value: "C5", label: "C5" },
-  { value: "C6", label: "C6" }
-];
-
-const configs = [
-  { value: "Avion", label: "Avión" },
-  { value: "Multirrotor", label: "Multirrotor" },
-  { value: "Helicoptero", label: "Helicóptero" },
-  { value: "Hibrido", label: "Híbrido" },
-  { value: "Ligero", label: "Ligero" },
-  { value: "Otro", label: "Otro" }
-];
-
-const LIMITS = {
-  MIN_MTOM: 0.01,        // grams
-  MAX_MTOM: 150,         // kg
-  MIN_WINGSPAN: 0.05,    // cm
-  MAX_WINGSPAN: 50,      // meters
-  MAX_SPEED: 360,        // m/s
-  MAX_ENERGY: 5000       // Joules
-};
+import { aircraftClasses, configs, LIMITS } from '../../global-const/aircraft-const';
 
 type SelectOption = { value: string; label: string };
 
@@ -108,7 +80,6 @@ export default function FormAircraft() {
     setLoading(true);
     setError(null);
 
-    // Expresión regular que coincide con tu @Pattern de Java
     const serialRegex = /^[a-zA-Z0-9]{2,25}$/;
 
     const newErrors = {
@@ -116,26 +87,22 @@ export default function FormAircraft() {
       model: !formValues.model.trim(),
       serialNumber: !formValues.serialNumber.trim() || !serialRegex.test(formValues.serialNumber),
       aircraftClass: !formValues.aircraftClass,
-      
-      // MTOM Validation: Check if empty, NaN, or outside [0.01, 150]
+
       mtom: formValues.mtom === 0 || 
             isNaN(Number(formValues.mtom)) || 
             Number(formValues.mtom) < LIMITS.MIN_MTOM || 
             Number(formValues.mtom) > LIMITS.MAX_MTOM,
 
-      // Wingspan Validation: Check if empty, NaN, or outside [0.05, 50]
       wingspan: formValues.wingspan === 0 || 
                 isNaN(Number(formValues.wingspan)) || 
                 Number(formValues.wingspan) < LIMITS.MIN_WINGSPAN || 
                 Number(formValues.wingspan) > LIMITS.MAX_WINGSPAN,
 
-      // Max Speed Validation: Check if empty, NaN, or outside [0, 250]
       maxSpeed: formValues.maxSpeed === 0 || 
                 isNaN(Number(formValues.maxSpeed)) || 
                 Number(formValues.maxSpeed) < 0 || 
                 Number(formValues.maxSpeed) > LIMITS.MAX_SPEED,
 
-      // Impact Energy Validation: Check if empty, NaN, or outside [0, 5000]
       impactEnergy: formValues.impactEnergy === 0 || 
                     isNaN(Number(formValues.impactEnergy)) || 
                     Number(formValues.impactEnergy) < 0 || 
@@ -280,7 +247,7 @@ export default function FormAircraft() {
             {/* Row 3: Velocidad máx, Configuración, Energía de impacto */}
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Velocidad máx. (m/s)</label>
+                <label className="form-label">Velocidad máx. (km/h)</label>
                 <input
                   type="number"
                   className="form-control"
@@ -290,7 +257,7 @@ export default function FormAircraft() {
                 />
                 {errors.maxSpeed && (
                   <div className="text-danger small">
-                    Máximo permitido: {LIMITS.MAX_SPEED} m/s
+                    Máximo permitido: {LIMITS.MAX_SPEED} km/h
                   </div>
                 )}
               </div>
