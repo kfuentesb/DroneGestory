@@ -94,57 +94,6 @@ public class UserService {
                 });
     }
 
-    // public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile, boolean phoneNumberPresent) throws IOException {
-
-    //     User user = userRepository.findById(id)
-    //             .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
-    //     if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
-    //     if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
-    //     if (updatedUser.getUsername() != null) user.setUsername(updatedUser.getUsername());
-    //     if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
-    //     if (updatedUser.getType() != null) user.setType(updatedUser.getType());
-    //     if (updatedUser.getPhoneNumber() != null) {
-    //         user.setPhoneNumber(updatedUser.getPhoneNumber());
-    //     } else if (phoneNumberPresent) {
-    //         user.setPhoneNumber(null);
-    //     }
-
-    //     if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
-    //         user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-    //     }
-
-    //     // Handle image upload
-    //     if (imageFile != null && !imageFile.isEmpty()) {
-
-    //         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-    //         Files.createDirectories(uploadDir);
-
-    //         String oldImage = user.getImagePath();
-
-    //         String originalName = imageFile.getOriginalFilename();
-    //         String safeName = (originalName == null || originalName.isBlank())
-    //                 ? "upload"
-    //                 : Paths.get(originalName).getFileName().toString();
-
-    //         // String filename = System.currentTimeMillis() + "_" + safeName;
-    //         String filename = updatedUser.getUsername() + "_" + safeName;
-
-    //         Path target = uploadDir.resolve(filename);
-    //         imageFile.transferTo(target.toFile());
-
-    //         user.setImagePath(filename);
-
-    //         // Delete old image if it exists
-    //         if (oldImage != null && !oldImage.isBlank()) {
-    //             Path oldFile = uploadDir.resolve(oldImage).normalize();
-    //             Files.deleteIfExists(oldFile);
-    //         }
-    //     }
-
-    //     return userRepository.save(user);
-    // }
-
     public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile, boolean phoneNumberPresent, boolean removeImage) throws IOException {
 
         User user = userRepository.findById(id)

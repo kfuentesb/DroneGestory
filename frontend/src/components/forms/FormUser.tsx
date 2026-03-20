@@ -1,4 +1,5 @@
 import React, { useState,  } from 'react';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
@@ -150,7 +151,7 @@ function FormUser() {
             // Testing consultar token
             // const token = localStorage.getItem('jwt');
             // console.log("JWT enviado:", token);
-            const res = await apiFetch("http://localhost:8080/api/auth/users", {
+            const res = await apiFetch(`${API_BASE_URL}/api/auth/users`, {
                 method: "POST",
                 body: formData,
             });

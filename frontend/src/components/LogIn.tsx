@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "./commons/hooks/useAuth";
+import { apiFetch } from "../api";
 
 function LogIn() {
   const [username, setUsername] = useState("");
@@ -17,16 +18,11 @@ function LogIn() {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password}),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Credenciales incorrectas");
-      }
 
       const data = await res.json();
 
