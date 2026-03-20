@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.model;
 
+import com.dronetools.dronegestory.common.AnexoVersionado;
 import com.dronetools.dronegestory.model.anexos.*;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
@@ -59,46 +60,53 @@ public class Operation {
     // CascadeType.ALL: para que al borrar operación, borro anexos
     // orphanRemoval: si quito anexo de operación, se borra de BD
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("versionNumber DESC")
+    @OrderBy("numeroVersion DESC")
     private List<Anexo4> anexos4 = new ArrayList<>();
 
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("versionNumber DESC")
+    @OrderBy("numeroVersion DESC")
     private List<Anexo5> anexos5 = new ArrayList<>();
 
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("versionNumber DESC")
+    @OrderBy("numeroVersion DESC")
     private List<Anexo6> anexos6 = new ArrayList<>();
 
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("versionNumber DESC")
+    @OrderBy("numeroVersion DESC")
     private List<Anexo7> anexos7 = new ArrayList<>();
 
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("versionNumber DESC")
+    @OrderBy("numeroVersion DESC")
     private List<Anexo8> anexos8 = new ArrayList<>();
 
-    // HELPERS para obtener la version actual de cada anexo
-    public Anexo4 getAnexo4Actual() {
-        return anexos4.isEmpty() ? null : anexos4.getFirst();
+    // ========== MÉTODOS PRIVADOS ============
+    // Obtener última versión
+    private <T extends AnexoVersionado> T getUltimaVersion(List<T> lista){
+        return (lista == null || lista.isEmpty() ? null : lista.getFirst());
     }
 
-    public Anexo5 getAnexo5Actual() {
-        return anexos5.isEmpty() ? null : anexos5.getFirst();
+    private <T extends AnexoVersionado> int getNextVersion(List<T> anexos) {
+        return anexos.stream()
+                .mapToInt(AnexoVersionado::getNumeroVersion)
+                .max()
+                .orElse(0) + 1;
     }
 
-    public Anexo6 getAnexo6Actual() {
-        return anexos6.isEmpty() ? null : anexos6.getFirst();
-    }
+    // ========== MÉTODOS PÚBLICOS ===========
+    // HELPERS para obtener la version actual de cada anexo TODO Andrés quiere obtener cualquier
+    public Anexo4 getAnexo4Actual() { return getUltimaVersion(anexos4);}
+    public Anexo5 getAnexo5Actual() { return getUltimaVersion(anexos5);}
+    public Anexo6 getAnexo6Actual() {return getUltimaVersion(anexos6);}
+    public Anexo7 getAnexo7Actual() {return getUltimaVersion(anexos7);}
+    public Anexo8 getAnexo8Actual() {return getUltimaVersion(anexos8);}
 
-    public Anexo7 getAnexo7Actual() {
-        return anexos7.isEmpty() ? null : anexos7.getFirst();
-    }
-
-    public Anexo8 getAnexo8Actual() {
-        return anexos8.isEmpty() ? null : anexos8.getFirst();
-    }
-
+    // Calcular la siguiente versión de cada anexo
+    public int getNextVersionAnexo4() {return getNextVersion(anexos4);}
+    public int getNextVersionAnexo5() {return getNextVersion(anexos5);}
+    public int getNextVersionAnexo6() {return getNextVersion(anexos6);}
+    public int getNextVersionAnexo7() {return getNextVersion(anexos7);}
+    public int getNextVersionAnexo8() {return getNextVersion(anexos8);}
+    
     // Verificar que todos los anexos están FIRMADOS
     public boolean todosAnexosFirmados(){
         Anexo4 a4 = getAnexo4Actual();
@@ -113,20 +121,5 @@ public class Operation {
                 a7 != null && a7.getEstado() == AnexoStatus.FIRMADO;
     }
 
-    // Calcular la siguiente versión de cada anexo
-    public int getNextVersionAnexo4() {
-        return anexos4.stream().mapToInt(Anexo4::getVersionNumber).max().orElse(0) + 1;
-    }
 
-    public int getNextVersionAnexo5() {
-        return anexos5.stream().mapToInt(Anexo5::getVersionNumber).max().orElse(0) + 1;
-    }
-
-    public int getNextVersionAnexo6() {
-        return anexos6.stream().mapToInt(Anexo6::getVersionNumber).max().orElse(0) + 1;
-    }
-
-    public int getNextVersionAnexo7() {
-        return anexos7.stream().mapToInt(Anexo7::getVersionNumber).max().orElse(0) + 1;
-    }
 }

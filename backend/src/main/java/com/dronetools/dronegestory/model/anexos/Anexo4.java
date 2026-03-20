@@ -21,20 +21,20 @@ public class Anexo4 implements AnexoVersionado {
     @JoinColumn(name = "id_operacion", nullable = false)
     private Operation operation;
 
+    // Versión
+    @Column(name = "numero_version", nullable = false)
+    private int numeroVersion;
+
+    // Estado
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", length = 20, nullable = false)
+    private AnexoStatus estado = AnexoStatus.BORRADOR;
+
+    // TODOS CAMPOS FORMULARIO ANEXO4
     @Column(name = "campo_anexo4")
     private String campoAnexo4;
 
-    // Versión
-    @Override
-    public int getVersionNumber() {
-        return 0;
-    }
 
-    // Estado
-    @Override
-    public AnexoStatus getEstado() {
-        return null;
-    }
 
 //    @Column(name = "fecha_hora_prevista")
 //    private LocalDateTime fechaHoraPrevista;
