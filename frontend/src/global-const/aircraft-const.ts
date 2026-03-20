@@ -20,9 +20,9 @@ export const configs = [
 
 export const LIMITS = {
     MIN_MTOM: 0.01,        // kg
-    MAX_MTOM: 150,         // kg
+    MAX_MTOM: 1000,         // kg
     MIN_WINGSPAN: 0.05,    // meters
     MAX_WINGSPAN: 50,      // meters
     MAX_SPEED: 360,        // km/h
-    MAX_ENERGY: 5000       // Joules
+    MAX_ENERGY: 100000      // Joules
 };
