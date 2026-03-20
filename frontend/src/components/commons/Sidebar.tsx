@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 import HomeIcon from '../../assets/sidebar/home_white.svg';
 import ArrowBack from '../../assets/arrow_back_white.svg';
@@ -36,7 +37,7 @@ export default function SidebarMenu() {
         if (!username) return;
 
         const res = await fetch(
-            `http://localhost:8080/api/auth/users/me?username=${username}`,
+            `${API_BASE_URL}/api/auth/users/me?username=${username}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`

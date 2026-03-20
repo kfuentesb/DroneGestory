@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 import { useParams, useNavigate } from "react-router-dom";
 import DetailsComponent from "./DetailsComponent";
 import { apiFetch } from "../../api";
@@ -31,7 +32,7 @@ export default function ProfileDetail() {
     }
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/auth/users/me", {
+        fetch(`${API_BASE_URL}/api/auth/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => {
@@ -49,8 +50,8 @@ export default function ProfileDetail() {
         <DetailsComponent
             id={meData.id.toString()}
             initialData={meData}
-            endpoint="http://localhost:8080/api/auth/users"
-            imageEndpoint="http://localhost:8080/api/auth/users/images"
+            endpoint={`${API_BASE_URL}/api/auth/users`}
+            imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
             fields={userFields}
             allowEdit={true}
             allowDelete={false}

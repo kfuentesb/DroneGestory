@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
@@ -22,7 +23,7 @@ export default function OperationList() {
   useEffect(() => {
     const loadOperations = async () => {
       try {
-        const res = await apiFetch("http://localhost:8080/api/auth/operations", {
+        const res = await apiFetch(`${API_BASE_URL}/api/auth/operations`, {
           headers: { "Content-Type": "application/json" }
         });
 

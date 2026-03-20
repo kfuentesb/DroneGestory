@@ -1,4 +1,5 @@
 import React, { createContext, useState } from "react";
+import { apiFetch } from "../api";
 
 interface AuthContextType {
   username: string | null;
@@ -42,20 +43,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-  try {
-    await fetch("http://localhost:8080/api/auth/logout", {
-      method: "POST",
-    });
-  } catch (error) {
-    // Manejar error
-  } finally {
-    localStorage.removeItem("username");
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    setUsername(null);
-    setTokenState(null);
-  }
-};
+    try {
+      await apiFetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      // Manejar error
+    } finally {
+      localStorage.removeItem("username");
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      setUsername(null);
+      setTokenState(null);
+    }
+  };
   
 
   return (

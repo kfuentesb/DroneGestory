@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom"
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
 
@@ -14,7 +15,7 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
         if (!confirm("¿Eliminar dron?")) return
 
-        await apiFetch(`http://localhost:8080/api/auth/aircraft/${id}`, {
+        await apiFetch(`${API_BASE_URL}/api/auth/aircraft/${id}`, {
         method: "DELETE"
         })
 
@@ -40,8 +41,8 @@ export default function AircraftDetail() {
     return (
         <DetailsComponent
         id={id}
-        endpoint="http://localhost:8080/api/auth/aircraft"
-        imageEndpoint="http://localhost:8080/api/auth/aircraft/images"
+        endpoint={`${API_BASE_URL}/api/auth/aircraft`}
+        imageEndpoint={`${API_BASE_URL}/api/auth/aircraft/images`}
         fields={aircraftFields}
 
         allowEdit
