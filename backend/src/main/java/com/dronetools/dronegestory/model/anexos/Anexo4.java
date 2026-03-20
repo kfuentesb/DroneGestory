@@ -1,6 +1,8 @@
 package com.dronetools.dronegestory.model.anexos;
 
+import com.dronetools.dronegestory.common.AnexoVersionado;
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,18 +11,30 @@ import lombok.Setter;
 @Entity
 @Table(name = "anexo4")
 @Getter @Setter @NoArgsConstructor
-public class Anexo4 {
+public class Anexo4 implements AnexoVersionado {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id_anexo4")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_operacion", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_operacion", nullable = false)
     private Operation operation;
 
+    // Versión
+    @Column(name = "numero_version", nullable = false)
+    private int numeroVersion;
+
+    // Estado
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", length = 20, nullable = false)
+    private AnexoStatus estado = AnexoStatus.BORRADOR;
+
+    // TODOS CAMPOS FORMULARIO ANEXO4
     @Column(name = "campo_anexo4")
     private String campoAnexo4;
+
+
 
 //    @Column(name = "fecha_hora_prevista")
 //    private LocalDateTime fechaHoraPrevista;
