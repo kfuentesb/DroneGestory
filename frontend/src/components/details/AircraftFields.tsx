@@ -1,4 +1,5 @@
 import type { FieldConfig } from "./FieldConfig";
+import { LIMITS, aircraftClasses, configs } from "../../global-const/aircraft-const";
 
 export const aircraftFields: FieldConfig[] = [
     {
@@ -39,54 +40,53 @@ export const aircraftFields: FieldConfig[] = [
         label: "Clase",
         key: "aircraftClass",
         type: "select",
-        options: ["No", "C0", "C1", "C2", "C3", "C4", "C5", "C6"]
-
+        options: aircraftClasses.map(opt => opt.value)
     },
     {
-        label: "MTOM (Kg)",
         key: "mtom",
+        label: "MTOM (kg)",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        validate: (val: any) => {
+            const num = Number(val);
+            return !isNaN(num) && num >= LIMITS.MIN_MTOM && num <= LIMITS.MAX_MTOM;
         },
-        error: "MTOM debe ser un número válido mayor que 0"
+        error: `Rango: ${LIMITS.MIN_MTOM} - ${LIMITS.MAX_MTOM} kg`
     },
     {
-        label: "Dimensión característica (m)",
         key: "wingspan",
+        label: "Dimensión (m)",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        validate: (val: any) => {
+            const num = Number(val);
+            return !isNaN(num) && num >= LIMITS.MIN_WINGSPAN && num <= LIMITS.MAX_WINGSPAN;
         },
-        error: "La dimensión debe ser un número válido mayor que 0"
+        error: `Rango: ${LIMITS.MIN_WINGSPAN} - ${LIMITS.MAX_WINGSPAN} m`
     },
     {
-        label: "Velocidad máxima",
         key: "maxSpeed",
+        label: "Velocidad máx (km/h)",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n > 0;
+        validate: (val: any) => {
+            const num = Number(val);
+            return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_SPEED;
         },
-        error: "La velocidad máxima debe ser un número válido mayor que 0"
+        error: `Máximo permitido: ${LIMITS.MAX_SPEED} km/h`
     },
     {
         label: "Configuración",
         key: "config",
         type: "select",
-        options: ["Avion", "Multirrotor", "Helicoptero", "Hibrido", "Ligero", "Otro"]
+        options: configs.map(opt => opt.value)
     },
     {
-        label: "Energía de impacto",
         key: "impactEnergy",
+        label: "Energía impacto (J)",
         type: "number",
-        validate: (v: any) => {
-            const n = Number(v);
-            return v !== undefined && v !== null && v !== "" && !isNaN(n) && n >= 0;
+        validate: (val: any) => {
+            const num = Number(val);
+            return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_ENERGY;
         },
-        error: "La energía de impacto debe ser un número válido"
+        error: `Máximo permitido: ${LIMITS.MAX_ENERGY} J`
     },
     {
         label: "Cámara",
