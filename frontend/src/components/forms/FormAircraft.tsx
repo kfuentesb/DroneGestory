@@ -75,6 +75,12 @@ export default function FormAircraft() {
     setError("");
   };
 
+  const handleClearFile = () => {
+        setSelectedFile(null);
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
+    };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -167,7 +173,7 @@ export default function FormAircraft() {
             {/* Row 1: Fabricante, Modelo, Nº Serie */}
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Fabricante</label>
+                <label className="form-label d-block text-start ps-1">Fabricante</label>
                 <input
                   type="text"
                   className="form-control"
@@ -177,7 +183,7 @@ export default function FormAircraft() {
                 />
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Modelo</label>
+                <label className="form-label d-block text-start ps-1">Modelo</label>
                 <input
                   type="text"
                   className="form-control"
@@ -187,7 +193,7 @@ export default function FormAircraft() {
                 />
               </div>
               <div className="col-12 col-md">
-                <label className="form-label">Nº Serie</label>
+                <label className="form-label d-block text-start ps-1">Nº Serie</label>
                 <input
                   type="text"
                   className="form-control"
@@ -202,7 +208,7 @@ export default function FormAircraft() {
             {/* Row 2: Clase, MTOM, Dimensión */}
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Clase</label>
+                <label className="form-label d-block text-start ps-1">Clase</label>
                 <Select
                   options={aircraftClasses}
                   styles={backgroundBorderInputsSelect}
@@ -213,7 +219,7 @@ export default function FormAircraft() {
                 {errors.aircraftClass && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">MTOM (Kg)</label>
+                <label className="form-label d-block text-start ps-1">MTOM (Kg)</label>
                 <input
                   type="number"
                   className="form-control"
@@ -228,7 +234,7 @@ export default function FormAircraft() {
                 )}
               </div>
               <div className="col-12 col-md">
-                <label className="form-label">Dimensión (m)</label>
+                <label className="form-label d-block text-start ps-1">Dimensión (m)</label>
                 <input
                   type="number"
                   className="form-control"
@@ -247,7 +253,7 @@ export default function FormAircraft() {
             {/* Row 3: Velocidad máx, Configuración, Energía de impacto */}
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Velocidad máx. (km/h)</label>
+                <label className="form-label d-block text-start ps-1">Velocidad máx. (km/h)</label>
                 <input
                   type="number"
                   className="form-control"
@@ -262,7 +268,7 @@ export default function FormAircraft() {
                 )}
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Configuración</label>
+                <label className="form-label d-block text-start ps-1">Configuración</label>
                 <Select
                   options={configs}
                   styles={backgroundBorderInputsSelect}
@@ -273,7 +279,7 @@ export default function FormAircraft() {
                 {errors.config && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md">
-                <label className="form-label">Energía de impacto (J)</label>
+                <label className="form-label d-block text-start ps-1">Energía de impacto (J)</label>
                 <input
                   type="number"
                   className="form-control"
@@ -292,7 +298,7 @@ export default function FormAircraft() {
             {/* Row 4: Cámara, Imagen */}
             <div className="row mb-4">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Cámara</label>
+                <label className="form-label d-block text-start ps-1">Cámara</label>
                 <Select
                   options={[
                     { value: "true", label: "Sí" },
@@ -306,11 +312,13 @@ export default function FormAircraft() {
                 {errors.hasCamera && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md">
-                <label className="form-label">Imagen</label>
+                <label className="form-label d-block text-start ps-1">Imagen</label>
                 <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                  
                   <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                    {selectedFile ? selectedFile.name : "No file selected"}
+                    {selectedFile ? selectedFile.name : "No hay archivo"}
                   </span>
+
                   <input
                     id="file-upload"
                     type="file"
@@ -318,13 +326,40 @@ export default function FormAircraft() {
                     onChange={handleFileChange}
                     style={{ display: "none" }}
                   />
+
+                  {/* Usamos ms-auto para empujar los botones a la derecha */}
                   <label
                     htmlFor="file-upload"
                     className="btn btn-success ms-auto"
-                    style={{ cursor: "pointer" }}
+                    style={{ 
+                      cursor: "pointer",
+                      // Si hay archivo, quitamos el redondeado derecho para que encaje con el botón rojo
+                      borderTopRightRadius: selectedFile ? "0" : "4px",
+                      borderBottomRightRadius: selectedFile ? "0" : "4px",
+                      // Forzamos que no haya margen derecho para que no haya hueco entre botones
+                      marginRight: "0" 
+                    }}
                   >
                     Seleccionar archivo
                   </label>
+
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={handleClearFile}
+                      style={{ 
+                        // Quitamos el redondeado izquierdo
+                        borderTopLeftRadius: "0", 
+                        borderBottomLeftRadius: "0",
+                        // Un pequeño ajuste de borde para que no se vea doble línea si quieres
+                        borderLeft: "1px solid rgba(255,255,255,0.1)"
+                      }}
+                      title="Eliminar archivo seleccionado"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -86,6 +86,13 @@ function FormUser() {
         setError("");
     };
 
+    const handleClearFile = () => {
+        setSelectedFile(null);
+        // Esto resetea el input para permitir volver a elegir el mismo archivo
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -252,47 +259,61 @@ function FormUser() {
 
                     {/* Row 3: Tipo de usuario, Imagen */}
                     <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
-                        {/* <Select options={type_user} styles={backgroundBorderInputsSelect} placeholder="Seleccione el tipo de usuario"/> */}
-                        <Select
-                            options={type_user}
-                            styles={backgroundBorderInputsSelect}
-                            placeholder="Seleccione el tipo de usuario"
-                            value={selectedUserType}
-                            onChange={(val) => setSelectedUserType(val)}
-                        />
-                    </div>
-
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
-                            Imagen de perfil{" "}
-                            <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
-                                (Opcional)
-                            </span>
-                            </label>
-                        <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
-                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                            {selectedFile ? selectedFile.name : "No file selected"}
-                        </span>
-
-                        <input
-                            id="file-upload"
-                            type="file"
-                            accept=".jpg,.jpeg,.png"
-                            onChange={handleFileChange}
-                            style={{ display: "none" }}
-                        />
-
-                        <label
-                            htmlFor="file-upload"
-                            className="btn btn-success ms-auto"
-                            style={{ cursor: "pointer" }}
-                        >
-                            Seleccionar archivo
-                        </label>
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
+                            <Select
+                                options={type_user}
+                                styles={backgroundBorderInputsSelect}
+                                placeholder="Seleccione el tipo de usuario"
+                                value={selectedUserType}
+                                onChange={(val) => setSelectedUserType(val)}
+                            />
                         </div>
-                    </div>
+
+                        <div className="col-12 col-md">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                                Imagen de perfil{" "}
+                                <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                    (Opcional)
+                                </span>
+                            </label>
+                            
+                            <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                    {selectedFile ? selectedFile.name : "No hay archivo"}
+                                </span>
+
+                                <input
+                                    id="file-upload"
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png"
+                                    onChange={handleFileChange}
+                                    style={{ display: "none" }}
+                                />
+
+                                <div className="ms-auto d-flex">
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="btn btn-success"
+                                        style={{ cursor: "pointer", borderTopRightRadius: selectedFile ? "0" : "4px", borderBottomRightRadius: selectedFile ? "0" : "4px" }}
+                                    >
+                                        Seleccionar archivo
+                                    </label>
+
+                                    {selectedFile && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger"
+                                            onClick={handleClearFile}
+                                            style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                            title="Eliminar archivo seleccionado"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Row 4: Contraseña */}
