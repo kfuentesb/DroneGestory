@@ -58,24 +58,24 @@ public class Operation {
     // RELACIONES con ANEXOS. Para varias versiones tenemos que usar 1:N
     // CascadeType.ALL: para que al borrar operación, borro anexos
     // orphanRemoval: si quito anexo de operación, se borra de BD
-    @JsonIgnore  // ← NO incluir en el JSON
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("versionNumber DESC")
     private List<Anexo4> anexos4 = new ArrayList<>();
 
-    @JsonIgnore  // ← NO incluir en el JSON
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("versionNumber DESC")
     private List<Anexo5> anexos5 = new ArrayList<>();
 
-    @JsonIgnore  // ← NO incluir en el JSON
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("versionNumber DESC")
     private List<Anexo6> anexos6 = new ArrayList<>();
 
-    @JsonIgnore  // ← NO incluir en el JSON
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("versionNumber DESC")
     private List<Anexo7> anexos7 = new ArrayList<>();
 
-    @JsonIgnore  // ← NO incluir en el JSON
     @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("versionNumber DESC")
     private List<Anexo8> anexos8 = new ArrayList<>();
 
     // HELPERS para obtener la version actual de cada anexo
