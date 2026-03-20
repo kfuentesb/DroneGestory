@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
