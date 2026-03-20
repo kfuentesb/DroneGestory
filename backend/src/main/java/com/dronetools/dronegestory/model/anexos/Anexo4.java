@@ -15,7 +15,7 @@ public class Anexo4 {
     @Column(name = "id_anexo4")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_operacion", nullable = false, unique = true)
     private Operation operation;
 
