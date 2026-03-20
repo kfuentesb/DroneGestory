@@ -76,11 +76,12 @@ public class UserController {
             @PathVariable Integer id,
             @ModelAttribute User user,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
 
         boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
-        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent);
+        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, removeImage);
 
         return ResponseEntity.ok(updatedUser);
     }

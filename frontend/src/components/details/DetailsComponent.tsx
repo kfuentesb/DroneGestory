@@ -18,28 +18,25 @@ interface DetailsComponentProps {
     imageEndpoint?: string
     fields: any[]
     initialData?: any;
-
     allowEdit?: boolean
     allowDelete?: boolean
-
     onDelete?: () => Promise<void>
     onBack?: () => void
-
     validateForm?: (values: any) => Record<string, string | null>
-    // Linea para elegir la posición de la imagen
 }
+
 export default function DetailsComponent({
-        id,
-        endpoint,
-        fields,
-        initialData,
-        imageEndpoint,
-        allowEdit,
-        allowDelete,
-        onDelete,
-        onBack,
-        validateForm,
-    }:DetailsComponentProps) {
+    id,
+    endpoint,
+    fields,
+    initialData,
+    imageEndpoint,
+    allowEdit,
+    allowDelete,
+    onDelete,
+    onBack,
+    validateForm,
+}: DetailsComponentProps) {
     const { token } = useAuth();
 
     const [data, setData] = useState<any>(initialData || null);
@@ -49,54 +46,68 @@ export default function DetailsComponent({
     const [formValues, setFormValues] = useState<any>(initialData || {});
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
+    const [removeImage, setRemoveImage] = useState(false);
 
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
+
+    // Cargar datos iniciales
     useEffect(() => {
         if (initialData) {
             setLoading(false);
-            return; 
+            return;
         }
         const loadData = async () => {
             setLoading(true);
             const url = id ? `${endpoint}/${id}` : endpoint;
-            try{
+            try {
                 const res = await fetch(url, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-
                 setStatus(res.status);
-
                 if (res.ok) {
                     const json = await res.json();
                     setData(json);
                     setFormValues(json);
                 }
-            }catch (error) {
+            } catch (error) {
                 console.error("Fetch error:", error);
                 setStatus(500);
             } finally {
                 setLoading(false);
             }
         };
-
         loadData();
-    }, [id, endpoint, token]);
+    }, [id, endpoint, token, initialData]);
 
+    // Cargar imagen y manejar limpieza
     useEffect(() => {
-
         let objectUrl: string | null = null;
 
         const loadImage = async () => {
-            if (!data?.imagePath || !imageEndpoint) return;
+            // Si no hay imagen en la DB o no hay endpoint, reseteamos la URL local
+            if (!data?.imagePath || !imageEndpoint) {
+                setImageUrl(null);
+                return;
+            }
 
-            const res = await fetch(`${imageEndpoint}/${data.imagePath}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            try {
+                const res = await fetch(`${imageEndpoint}/${data.imagePath}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            if (!res.ok) return;
+                if (!res.ok) {
+                    setImageUrl(null);
+                    return;
+                }
 
-            const blob = await res.blob();
-            objectUrl = URL.createObjectURL(blob);
-            setImageUrl(objectUrl);
+                const blob = await res.blob();
+                objectUrl = URL.createObjectURL(blob);
+                setImageUrl(objectUrl);
+            } catch (error) {
+                console.error("Error loading image:", error);
+                setImageUrl(null);
+            }
         };
 
         loadImage();
@@ -104,36 +115,23 @@ export default function DetailsComponent({
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
-
     }, [data?.imagePath, token, imageEndpoint]);
-
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
-
-    if (loading) return <p className="p-4 text-center">Cargando...</p>;
-    if (status === 403) return <Forbidden />;
-    if (status === 404 || (!data && !loading)) return <NotFound />;
-    if (status >= 500) return <div className="text-center p-5">Error interno del servidor</div>;
-    if (!data) return <NotFound />;
-
 
     const handleConfirmClick = () => {
         if (validateForm) {
             const formErrors = validateForm(formValues);
             setErrors(formErrors);
-
             const hasErrors = Object.values(formErrors).some(error => error !== null);
-            
             if (hasErrors) {
                 setConfirmAction("validationError");
                 setShowConfirm(true);
                 return;
             }
         }
-
         setConfirmAction("update");
         setShowConfirm(true);
     };
+
     const handleConfirmDelete = () => {
         setConfirmAction("delete");
         setShowConfirm(true);
@@ -144,62 +142,54 @@ export default function DetailsComponent({
 
         if (confirmAction === "update") {
             const formData = new FormData();
-            
-            // 1. Manejo de la Imagen (imageFile)
-            // Buscamos el campo que es de tipo 'file' en nuestra configuración de campos
             const imageFieldConfig = fields.find(f => f.type === 'file');
+            
             if (imageFieldConfig) {
                 const file = formValues[imageFieldConfig.key];
                 if (file instanceof File && file.size > 0) {
-                    // USAMOS LA KEY DEL CAMPO (ej: "imageFile" o "file")
-                    formData.append(imageFieldConfig.key, file); 
+                    formData.append(imageFieldConfig.key, file);
+                    formData.append("removeImage", "false");
+                } else if (removeImage) {
+                    formData.append("removeImage", "true");
+                } else {
+                    formData.append("removeImage", "false");
                 }
             }
 
-            // 2. Manejo de los demás campos
             fields.forEach((field) => {
-                // Saltamos el campo de archivo porque ya lo manejamos arriba
                 if (field.type === 'file') return;
-
                 const value = formValues[field.key];
-                
-                // Si es null, undefined o string vacío, no lo enviamos (permite nulos en BD)
-                if (value === null || value === undefined || value.toString().trim() === "") {
-                    return;
-                }
-
+                if (value === null || value === undefined || value.toString().trim() === "") return;
                 const stringValue = value.toString().trim();
                 const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(field.key);
-
-                // Limpieza y formato
                 const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
-                
                 formData.append(field.key, finalValue);
             });
 
-            // Debug para que veas qué se envía antes de que falle
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
-
             const res = await fetch(`${endpoint}/${id}`, {
                 method: "PUT",
-                headers: { Authorization: `Bearer ${token}` }, // NO añadas Content-Type manualmente
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
             });
 
             if (!res.ok) {
-                // Si falla, intenta ver el error real en consola
                 const errorText = await res.text();
-                console.error("Error del servidor:", errorText);
                 alert("Error actualizando: " + errorText);
                 return;
             }
 
             const updated = await res.json();
+            
+            // Actualizar estados
             setData(updated);
             setFormValues(updated);
+            setRemoveImage(false);
             setEditing(false);
+
+            // Forzar limpieza de imagen si el backend confirma que ya no existe path
+            if (!updated.imagePath) {
+                setImageUrl(null);
+            }
         }
 
         if (confirmAction === "delete" && onDelete) {
@@ -209,7 +199,10 @@ export default function DetailsComponent({
         setConfirmAction(null);
     };
 
-    if (!data) return <p>Loading...</p>;
+    if (loading) return <p className="p-4 text-center">Cargando...</p>;
+    if (status === 403) return <Forbidden />;
+    if (status === 404 || (!data && !loading)) return <NotFound />;
+    if (status >= 500) return <div className="text-center p-5">Error interno del servidor</div>;
 
     const typeColors: Record<string, { backgroundColor: string; color: string }> = {
         ADMIN: { backgroundColor: "#FEE2E2", color: "#991B1B" },
@@ -222,7 +215,6 @@ export default function DetailsComponent({
             <div className="card p-4 shadow-sm">
                 <div className="row">
                     <div className="col-md-8 col-12">
-                        
                         <div className="d-flex align-items-center mb-4 flex-wrap">
                             <img
                                 src={imageUrl || "/default-user.jpg"}
@@ -233,76 +225,69 @@ export default function DetailsComponent({
                             />
 
                             <div className="d-flex flex-column">
-                            <div className="d-flex align-items-center flex-wrap">
-                                <h2 className="me-3 mb-0">
-                                {data.firstName} {data.lastName}
-                                </h2>
-                                <span
-                                    className="px-2 py-1 fw-bold"
-                                    style={{
-                                        borderRadius: "4px",
-                                        fontSize: "0.9rem",
-                                        ...(typeColors[data.type] || { backgroundColor: "#E5E7EB", color: "#374151" }),
-                                }}
-                                >
-                                {data.type}
-                                </span>
-                            </div>
+                                <div className="d-flex align-items-center flex-wrap">
+                                    <h2 className="me-3 mb-0">
+                                        {data.firstName} {data.lastName}
+                                    </h2>
+                                    <span
+                                        className="px-2 py-1 fw-bold"
+                                        style={{
+                                            borderRadius: "4px",
+                                            fontSize: "0.9rem",
+                                            ...(typeColors[data.type] || { backgroundColor: "#E5E7EB", color: "#374151" }),
+                                        }}
+                                    >
+                                        {data.type}
+                                    </span>
+                                </div>
                                 <small className="text-muted text-start">@{data.username}</small>
                             </div>
                         </div>
-                        
-
 
                         {!editing ? (
                             <DetailView data={data} fields={fields} />
                         ) : (
                             <DetailEdit
-                            values={formValues}
-                            setValues={setFormValues}
-                            fields={fields}
-                            errors={errors}
+                                values={formValues}
+                                setValues={setFormValues}
+                                fields={fields}
+                                errors={errors}
+                                removeImage={removeImage}
+                                setRemoveImage={setRemoveImage}
                             />
                         )}
 
-                        {/* Buttons */}
                         <div className="d-flex gap-2 mt-3">
-
                             {!editing && allowEdit && (
                                 <button className="btn btn-primary" onClick={() => setEditing(true)}>
                                     <img src={editIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
                                     <span className="d-none d-sm-block">Editar</span>
                                 </button>
                             )}
-
                             {!editing && allowDelete && onDelete && (
                                 <button className="btn btn-danger" onClick={handleConfirmDelete}>
                                     <img src={deleteIcon} alt="Delete" className="delete-icon d-inline d-sm-none" />
                                     <span className="d-none d-sm-block">Borrar</span>
                                 </button>
                             )}
-
                             {!editing && onBack && (
                                 <button className="btn btn-secondary" onClick={onBack}>
-                                    <img src={arroBackIcon} alt="ArroBack" className="arrow-back-icon d-inline d-sm-none ms-2" />
+                                    <img src={arroBackIcon} alt="Back" className="arrow-back-icon d-inline d-sm-none ms-2" />
                                     <span className="d-none d-sm-block">Volver</span>
                                 </button>
                             )}
-
                             {editing && (
                                 <>
-                                <button className="btn btn-success" onClick={handleConfirmClick}>
-                                    <img src={checkIcon} alt="Check" className="check-icon d-inline d-sm-none" />
-                                    <span className="d-none d-sm-block">Confirmar cambios</span>
-                                </button>
-
-                                <button className="btn btn-secondary" onClick={() => setEditing(false)}>
-                                    <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
-                                    <span className="d-none d-sm-block">Cancelar</span>
-                                </button>
+                                    <button className="btn btn-success" onClick={handleConfirmClick}>
+                                        <img src={checkIcon} alt="Check" className="check-icon d-inline d-sm-none" />
+                                        <span className="d-none d-sm-block">Confirmar cambios</span>
+                                    </button>
+                                    <button className="btn btn-secondary" onClick={() => setEditing(false)}>
+                                        <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
+                                        <span className="d-none d-sm-block">Cancelar</span>
+                                    </button>
                                 </>
                             )}
-
                         </div>
                     </div>
 
@@ -310,13 +295,11 @@ export default function DetailsComponent({
                         show={showConfirm}
                         variant={
                             confirmAction === "delete" ? "danger" : 
-                            confirmAction === "validationError" ? "warning" : 
-                            "primary"
+                            confirmAction === "validationError" ? "warning" : "primary"
                         }
                         title={
                             confirmAction === "update" ? "Confirmar cambios" : 
-                            confirmAction === "delete" ? "Eliminar registro" : 
-                            "Errores de validación"
+                            confirmAction === "delete" ? "Eliminar registro" : "Errores de validación"
                         }
                         message={
                             confirmAction === "update" ? "¿Estás seguro de que quieres guardar los cambios?" :
@@ -331,4 +314,3 @@ export default function DetailsComponent({
         </div>
     );
 }
-
