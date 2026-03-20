@@ -4,7 +4,6 @@ import com.dronetools.dronegestory.common.AnexoVersionado;
 import com.dronetools.dronegestory.model.anexos.*;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +118,4 @@ public class Operation {
                 a6 != null && a6.getEstado() == AnexoStatus.FIRMADO &&
                 a7 != null && a7.getEstado() == AnexoStatus.FIRMADO;
     }
-
-
 }

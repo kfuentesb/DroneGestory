@@ -25,13 +25,18 @@ public class Anexo7 implements AnexoVersionado {
     private String campoAnexo7;
 
     // Versión
-    @Column(name = "version_number", nullable = false)
+    @Column(name = "numero_version", nullable = false)
     private int numeroVersion;
 
     // Estado
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", length = 20, nullable = false)
     private AnexoStatus estado = AnexoStatus.BORRADOR;
+
+    // ========== MÉTODOS ===========
+    public boolean isEditable() {
+        return this.estado == AnexoStatus.BORRADOR;
+    }
 
 //    @Column(name = "fecha_hora_prevista")
 //    private LocalDateTime fechaHoraPrevista;

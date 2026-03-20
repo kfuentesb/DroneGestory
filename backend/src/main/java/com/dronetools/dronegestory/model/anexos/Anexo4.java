@@ -34,7 +34,10 @@ public class Anexo4 implements AnexoVersionado {
     @Column(name = "campo_anexo4")
     private String campoAnexo4;
 
-
+    // ========== MÉTODOS ===========
+    public boolean isEditable() {
+        return this.estado == AnexoStatus.BORRADOR;
+    }
 
 //    @Column(name = "fecha_hora_prevista")
 //    private LocalDateTime fechaHoraPrevista;
