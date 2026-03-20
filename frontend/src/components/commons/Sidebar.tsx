@@ -14,7 +14,8 @@ import IdentityIcon from '../../assets/sidebar/identity_white.svg';
 export default function SidebarMenu() {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
-    const { username, token } = useAuth();
+    const { username, token, role } = useAuth();
+    const canManage = role === "ADMIN" || role === "MANAGER";
 
     const toggleSidebar = () => setCollapsed(!collapsed);
 
@@ -105,27 +106,29 @@ export default function SidebarMenu() {
                     Ver perfil
                 </MenuItem>
 
-                <SubMenu
-                    label="Administrar usuarios"
-                    open={openMenu === "users"}
-                    onClick={() => setOpenUsers(!openUsers)}
-                    onOpenChange={() => handleToggle("users")}
-                    icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
-                >
-                    <MenuItem onClick={() => navigate("/auth/users")}>Listar usuarios</MenuItem>
-                    <MenuItem onClick={() => navigate("/auth/register-user")}>Registrar usuario</MenuItem>
-                </SubMenu>
+                {canManage && (
+                    <SubMenu
+                        label="Administrar usuarios"
+                        open={openMenu === "users"}
+                        onOpenChange={() => handleToggle("users")}
+                        icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
+                    >
+                        <MenuItem onClick={() => navigate("/auth/users")}>Listar usuarios</MenuItem>
+                        <MenuItem onClick={() => navigate("/auth/register-user")}>Registrar usuario</MenuItem>
+                    </SubMenu>
+                )}
 
-                <SubMenu
-                    label="Administrar aeronaves"
-                    open={openMenu === "aircraft"}
-                    onClick={() => setOpenAircraft(!openAircraft)}
-                    onOpenChange={() => handleToggle("aircraft")}
-                    icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
-                >
-                    <MenuItem onClick={() => navigate("/auth/aircrafts")}>Listar Aeronaves</MenuItem>
-                    <MenuItem onClick={() => navigate("/auth/register-aircraft")}>Registrar Aeronave</MenuItem>
-                </SubMenu>
+                {canManage && (
+                    <SubMenu
+                        label="Administrar aeronaves"
+                        open={openMenu === "aircraft"}
+                        onOpenChange={() => handleToggle("aircraft")}
+                        icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
+                    >
+                        <MenuItem onClick={() => navigate("/auth/aircrafts")}>Listar Aeronaves</MenuItem>
+                        <MenuItem onClick={() => navigate("/auth/register-aircraft")}>Registrar Aeronave</MenuItem>
+                    </SubMenu>
+                )}
 
                 <SubMenu
                     label="Operaciones"
@@ -134,7 +137,9 @@ export default function SidebarMenu() {
                     onOpenChange={() => handleToggle("operations")}
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
-                    <MenuItem onClick={() => navigate("/auth/operations")}>Listar operaciones (admin)</MenuItem>
+                    {canManage && (
+                        <MenuItem onClick={() => navigate("/auth/operations")}>Listar operaciones (admin)</MenuItem>
+                    )}
                     <MenuItem onClick={() => navigate("/#")}>Listar mis operaciones</MenuItem>
                     <MenuItem onClick={() => navigate("/auth/register-operation")}>Registrar operacion</MenuItem>
                 </SubMenu>

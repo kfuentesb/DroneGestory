@@ -3,14 +3,12 @@ import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./commons/hooks/useAuth";
 
 function LogIn() {
-  // Tenemos que crear las llamadas al endpoint desde aquí
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
-  // Hook de navegación
   const navigate = useNavigate();
-  // Uso login
   const { login, setToken } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +20,7 @@ function LogIn() {
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password}),
       });
 
       if (!res.ok) {
@@ -31,10 +29,13 @@ function LogIn() {
       }
 
       const data = await res.json();
-      // console.log("Login OK:", data);
 
       if (data.ok) {
-        login(data.username);
+        //IMPORTANTE!! DE MOMENTO SOLO SE ESTÁ RECOGIENDO EL PRIMER ROL DE UN USUARIO, PERO ES UNA LISTA DE ROLES
+        //LO QUE DEVUELVE EL BACKEND, PARA CUANDO UN USUARIO PUEDA TENER MÚLTIPLES ROLES !!!!!!!!!!!!!!!!!!!!!!
+        const rawRole = data.roles && data.roles.length > 0 ? data.roles[0] : "PILOT";
+        const cleanRole = rawRole.replace("ROLE_", "");
+        login(data.username, cleanRole);
         setToken(data.token);
         navigate("/home")
       }
