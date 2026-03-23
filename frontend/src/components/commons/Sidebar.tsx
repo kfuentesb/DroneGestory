@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 import HomeIcon from '../../assets/sidebar/home_white.svg';
 import ArrowBack from '../../assets/arrow_back_white.svg';

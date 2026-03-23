@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 function resolveUrl(path: string) {
     if (path.startsWith("http://") || path.startsWith("https://")) {

@@ -52,7 +52,7 @@ export default function MultiStepsForm() {
             const fd = new FormData();
             fd.append("nombreOperacion", data.nombreOperacion);
 
-            const res = await apiFetch("http://localhost:8080/api/auth/operations", {
+            const res = await apiFetch("/api/auth/operations", {
                 method: "POST",
                 body: fd
             });
@@ -83,7 +83,7 @@ export default function MultiStepsForm() {
             });
             
             const res = await apiFetch(
-                `http://localhost:8080/api/auth/operations/${operationId}/anexo4`,
+                `/api/auth/operations/${operationId}/anexo4`,
                 {
                     method: "POST",
                     body: fd,
@@ -119,7 +119,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `http://localhost:8080/api/auth/operations/${operationId}/anexo5`,
+                `/api/auth/operations/${operationId}/anexo5`,
                 {
                     method: "POST",
                     body: fd,
@@ -159,7 +159,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `http://localhost:8080/api/auth/operations/${operationId}/anexo6`,
+                `/api/auth/operations/${operationId}/anexo6`,
                 {
                     method: "POST",
                     body: fd,
@@ -199,7 +199,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `http://localhost:8080/api/auth/operations/${operationId}/anexo7`,
+                `/api/auth/operations/${operationId}/anexo7`,
                 {
                     method: "POST",
                     body: fd,
@@ -239,7 +239,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `http://localhost:8080/api/auth/operations/${operationId}/anexo8`,
+                `/api/auth/operations/${operationId}/anexo8`,
                 {
                     method: "POST",
                     body: fd,

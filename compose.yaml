@@ -8,14 +8,18 @@ services:
       - db
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      # SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/aeronaves_db
-      # SPRING_DATASOURCE_USERNAME: admin
-      # SPRING_DATASOURCE_PASSWORD: admin123
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      # SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      # SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      - SERVER_IP=${SERVER_IP}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     volumes:
       - ./backend/uploads:/app/uploads
     networks:
@@ -25,7 +29,7 @@ services:
     build:
       context: ./frontend
       args:
-        - VITE_API_BASE_URL=${BACKEND_URL}
+        - VITE_API_BASE_URL=http://${SERVER_IP}:8080
     container_name: dronegestory-frontend
     ports:
       - "80:80"

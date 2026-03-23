@@ -1,9 +1,5 @@
-<<<<<<< HEAD:backend/src/main/java/com/dronetools/dronegestory/controller/Anexo5Controller.java
-package com.dronetools.dronegestory.controller;
-=======
 // Anexo5Controller.java
 package com.dronetools.dronegestory.controller.anexos;
->>>>>>> 2b8ea28fe6b695519ccd7f9cbe25010a3bae1dfe:backend/src/main/java/com/dronetools/dronegestory/controller/anexos/Anexo5Controller.java
 
 import com.dronetools.dronegestory.model.anexos.Anexo5;
 import com.dronetools.dronegestory.model.Operation;
@@ -13,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth/operations/{operationId}/anexo5")
-@CrossOrigin(origins = "http://localhost:5173")
 public class Anexo5Controller {
 
     private final Anexo5Service anexo5Service; // Usamos el servicio en lugar del repositorio directamente

@@ -8,12 +8,12 @@
 >DB_NAME=aeronaves_db <br>
 
 # Configuración de Red/URLs<br>
->SERVER_IP=localhost <br>
->FRONTEND_URL=http://${SERVER_IP} <br>
->BACKEND_URL=http://${SERVER_IP}:8080 <br>
+>SERVER_IP=YOUR_SERVER_IP <br>
+>VITE_API_BASE_URL=http://${SERVER_IP}:8080 <br>
 
 # Creamos el docker
 > docker compose up -d --build <br>
+> docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
 
 Requiere Maven Docker npm Java
 ```diff
