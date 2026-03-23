@@ -84,7 +84,7 @@ VISUAL<br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 FUNCIONAL<br>
 -Añadir datos opcionales en aircraft <br>
--Añadir posibilidad de borrar imagen en modificar, tanto para usuario como para dron<br>
+-Añadir posibilidad de borrar imagen en modificar, tanto para para dron<br>
 -Reestructurar la carpeta del backend /uploads, que tenga una con /users y otra con /aircraft, además aquí se guardaran las licencias y documentaciones a futuro<br>
 -Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
 -Añadir ver operación en detalle<br>
