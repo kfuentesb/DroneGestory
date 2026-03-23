@@ -118,6 +118,4 @@ public class Operation {
                 a6 != null && a6.getEstado() == AnexoStatus.FIRMADO &&
                 a7 != null && a7.getEstado() == AnexoStatus.FIRMADO;
     }
-
-
 }

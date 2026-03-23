@@ -1,4 +1,9 @@
+<<<<<<< HEAD:backend/src/main/java/com/dronetools/dronegestory/controller/Anexo6Controller.java
 package com.dronetools.dronegestory.controller;
+=======
+// Anexo6Controller.java
+package com.dronetools.dronegestory.controller.anexos;
+>>>>>>> 2b8ea28fe6b695519ccd7f9cbe25010a3bae1dfe:backend/src/main/java/com/dronetools/dronegestory/controller/anexos/Anexo6Controller.java
 
 import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.model.Operation;

@@ -27,6 +27,7 @@ public class Anexo4 extends Anexo {
     @Column(name = "coords")
     private String coords;
 
+<<<<<<< HEAD
     @Column(name = "imagen_espacio_aereo")
     private String imagenEspacioAereo;
 
@@ -36,4 +37,25 @@ public class Anexo4 extends Anexo {
         this.setTipoAnexo(4);
         this.setEstado(AnexoStatus.BORRADOR);
     }
+=======
+    // ========== MÉTODOS ===========
+    public boolean isEditable() {
+        return this.estado == AnexoStatus.BORRADOR;
+    }
+
+//    @Column(name = "fecha_hora_prevista")
+//    private LocalDateTime fechaHoraPrevista;
+//
+//    @Column(name = "medios_materiales")
+//    private String mediosMateriales;
+//
+//    @Column(name = "direccion")
+//    private String direccion;
+//
+//    @Column(name = "coords")
+//    private String coords;
+//
+//    @Column(name = "imagen_espacio_aereo")
+//    private String imagenEspacioAereo;
+>>>>>>> 2b8ea28fe6b695519ccd7f9cbe25010a3bae1dfe
 }
