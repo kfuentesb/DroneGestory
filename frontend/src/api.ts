@@ -16,19 +16,29 @@ export async function apiFetch(url: string, options?: RequestInit) {
     }
 
     const res = await fetch(resolveUrl(url), { ...options, headers });
+    const isLoginRequest = url.includes("/api/auth/login");
 
     // Errores globales de infraestructura/permisos
-    if (res.status === 403) { window.location.href = "/403"; return; }
-    if (res.status === 401) { window.location.href = "/auth/login"; return; }
-    if (res.status === 404) { window.location.href = "/404"; return; }
+    if (!isLoginRequest) {
+        if (res.status === 403) { window.location.href = "/403"; return; }
+        if (res.status === 401) { window.location.href = "/auth/login"; return; }
+        if (res.status === 404) { window.location.href = "/404"; return; }
+    }
 
     if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
+        // CAPTURA EL TEXTO ANTES DE INTENTAR PARSEARLO COMO JSON
+        const errorText = await res.text(); 
+        console.error("Error del servidor (Cuerpo):", errorText);
+
+        let errorBody;
+        try {
+            errorBody = JSON.parse(errorText);
+        } catch (e) {
+            errorBody = { message: "El servidor no devolvió un JSON válido. Probablemente un error de Apache/Proxy." };
+        }
 
         const error: any = new Error(errorBody.message || "Error en la petición");
         error.status = res.status;
-        error.data = errorBody;
-
         throw error;
     }
 
