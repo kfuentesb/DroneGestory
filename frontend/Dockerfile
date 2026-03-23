@@ -1,27 +1,32 @@
-# Stage 1: Build React app
-FROM node:20 AS build
+# Stage 1: Build de la aplicación React con Node
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copiar solo los package.json primero para cachear npm install
-COPY package*.json ./
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
+# Copiamos archivos de dependencias para aprovechar la caché de capas de Docker
+COPY package*.json ./
 RUN npm install
 
-# Copiar todo el proyecto
+# Copiamos el resto del código y generamos el build de producción
 COPY . .
-
-# Build de producción
 RUN npm run build
 
-# Stage 2: Servir con Nginx
+# Stage 2: Servidor web ligero con Nginx
 FROM nginx:alpine
 
-# Copiar build de Vite a Nginx
+# Borramos la configuración por defecto de Nginx (opcional pero limpio)
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copiamos nuestra configuración personalizada para React Router
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiamos los archivos estáticos generados por Vite (carpeta dist) a Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Exponer puerto 80
 EXPOSE 80
 
-# Iniciar Nginx
+# Arrancamos Nginx en primer plano
 CMD ["nginx", "-g", "daemon off;"]

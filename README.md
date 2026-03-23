@@ -1,5 +1,20 @@
 # DroneGestory
 
+# Crea un -env
+>nano .env <br>
+# Configuración de Base de Datos<br>
+>DB_USER=admin <br>
+>DB_PASSWORD=admin123 <br>
+>DB_NAME=aeronaves_db <br>
+
+# Configuración de Red/URLs<br>
+>SERVER_IP=localhost <br>
+>FRONTEND_URL=http://${SERVER_IP} <br>
+>BACKEND_URL=http://${SERVER_IP}:8080 <br>
+
+# Creamos el docker
+> docker compose up -d --build <br>
+
 Requiere Maven Docker npm Java
 ```diff
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
