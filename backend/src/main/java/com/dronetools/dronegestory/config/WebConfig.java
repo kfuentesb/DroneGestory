@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.frontend.url:http://${SERVER_IP}:5173}")
+    @Value("${app.frontend.url:https://${SERVER_IP}:5173}")
     private String frontendUrl;
 
     @Override
