@@ -15,6 +15,9 @@
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
 
+# Checkear logs
+> docker logs dronegestory-backend <br>
+
 Requiere Maven Docker npm Java
 ```diff
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser

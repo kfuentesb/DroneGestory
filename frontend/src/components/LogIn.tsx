@@ -24,17 +24,20 @@ function LogIn() {
         body: JSON.stringify({ username, password}),
       });
 
+      if (!res || !res.ok) {
+        const errorData = res ? await res.json() : null;
+        throw new Error(errorData?.message || "Error al iniciar sesión");
+      }
+
       const data = await res.json();
 
-      if (data.ok) {
-        //IMPORTANTE!! DE MOMENTO SOLO SE ESTÁ RECOGIENDO EL PRIMER ROL DE UN USUARIO, PERO ES UNA LISTA DE ROLES
-        //LO QUE DEVUELVE EL BACKEND, PARA CUANDO UN USUARIO PUEDA TENER MÚLTIPLES ROLES !!!!!!!!!!!!!!!!!!!!!!
-        const rawRole = data.roles && data.roles.length > 0 ? data.roles[0] : "PILOT";
-        const cleanRole = rawRole.replace("ROLE_", "");
-        login(data.username, cleanRole);
-        setToken(data.token);
-        navigate("/home")
-      }
+      //IMPORTANTE!! DE MOMENTO SOLO SE ESTÁ RECOGIENDO EL PRIMER ROL DE UN USUARIO, PERO ES UNA LISTA DE ROLES
+      //LO QUE DEVUELVE EL BACKEND, PARA CUANDO UN USUARIO PUEDA TENER MÚLTIPLES ROLES !!!!!!!!!!!!!!!!!!!!!!
+      const rawRole = data.roles && data.roles.length > 0 ? data.roles[0] : "PILOT";
+      const cleanRole = rawRole.replace("ROLE_", "");
+      login(data.username, cleanRole);
+      setToken(data.token);
+      navigate("/home")
 
       // aquí puedes guardar token o userId
       // localStorage.setItem("userId", data.userId);
