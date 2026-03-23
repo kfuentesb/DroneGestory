@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.model.anexos;
 
-import com.dronetools.dronegestory.model.Operation;
+
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 // import lombok.NoArgsConstructor;
@@ -20,6 +21,6 @@ public class Anexo8 extends Anexo {
     public Anexo8() {
         super();
         this.setTipoAnexo(7);
-        // this.setEstado(AnexoStatus.BORRADOR);
+        this.setEstado(AnexoStatus.BORRADOR);
     }
 }

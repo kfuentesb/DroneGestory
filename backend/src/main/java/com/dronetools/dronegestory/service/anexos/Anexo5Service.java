@@ -5,6 +5,8 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo5Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 
 @Service
 public class Anexo5Service {
@@ -16,22 +18,23 @@ public class Anexo5Service {
         this.operationRepository = operationRepository;
     }
 
-    public Anexo5 save(Long operationId, String campoAnexo5) {
+    @Transactional
+    public Anexo5 registrarAnexo5(Long operationId, Anexo5 datosNuevos) {
         Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operation not found"));
-        Anexo5 a5 = new Anexo5();
-        a5.setCampoAnexo5(campoAnexo5);
-        a5.setOperation(op);
-        return anexo5Repository.save(a5);
-    }
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
 
-    public Anexo5 update(Long operationId, String campoAnexo5) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operation not found"));
-        Anexo5 existente = anexo5Repository.findByOperation(op)
-                .orElse(new Anexo5());
-        existente.setCampoAnexo5(campoAnexo5);
-        existente.setOperation(op);
-        return anexo5Repository.save(existente);
+        Anexo5 actual = op.getAnexo5Actual();
+
+        if (actual != null && actual.getEstado() == AnexoStatus.BORRADOR) {
+            // Actualizamos los campos específicos del Anexo 5
+            actual.setTextoPrueba(datosNuevos.getTextoPrueba());
+            return anexo5Repository.save(actual);
+        } else {
+            // Creamos nueva versión usando el contador del Anexo 5
+            datosNuevos.setOperation(op);
+            datosNuevos.setNumeroVersion(op.getNextVersionAnexo5());
+            datosNuevos.setEstado(AnexoStatus.BORRADOR);
+            return anexo5Repository.save(datosNuevos);
+        }
     }
 }
