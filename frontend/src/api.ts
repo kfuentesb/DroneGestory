@@ -26,12 +26,19 @@ export async function apiFetch(url: string, options?: RequestInit) {
     }
 
     if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
+        // CAPTURA EL TEXTO ANTES DE INTENTAR PARSEARLO COMO JSON
+        const errorText = await res.text(); 
+        console.error("Error del servidor (Cuerpo):", errorText);
+
+        let errorBody;
+        try {
+            errorBody = JSON.parse(errorText);
+        } catch (e) {
+            errorBody = { message: "El servidor no devolvió un JSON válido. Probablemente un error de Apache/Proxy." };
+        }
 
         const error: any = new Error(errorBody.message || "Error en la petición");
         error.status = res.status;
-        error.data = errorBody;
-
         throw error;
     }
 
