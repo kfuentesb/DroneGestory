@@ -3,39 +3,32 @@ package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.model.anexos.Anexo5;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.anexos.Anexo5Repository;
+import com.dronetools.dronegestory.service.anexos.Anexo5Service; // Importamos el servicio
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth/operations/{operationId}/anexo5")
-@CrossOrigin(origins = "http://localhost:5173")
 public class Anexo5Controller {
 
-    private final Anexo5Repository anexo5Repository;
+    private final Anexo5Service anexo5Service; // Usamos el servicio en lugar del repositorio directamente
     private final OperationRepository operationRepository;
 
-    public Anexo5Controller(Anexo5Repository anexo5Repository, OperationRepository operationRepository) {
-        this.anexo5Repository = anexo5Repository;
+    public Anexo5Controller(Anexo5Service anexo5Service, OperationRepository operationRepository) {
+        this.anexo5Service = anexo5Service;
         this.operationRepository = operationRepository;
     }
 
     @PostMapping
-    public Anexo5 saveAnexo5(@PathVariable Long operationId, @ModelAttribute Anexo5 input) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        input.setOperation(op);
-        return anexo5Repository.save(input);
+    public Anexo5 saveOrUpdateAnexo5(@PathVariable Long operationId, @RequestBody Anexo5 input) {
+        // El controlador ahora solo delega la responsabilidad al servicio
+        return anexo5Service.registrarAnexo5(operationId, input);
     }
 
-    @PutMapping
-    public Anexo5 updateAnexo5(@PathVariable Long operationId, @ModelAttribute Anexo5 input) {
+    @GetMapping("/actual")
+    public Anexo5 getActual(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        Anexo5 existente = anexo5Repository.findByOperation(op)
-                .orElse(new Anexo5());
-        existente.setCampoAnexo5(input.getCampoAnexo5());
-        existente.setOperation(op);
-        return anexo5Repository.save(existente);
+        return op.getAnexo5Actual();
     }
 }

@@ -1,55 +1,41 @@
 package com.dronetools.dronegestory.model.anexos;
 
-import com.dronetools.dronegestory.common.AnexoVersionado;
-import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
+import com.dronetools.dronegestory.model.Anexo;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+// import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "anexo5")
-@Getter @Setter @NoArgsConstructor
-public class Anexo5 implements AnexoVersionado {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id_anexo5")
-    private Long id;
+@Getter
+@Setter
+// @NoArgsConstructor
+public class Anexo5 extends Anexo {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_operacion", nullable = false)
-    private Operation operation;
+    @Column(name = "texto_prueba")
+    private String textoPrueba;
 
-    @Column(name = "campo_anexo5")
-    private String campoAnexo5;
+    // @Column(name = "fecha_hora_prevista")
+    // private LocalDateTime fechaHoraPrevista;
 
-    // Versión
-    @Column(name = "numero_version", nullable = false)
-    private int numeroVersion;
+    // @Column(name = "medios_materiales")
+    // private String mediosMateriales;
 
-    // Estado
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", length = 20, nullable = false)
-    private AnexoStatus estado = AnexoStatus.BORRADOR;
+    // @Column(name = "direccion")
+    // private String direccion;
 
-    // ========== MÉTODOS ===========
-    public boolean isEditable() {
-        return this.estado == AnexoStatus.BORRADOR;
+    // @Column(name = "coords")
+    // private String coords;
+
+    // @Column(name = "imagen_espacio_aereo")
+    // private String imagenEspacioAereo;
+
+    public Anexo5() {
+        super();
+        this.setTipoAnexo(5);
+        this.setEstado(AnexoStatus.BORRADOR);
     }
-
-//    @Column(name = "fecha_hora_prevista")
-//    private LocalDateTime fechaHoraPrevista;
-//
-//    @Column(name = "medios_materiales")
-//    private String mediosMateriales;
-//
-//    @Column(name = "direccion")
-//    private String direccion;
-//
-//    @Column(name = "coords")
-//    private String coords;
-//
-//    @Column(name = "imagen_espacio_aereo")
-//    private String imagenEspacioAereo;
 }

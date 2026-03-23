@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';

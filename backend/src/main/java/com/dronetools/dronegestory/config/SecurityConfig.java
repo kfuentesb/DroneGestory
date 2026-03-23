@@ -1,7 +1,8 @@
 package com.dronetools.dronegestory.config;
 
 import com.dronetools.dronegestory.security.JwtAuthenticationFilter;
-
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,12 +25,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
-import java.util.List;
-
 @EnableWebSecurity
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${app.frontend.url:http://${SERVER_IP}:5173}")
+    private String frontendUrl;
 
     @Bean
     public SecurityFilterChain filterChain(
@@ -44,22 +46,15 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ALL
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/home", "/api/auth/login", "/api/auth/logout").permitAll()
-
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/me").authenticated()
-
-                        // Endpoints para gestión de usuarios
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/users").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/users/**").authenticated()
-
                         .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/pilots/**").hasAnyRole("ADMIN", "MANAGER")
-
-
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
@@ -93,10 +88,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedOrigins(List.of(frontendUrl));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false); // HE PUESTO TRUE para que funcione DASHBOARD
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -117,7 +112,7 @@ public class SecurityConfig {
 
     @Bean
     TomcatConnectorCustomizer connectorCustomizer() {
-        return (connector) -> {
+        return connector -> {
             connector.setMaxPartCount(100);
             connector.setMaxPartHeaderSize(2048);
         };

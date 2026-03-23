@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth/operations")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class OperationController {
 
     private final OperationService operationService;

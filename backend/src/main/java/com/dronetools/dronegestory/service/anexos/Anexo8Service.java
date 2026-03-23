@@ -1,4 +1,3 @@
-// Anexo8Service.java
 package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.anexos.Anexo8;
@@ -6,6 +5,8 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 
 @Service
 public class Anexo8Service {
@@ -17,22 +18,23 @@ public class Anexo8Service {
         this.operationRepository = operationRepository;
     }
 
-    public Anexo8 save(Long operationId, String campoAnexo8) {
+    @Transactional
+    public Anexo8 registrarAnexo8(Long operationId, Anexo8 datosNuevos) {
         Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operation not found"));
-        Anexo8 a8 = new Anexo8();
-        a8.setCampoAnexo8(campoAnexo8);
-        a8.setOperation(op);
-        return anexo8Repository.save(a8);
-    }
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
 
-    public Anexo8 update(Long operationId, String campoAnexo8) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operation not found"));
-        Anexo8 existente = anexo8Repository.findByOperation(op)
-                .orElse(new Anexo8());
-        existente.setCampoAnexo8(campoAnexo8);
-        existente.setOperation(op);
-        return anexo8Repository.save(existente);
+        Anexo8 actual = op.getAnexo8Actual();
+
+        if (actual != null && actual.getEstado() == AnexoStatus.BORRADOR) {
+            // Actualizamos los campos específicos del Anexo 8
+            actual.setTextoPrueba(datosNuevos.getTextoPrueba());
+            return anexo8Repository.save(actual);
+        } else {
+            // Creamos nueva versión usando el contador del Anexo 8
+            datosNuevos.setOperation(op);
+            datosNuevos.setNumeroVersion(op.getNextVersionAnexo8());
+            datosNuevos.setEstado(AnexoStatus.BORRADOR);
+            return anexo8Repository.save(datosNuevos);
+        }
     }
 }

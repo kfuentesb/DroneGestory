@@ -27,7 +27,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth/aircraft")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class AircraftController {
 
     private final AircraftService aircraftService;

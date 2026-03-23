@@ -1,4 +1,3 @@
-// Anexo6Service.java
 package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.anexos.Anexo6;
@@ -6,6 +5,8 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 
 @Service
 public class Anexo6Service {
@@ -17,22 +18,23 @@ public class Anexo6Service {
         this.operationRepository = operationRepository;
     }
 
-    public Anexo6 save(Long operationId, String campoAnexo6) {
+    @Transactional
+    public Anexo6 registrarAnexo6(Long operationId, Anexo6 datosNuevos) {
         Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operation not found"));
-        Anexo6 a6 = new Anexo6();
-        a6.setCampoAnexo6(campoAnexo6);
-        a6.setOperation(op);
-        return anexo6Repository.save(a6);
-    }
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
 
-    public Anexo6 update(Long operationId, String campoAnexo6) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operation not found"));
-        Anexo6 existente = anexo6Repository.findByOperation(op)
-                .orElse(new Anexo6());
-        existente.setCampoAnexo6(campoAnexo6);
-        existente.setOperation(op);
-        return anexo6Repository.save(existente);
+        Anexo6 actual = op.getAnexo6Actual();
+
+        if (actual != null && actual.getEstado() == AnexoStatus.BORRADOR) {
+            // Actualizamos los campos específicos del Anexo 6
+            actual.setTextoPrueba(datosNuevos.getTextoPrueba());
+            return anexo6Repository.save(actual);
+        } else {
+            // Creamos nueva versión usando el contador del Anexo 6
+            datosNuevos.setOperation(op);
+            datosNuevos.setNumeroVersion(op.getNextVersionAnexo6());
+            datosNuevos.setEstado(AnexoStatus.BORRADOR);
+            return anexo6Repository.save(datosNuevos);
+        }
     }
 }
