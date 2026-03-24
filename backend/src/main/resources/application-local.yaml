@@ -1,0 +1,64 @@
+SERVER_IP: localhost
+
+app:
+    frontend:
+        url: http://localhost:5173
+
+server:
+    max-http-request-header-size: 16KB
+    tomcat:
+        max-swallow-size: 50MB
+        max-part-count: 100
+        max-part-header-size: 2048
+
+spring:
+    servlet:
+        multipart:
+            enabled: true
+            max-file-size: 50MB
+            max-request-size: 50MB
+
+    application:
+        name: DroneGestory
+    docker:
+        compose:
+            #enabled: true
+            enabled: false
+            # importante, cuando se desarrolla el backend, dejarlo en false, asi se puede
+            # usar el postgre en local, y dejarlo en true para cuando se despliega y
+            # se quiere usar el postgre de docker.
+    banner:
+        location: banner.txt
+
+    datasource:
+        url: jdbc:postgresql://localhost:5432/aeronaves_db
+        username: admin
+        password: admin123
+        driver-class-name: org.postgresql.Driver
+
+    jpa:
+        hibernate:
+            ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+            # ddl-auto: create-drop
+        naming:
+            physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+            #show-sql: true
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    web:
+        error:
+            include-message: always
+            include-binding-errors: always
+            whitelabel:
+                enabled: false
+
+jwt:
+    secret: ${JWT_SECRET:change-this-in-prod-min-32-chars}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+    # COMENTAR ESTA SECCION PARA QUE NO SE INICIALICE LA BASE DE DATOS AL EJECUTAR EL BACKEND SI SE USA LA BASE DE DATOS DE DOCKER
+    # sql:
+    #   init:
+    #     mode: never
