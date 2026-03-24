@@ -7,7 +7,7 @@ export default function MainLayout({ children }: any) {
     const [toggled, setToggled] = useState(false);
 
     return (
-        <div className="d-flex" style={{ minHeight: "100vh", width: "100%" }}>
+        <div className="d-flex" style={{ minHeight: "100vh", width: "100%", alignItems: "stretch" }}>
             {username && (
                 <SidebarMenu toggled={toggled} setToggled={setToggled} />
             )}

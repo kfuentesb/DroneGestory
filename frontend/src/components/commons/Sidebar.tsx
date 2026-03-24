@@ -39,12 +39,16 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
             collapsedWidth="70px"
             transitionDuration={300}
             style={{
-                height: "100vh",
+                minHeight: "100vh",
                 borderRight: "none",
+                flexDirection: "column",
+                display: "flex",
+                alignSelf: "stretch",
                 zIndex: 1000,
             }}
         >
-                <Menu
+
+            <Menu
                 closeOnClick={false}
                 menuItemStyles={{
                     button: ({ level }) => ({
