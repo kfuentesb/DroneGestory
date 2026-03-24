@@ -7,6 +7,8 @@ import lombok.Getter;
 // import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "anexo4")
@@ -47,33 +49,42 @@ public class Anexo4 extends Anexo {
 
     // BOOLEANS
     // --- Sección 4. ZONAS GEOGRÁFICAS de UAS ---
-
-    private Boolean espacioAereoControlado;
-    private Boolean estudioAeronauticoCoordinado;
-    private Boolean entornoAerodromos;
-    private Boolean distanciaMinimaInfraestructuras;
-    private Boolean zonasProhibidasFlexible;
-    private Boolean cumpleCondiciones;
-    private Boolean zonasSeguridad;
-    private Boolean permisoPrevioSeguridad;
-    private Boolean serviciosEsencialesComunidad;
-    private Boolean permisoPrevioServicios;
-    private Boolean entornosUrbanos;
-    private Boolean cumplenDistanciasEdificios;
-    private Boolean comunicacionMinisterioInterior;
-    private Boolean zonaResVueloFotografico;
-    private Boolean permisoCecaf;
-    private Boolean zonasProtMedioambiental;
-    private Boolean disponeCoordGestor;
+    private Boolean espacioAereoControlado; // 4.1
+    private Boolean estudioAeronauticoCoordinado; // 4.1.1
+    private Boolean entornoAerodromos; // 4.2
+    private Boolean distanciaMinimaInfraestructuras; // 4.2.1
+    private Boolean zonasProhibidasFlexible; // 4.3
+    private Boolean cumpleCondiciones; // 4.3.1
+    private Boolean zonasSeguridad; // 4.4
+    private Boolean permisoPrevioSeguridad; // 4.4.1
+    private Boolean serviciosEsencialesComunidad; // 4.5
+    private Boolean permisoPrevioServicios; // 4.5.1
+    private Boolean entornosUrbanos; // 4.6
+    private Boolean cumplenDistanciasEdificios; // 4.6.1
+    private Boolean comunicacionMinisterioInterior; // 4.62
+    private Boolean zonaResVueloFotografico; // 4.7
+    private Boolean permisoCecaf; // 4.7.1
+    private Boolean zonasProtMedioambiental; // 4.8
+    private Boolean disponeCoordGestor; // 4.8.1
 
     // --- Seccion 6. Requisitos y limitaciones en zona de vuelo
-    private Boolean conopsYModeloSemantico;
-    private Boolean aplicaModelo;
-    private Boolean defineGeografiaVueloConops;
-    private Boolean defineVolContigencia;
-    private Boolean defineMargenRiesgoTierra;
-    private Boolean defineZonaTerrestreControlada;
+    private Boolean conopsYModeloSemantico; // 6.1
+    private Boolean aplicaModelo; // 6.1.1
+    private Boolean defineGeografiaVueloConops; // 6.1.2
+    private Boolean defineVolContigencia; // 6.1.3
+    private Boolean defineMargenRiesgoTierra; // 6.1.4
+    private Boolean defineZonaTerrestreControlada; // 6.1.5
+    private Boolean planificaUbicacionObservadores; // 6.1.6
+    private Boolean calculaAreaYEvaluaRiesgo; // 6.1.7
+    private Boolean notams; // 6.2
+    private Boolean revisaNotams; // 6.2.1
+    private Boolean tsaOCondicionada; // 6.2.2
+    private Boolean otrasLimitaciones; // 6.3
 
+    @ElementCollection
+    @CollectionTable(name = "otras_limitaciones",
+            joinColumns = @JoinColumn(name="campos"))
+    private List<CampoDinamico> campos = new ArrayList<>();
 
 
     // Así le decimos automáticamente de que se trata del Anexo4 al anexo base
@@ -81,6 +92,12 @@ public class Anexo4 extends Anexo {
         super();
         this.setTipoAnexo(4);
         this.setEstado(AnexoStatus.BORRADOR);
+    }
+
+    @Embeddable
+    public static class CampoDinamico() {
+        private String texto;
+        private Boolean valor;
     }
 
 
