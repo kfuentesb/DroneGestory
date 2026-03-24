@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 import YoutubeIcon from "../../assets/footer/youtube_video_white.svg";
+import LogoDroneToolsIcon from "../../assets/logo_DRONE.svg";
 
 export default function Footer() {
     return (
@@ -8,8 +9,16 @@ export default function Footer() {
             <div className="container">
                 <div className="row text-center text-md-start">
 
-                    <div className="col-md-4 mb-3">
-                        <h5>DRONE GESTOR</h5>
+                    <div className="col-md-4 mb-3 d-flex flex-column align-items-center align-items-md-start">
+                        <img 
+                            src={LogoDroneToolsIcon} 
+                            alt="DroneTools Logo" 
+                            style={{ 
+                                height: "80px",
+                                width: "auto",
+                                display: "block" 
+                            }} 
+                        />
                         <p className="small">
                             Gestor de pilotos, aeronaves y operaciones de vuelo.
                         </p>
@@ -18,9 +27,9 @@ export default function Footer() {
                     <div className="col-md-4 mb-3">
                         <ul className="list-unstyled">
                             <li>
-                                {/* <Link to="/contacto" className="text-decoration-none text-light">
+                                <Link to="#" className="text-decoration-none text-light">
                                     Contáctanos
-                                </Link> */}
+                                </Link>
                             </li>
                             <li>
                                 <a href="https://dronetools.es/" target="_blank" rel="noreferrer" className="text-decoration-none text-light">

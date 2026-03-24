@@ -70,10 +70,6 @@ function Navbar() {
                   }}
                   type="button"
                 >
-                  {/* <img src={LoginIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
-                  <span className="d-none d-sm-block">
-                      Acceder
-                  </span> */}
                   <img src={LoginIcon} alt="Edit" className="edit-icon" />
                 </button>
               </NavLink>
@@ -89,10 +85,6 @@ function Navbar() {
                 type="button"
                 onClick={handleLogout}
               >
-                {/* <img src={LogoutIcon} alt="Edit" className="edit-icon d-inline d-sm-none" />
-                  <span className="d-none d-sm-block">
-                      Cerrar Sesión
-                  </span> */}
                   <img src={LogoutIcon} alt="Edit" className="edit-icon" />
               </button>
             )}
