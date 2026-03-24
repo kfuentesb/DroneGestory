@@ -1,11 +1,17 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.OperationDTO;
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.User;
+import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.service.OperationService;
+import com.dronetools.dronegestory.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth/operations")
@@ -13,6 +19,7 @@ import java.util.List;
 public class OperationController {
 
     private final OperationService operationService;
+    private final UserService userService;
 
     // Obtener todas las operaciones
     @GetMapping
@@ -21,9 +28,18 @@ public class OperationController {
     }
 
     // Crear una nueva operación
+//    @PostMapping
+//    public Operation create(@ModelAttribute Operation op) {
+//        return operationService.saveOperation(op);
+//    }
+
     @PostMapping
-    public Operation create(@ModelAttribute Operation op) {
-        return operationService.saveOperation(op);
+    public OperationDTO create(@ModelAttribute Operation op, Principal principal) {
+        User user = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        op.setCreador(user);
+        Operation savedOp = operationService.saveOperation(op);
+        return new OperationDTO(savedOp);
     }
 
     // Actualizar una operación existente

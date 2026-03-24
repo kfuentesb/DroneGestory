@@ -25,6 +25,11 @@ public class UserService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
+    // Simplificar codigo
+//    public User getByUsername(String username) {
+//        return userRepository.findByUsername(username)
+//                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+//    }
 
     // Obtener todos los usuarios
     public List<User> findAll() {

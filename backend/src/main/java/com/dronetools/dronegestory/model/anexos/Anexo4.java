@@ -19,9 +19,6 @@ import java.util.List;
 public class Anexo4 extends Anexo {
 
     // FORMULARIO
-    @Column(name = "codigo")
-    private String codigo;
-
     @Column(name = "descripcion")
     private String descripcion;
 
@@ -84,7 +81,7 @@ public class Anexo4 extends Anexo {
 
     // Clase campoDinamico en package commons
     @ElementCollection
-    @CollectionTable(name = "anexo4_otros_limites",
+    @CollectionTable(name = "anexo4_campo_dinamico",
             joinColumns = @JoinColumn(name="anexo4_id"))
     private List<CampoDinamico> campos = new ArrayList<>();
 
