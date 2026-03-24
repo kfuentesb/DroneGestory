@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.model.anexos;
 
+import com.dronetools.dronegestory.common.CampoDinamico;
 import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import jakarta.persistence.*;
@@ -81,12 +82,11 @@ public class Anexo4 extends Anexo {
     private Boolean tsaOCondicionada; // 6.2.2
     private Boolean otrasLimitaciones; // 6.3
 
-    // Clase campo dinámico abajo
+    // Clase campoDinamico en package commons
     @ElementCollection
     @CollectionTable(name = "anexo4_otros_limites",
             joinColumns = @JoinColumn(name="anexo4_id"))
     private List<CampoDinamico> campos = new ArrayList<>();
-
 
     // Así le decimos automáticamente de que se trata del Anexo4 al anexo base
     public Anexo4() {
@@ -95,17 +95,4 @@ public class Anexo4 extends Anexo {
         this.setEstado(AnexoStatus.BORRADOR);
     }
 
-    // CLASE EMBEBIDA para usar en "otrosLimites"
-    @Embeddable
-    public static class CampoDinamico {
-        private String descripcion;
-        private Boolean valor;
-
-        public CampoDinamico(String descripcion, Boolean valor) {
-            this.descripcion = descripcion;
-            this.valor = valor;
-        }
-
-        public CampoDinamico() {}
-    }
 }

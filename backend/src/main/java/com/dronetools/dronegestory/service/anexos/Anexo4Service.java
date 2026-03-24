@@ -30,11 +30,15 @@ public class Anexo4Service {
         // 3. Lógica de Versiones
         if (actual != null && actual.getEstado() == AnexoStatus.BORRADOR) {
             // Caso A: Existe un borrador -> ACTUALIZAMOS la versión actual
+            actual.setCodigo(datosNuevos.getCodigo());
+            actual.setDescripcion(datosNuevos.getDescripcion());
             actual.setFechaHoraPrevista(datosNuevos.getFechaHoraPrevista());
             actual.setMediosMateriales(datosNuevos.getMediosMateriales());
             actual.setDireccion(datosNuevos.getDireccion());
             actual.setCoords(datosNuevos.getCoords());
             actual.setImagenEspacioAereo(datosNuevos.getImagenEspacioAereo());
+            actual.setImagenZonaVuelo(datosNuevos.getImagenZonaVuelo());
+            actual.setEspacioAereoControlado(datosNuevos.getEspacioAereoControlado());
             
             return anexo4Repository.save(actual);
         } else {
