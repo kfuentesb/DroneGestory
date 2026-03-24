@@ -91,3 +91,4 @@ FUNCIONAL<br>
 -Añadir ver operación en detalle<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Añadir paginación a las vistas con tablas.<br>
+-Añadir campo a usuaro estado: activo/inactivo<br>

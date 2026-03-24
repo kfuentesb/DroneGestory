@@ -95,6 +95,8 @@ public class UserService {
                     existingUser.setType(updatedUser.getType());
                     existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
                     existingUser.setImagePath(updatedUser.getImagePath());
+                    existingUser.setDocIdentidad(updatedUser.getDocIdentidad());
+                    existingUser.setFechaNac(updatedUser.getFechaNac());
                     return userRepository.save(existingUser);
                 });
     }
@@ -121,7 +123,18 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
 
-        // 2. Gestión de Imagen (Borrar o Reemplazar)
+        if (updatedUser.getDocIdentidad() != null) user.setDocIdentidad(updatedUser.getDocIdentidad());
+        if (updatedUser.getFechaNac() != null) {
+            if (updatedUser.getFechaNac().isAfter(java.time.LocalDate.now())) {
+                throw new IllegalArgumentException("La fecha de nacimiento no puede ser en el futuro");
+            }
+            user.setFechaNac(updatedUser.getFechaNac());
+        }
+        if (updatedUser != null) {
+            user.setState(updatedUser.isState());
+        }
+
+
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
         String oldImage = user.getImagePath();
 

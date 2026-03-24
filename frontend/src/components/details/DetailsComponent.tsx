@@ -180,6 +180,10 @@ export default function DetailsComponent({
             }
 
             const updated = await res.json();
+
+            if (updated.fechaNac) {
+                updated.fechaNac = updated.fechaNac.split('T')[0];
+            }
             
             // Actualizar estados
             setData(updated);
@@ -211,6 +215,11 @@ export default function DetailsComponent({
         PILOT: { backgroundColor: "#E6F4EC", color: "#1F6B43" },
     };
 
+    const stateColors = {
+        active: { backgroundColor: "#DCFCE7", color: "#166534" },
+        inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
+    };
+
     return (
         <div className="container-fluid py-4">
             <div className="card p-4 shadow-sm">
@@ -239,6 +248,20 @@ export default function DetailsComponent({
                                         }}
                                     >
                                         {data.type}
+                                    </span>
+
+                                    <span
+                                        className="px-2 py-1 fw-bold"
+                                        style={{
+                                            borderRadius: "4px",
+                                            fontSize: "0.9rem",
+                                            textTransform: "uppercase",
+                                            ...(data.state 
+                                                ? stateColors.active 
+                                                : stateColors.inactive),
+                                        }}
+                                    >
+                                        {data.state ? "Activo" : "Inactivo"}
                                     </span>
                                 </div>
                                 <small className="text-muted text-start">@{data.username}</small>

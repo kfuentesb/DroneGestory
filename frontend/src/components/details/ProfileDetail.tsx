@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import { useParams, useNavigate } from "react-router-dom";
 import DetailsComponent from "./DetailsComponent";
 import { apiFetch } from "../../api";
@@ -32,15 +32,22 @@ export default function ProfileDetail() {
     }
 
     useEffect(() => {
-        fetch(`${API_BASE_URL}/api/auth/users/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(res => {
-            setStatus(res.status);
-            return res.json();
-        })
-        .then(data => setMeData(data))
-        .catch(() => setStatus(500));
+        apiFetch(`/api/auth/users/me`) 
+            .then(res => {
+                if (res) {
+                    setStatus(res.status);
+                    return res.json();
+                }
+            })
+            .then(data => {
+                if (data) {
+                    setMeData(data);
+                }
+            })
+            .catch(err => {
+                console.error("Error cargando perfil:", err);
+                setStatus(err.status || 500);
+            });
     }, [token]);
 
     if (status === 403) return <Forbidden />;
@@ -50,8 +57,10 @@ export default function ProfileDetail() {
         <DetailsComponent
             id={meData.id.toString()}
             initialData={meData}
-            endpoint={`${API_BASE_URL}/api/auth/users`}
-            imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
+            // endpoint={`${API_BASE_URL}/api/auth/users`}
+            // imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
+            endpoint={`/api/auth/users`}
+            imageEndpoint={`/api/auth/users/images`}
             fields={userFields}
             allowEdit={true}
             allowDelete={false}

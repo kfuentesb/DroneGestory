@@ -133,7 +133,10 @@ public class UserController {
                 user.getUsername(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                user.getImagePath()
+                user.getImagePath(),
+                user.getDocIdentidad(),
+                user.getFechaNac(),
+                user.isState()
         );
     }
 }
