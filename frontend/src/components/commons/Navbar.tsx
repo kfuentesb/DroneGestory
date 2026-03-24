@@ -1,12 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 
-import LoginIcon from "../../assets/login_white.svg";
-import LogoutIcon from "../../assets/logout_white.svg";
+import LoginIcon from "../../assets/navbar/login_white.svg";
+import LogoutIcon from "../../assets/navbar/logout_white.svg";
+import SettingsIcon from "../../assets/navbar/settings_white.svg";
+import IdentityIcon from "../../assets/navbar/identity_white.svg";
 
 function Navbar() {
   const navigate = useNavigate();
-  const { logout, username } = useAuth();
+  const { logout, username, role } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -15,79 +17,50 @@ function Navbar() {
 
   return (
     <header>
-      <nav
-        className="navbar navbar-expand-lg w-100 shadow-sm"
-        style={{ backgroundColor: "#36a269" }}
-      >
+      <nav className="navbar navbar-expand-lg w-100 shadow-sm" style={{ backgroundColor: "#36a269" }}>
         <div className="container-fluid">
-          <NavLink
-            className="navbar-brand fw-bold"
-            to="/home"
-            style={{ color: "white" }}
-          >
+          <NavLink className="navbar-brand fw-bold text-white" to="/home">
             Drone Gestor
           </NavLink>
 
           <button
-            className="navbar-toggler"
+            className="navbar-toggler border-white"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
           >
-            <span className="navbar-toggler-icon" />
+            <span className="navbar-toggler-icon" style={{ filter: "invert(1)" }} />
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
-            {username ? (
-              <ul className="navbar-nav me-auto">
-                <li className="nav-item">
-                  <NavLink className="nav-link text-white" to="/auth/users">
-                    Usuarios
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link text-white" to="/auth/aircrafts">
-                    Aeronaves
-                  </NavLink>
-                </li>
-              </ul>
-            ) : (
-              <ul className="navbar-nav me-auto"></ul>
-            )}
+            {/* CONTENEDOR DE BOTONES */}
+            <div className="ms-auto d-flex justify-content-center justify-content-lg-end w-100 w-lg-auto">
+              {!username ? (
+                <NavLink to="/auth/login" className="btn" style={{ backgroundColor: "#1F6B43" }}>
+                  <img src={LoginIcon} alt="Login" />
+                </NavLink>
+              ) : (
+                <div className="d-flex gap-3 py-3 py-lg-0">
+                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                    style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
+                    onClick={() => navigate("/profile/me")}>
+                    <img src={IdentityIcon} alt="Profile" style={{ width: "20px" }} />
+                  </button>
 
-            {!username ? (
-              <NavLink className="nav-link" to="/auth/login">
-                <button
-                  className="btn px-4"
-                  style={{
-                    backgroundColor: "#1F6B43",
-                    color: "white",
-                    borderRadius: "6px",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
-                  }}
-                  type="button"
-                >
-                  <img src={LoginIcon} alt="Edit" className="edit-icon" />
-                </button>
-              </NavLink>
-            ) : (
-              <button
-                className="btn px-4"
-                style={{
-                  backgroundColor: "#F44C4C", // red logout button
-                  color: "white",
-                  borderRadius: "6px",
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
-                }}
-                type="button"
-                onClick={handleLogout}
-              >
-                  <img src={LogoutIcon} alt="Edit" className="edit-icon" />
-              </button>
-            )}
+                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                    style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
+                    onClick={() => navigate("/settings")}>
+                    <img src={SettingsIcon} alt="Settings" style={{ width: "20px" }} />
+                  </button>
+
+                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                    style={{ backgroundColor: "#F44C4C", width: "45px", height: "45px", borderRadius: "8px" }}
+                    onClick={handleLogout}>
+                    <img src={LogoutIcon} alt="Logout" style={{ width: "20px" }} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>

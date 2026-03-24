@@ -10,7 +10,6 @@ import ArrowForward from '../../assets/arrow_forward_white.svg';
 import UsersIcon from '../../assets/sidebar/group_white.svg';
 import DroneIcon from '../../assets/sidebar/drone_white.svg';
 import FlyIcon from '../../assets/sidebar/fly_drone_white.svg';
-import IdentityIcon from '../../assets/sidebar/identity_white.svg';
 
 export default function SidebarMenu() {
     const navigate = useNavigate();
@@ -98,13 +97,6 @@ export default function SidebarMenu() {
                     style={{ fontWeight: "bold", textAlign: "center" }}
                 >
                     {collapsed ? "" : "Menú"}
-                </MenuItem>
-
-                <MenuItem 
-                    onClick={goToProfile}
-                    icon={<img src={IdentityIcon} alt="Profile" style={{ width: "18px", height: "18px" }} />}
-                >
-                    Ver perfil
                 </MenuItem>
 
                 {canManage && (
