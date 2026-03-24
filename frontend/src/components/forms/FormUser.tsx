@@ -114,7 +114,7 @@ function FormUser() {
                 email: !formValues.email.trim(),
                 telefono: telefonoInvalid,
                 docIdentidad: !formValues.docIdentidad.trim(),
-                fechaNac: !formValues.fechaNac.trim(),
+                fechaNac: false,
                 password: !formValues.password.trim(),
                 confirmPassword: !formValues.confirmPassword.trim()
             };

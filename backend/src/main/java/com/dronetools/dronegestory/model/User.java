@@ -35,8 +35,9 @@ public class User implements UserDetails{
     @Enumerated(EnumType.STRING)
     private UserType type;
 
+    // por defecto está activo el estado, tampoco se pide como campo en el registro
     @Column(name = "state", nullable = false)
-    private boolean state;
+    private boolean state = true;
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
