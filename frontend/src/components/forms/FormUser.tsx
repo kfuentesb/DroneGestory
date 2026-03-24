@@ -35,6 +35,8 @@ function FormUser() {
         username: "",
         email: "",
         telefono: "",
+        docIdentidad: "",
+        fechaNac: "",
         password: "",
         confirmPassword: ""
     });
@@ -45,6 +47,8 @@ function FormUser() {
         username: false,
         email: false,
         telefono: false,
+        docIdentidad: false,
+        fechaNac: false,
         password: false,
         confirmPassword: false
     });
@@ -109,6 +113,8 @@ function FormUser() {
                 username: !formValues.username.trim(),
                 email: !formValues.email.trim(),
                 telefono: telefonoInvalid,
+                docIdentidad: !formValues.docIdentidad.trim(),
+                fechaNac: !formValues.fechaNac.trim(),
                 password: !formValues.password.trim(),
                 confirmPassword: !formValues.confirmPassword.trim()
             };
@@ -147,6 +153,8 @@ function FormUser() {
             if (selectedFile) {
                 formData.append("imageFile", selectedFile, selectedFile.name);
             }
+            formData.append("docIdentidad", formValues.docIdentidad);
+            formData.append("fechaNac", formValues.fechaNac);
 
             // Testing consultar token
             // const token = localStorage.getItem('jwt');
@@ -258,7 +266,38 @@ function FormUser() {
                     </div>
                     </div>
 
-                    {/* Row 3: Tipo de usuario, Imagen */}
+                    {/* Row 3: Doc Identidad y Fecha Nacimiento */}
+                    <div className="row mb-3">
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Documento Identidad (DNI/NIF/Pasaporte)</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Ej: 12345678X"
+                                value={formValues.docIdentidad}
+                                onChange={(e) => setFormValues({ ...formValues, docIdentidad: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.docIdentidad ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
+
+                        <div className="col-12 col-md">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                                Fecha de Nacimiento{" "}
+                                <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                    (Opcional)
+                                </span>
+                            </label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={formValues.fechaNac}
+                                onChange={(e) => setFormValues({ ...formValues, fechaNac: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.fechaNac ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Row 4: Tipo de usuario, Imagen */}
                     <div className="row mb-3">
                         <div className="col-12 col-md mb-3 mb-md-0">
                             <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
@@ -317,7 +356,7 @@ function FormUser() {
                         </div>
                     </div>
 
-                    {/* Row 4: Contraseña */}
+                    {/* Row 5: Contraseña */}
                     <div className="row mb-3">
                     <div className="col-12 col-md mb-3 mb-md-0">
                         <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
