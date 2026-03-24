@@ -36,4 +36,7 @@ public class Anexo4 extends Anexo {
         this.setTipoAnexo(4);
         this.setEstado(AnexoStatus.BORRADOR);
     }
+
+    // INFORMACION SOBRE LAS OPERACIONES
+
 }
