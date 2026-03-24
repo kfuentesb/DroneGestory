@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
+// Assets - Ensure these paths match your project structure
 import HomeIcon from '../../assets/sidebar/home_white.svg';
 import ArrowBack from '../../assets/arrow_back_white.svg';
 import ArrowForward from '../../assets/arrow_forward_white.svg';
@@ -11,68 +11,47 @@ import UsersIcon from '../../assets/sidebar/group_white.svg';
 import DroneIcon from '../../assets/sidebar/drone_white.svg';
 import FlyIcon from '../../assets/sidebar/fly_drone_white.svg';
 
-export default function SidebarMenu() {
+interface SidebarMenuProps {
+    toggled: boolean;
+    setToggled: (value: boolean) => void;
+}
+
+export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
-    const { username, token, role } = useAuth();
+    const { role } = useAuth();
     const canManage = role === "ADMIN" || role === "MANAGER";
 
-    const toggleSidebar = () => setCollapsed(!collapsed);
+    const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-    // fix para el bug de primera vez se abre el submenu, se cierra solo, en vez
-    // de dejar la libreria hacerlo, lo controlamos nosotros
-    const [openUsers, setOpenUsers] = useState(false);
-    const [openAircraft, setOpenAircraft] = useState(false);
-    const [openOps, setOpenOps] = useState(false);
-
-    const [openMenu, setOpenMenu] = useState(null); 
-
-    const handleToggle = (menuName: any) => {
+    const handleToggle = (menuName: string) => {
         setOpenMenu(openMenu === menuName ? null : menuName);
-    };
-
-    const goToProfile = async () => {
-
-        if (!username) return;
-
-        const res = await fetch(
-            `${API_BASE_URL}/api/auth/users/me?username=${username}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
-
-        if (!res.ok) return;
-
-        const user = await res.json();
-
-        navigate(`/profile/${user.id}`);
     };
 
     return (
         <Sidebar
             collapsed={collapsed}
+            toggled={toggled}
+            onBackdropClick={() => setToggled(false)}
+            breakPoint="md" 
             backgroundColor="#2F8F5B"
             width="250px"
-            collapsedWidth="60px"
+            collapsedWidth="70px"
             transitionDuration={300}
             style={{
                 height: "100vh",
-                position: "sticky",
-                top: 0,
-                zIndex: 1000 
+                borderRight: "none",
+                zIndex: 1000,
             }}
         >
-            <Menu
+                <Menu
                 closeOnClick={false}
                 menuItemStyles={{
                     button: ({ level }) => ({
                         color: "#E5E7EB",
-                        backgroundColor: level === 0 ? "#2F8F5B" : "#37a76b",
+                        backgroundColor: level === 0 ? "#2F8F5B" : "#1F6B43",
                         "&:hover": {
-                            backgroundColor: level === 0 ? "#37a76b" : "#37a76b",
+                            backgroundColor: "#37a76b",
                             color: "#FFFFFF",
                         },
                     }),
@@ -84,21 +63,30 @@ export default function SidebarMenu() {
                     },
                 }}
             >
-                {/* Collapse/Expand button */}
+                {/* 1. Toggle Button: Desktop (Collapse) / Mobile (Hide) */}
                 <MenuItem
-                    onClick={toggleSidebar}
+                    onClick={() => {
+                        if (window.innerWidth < 768) {
+                            setToggled(false);
+                        } else {
+                            setCollapsed(!collapsed);
+                        }
+                    }}
                     icon={
                         <img
                             src={collapsed ? ArrowForward : ArrowBack}
-                            alt="Collapse toggle"
+                            alt="Toggle"
                             style={{ width: "18px", height: "18px" }}
                         />
                     }
-                    style={{ fontWeight: "bold", textAlign: "center" }}
+                    style={{ fontWeight: "bold", textAlign: "center", marginBottom: "10px", marginTop: "10px" }}
                 >
-                    {collapsed ? "" : "Menú"}
+                    {collapsed ? "" : "Cerrar Menú"}
                 </MenuItem>
 
+                <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "0 10px 10px 10px" }} />
+
+                {/* 2. Admin Users Section */}
                 {canManage && (
                     <SubMenu
                         label="Administrar usuarios"
@@ -106,11 +94,12 @@ export default function SidebarMenu() {
                         onOpenChange={() => handleToggle("users")}
                         icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
                     >
-                        <MenuItem onClick={() => navigate("/auth/users")}>Listar usuarios</MenuItem>
-                        <MenuItem onClick={() => navigate("/auth/register-user")}>Registrar usuario</MenuItem>
+                        <MenuItem onClick={() => { navigate("/auth/users"); setToggled(false); }}>Listar usuarios</MenuItem>
+                        <MenuItem onClick={() => { navigate("/auth/register-user"); setToggled(false); }}>Registrar usuario</MenuItem>
                     </SubMenu>
                 )}
 
+                {/* 3. Admin Aircraft Section */}
                 {canManage && (
                     <SubMenu
                         label="Administrar aeronaves"
@@ -118,23 +107,23 @@ export default function SidebarMenu() {
                         onOpenChange={() => handleToggle("aircraft")}
                         icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                     >
-                        <MenuItem onClick={() => navigate("/auth/aircrafts")}>Listar Aeronaves</MenuItem>
-                        <MenuItem onClick={() => navigate("/auth/register-aircraft")}>Registrar Aeronave</MenuItem>
+                        <MenuItem onClick={() => { navigate("/auth/aircrafts"); setToggled(false); }}>Listar Aeronaves</MenuItem>
+                        <MenuItem onClick={() => { navigate("/auth/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
                     </SubMenu>
                 )}
 
+                {/* 4. Operations Section */}
                 <SubMenu
                     label="Operaciones"
                     open={openMenu === "operations"}
-                    onClick={() => setOpenOps(!openOps)}
                     onOpenChange={() => handleToggle("operations")}
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
                     {canManage && (
-                        <MenuItem onClick={() => navigate("/auth/operations")}>Listar operaciones (admin)</MenuItem>
+                        <MenuItem onClick={() => { navigate("/auth/operations"); setToggled(false); }}>Listar operaciones (admin)</MenuItem>
                     )}
-                    <MenuItem onClick={() => navigate("/#")}>Listar mis operaciones</MenuItem>
-                    <MenuItem onClick={() => navigate("/auth/register-operation")}>Registrar operacion</MenuItem>
+                    <MenuItem onClick={() => { navigate("/#"); setToggled(false); }}>Listar mis operaciones</MenuItem>
+                    <MenuItem onClick={() => { navigate("/auth/register-operation"); setToggled(false); }}>Registrar operacion</MenuItem>
                 </SubMenu>
             </Menu>
         </Sidebar>
