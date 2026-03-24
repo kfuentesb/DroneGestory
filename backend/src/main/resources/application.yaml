@@ -25,7 +25,8 @@ spring:
     location: banner.txt
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${SERVER_IP}:5432/aeronaves_db}
+    # url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${SERVER_IP}:5432/aeronaves_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${SERVER_IP:localhost}:5432/aeronaves_db}
     username: ${SPRING_DATASOURCE_USERNAME:admin}
     password: ${SPRING_DATASOURCE_PASSWORD:admin123}
     driver-class-name: org.postgresql.Driver
