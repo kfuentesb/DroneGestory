@@ -53,7 +53,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                 menuItemStyles={{
                     button: ({ level }) => ({
                         color: "#E5E7EB",
-                        backgroundColor: level === 0 ? "#2F8F5B" : "#1F6B43",
+                        backgroundColor: level === 0 ? "#2F8F5B" : "#257a4d",
                         "&:hover": {
                             backgroundColor: "#37a76b",
                             color: "#FFFFFF",
