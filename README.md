@@ -36,6 +36,7 @@ cd backend
 docker compose up -d
 -(esto crea las tablas automáticamente)
 mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 -(Abre nuevocmd, inserta lo de init.sql en el terminal)
 docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 ```
