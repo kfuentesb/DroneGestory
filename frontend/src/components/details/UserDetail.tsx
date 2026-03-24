@@ -3,7 +3,7 @@ import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
 import { userFields } from "./UserFields"
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 
 // esta es la vista que ve un admin cuando selecciona un usario de la lista de usuarios
@@ -13,7 +13,11 @@ export default function UserDetail() {
     const navigate = useNavigate()
 
     const handleDelete = async () => {
-        await apiFetch(`${API_BASE_URL}/api/auth/users/${id}`, {
+        // await apiFetch(`${API_BASE_URL}/api/auth/users/${id}`, {
+        //     method: "DELETE"
+        // })
+
+        await apiFetch(`/api/auth/users/${id}`, {
             method: "DELETE"
         })
 
@@ -39,8 +43,10 @@ export default function UserDetail() {
     return (
         <DetailsComponent
         id={id}
-        endpoint={`${API_BASE_URL}/api/auth/users`}
-        imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
+        // endpoint={`${API_BASE_URL}/api/auth/users`}
+        // imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
+        endpoint={`/api/auth/users`}
+        imageEndpoint={`/api/auth/users/images`}
         fields={userFields}
 
         allowEdit
