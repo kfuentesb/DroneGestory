@@ -48,6 +48,23 @@ export const userFields: FieldConfig[] = [
         }
     },
     {
+        label: "Documento Identidad",
+        key: "docIdentidad",
+        type: "text",
+        validate: (v: string) => {
+            const val = v?.toString().trim() || "";
+            return val.length >= 5 && val.length <= 120;
+        },
+        error: "El documento debe tener entre 5 y 120 caracteres"
+    },
+    {
+        label: "Fecha de Nacimiento",
+        key: "fechaNac",
+        type: "date",
+        validate: () => true,
+        error: ""
+    },
+    {
         label: "Tipo de usuario",
         key: "type",
         type: "select",

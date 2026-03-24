@@ -93,7 +93,6 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             )}
                         </div>
                     ) : field.type === "select" ? (
-                        // ... resto del código del select igual ...
                         <select
                             className="form-select"
                             value={
@@ -109,6 +108,16 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 <option key={opt} value={opt}>{opt}</option>
                             ))}
                         </select>
+                    ) : field.type === "date" ? (
+                            <input
+                                type="date"
+                                className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
+                                value={values[field.key] ? values[field.key].toString().split(/[T ]/)[0] : ""}
+                                onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    setValues({ ...values, [field.key]: newValue });
+                                }}
+                            />
                     ) : (
                         <input
                             type={field.type || "text"}

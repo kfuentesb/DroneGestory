@@ -123,6 +123,7 @@ public class UserService {
             if (user.getFechaNac().isAfter(java.time.LocalDate.now())) {
                 throw new IllegalArgumentException("La fecha de nacimiento no puede ser en el futuro");
             }
+            user.setFechaNac(updatedUser.getFechaNac());    
         }
 
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();

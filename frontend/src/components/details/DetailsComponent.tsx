@@ -180,6 +180,10 @@ export default function DetailsComponent({
             }
 
             const updated = await res.json();
+
+            if (updated.fechaNac) {
+                updated.fechaNac = updated.fechaNac.split('T')[0];
+            }
             
             // Actualizar estados
             setData(updated);
