@@ -96,13 +96,18 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                         <select
                             className="form-select"
                             value={
-                                typeof values[field.key] === "boolean"
-                                    ? mapBooleanToOption(field.options, values[field.key])
-                                    : values[field.key] || ""
+                                field.key === "state" 
+                                    ? (values[field.key] ? "Activo" : "Inactivo")
+                                    : (typeof values[field.key] === "boolean"
+                                        ? mapBooleanToOption(field.options, values[field.key])
+                                        : values[field.key] || "")
                             }
-                            onChange={(e) =>
-                                setValues({ ...values, [field.key]: e.target.value })
-                            }
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                const finalValue = field.key === "state" ? (val === "Activo") : val;
+                                
+                                setValues({ ...values, [field.key]: finalValue });
+                            }}
                         >
                             {field.options?.map((opt) => (
                                 <option key={opt} value={opt}>{opt}</option>

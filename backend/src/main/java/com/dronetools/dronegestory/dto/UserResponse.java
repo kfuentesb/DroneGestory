@@ -14,6 +14,7 @@ public record UserResponse(
         Integer phoneNumber,
         String imagePath,
         String docIdentidad,
-        LocalDate fechaNac 
+        LocalDate fechaNac,
+        Boolean state
 ) {
 }

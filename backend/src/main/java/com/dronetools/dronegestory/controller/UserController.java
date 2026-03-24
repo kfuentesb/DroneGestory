@@ -135,7 +135,8 @@ public class UserController {
                 user.getPhoneNumber(),
                 user.getImagePath(),
                 user.getDocIdentidad(),
-                user.getFechaNac()
+                user.getFechaNac(),
+                user.isState()
         );
     }
 }

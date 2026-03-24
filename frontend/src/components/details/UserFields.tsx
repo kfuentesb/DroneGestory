@@ -71,6 +71,13 @@ export const userFields: FieldConfig[] = [
         options: ["ADMIN", "MANAGER", "PILOT"]
     },
     {
+        label: "Estado",
+        key: "state",
+        type: "select",
+        options: ["Activo", "Inactivo"],
+        format: (v: any) => (v === true || v === "true" || v === "Activo" ? "Activo" : "Inactivo")
+    },
+    {
     label: "Imagen de perfil",
     key: "imageFile",
     type: "file",
