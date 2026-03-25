@@ -23,8 +23,11 @@ public class OperationController {
 
     // Obtener todas las operaciones
     @GetMapping
-    public List<Operation> getAll() {
-        return operationService.getAllOperations();
+    public List<OperationDTO> getAll() {
+        return operationService.getAllOperations()
+                .stream()
+                .map(OperationDTO::new)
+                .toList();
     }
 
     // Crear una nueva operación
