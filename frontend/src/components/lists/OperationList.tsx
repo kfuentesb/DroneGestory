@@ -12,6 +12,15 @@ import DronePlusIcon from "../../assets/drone_plus_white.svg";
 type Operation = {
   idOperacion: number;
   nombreOperacion: string;
+  nombreCreador: string;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  estado: string;
+  a4: boolean;
+  a5: boolean;
+  a6: boolean;
+  a7: boolean;
+  a8: boolean;
 };
 
 export default function OperationList() {
@@ -19,6 +28,10 @@ export default function OperationList() {
   const [search, setSearch] = useState("");
   const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
   const navigate = useNavigate();
+
+  // Formatear fecha
+  const formatDate = (iso: string) =>
+    iso ? new Date(iso).toLocaleString() : ""
 
   useEffect(() => {
     const loadOperations = async () => {
@@ -73,12 +86,21 @@ export default function OperationList() {
           </div>
 
           <ReusableTable
-            headers={["Id", "Nombre operación"]}
+            headers={["Nombre", "Creador", "F. Creación", "Última Actualización",
+              "A4", "A5", "A6", "A7", "A8" ,"Estado"]}
             rows={filteredOperations}
             renderRow={(o) => (
               <>
-                <td>{o.idOperacion}</td>
                 <td>{o.nombreOperacion}</td>
+                <td>{o.nombreCreador}</td>
+                <td>{formatDate(o.fechaCreacion)}</td>
+                <td>{formatDate(o.fechaActualizacion)}</td>
+                <td>{o.a4}</td>
+                <td>{o.a5}</td>
+                <td>{o.a6}</td>
+                <td>{o.a7}</td>
+                <td>{o.a8}</td>
+                <td>{o.estado}</td>
               </>
             )}
             onRowClick={(o) => navigate(`/auth/operations/${o.idOperacion}`)}
