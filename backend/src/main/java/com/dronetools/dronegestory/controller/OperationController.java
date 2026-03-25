@@ -6,12 +6,14 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.service.OperationService;
 import com.dronetools.dronegestory.service.UserService;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth/operations")
@@ -23,11 +25,22 @@ public class OperationController {
 
     // Obtener todas las operaciones
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public List<OperationDTO> getAll() {
         return operationService.getAllOperations()
                 .stream()
                 .map(OperationDTO::new)
                 .toList();
+    }
+
+    @GetMapping("/details/mine")
+    @PreAuthorize("isAuthenticated()")
+    public List<OperationDTO> getMyOperations(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        List<Operation> ops = operationService.findOperationsByUserId(user.getId());
+        return ops.stream().map(OperationDTO::new).toList();
     }
 
     // Crear una nueva operación
@@ -62,4 +75,5 @@ public class OperationController {
     public void delete(@PathVariable Long operationId) {
         operationService.deleteOperation(operationId);
     }
+
 }

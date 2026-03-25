@@ -16,6 +16,7 @@ import ProfileDetail from "../components/details/ProfileDetail";
 import AircraftDetail from "../components/details/AircraftDetail";
 import OperationList from "../components/lists/OperationList";
 import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
+import MyOperationList from "../components/lists/MyOperationList";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -56,8 +57,10 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Operations */}
         <Route path="/auth/operations" element={<OperationList />} />
+        <Route path="/auth/operations/details/mine" element={<MyOperationList />} />
         <Route path="/auth/operations/:id" element={<OperationList />} />
         <Route path="/auth/register-operation" element={<MultiStepsForm />} />
+        
 
         {/* Error */}
         <Route path="/403" element={<Forbidden />} />

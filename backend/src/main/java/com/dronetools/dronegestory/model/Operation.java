@@ -17,11 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-//@Table(name = "operation" , indexes = {
-//        @Index(name = "idx_operations_user_id", columnList = "user_id"),
-//        @Index(name = "idx_operations_fecha_creacion", columnList = "fecha_creacion DESC"),
-//        @Index(name = "idx_operations_estado", columnList = "estado")
-//}) INCLUYE INDEXs para facilitar las búsquedas
 @Table(name = "operation")
 @Getter
 @Setter
@@ -117,6 +112,7 @@ public class Operation {
         return a4 != null && a4.getEstado() == AnexoStatus.FIRMADO &&
                 a5 != null && a5.getEstado() == AnexoStatus.FIRMADO &&
                 a6 != null && a6.getEstado() == AnexoStatus.FIRMADO &&
-                a7 != null && a7.getEstado() == AnexoStatus.FIRMADO;
+                a7 != null && a7.getEstado() == AnexoStatus.FIRMADO &&
+                a8 != null && a8.getEstado() == AnexoStatus.FIRMADO;
     }
 }

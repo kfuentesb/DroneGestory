@@ -15,6 +15,7 @@ public class OperationService {
         this.operationRepository = operationRepository;
     }
 
+    // TODO paginación
     public List<Operation> getAllOperations() {
         return operationRepository.findAll();
     }
@@ -39,6 +40,10 @@ public class OperationService {
 
     public void deleteOperation(Long operationId) {
         operationRepository.deleteById(operationId);
+    }
+
+    public List<Operation> findOperationsByUserId(Integer userId) {
+        return operationRepository.findByCreadorId(userId);
     }
 }
 
