@@ -1,11 +1,7 @@
 package com.dronetools.dronegestory.repository.anexos;
 
 import com.dronetools.dronegestory.model.anexos.Anexo6;
-import com.dronetools.dronegestory.model.Operation;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.dronetools.dronegestory.repository.AnexoBaseRepository;
 
-import java.util.Optional;
 
-public interface Anexo6Repository extends JpaRepository<Anexo6, Integer> {
-    Optional<Anexo6> findByOperation(Operation operation);
-}
+public interface Anexo6Repository extends AnexoBaseRepository<Anexo6, Long> {}
