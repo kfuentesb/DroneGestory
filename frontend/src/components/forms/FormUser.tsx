@@ -12,11 +12,16 @@ import infoIcon from '../../assets/commons/info_white.svg';
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({
+        profilePicture: null,
+        fileA1A3: null,
+        fileA2: null,
+        fileSTS: null,
+        fileFTG: null,
+        fileFPG: null
+    });
     const [selectedUserType, setSelectedUserType] = useState<{ value: string; label: string } | null>(null);
     const [showOptional, setShowOptional] = useState(false);
-    const [certFiles, setCertFiles] = useState<Record<string, File | null>>({});
-
     const navigate = useNavigate();
 
     const [isHovered, setIsHovered] = useState(false);
@@ -25,7 +30,8 @@ function FormUser() {
     const handleMouseLeave = () => setIsHovered(false);
 
     // Allowed file types
-    const allowedTypes = ["image/jpeg", "image/png"];
+    const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const allowedCertificateTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
     const type_user: { value: string; label: string }[] = [
         { value: "PILOT", label: "Piloto" },
@@ -49,6 +55,8 @@ function FormUser() {
         dateA1A3: "",
         dateA2: "",
         dateSTS: "",
+        dateFTG: "",
+        dateFPG: ""
     });
 
     const [errors, setErrors] = useState({
@@ -91,11 +99,13 @@ function FormUser() {
         chkA2: false,
         chkSTS01: false,
         chkSTS02: false,
-        chkSora: false,
-        chkLuc: false,
+        chkFormcnTeoricaGen: false,
+        chkFormcnPracticaGen: false,
         indefiniteA1A3: false,
         indefiniteA2: false,
-        indefiniteSTS: false
+        indefiniteSTS: false,
+        indefiniteFTG: false,
+        indefiniteFPG: false
     });
 
     // Función para alternar los checks
@@ -105,34 +115,36 @@ function FormUser() {
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
         const file = event.target.files?.[0];
+        const isProfilePicture = id === "profilePicture";
+        const acceptedTypes = isProfilePicture ? allowedImageTypes : allowedCertificateTypes;
 
         if (!file) {
-            setSelectedFile(null);
+            setSelectedFiles((prev) => ({ ...prev, [id]: null }));
             setError("");
             return;
         }
 
-        if (!allowedTypes.includes(file.type)) {
-            setError("Only JPG and PNG files are allowed.");
-            setSelectedFile(null);
+        if (!acceptedTypes.includes(file.type)) {
+            setError(isProfilePicture ? "Only JPG and PNG files are allowed." : "Only PDF, JPG and PNG files are allowed.");
+            setSelectedFiles((prev) => ({ ...prev, [id]: null }));
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
             setError("File size must be less than 5MB.");
-            setSelectedFile(null);
+            setSelectedFiles((prev) => ({ ...prev, [id]: null }));
             return;
         }
 
         console.log(`Uploaded file for: ${id}`);
-        setSelectedFile(file);
+        setSelectedFiles((prev) => ({ ...prev, [id]: file }));
         setError("");
     };
 
-    const handleClearFile = () => {
-        setSelectedFile(null);
+    const handleClearFile = (id: string, inputId: string) => {
+        setSelectedFiles((prev) => ({ ...prev, [id]: null }));
         // Esto resetea el input para permitir volver a elegir el mismo archivo
-        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
     };
 
@@ -188,8 +200,8 @@ function FormUser() {
             if (telefonoValue !== "") {
                 formData.append("phoneNumber", telefonoValue);
             }
-            if (selectedFile) {
-                formData.append("imageFile", selectedFile, selectedFile.name);
+            if (selectedFiles.profilePicture) {
+                formData.append("imageFile", selectedFiles.profilePicture, selectedFiles.profilePicture.name);
             }
             formData.append("docIdentidad", formValues.docIdentidad);
             formData.append("fechaNac", formValues.fechaNac);
@@ -358,7 +370,7 @@ function FormUser() {
                             
                             <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
                                 <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                                    {selectedFile ? selectedFile.name : "No hay archivo"}
+                                    {selectedFiles.profilePicture ? selectedFiles.profilePicture.name : "No hay archivo"}
                                 </span>
 
                                 <input
@@ -373,16 +385,16 @@ function FormUser() {
                                     <label
                                         htmlFor="file-upload"
                                         className="btn btn-success"
-                                        style={{ cursor: "pointer", borderTopRightRadius: selectedFile ? "0" : "4px", borderBottomRightRadius: selectedFile ? "0" : "4px" }}
+                                        style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.profilePicture ? "0" : "4px", borderBottomRightRadius: selectedFiles.profilePicture ? "0" : "4px" }}
                                     >
                                         Seleccionar archivo
                                     </label>
 
-                                    {selectedFile && (
+                                    {selectedFiles.profilePicture && (
                                         <button
                                             type="button"
                                             className="btn btn-danger"
-                                            onClick={handleClearFile}
+                                            onClick={() => handleClearFile('profilePicture', 'file-upload')}
                                             style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
                                             title="Eliminar archivo seleccionado"
                                         >
@@ -489,12 +501,38 @@ function FormUser() {
                                                     <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
                                                         Certificado PDF
                                                     </small>
-                                                    <input 
-                                                        type="file" 
-                                                        className="form-control form-control-sm"
-                                                        onChange={(e) => handleFileChange(e, 'fileA1A3')}
-                                                        accept=".pdf,.jpg,.png"
-                                                    />
+                                                    <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                                            {selectedFiles.fileA1A3 ? selectedFiles.fileA1A3.name : "No hay archivo"}
+                                                        </span>
+                                                        <input
+                                                            id="file-upload-a1a3"
+                                                            type="file"
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            onChange={(e) => handleFileChange(e, 'fileA1A3')}
+                                                            style={{ display: "none" }}
+                                                        />
+                                                        <div className="ms-auto d-flex">
+                                                            <label
+                                                                htmlFor="file-upload-a1a3"
+                                                                className="btn btn-success btn-sm"
+                                                                style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.fileA1A3 ? "0" : "4px", borderBottomRightRadius: selectedFiles.fileA1A3 ? "0" : "4px" }}
+                                                            >
+                                                                Seleccionar archivo
+                                                            </label>
+                                                            {selectedFiles.fileA1A3 && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-danger btn-sm"
+                                                                    onClick={() => handleClearFile('fileA1A3', 'file-upload-a1a3')}
+                                                                    style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                                                    title="Eliminar archivo seleccionado"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div className="col-12 col-md-4">
                                                     <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
@@ -553,12 +591,38 @@ function FormUser() {
                                                     <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
                                                         Certificado PDF
                                                     </small>
-                                                    <input 
-                                                        type="file" 
-                                                        className="form-control form-control-sm"
-                                                        onChange={(e) => handleFileChange(e, 'fileA2')}
-                                                        accept=".pdf,.jpg,.png"
-                                                    />
+                                                    <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                                            {selectedFiles.fileA2 ? selectedFiles.fileA2.name : "No hay archivo"}
+                                                        </span>
+                                                        <input
+                                                            id="file-upload-a2"
+                                                            type="file"
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            onChange={(e) => handleFileChange(e, 'fileA2')}
+                                                            style={{ display: "none" }}
+                                                        />
+                                                        <div className="ms-auto d-flex">
+                                                            <label
+                                                                htmlFor="file-upload-a2"
+                                                                className="btn btn-success btn-sm"
+                                                                style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.fileA2 ? "0" : "4px", borderBottomRightRadius: selectedFiles.fileA2 ? "0" : "4px" }}
+                                                            >
+                                                                Seleccionar archivo
+                                                            </label>
+                                                            {selectedFiles.fileA2 && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-danger btn-sm"
+                                                                    onClick={() => handleClearFile('fileA2', 'file-upload-a2')}
+                                                                    style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                                                    title="Eliminar archivo seleccionado"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div className="col-12 col-md-4">
                                                     <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
@@ -640,12 +704,38 @@ function FormUser() {
                                                 <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
                                                     Certificado PDF
                                                 </small>
-                                                <input 
-                                                    type="file" 
-                                                    className="form-control form-control-sm"
-                                                    onChange={(e) => handleFileChange(e, 'fileSTS')}
-                                                    accept=".pdf,.jpg,.png"
-                                                />
+                                                <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                                    <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                                        {selectedFiles.fileSTS ? selectedFiles.fileSTS.name : "No hay archivo"}
+                                                    </span>
+                                                    <input
+                                                        id="file-upload-sts"
+                                                        type="file"
+                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                        onChange={(e) => handleFileChange(e, 'fileSTS')}
+                                                        style={{ display: "none" }}
+                                                    />
+                                                    <div className="ms-auto d-flex">
+                                                        <label
+                                                            htmlFor="file-upload-sts"
+                                                            className="btn btn-success btn-sm"
+                                                            style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.fileSTS ? "0" : "4px", borderBottomRightRadius: selectedFiles.fileSTS ? "0" : "4px" }}
+                                                        >
+                                                            Seleccionar archivo
+                                                        </label>
+                                                        {selectedFiles.fileSTS && (
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-danger btn-sm"
+                                                                onClick={() => handleClearFile('fileSTS', 'file-upload-sts')}
+                                                                style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                                                title="Eliminar archivo seleccionado"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="col-12 col-md-4">
                                                 <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
@@ -677,42 +767,205 @@ function FormUser() {
                                     )}
                                 </div>
 
-                                {/* CATEGORÍA ESPECÍFICA - AUTORIZACIÓN */}
-                                <div className="p-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <h6 className="fw-bold mb-3" style={{ color: "#2F8F5B" }}>Bajo Autorización / Otros</h6>
-                                    <div className="row align-items-center mb-2 g-2">
-                                        <div className="col-12 col-md-4">
-                                            <div className="form-check">
-                                                <input className="form-check-input" type="checkbox" id="chkSora" />
-                                                <label className="form-check-label small" htmlFor="chkSora">SORA / Autorización</label>
-                                            </div>
-                                        </div>
-                                        <div className="col-12 col-md-8">
-                                                <input 
-                                                    className="form-check-input" 
-                                                    type="checkbox" 
-                                                    id="chkSora" 
-                                                    checked={activeChecks.chkSora}
-                                                    onChange={() => handleCheckChange('chkSora')} 
-                                                />
+                                {/* CATEGORÍA ESPECÍFICA - Bajo autorización */}
+                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
+                                    <div className="d-flex align-items-center mb-3">
+                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
+                                            Categoría específica bajo autorización
+                                        </h6>
+                                        
+                                        <div className="info-tooltip-wrapper ms-2">
+                                            <img 
+                                                src={infoIcon} 
+                                                alt="info" 
+                                                style={{ 
+                                                    width: "16px", 
+                                                    height: "16px", 
+                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
+                                                    cursor: "pointer" 
+                                                }} 
+                                            />
+                                            <span className="info-tooltip-text">
+                                                {infoText}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className="row align-items-center g-2">
-                                        <div className="col-12 col-md-4">
-                                            <div className="form-check">
-                                                <input className="form-check-input" type="checkbox" id="chkLuc" />
-                                                <label className="form-check-label small" htmlFor="chkLuc">Certificado LUC</label>
+                                    
+                                    <div className="mb-4">
+                                        {/* Row 1: Formacion teórica genérica Checkbox */}
+                                        <div className="row">
+                                            <div className="col-12 text-start">
+                                                <div className="form-check">
+                                                    <input 
+                                                        className="form-check-input shadow-none" 
+                                                        type="checkbox" 
+                                                        id="chkFormcnTeoricaGen" 
+                                                        checked={activeChecks.chkFormcnTeoricaGen}
+                                                        onChange={() => handleCheckChange('chkFormcnTeoricaGen')} 
+                                                    />
+                                                    <label className="form-check-label small fw-bold" htmlFor="chkFormcnTeoricaGen">
+                                                        Formación teórica genérica
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="col-12 col-md-8">
-                                                <input 
-                                                    className="form-check-input" 
-                                                    type="checkbox" 
-                                                    id="chkLuc" 
-                                                    checked={activeChecks.chkLuc}
-                                                    onChange={() => handleCheckChange('chkLuc')} 
-                                                />
+
+                                        {/* Row 2: Inputs (Indented without border) */}
+                                        {activeChecks.chkFormcnTeoricaGen && (
+                                            <div className="row g-2 mt-1 ms-3 fade-in-input text-start">
+                                                <div className="col-12 col-md-5">
+                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
+                                                        Certificado PDF
+                                                    </small>
+                                                    <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                                            {selectedFiles.fileFTG ? selectedFiles.fileFTG.name : "No hay archivo"}
+                                                        </span>
+                                                        <input
+                                                            id="file-upload-sts"
+                                                            type="file"
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            onChange={(e) => handleFileChange(e, 'fileFTG')}
+                                                            style={{ display: "none" }}
+                                                        />
+                                                        <div className="ms-auto d-flex">
+                                                            <label
+                                                                htmlFor="file-upload-sts"
+                                                                className="btn btn-success btn-sm"
+                                                                style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.fileSTS ? "0" : "4px", borderBottomRightRadius: selectedFiles.fileSTS ? "0" : "4px" }}
+                                                            >
+                                                                Seleccionar archivo
+                                                            </label>
+                                                            {selectedFiles.fileFTG && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-danger btn-sm"
+                                                                    onClick={() => handleClearFile('fileFTG', 'file-upload-sts')}
+                                                                    style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                                                    title="Eliminar archivo seleccionado"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-12 col-md-4">
+                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
+                                                        Vencimiento
+                                                    </small>
+                                                    <div className="input-group input-group-sm mb-1">
+                                                        <input 
+                                                            type="date" 
+                                                            className="form-control"
+                                                            disabled={activeChecks.indefiniteFTG}
+                                                            value={activeChecks.indefiniteFTG ? "" : formValues.dateFTG}
+                                                            onChange={(e) => setFormValues({...formValues, dateFTG: e.target.value})}
+                                                        />
+                                                    </div>
+                                                    <div className="form-check text-start">
+                                                        <input 
+                                                            className="form-check-input shadow-none" 
+                                                            type="checkbox" 
+                                                            id="indefiniteFTG"
+                                                            checked={activeChecks.indefiniteFTG}
+                                                            onChange={() => handleCheckChange('indefiniteFTG')} 
+                                                        />
+                                                        <label className="form-check-label text-muted text-start" htmlFor="indefiniteFTG" style={{ fontSize: "0.65rem" }}>
+                                                            Indefinido
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* Row 1: Formacion teórica genérica Checkbox */}
+                                        <div className="row">
+                                            <div className="col-12 text-start">
+                                                <div className="form-check">
+                                                    <input 
+                                                        className="form-check-input shadow-none" 
+                                                        type="checkbox" 
+                                                        id="chkFormcnPracticaGen" 
+                                                        checked={activeChecks.chkFormcnPracticaGen}
+                                                        onChange={() => handleCheckChange('chkFormcnPracticaGen')} 
+                                                    />
+                                                    <label className="form-check-label small fw-bold" htmlFor="chkFormcnPracticaGen">
+                                                        Formación práctica genérica
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {/* Row 2: Inputs (Indented without border) */}
+                                        {activeChecks.chkFormcnPracticaGen && (
+                                            <div className="row g-2 mt-1 ms-3 fade-in-input text-start">
+                                                <div className="col-12 col-md-5">
+                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
+                                                        Certificado PDF
+                                                    </small>
+                                                    <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                                        <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                                            {selectedFiles.fileFPG ? selectedFiles.fileFPG.name : "No hay archivo"}
+                                                        </span>
+                                                        <input
+                                                            id="file-upload-sts"
+                                                            type="file"
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            onChange={(e) => handleFileChange(e, 'fileFPG')}
+                                                            style={{ display: "none" }}
+                                                        />
+                                                        <div className="ms-auto d-flex">
+                                                            <label
+                                                                htmlFor="file-upload-sts"
+                                                                className="btn btn-success btn-sm"
+                                                                style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.fileFPG ? "0" : "4px", borderBottomRightRadius: selectedFiles.fileSTS ? "0" : "4px" }}
+                                                            >
+                                                                Seleccionar archivo
+                                                            </label>
+                                                            {selectedFiles.fileFPG && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-danger btn-sm"
+                                                                    onClick={() => handleClearFile('fileFPG', 'file-upload-sts')}
+                                                                    style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                                                    title="Eliminar archivo seleccionado"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-12 col-md-4">
+                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
+                                                        Vencimiento
+                                                    </small>
+                                                    <div className="input-group input-group-sm mb-1">
+                                                        <input 
+                                                            type="date" 
+                                                            className="form-control"
+                                                            disabled={activeChecks.indefiniteFPG}
+                                                            value={activeChecks.indefiniteFPG ? "" : formValues.dateFPG}
+                                                            onChange={(e) => setFormValues({...formValues, dateFPG: e.target.value})}
+                                                        />
+                                                    </div>
+                                                    <div className="form-check text-start">
+                                                        <input 
+                                                            className="form-check-input shadow-none" 
+                                                            type="checkbox" 
+                                                            id="indefiniteFPG"
+                                                            checked={activeChecks.indefiniteFPG}
+                                                            onChange={() => handleCheckChange('indefiniteFPG')} 
+                                                        />
+                                                        <label className="form-check-label text-muted text-start" htmlFor="indefiniteFPG" style={{ fontSize: "0.65rem" }}>
+                                                            Indefinido
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -746,7 +999,3 @@ function FormUser() {
 }
 
 export default FormUser
-
-
-
-
