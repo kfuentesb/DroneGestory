@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "anexos_base")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -31,4 +33,10 @@ public abstract class Anexo implements AnexoVersionado {
     
     @Column(name = "tipo_anexo")
     private Integer tipoAnexo; // 4, 5, 6, 7 u 8
+
+    @Column(name = "firmado_por")
+    private String firmadoPor;
+
+    @Column(name = "fecha_firma")
+    private LocalDate fechaFirma;
 }
