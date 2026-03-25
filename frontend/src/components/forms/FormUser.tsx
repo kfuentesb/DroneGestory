@@ -430,15 +430,9 @@ function FormUser() {
                             style={{ backgroundColor: "#F9FAFB", border: "1px dashed #D1D5DB", color: "#6B7280" }}
                             onClick={() => setShowOptional(!showOptional)}
                         >
-                            {/* Left Side: Icon + Text */}
-                            {/* <div className="d-flex align-items-center"> */}
-                                <span className="fw-medium">
-                                    {showOptional ? "− Ocultar certificados" : "+ Añadir certificados"}
-                                </span>
-                            {/* </div> */}
-
-                            {/* Right side (Empty or could have a small chevron) */}
-                            <span></span>
+                            <span className="fw-medium">
+                                {showOptional ? "− Ocultar certificados" : "+ Añadir certificados"}
+                            </span>
                         </button>
 
                         {showOptional && (
