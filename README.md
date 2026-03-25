@@ -11,13 +11,25 @@
 >SERVER_IP=YOUR_SERVER_IP <br>
 >VITE_API_BASE_URL=http://${SERVER_IP}:8080 <br>
 
-# Creamos el docker
+
+Para montar el proyecto en un servidor desde 0:<br>
+# Clona el proyecto
+> cd /ruta-donde-tener-el-proyecto
+> git clone https://
+
+# Creamos el docker (el que está en la raíz, no el que está en backend)
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
+
+# Para introducir los datos experimentales utilizar:
 > docker exec -i dronegestory-db psql -U admin -d aeronaves_db < ./backend/init.sql <br>
+> TRUNCATE TABLE app_user CASCADE;<br>
 
 # Checkear logs
 > docker logs dronegestory-backend <br>
+
+
+# Para probarlo en local y solo usando docker para postgresql:
 
 Requiere Maven Docker npm Java
 ```diff
@@ -30,16 +42,15 @@ mvn -v
 -(reinicia)
 ```
 
-Para probar el proyecto en local, ejecutamos el docker-compose.yml en backend e iniciamos SpringBoot
 ```diff
 cd backend
 -(tiene que estar up el docker)
 docker compose up -d
 -(esto crea las tablas automáticamente)
-mvn spring-boot:run
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 -(Abre nuevocmd, inserta lo de init.sql en el terminal)
 docker exec -it aeronaves_db psql -U admin -d aeronaves_db
+docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
 ```
 
 En otro terminal entramos en frontend e iniciamos React
@@ -87,9 +98,8 @@ VISUAL<br>
 FUNCIONAL<br>
 -Añadir datos opcionales en aircraft <br>
 -Añadir posibilidad de borrar imagen en modificar, tanto para dron<br>
--Reestructurar la carpeta del backend /uploads, que tenga una con /users y otra con /aircraft, además aquí se guardaran las licencias y documentaciones a futuro<br>
 -Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
 -Añadir ver operación en detalle<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Añadir paginación a las vistas con tablas.<br>
--Añadir campo a usuaro estado: activo/inactivo<br>
+-Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
