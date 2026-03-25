@@ -16,6 +16,18 @@ type CertificateFieldPayload = {
     dateIndefinite: boolean | null;
 };
 
+type CertificateUploadMetadata = {
+    certificateType: string;
+    fileFieldKey: string | null;
+    expireDate: string | null;
+    dateIndefinite: boolean | null;
+};
+
+type CertificateUploadData = {
+    metadata: CertificateUploadMetadata[];
+    files: Array<{ fileFieldKey: string; file: File }>;
+};
+
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -190,31 +202,42 @@ function FormUser() {
         { key: "medicoClaseLAPL", enabled: activeChecks.chkFormCMClaseLAPL, file: selectedFiles.fileCMCLAPL, date: formValues.dateCMCLAPL, indefinite: activeChecks.indefiniteCMCLAPL },
     ] as const;
 
-    const buildCertificatesPayload = (): Record<string, CertificateFieldPayload> => {
-        const payload: Record<string, CertificateFieldPayload> = {};
+    const buildCertificatesPayload = (): CertificateUploadData => {
+        const metadata: CertificateUploadMetadata[] = [];
+        const files: Array<{ fileFieldKey: string; file: File }> = [];
 
         staticCertificateFields.forEach((field) => {
-            payload[field.key] = field.enabled
-                ? {
-                    certificate: field.file ?? null,
-                    dateExpire: field.indefinite ? null : (field.date || null),
-                    dateIndefinite: field.indefinite,
-                }
-                : { certificate: null, dateExpire: null, dateIndefinite: null };
+            const fileFieldKey = field.file ? `certificate_${field.key}` : null;
+            metadata.push({
+                certificateType: field.key,
+                fileFieldKey,
+                expireDate: field.enabled && !field.indefinite ? (field.date || null) : null,
+                dateIndefinite: field.enabled ? field.indefinite : null,
+            });
+
+            if (field.file && fileFieldKey) {
+                files.push({ fileFieldKey, file: field.file });
+            }
         });
 
         selectedCategories.forEach((categoryId) => {
             const categoryData = conopsDocs[categoryId];
-            payload[`conops_${categoryId}`] = categoryData
-                ? {
-                    certificate: categoryData.certificate,
-                    dateExpire: categoryData.dateIndefinite ? null : (categoryData.dateExpire || null),
-                    dateIndefinite: categoryData.dateIndefinite,
-                }
-                : { certificate: null, dateExpire: null, dateIndefinite: null };
+            const certificateType = `conops_${categoryId}`;
+            const fileFieldKey = categoryData?.certificate ? `certificate_${certificateType}` : null;
+
+            metadata.push({
+                certificateType,
+                fileFieldKey,
+                expireDate: categoryData?.dateIndefinite ? null : (categoryData?.dateExpire || null),
+                dateIndefinite: categoryData?.dateIndefinite ?? null,
+            });
+
+            if (categoryData?.certificate && fileFieldKey) {
+                files.push({ fileFieldKey, file: categoryData.certificate });
+            }
         });
 
-        return payload;
+        return { metadata, files };
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -275,9 +298,11 @@ function FormUser() {
             formData.append("docIdentidad", formValues.docIdentidad);
             formData.append("fechaNac", formValues.fechaNac);
 
-            // Backend-ready structure for future certificate persistence.
             const certificatesPayload = buildCertificatesPayload();
-            void certificatesPayload;
+            formData.append("certificates", JSON.stringify(certificatesPayload.metadata));
+            certificatesPayload.files.forEach(({ fileFieldKey, file }) => {
+                formData.append(fileFieldKey, file, file.name);
+            });
 
             // Testing consultar token
             // const token = localStorage.getItem('jwt');

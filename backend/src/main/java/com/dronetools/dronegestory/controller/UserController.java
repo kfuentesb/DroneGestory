@@ -1,9 +1,12 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.UserCertificateUploadRequest;
 import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.dto.UserResponse;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.UserService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.io.UrlResource;
@@ -24,6 +27,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth/users")
@@ -64,9 +70,19 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<User> createUserWithFile(
             @ModelAttribute User user,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "certificates", required = false) String certificatesJson,
+            MultipartHttpServletRequest multipartRequest
     ) throws IOException {
-        User createdUser = userService.createWithFile(user, imageFile);
+        java.util.List<UserCertificateUploadRequest> certificates = Collections.emptyList();
+        if (certificatesJson != null && !certificatesJson.isBlank()) {
+            certificates = new ObjectMapper().readValue(
+                    certificatesJson,
+                    new TypeReference<java.util.List<UserCertificateUploadRequest>>() {}
+            );
+        }
+
+        User createdUser = userService.createWithFileAndCertificates(user, imageFile, certificates, multipartRequest);
         return ResponseEntity.ok(createdUser);
     }
 
@@ -93,9 +109,21 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/images/{filename:.+}")// el ":.+" hace que ignore si tiene puntos en la base de datos, y lo tiene
+    @GetMapping("/images/**")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Resource> getUserImage(@PathVariable String filename) throws IOException {
+    public ResponseEntity<Resource> getUserImage(HttpServletRequest request) throws IOException {
+        String requestUri = request.getRequestURI();
+        String marker = "/api/auth/users/images/";
+        int markerIndex = requestUri.indexOf(marker);
+        if (markerIndex < 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String filename = requestUri.substring(markerIndex + marker.length());
+        if (filename.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadsDir.resolve(filename).normalize();
 

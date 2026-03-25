@@ -1,10 +1,15 @@
 package com.dronetools.dronegestory.service;
 
+import com.dronetools.dronegestory.dto.UserCertificateUploadRequest;
+import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.model.User;
+import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -19,10 +24,12 @@ import java.nio.file.Paths;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserCertificateRepository userCertificateRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserService(UserRepository userRepository, UserCertificateRepository userCertificateRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
+        this.userCertificateRepository = userCertificateRepository;
         this.passwordEncoder = passwordEncoder;
     }
     // Simplificar codigo
@@ -60,10 +67,16 @@ public class UserService {
     }
 
     // Crear un nuevo usuario con archivo
+    @Transactional
     public User createWithFile(User user, MultipartFile imageFile) throws IOException {
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
+
+        User savedUser = userRepository.save(user);
+
+        Path userBaseDir = Paths.get("uploads", "users", savedUser.getId().toString()).toAbsolutePath().normalize();
+        Path profileDir = userBaseDir.resolve("profile");
 
         if (imageFile != null && !imageFile.isEmpty()) {
             String originalName = imageFile.getOriginalFilename();
@@ -71,14 +84,89 @@ public class UserService {
                     ? "upload"
                     : Paths.get(originalName).getFileName().toString();
             String filename = System.currentTimeMillis() + "_" + safeName;
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Files.createDirectories(uploadDir);
-            Path target = uploadDir.resolve(filename);
+            Files.createDirectories(profileDir);
+            Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
-            user.setImagePath(filename);
+            savedUser.setImagePath(Paths.get("users", savedUser.getId().toString(), "profile", filename).toString().replace("\\", "/"));
         }
 
-        return userRepository.save(user);
+        return userRepository.save(savedUser);
+    }
+
+    @Transactional
+    public User createWithFileAndCertificates(
+            User user,
+            MultipartFile imageFile,
+            List<UserCertificateUploadRequest> certificates,
+            MultipartHttpServletRequest multipartRequest
+    ) throws IOException {
+        User savedUser = createWithFile(user, imageFile);
+
+        Path certificatesBaseDir = Paths.get("uploads", "users", savedUser.getId().toString(), "certificates")
+                .toAbsolutePath()
+                .normalize();
+
+        for (UserCertificateUploadRequest certificateRequest : certificates) {
+            if (certificateRequest == null) {
+                continue;
+            }
+
+            String certificateType = certificateRequest.certificateType();
+            String fileFieldKey = certificateRequest.fileFieldKey();
+            Boolean dateIndefinite = certificateRequest.dateIndefinite();
+            java.time.LocalDate expireDate = null;
+            if (certificateRequest.expireDate() != null && !certificateRequest.expireDate().isBlank()) {
+                expireDate = java.time.LocalDate.parse(certificateRequest.expireDate());
+            }
+
+            MultipartFile certificateFile = null;
+            if (fileFieldKey != null && !fileFieldKey.isBlank()) {
+                certificateFile = multipartRequest.getFile(fileFieldKey);
+            }
+
+            String storedCertificatePath = null;
+            if (certificateFile != null && !certificateFile.isEmpty()) {
+                String originalName = certificateFile.getOriginalFilename();
+                String safeName = (originalName == null || originalName.isBlank())
+                        ? "certificate"
+                        : Paths.get(originalName).getFileName().toString();
+
+                String safeTypeDir = (certificateType == null || certificateType.isBlank())
+                        ? "unknown"
+                        : certificateType.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+                Path certificateTypeDir = certificatesBaseDir.resolve(safeTypeDir);
+                Files.createDirectories(certificateTypeDir);
+
+                String filename = System.currentTimeMillis() + "_" + safeName;
+                Path target = certificateTypeDir.resolve(filename);
+                certificateFile.transferTo(target.toFile());
+
+                storedCertificatePath = Paths.get("users", savedUser.getId().toString(), "certificates", safeTypeDir, filename)
+                        .toString()
+                        .replace("\\", "/");
+            }
+
+            boolean emptyCertificate =
+                    (storedCertificatePath == null || storedCertificatePath.isBlank()) &&
+                    expireDate == null &&
+                    dateIndefinite == null;
+
+            if (emptyCertificate) {
+                continue;
+            }
+
+            UserCertificate entity = new UserCertificate();
+            entity.setUser(savedUser);
+            entity.setCertificateType(certificateType);
+            entity.setCertificateName(storedCertificatePath);
+            entity.setExpireDate(expireDate);
+            entity.setDateIndefinite(dateIndefinite);
+
+            userCertificateRepository.save(entity);
+        }
+
+        return savedUser;
     }
 
     // Actualizar un usuario existente
@@ -136,6 +224,7 @@ public class UserService {
 
 
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path profileDir = uploadDir.resolve(Paths.get("users", user.getId().toString(), "profile")).normalize();
         String oldImage = user.getImagePath();
 
         if (removeImage) {
@@ -148,7 +237,7 @@ public class UserService {
             
         } else if (imageFile != null && !imageFile.isEmpty()) {
             // CASO: El usuario subió un archivo nuevo (reemplazo)
-            Files.createDirectories(uploadDir);
+            Files.createDirectories(profileDir);
 
             // Borrar la antigua antes de poner la nueva
             if (oldImage != null && !oldImage.isBlank()) {
@@ -164,10 +253,14 @@ public class UserService {
             // Usamos el username para el nombre del archivo como tenías antes
             String filename = user.getUsername() + "_" + System.currentTimeMillis() + "_" + safeName;
 
-            Path target = uploadDir.resolve(filename);
+            Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
 
-            user.setImagePath(filename);
+            user.setImagePath(
+                    Paths.get("users", user.getId().toString(), "profile", filename)
+                            .toString()
+                            .replace("\\", "/")
+            );
         }
 
         return userRepository.save(user);
