@@ -5,6 +5,7 @@ import LoginIcon from "../../assets/navbar/login_white.svg";
 import LogoutIcon from "../../assets/navbar/logout_white.svg";
 import SettingsIcon from "../../assets/navbar/settings_white.svg";
 import IdentityIcon from "../../assets/navbar/identity_white.svg";
+import DroneToolsIcon from "../../assets/commons/logo_dronetools.svg";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ function Navbar() {
       <nav className="navbar navbar-expand-lg w-100 shadow-sm" style={{ backgroundColor: "#36a269" }}>
         <div className="container-fluid">
           <NavLink className="navbar-brand fw-bold text-white" to="/home">
-            Drone Gestor
+            <img src={DroneToolsIcon} alt="DroneTools logo" style={{ width: "50px" }}/>{"  "}Drone Gestor
           </NavLink>
 
           <button
