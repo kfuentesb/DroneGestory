@@ -16,11 +16,11 @@ type Operation = {
   fechaCreacion: string;
   fechaActualizacion: string;
   estado: string;
-  a4: boolean;
-  a5: boolean;
-  a6: boolean;
-  a7: boolean;
-  a8: boolean;
+  a4: string;
+  a5: string;
+  a6: string;
+  a7: string;
+  a8: string;
 };
 
 export default function OperationList() {
@@ -86,20 +86,20 @@ export default function OperationList() {
           </div>
 
           <ReusableTable
-            headers={["Nombre", "Creador", "F. Creación", "Última Actualización",
-              "A4", "A5", "A6", "A7", "A8" ,"Estado"]}
+            headers={["Nombre", "Creador", "F. Creación", "A4",
+              "A5", "A6", "A7", "A8", "Última Actualización" ,"Estado"]}
             rows={filteredOperations}
             renderRow={(o) => (
               <>
                 <td>{o.nombreOperacion}</td>
                 <td>{o.nombreCreador}</td>
                 <td>{formatDate(o.fechaCreacion)}</td>
+                <td>{o.a4 ?? "-"}</td>
+                <td>{o.a5 ?? "-"}</td>
+                <td>{o.a6 ?? "-"}</td>
+                <td>{o.a7 ?? "-"}</td>
+                <td>{o.a8 ?? "-"}</td>
                 <td>{formatDate(o.fechaActualizacion)}</td>
-                <td>{o.a4}</td>
-                <td>{o.a5}</td>
-                <td>{o.a6}</td>
-                <td>{o.a7}</td>
-                <td>{o.a8}</td>
                 <td>{o.estado}</td>
               </>
             )}
