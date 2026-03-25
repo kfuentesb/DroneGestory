@@ -34,7 +34,6 @@ public class OperationController {
     }
 
     @GetMapping("/details/mine")
-    @PreAuthorize("isAuthenticated()")
     public List<OperationDTO> getMyOperations(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.findByUsername(username)

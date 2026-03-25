@@ -84,7 +84,7 @@ export default function MultiStepsForm() {
             });
             
             const res = await apiFetch(
-                `/api/auth/operations/${operationId}/anexo4`,
+                `${API_BASE_URL}/api/auth/operations/${operationId}/anexo4`,
                 {
                     method: "POST",
                     body: fd,
@@ -120,7 +120,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `/api/auth/operations/${operationId}/anexo5`,
+                `${API_BASE_URL}/api/auth/operations/${operationId}/anexo5`,
                 {
                     method: "POST",
                     body: fd,
@@ -160,7 +160,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `/api/auth/operations/${operationId}/anexo6`,
+                `${API_BASE_URL}/api/auth/operations/${operationId}/anexo6`,
                 {
                     method: "POST",
                     body: fd,
@@ -200,7 +200,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `/api/auth/operations/${operationId}/anexo7`,
+                `${API_BASE_URL}/api/auth/operations/${operationId}/anexo7`,
                 {
                     method: "POST",
                     body: fd,
@@ -240,7 +240,7 @@ export default function MultiStepsForm() {
             });
 
             const res = await apiFetch(
-                `/api/auth/operations/${operationId}/anexo8`,
+                `${API_BASE_URL}/api/auth/operations/${operationId}/anexo8`,
                 {
                     method: "POST",
                     body: fd,
