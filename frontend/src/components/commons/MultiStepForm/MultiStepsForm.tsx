@@ -14,7 +14,7 @@ export default function MultiStepsForm() {
     const { token } = useAuth();
 
     const createOperationFields: FieldConfig[] = [
-        { name: "nombreOperacion", label: "Nombre", type: "text", required: true },
+        { name: "nombreOperacion", label: "Nombre:", type: "text", required: true },
     ];
 
     const anexo4Fields: FieldConfig[] = [
