@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.dto;
 
+import com.dronetools.dronegestory.common.AnexoVersionado;
 import com.dronetools.dronegestory.model.Operation;
 import lombok.Data;
 import lombok.Getter;
@@ -39,10 +40,15 @@ public class OperationDTO {
         this.estado = op.getEstado().name();
 
         // Anexos
-        this.a4 = op.getAnexo4Actual() != null ? "v" + op.getAnexo4Actual().getNumeroVersion() : "-";
-        this.a5 = op.getAnexo5Actual() != null ? "v" + op.getAnexo4Actual().getNumeroVersion() : "-";
-        this.a6 = op.getAnexo6Actual() != null ? "v" + op.getAnexo4Actual().getNumeroVersion() : "-";
-        this.a7 = op.getAnexo7Actual() != null ? "v" + op.getAnexo4Actual().getNumeroVersion() : "-";
-        this.a8 = op.getAnexo8Actual() != null ? "v" + op.getAnexo4Actual().getNumeroVersion() : "-";
+        this.a4 = formatAnexoVersion(op.getAnexo4Actual());
+        this.a5 = formatAnexoVersion(op.getAnexo5Actual());
+        this.a6 = formatAnexoVersion(op.getAnexo6Actual());
+        this.a7 = formatAnexoVersion(op.getAnexo7Actual());
+        this.a8 = formatAnexoVersion(op.getAnexo8Actual());
+    }
+
+    // Helper
+    private String formatAnexoVersion(AnexoVersionado anexo) {
+        return anexo != null ? "v" + anexo.getNumeroVersion() : "-";
     }
 }
