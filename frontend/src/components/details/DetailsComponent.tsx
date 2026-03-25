@@ -223,22 +223,22 @@ export default function DetailsComponent({
     return (
         <div className="container-fluid py-4">
             <div className="card p-4 shadow-sm">
-                <div className="row">
-                    <div className="col-md-8 col-12">
-                        <div className="d-flex align-items-center mb-4 flex-wrap">
+                <div className="row mb-4">
+                    <div className="col-12">
+                        <div className="d-flex align-items-start mb-4">
 
                             {onBack && (
                                 <button 
-                                    className="btn d-flex align-items-center justify-content-center me-3 align-self-start" 
+                                    className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
                                     onClick={onBack}
                                     style={{ 
-                                        borderRadius: "8px",      // Bordes suavemente redondeados (cuadrado)
-                                        width: "48px",            // Un poco más grande
-                                        height: "48px",           // Un poco más grande
+                                        borderRadius: "8px",
+                                        width: "48px",
+                                        height: "48px",
                                         padding: "0",
-                                        marginTop: "4px",         // Ajustado para alinear mejor con el título grande
+                                        marginTop: "4px",
                                         backgroundColor: "transparent",
-                                        border: "none",           // Sin borde como pediste
+                                        border: "none",
                                         transition: "all 0.2s ease" 
                                     }}
                                     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
@@ -249,8 +249,8 @@ export default function DetailsComponent({
                                         src={arroBackIcon} 
                                         alt="Back" 
                                         style={{ 
-                                            width: "28px",        // Icono más grande y visible
-                                            height: "28px",
+                                            width: "32px",
+                                            height: "32px",
                                             filter: "invert(42%) sepia(93%) saturate(395%) hue-rotate(102deg) brightness(92%) contrast(85%)"
                                         }} 
                                     />
@@ -261,20 +261,29 @@ export default function DetailsComponent({
                                 src={imageUrl || "/default-user.jpg"}
                                 alt={data.username}
                                 onError={(e) => ((e.target as HTMLImageElement).src = "/default-user.jpg")}
-                                className="rounded me-3 d-none d-sm-block"
-                                style={{ width: "90px", height: "90px", objectFit: "cover" }}
+                                className="rounded me-3 d-none d-sm-block flex-shrink-0"
+                                style={{ width: "110px", height: "110px", objectFit: "cover" }}
                             />
 
-                            <div className="d-flex flex-column">
-                                <div className="d-flex align-items-center flex-wrap">
-                                    <h2 className="me-3 mb-0">
-                                        {data.firstName} {data.lastName}
-                                    </h2>
+                            <div className="d-flex flex-column flex-grow-1" style={{ minWidth: 0 }}>
+                                {/* 1. Nombre con margen inferior para separarlo del username */}
+                                <h2 className="mb-1 text-break text-start w-100 fw-bold">
+                                    {data.firstName} {data.lastName}
+                                </h2>
+
+                                {/* 2. Username con margen inferior para separarlo de las etiquetas */}
+                                <small className="text-muted text-start mb-2" style={{ fontSize: "0.95rem" }}>
+                                    @{data.username}
+                                </small>
+
+                                {/* 3. Contenedor de etiquetas con un pequeño margen superior */}
+                                <div className="d-flex align-items-center flex-wrap gap-2 mt-1">
                                     <span
-                                        className="px-2 py-1 fw-bold"
+                                        className="px-2 py-1 fw-bold flex-shrink-0"
                                         style={{
                                             borderRadius: "4px",
-                                            fontSize: "0.9rem",
+                                            fontSize: "0.85rem",
+                                            border: "1px solid currentColor",
                                             ...(typeColors[data.type] || { backgroundColor: "#E5E7EB", color: "#374151" }),
                                         }}
                                     >
@@ -282,11 +291,12 @@ export default function DetailsComponent({
                                     </span>
 
                                     <span
-                                        className="px-2 py-1 fw-bold"
+                                        className="px-2 py-1 fw-bold flex-shrink-0"
                                         style={{
                                             borderRadius: "4px",
-                                            fontSize: "0.9rem",
+                                            fontSize: "0.85rem",
                                             textTransform: "uppercase",
+                                            border: "1px solid currentColor",
                                             ...(data.state 
                                                 ? stateColors.active 
                                                 : stateColors.inactive),
@@ -295,11 +305,13 @@ export default function DetailsComponent({
                                         {data.state ? "Activo" : "Inactivo"}
                                     </span>
                                 </div>
-                                <small className="text-muted text-start">@{data.username}</small>
                             </div>
                         </div>
-
-                        {!editing ? (
+                    </div>
+                    
+                    <div className="row">
+                        <div className="col-md-8 col-12">
+                            {!editing ? (
                             <DetailView data={data} fields={fields} />
                         ) : (
                             <DetailEdit
@@ -343,6 +355,7 @@ export default function DetailsComponent({
                                     </button>
                                 </>
                             )}
+                        </div>
                         </div>
                     </div>
 
