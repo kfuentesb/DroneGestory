@@ -13,7 +13,16 @@ export default function ProfileDetail() {
     const [status, setStatus] = useState(200);
     const [profileId, setProfileId] = useState<number | undefined>(undefined);
     const { token } = useAuth();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+
+    const processedFields = userFields
+    .filter(field => field.key !== 'type' && field.key !== 'state')
+    .map(field => {
+        if (field.key === 'username') {
+            return { ...field, readOnly: true };
+        }
+        return field;
+    });
 
     const validateForm = (values:any) => {
 
@@ -32,6 +41,9 @@ export default function ProfileDetail() {
     }
 
     useEffect(() => {
+
+        if (!token) return;// esto me resolvio el bug de cerrar sesion siendo piloto en una vista con fetch
+
         apiFetch(`/api/auth/users/me`) 
             .then(res => {
                 if (res) {
@@ -61,7 +73,7 @@ export default function ProfileDetail() {
             // imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
             endpoint={`/api/auth/users`}
             imageEndpoint={`/api/auth/users/images`}
-            fields={userFields}
+            fields={processedFields}
             allowEdit={true}
             allowDelete={false}
             onBack={() => navigate("/home")}

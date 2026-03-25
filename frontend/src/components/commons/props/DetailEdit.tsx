@@ -5,7 +5,6 @@ type Props = {
     setValues: (v: any) => void;
     fields: FieldConfig[];
     errors: Record<string, string | null>;
-    // Añadimos estas dos props para controlar el borrado desde el padre
     removeImage: boolean;
     setRemoveImage: (v: boolean) => void;
 };
@@ -33,7 +32,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                         <div
                             className="d-flex align-items-center rounded"
                             style={{
-                                backgroundColor: "#ffffff",
+                                backgroundColor: field.readOnly ? "#f3f4f6" : "#ffffff", // Color gris si está bloqueado
                                 border: "1px solid #D1D5DB",
                                 paddingLeft: "10px"
                             }}
@@ -50,21 +49,20 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 id={`file-${field.key}`}
                                 type="file"
                                 accept=".jpg,.jpeg,.png"
+                                disabled={field.readOnly} // <-- BLOQUEO AQUÍ
                                 style={{ display: "none" }}
                                 onChange={(e) => {
                                     const file = e.target.files?.[0] || null;
                                     setValues({ ...values, [field.key]: file });
-                                    // Si selecciona un archivo, desactivamos el modo "borrar"
                                     if (file) setRemoveImage(false);
                                 }}
                             />
 
                             <label
-                                htmlFor={`file-${field.key}`}
-                                className="btn btn-success ms-auto"
+                                htmlFor={!field.readOnly ? `file-${field.key}` : undefined} // Evita click si está bloqueado
+                                className={`btn ${field.readOnly ? 'btn-secondary' : 'btn-success'} ms-auto`}
                                 style={{ 
-                                    cursor: "pointer",
-                                    // Bordes rectos si hay algo que borrar a la derecha
+                                    cursor: field.readOnly ? "not-allowed" : "pointer",
                                     borderTopRightRadius: (values[field.key] || (!removeImage && values.imagePath)) ? "0" : "4px",
                                     borderBottomRightRadius: (values[field.key] || (!removeImage && values.imagePath)) ? "0" : "4px"
                                 }}
@@ -72,18 +70,14 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 Seleccionar
                             </label>
 
-                            {/* El botón X: Aparece si hay un archivo seleccionado O si hay una imagen previa en DB no borrada */}
-                            {(values[field.key] || (!removeImage && values.imagePath)) && (
+                            {!field.readOnly && (values[field.key] || (!removeImage && values.imagePath)) && (
                                 <button
                                     type="button"
                                     className="btn btn-danger"
                                     style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
                                     onClick={() => {
-                                        // Limpiamos el archivo del estado
                                         setValues({ ...values, [field.key]: null });
-                                        // Marcamos que queremos borrar la imagen de la DB
                                         setRemoveImage(true);
-                                        // Limpiamos el input físico
                                         const input = document.getElementById(`file-${field.key}`) as HTMLInputElement;
                                         if (input) input.value = "";
                                     }}
@@ -95,6 +89,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : field.type === "select" ? (
                         <select
                             className="form-select"
+                            disabled={field.readOnly} // <-- BLOQUEO AQUÍ
                             value={
                                 field.key === "state" 
                                     ? (values[field.key] ? "Activo" : "Inactivo")
@@ -105,7 +100,6 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             onChange={(e) => {
                                 const val = e.target.value;
                                 const finalValue = field.key === "state" ? (val === "Activo") : val;
-                                
                                 setValues({ ...values, [field.key]: finalValue });
                             }}
                         >
@@ -116,6 +110,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : field.type === "date" ? (
                             <input
                                 type="date"
+                                disabled={field.readOnly} // <-- BLOQUEO AQUÍ
                                 className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
                                 value={values[field.key] ? values[field.key].toString().split(/[T ]/)[0] : ""}
                                 onChange={(e) => {
@@ -126,6 +121,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : (
                         <input
                             type={field.type || "text"}
+                            disabled={field.readOnly} // <-- BLOQUEO AQUÍ
                             className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
                             value={values[field.key] || ""}
                             onChange={(e) =>
