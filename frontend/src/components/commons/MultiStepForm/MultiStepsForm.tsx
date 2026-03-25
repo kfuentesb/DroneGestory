@@ -14,11 +14,53 @@ export default function MultiStepsForm() {
     const { token } = useAuth();
 
     const createOperationFields: FieldConfig[] = [
-        { name: "nombreOperacion", label: "Nombre:", type: "text", required: true },
+        { name: "nombreOperacion", label: "Asigna un nombre:", type: "text", required: true },
     ];
 
     const anexo4Fields: FieldConfig[] = [
-        { name: "campoAnexo4", label: "Texto prueba", type: "text", required: true },
+            // Datos generales
+        { name: 'descripcion', label: 'Descripción', type: 'text', required: true },
+        { name: 'fechaHoraPrevista', label: 'Fecha/Hora Prevista', type: 'date', required: true },
+        { name: 'mediosMateriales', label: 'Medios Materiales', type: 'text' },
+        { name: 'direccion', label: 'Dirección', type: 'text' },
+        { name: 'coords', label: 'Coordenadas', type: 'text' },
+        { name: 'imagenEspacioAereo', label: 'Imagen Espacio Aéreo', type: 'file' },
+        { name: 'imagenZonaVuelo', label: 'Imagen Zona Vuelo', type: 'file' },
+
+        // Checklist tipo radio3
+        { name: 'espacioAereoControlado', label: '¿Espacio aéreo controlado?', type: "radio3" },
+        { name: 'estudioAeronauticoCoordinado', label: '¿Estudio aeronáutico coordinado?', type: "radio3" },
+        { name: 'entornoAerodromos', label: '¿Entorno aeródromos?', type: "radio3" },
+        { name: 'distanciaMinimaInfraestructuras', label: '¿Distancia mínima a infraestructuras?', type: "radio3" },
+        { name: 'zonasProhibidasFlexible', label: '¿Zonas prohibidas/flexibles?', type: "radio3" },
+        { name: 'cumpleCondiciones', label: '¿Cumple condiciones?', type: "radio3" },
+        { name: 'zonasSeguridad', label: '¿Zonas de seguridad?', type: "radio3" },
+        { name: 'permisoPrevioSeguridad', label: '¿Permiso previo de seguridad?', type: "radio3" },
+        { name: 'serviciosEsencialesComunidad', label: '¿Servicios esenciales/comunidad?', type: "radio3" },
+        { name: 'permisoPrevioServicios', label: '¿Permiso previo servicios?', type: "radio3" },
+        { name: 'entornosUrbanos', label: '¿Entornos urbanos?', type: "radio3" },
+        { name: 'cumplenDistanciasEdificios', label: '¿Cumplen distancias a edificios?', type: "radio3" },
+        { name: 'comunicacionMinisterioInterior', label: '¿Comunicación Ministerio Interior?', type: "radio3" },
+        { name: 'zonaResVueloFotografico', label: '¿Zona reservada vuelo/fotografía?', type: "radio3" },
+        { name: 'permisoCecaf', label: '¿Permiso CECAF?', type: "radio3" },
+        { name: 'zonasProtMedioambiental', label: '¿Zonas protegidas medioambientalmente?', type: "radio3" },
+        { name: 'disponeCoordGestor', label: '¿Dispone de coordinador gestor?', type: "radio3" },
+        { name: 'conopsYModeloSemantico', label: 'CONOPS y modelo semántico', type: "radio3" },
+        { name: 'aplicaModelo', label: '¿Aplica modelo?', type: "radio3" },
+        { name: 'defineGeografiaVueloConops', label: '¿Define geografía vuelo CONOPS?', type: "radio3" },
+        { name: 'defineVolContigencia', label: '¿Define volumen de contingencia?', type: "radio3" },
+        { name: 'defineMargenRiesgoTierra', label: '¿Define margen de riesgo a tierra?', type: "radio3" },
+        { name: 'defineZonaTerrestreControlada', label: '¿Define zona terrestre controlada?', type: "radio3" },
+        { name: 'planificaUbicacionObservadores', label: '¿Planifica ubicación observadores?', type: "radio3" },
+        { name: 'calculaAreaYEvaluaRiesgo', label: '¿Calcula área y evalúa riesgo?', type: "radio3" },
+        { name: 'notams', label: 'NOTAMs presentados?', type: "radio3" },
+        { name: 'revisaNotams', label: '¿Revisa NOTAMs?', type: "radio3" },
+        { name: 'tsaOCondicionada', label: '¿TSA o condicionada?', type: "radio3" },
+        { name: 'otrasLimitaciones', label: '¿Otras limitaciones?', type: "radio3" },
+
+        // Estado (select)
+        { name: 'estado', label: 'Estado', type: 'select', options: ['BORRADOR', 'FIRMADO'], required: true },
+        { name: 'campos', label: 'Campos adicionales (texto/JSON)', type: 'text' }
     ];
 
     const anexo5Fields: FieldConfig[] = [
@@ -77,9 +119,9 @@ export default function MultiStepsForm() {
         }
         try {
             const fd = new FormData();
-            Object.entries(data).forEach(([key, value]) => {
+            Object.entries(data).forEach(([name, value]) => {
                 if (value !== undefined && value !== null) {
-                    fd.append(key, value as string);
+                    fd.append(name, value as string);
                 }
             });
             
@@ -113,9 +155,9 @@ export default function MultiStepsForm() {
         }
         try {
             const fd = new FormData();
-            Object.entries(data).forEach(([key, value]) => {
+            Object.entries(data).forEach(([name, value]) => {
                 if (value !== undefined && value !== null) {
-                    fd.append(key, value as string);
+                    fd.append(name, value as string);
                 }
             });
 
@@ -153,9 +195,9 @@ export default function MultiStepsForm() {
         }
         try {
             const fd = new FormData();
-            Object.entries(data).forEach(([key, value]) => {
+            Object.entries(data).forEach(([name, value]) => {
                 if (value !== undefined && value !== null) {
-                    fd.append(key, value as string);
+                    fd.append(name, value as string);
                 }
             });
 
@@ -193,9 +235,9 @@ export default function MultiStepsForm() {
         }
         try {
             const fd = new FormData();
-            Object.entries(data).forEach(([key, value]) => {
+            Object.entries(data).forEach(([name, value]) => {
                 if (value !== undefined && value !== null) {
-                    fd.append(key, value as string);
+                    fd.append(name, value as string);
                 }
             });
 
@@ -233,9 +275,9 @@ export default function MultiStepsForm() {
         }
         try {
             const fd = new FormData();
-            Object.entries(data).forEach(([key, value]) => {
+            Object.entries(data).forEach(([name, value]) => {
                 if (value !== undefined && value !== null) {
-                    fd.append(key, value as string);
+                    fd.append(name, value as string);
                 }
             });
 
@@ -266,78 +308,84 @@ export default function MultiStepsForm() {
     };
 
     return (
-        <div className="container mt-4">
+      <div className="container mt-4">
+        <ProgressBar currentStep={step} totalSteps={totalSteps} />
 
-            <ProgressBar currentStep={step} totalSteps={totalSteps} />
+        {step === 0 && (
+          <div
+            className="d-flex justify-content-center align-items-center"
+          >
+            <div
+              className="card shadow p-4"
+              style={{ maxWidth: 400, width: "100%" }}
+            >
+              <h3 className="mb-3 text-center">Registrar Operación</h3>
+              <BaseForm
+                fields={createOperationFields}
+                onSubmit={handleNextCreateOperation}
+                showGuardarButton={false}
+                submitButtonText="Crear"
+              />
+            </div>
+          </div>
+        )}
 
-            {step === 0 && (
-                <BaseForm
-                    title="Crear una operación"
-                    fields={createOperationFields}
-                    onSubmit={handleNextCreateOperation}
-                />
-            )}
+        {step === 1 && (
+          <BaseForm
+            title="Apéndice 4: Formato lista de verificación planificación operacional"
+            fields={anexo4Fields}
+            onSubmit={handleNextAnexo4}
+          />
+        )}
 
-            {step === 1 && (
-                <BaseForm 
-                    title="Apéndice 4: Formato lista de verificación planificación operacional"
-                    fields={anexo4Fields} 
-                    onSubmit={handleNextAnexo4} 
-                    onBack={handleBack}
-                />
-            )}
+        {step === 2 && (
+          <BaseForm
+            title="Apéndice 5: Formato lista verificación prevuelo operacional"
+            fields={anexo5Fields}
+            onSubmit={handleNextAnexo5}
+          />
+        )}
 
-            {step === 2 && (
-                <BaseForm
-                    title="Apéndice 5: Formato lista verificación prevuelo operacional"
-                    fields={anexo5Fields} 
-                    onSubmit={handleNextAnexo5} 
-                    onBack={handleBack}
-                />
-            )}
+        {step === 3 && (
+          <BaseForm
+            title="Apéndice 6: Formato lista verificación prevuelo UAS"
+            fields={anexo6Fields}
+            onSubmit={handleNextAnexo6}
+          />
+        )}
 
-            {step === 3 && (
-                <BaseForm 
-                    title="Apéndice 6: Formato lista verificación prevuelo UAS"
-                    fields={anexo6Fields} 
-                    onSubmit={handleNextAnexo6} 
-                    onBack={handleBack}
-                />
-            )}
+        {step === 4 && (
+          <BaseForm
+            title="Apéndice 7: Formato lista verificación posvuelo UAS"
+            fields={anexo7Fields}
+            onSubmit={handleNextAnexo7}
+          />
+        )}
 
-            {step === 4 && (
-                <BaseForm 
-                    title="Apéndice 7: Formato lista verificación posvuelo UAS"
-                    fields={anexo7Fields} 
-                    onSubmit={handleNextAnexo7} 
-                    onBack={handleBack}
-                />
-            )}
+        {step === 5 && (
+          <BaseForm
+            title="Apéndice 8: Formato lista verificación posvuelo operacional"
+            fields={anexo8Fields}
+            onSubmit={handleNextAnexo8}
+            onBack={handleBack}
+          />
+        )}
 
-            {step === 5 && (
-                <BaseForm 
-                    title="Apéndice 8: Formato lista verificación posvuelo operacional"
-                    fields={anexo8Fields} 
-                    onSubmit={handleNextAnexo8} 
-                    onBack={handleBack}
-                />
-            )}
-
-            {step >= 6 && (
-                <div className="card p-4">
-                    <h3>Resumen de la Operación</h3>
-                    <p>Todos los pasos completados.</p>
-                    <pre className="bg-light p-3 border">
-                        {JSON.stringify(formData, null, 2)}
-                    </pre>
-                    <button
-                        className="btn btn-success"
-                        onClick={() => alert("Enviando a la base de datos...")}
-                    >
-                        Guardar Operación Final
-                    </button>
-                </div>
-            )}
-        </div>
+        {step >= 6 && (
+          <div className="card p-4">
+            <h3>Resumen de la Operación</h3>
+            <p>Todos los pasos completados.</p>
+            <pre className="bg-light p-3 border">
+              {JSON.stringify(formData, null, 2)}
+            </pre>
+            <button
+              className="btn btn-success"
+              onClick={() => alert("Enviando a la base de datos...")}
+            >
+              Guardar Operación Final
+            </button>
+          </div>
+        )}
+      </div>
     );
 }
