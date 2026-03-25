@@ -138,7 +138,12 @@ public class UserService {
                 Path certificateTypeDir = certificatesBaseDir.resolve(safeTypeDir);
                 Files.createDirectories(certificateTypeDir);
 
-                String filename = System.currentTimeMillis() + "_" + safeName;
+                int dotIndex = safeName.lastIndexOf('.');
+                String baseName = dotIndex > 0 ? safeName.substring(0, dotIndex) : safeName;
+                String extension = dotIndex > 0 ? safeName.substring(dotIndex) : "";
+                String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+                String filename = savedUser.getId() + "-" + safeTypeDir + "-" + sanitizedBaseName + extension;
                 Path target = certificateTypeDir.resolve(filename);
                 certificateFile.transferTo(target.toFile());
 
