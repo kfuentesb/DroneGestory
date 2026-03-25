@@ -3,6 +3,7 @@ import BaseForm, { type FieldConfig } from "./BaseForm";
 import ProgressBar from "./ProgressBar";
 import { apiFetch } from "../../../api";
 import { useAuth } from "../hooks/useAuth";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 export default function MultiStepsForm() {
 
@@ -13,7 +14,7 @@ export default function MultiStepsForm() {
     const { token } = useAuth();
 
     const createOperationFields: FieldConfig[] = [
-        { name: "nombreOperacion", label: "Nombre de la operación", type: "text", required: true },
+        { name: "nombreOperacion", label: "Nombre", type: "text", required: true },
     ];
 
     const anexo4Fields: FieldConfig[] = [
@@ -52,7 +53,7 @@ export default function MultiStepsForm() {
             const fd = new FormData();
             fd.append("nombreOperacion", data.nombreOperacion);
 
-            const res = await apiFetch("/api/auth/operations", {
+            const res = await apiFetch(`${API_BASE_URL}/api/auth/operations`, {
                 method: "POST",
                 body: fd
             });
