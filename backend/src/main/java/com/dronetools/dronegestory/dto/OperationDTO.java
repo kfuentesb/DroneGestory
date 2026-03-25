@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @Setter
 @NoArgsConstructor
 public class OperationDTO {
-    private Long operationId;
+    private Long idOperacion;
     private String nombreOperacion;
     private String nombreCreador;
     private LocalDateTime fechaCreacion;
@@ -30,7 +30,7 @@ public class OperationDTO {
 
 
     public OperationDTO(Operation op) {
-        this.operationId = op.getOperationId();
+        this.idOperacion = op.getIdOperacion();
         this.nombreOperacion = op.getNombreOperacion();
         this.nombreCreador = op.getCreador().getFirstName()
                 + " " + op.getCreador().getLastName();

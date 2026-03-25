@@ -31,7 +31,7 @@ export default function OperationList() {
 
   // Formatear fecha
   const formatDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleString() : ""
+    iso ? new Date(iso).toLocaleString() : "";
 
   useEffect(() => {
     const loadOperations = async () => {
@@ -86,8 +86,18 @@ export default function OperationList() {
           </div>
 
           <ReusableTable
-            headers={["Nombre", "Creador", "F. Creación", "A4",
-              "A5", "A6", "A7", "A8", "Última Actualización" ,"Estado"]}
+            headers={[
+              "Nombre",
+              "Creador",
+              "F. Creación",
+              "A4",
+              "A5",
+              "A6",
+              "A7",
+              "A8",
+              "Última Actualización",
+              "Estado"
+            ]}
             rows={filteredOperations}
             renderRow={(o) => (
               <>
@@ -100,7 +110,11 @@ export default function OperationList() {
                 <td>{o.a7 ?? "-"}</td>
                 <td>{o.a8 ?? "-"}</td>
                 <td>{formatDate(o.fechaActualizacion)}</td>
-                <td>{o.estado}</td>
+                <td className="text-center">
+                  <span className={`badge bg-${getEstadoColor(o.estado)}`}>
+                    {o.estado}
+                  </span>
+                </td>
               </>
             )}
             onRowClick={(o) => navigate(`/auth/operations/${o.idOperacion}`)}
@@ -111,4 +125,20 @@ export default function OperationList() {
       </div>
     </div>
   );
+}
+
+// Función para elegir el color del estado
+function getEstadoColor(estado: string): string {
+  switch (estado) {
+    case "EN_CURSO":
+      return "warning";
+    case "COMPLETADA":
+      return "success";
+    case "CANCELADA":
+      return "danger";
+    case "PENDIENTE":
+      return "info";
+    default:
+      return "secondary";
+  }
 }

@@ -140,7 +140,7 @@ export default function MyOperationList() {
                 <td>{o.a7 ?? "-"}</td>
                 <td>{o.a8 ?? "-"}</td>
                 <td>{formatDate(o.fechaActualizacion)}</td>
-                <td>
+                <td className= "text-center">
                   <span className={`badge bg-${getEstadoColor(o.estado)}`}>
                     {o.estado}
                   </span>

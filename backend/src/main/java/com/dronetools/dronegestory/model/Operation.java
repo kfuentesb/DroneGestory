@@ -26,7 +26,7 @@ public class Operation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id_operacion")
-    private Long operationId;
+    private Long idOperacion;
 
     @Column(name = "nombre_operacion", nullable = false, length = 255)
     private String nombreOperacion;
