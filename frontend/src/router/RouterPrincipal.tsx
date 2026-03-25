@@ -57,7 +57,7 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Operations */}
         <Route path="/auth/operations" element={<OperationList />} />
-        <Route path="/auth/operations/mine" element={<MyOperationList />} />
+        <Route path="/auth/operations/details/mine" element={<MyOperationList />} />
         <Route path="/auth/operations/:id" element={<OperationList />} />
         <Route path="/auth/register-operation" element={<MultiStepsForm />} />
         

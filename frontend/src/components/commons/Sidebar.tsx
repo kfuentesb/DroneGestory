@@ -126,7 +126,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                     {canManage && (
                         <MenuItem onClick={() => { navigate("/auth/operations"); setToggled(false); }}>Listar operaciones (admin)</MenuItem>
                     )}
-                    <MenuItem onClick={() => { navigate("/auth/operations/mine"); setToggled(false); }}>Listar mis operaciones</MenuItem>
+                    <MenuItem onClick={() => { navigate("/auth/operations/details/mine"); setToggled(false); }}>Listar mis operaciones</MenuItem>
                     <MenuItem onClick={() => { navigate("/auth/register-operation"); setToggled(false); }}>Registrar operacion</MenuItem>
                 </SubMenu>
             </Menu>

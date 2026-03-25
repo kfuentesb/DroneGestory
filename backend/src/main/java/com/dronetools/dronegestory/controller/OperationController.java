@@ -6,6 +6,7 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.service.OperationService;
 import com.dronetools.dronegestory.service.UserService;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -32,7 +33,7 @@ public class OperationController {
                 .toList();
     }
 
-    @GetMapping("/mine")
+    @GetMapping("/details/mine")
     @PreAuthorize("isAuthenticated()")
     public List<OperationDTO> getMyOperations(Authentication authentication) {
         String username = authentication.getName();
@@ -74,6 +75,5 @@ public class OperationController {
     public void delete(@PathVariable Long operationId) {
         operationService.deleteOperation(operationId);
     }
-
 
 }

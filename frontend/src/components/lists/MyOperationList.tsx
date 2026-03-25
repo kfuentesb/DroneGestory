@@ -1,3 +1,4 @@
+// MyOperationList.tsx
 import { useEffect, useState } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import { apiFetch } from "../../api";
@@ -5,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
+
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 
 type Operation = {
@@ -25,27 +27,34 @@ export default function MyOperationList() {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [search, setSearch] = useState("");
   const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const formatDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleString() : "";
+    iso ? new Date(iso).toLocaleString() : "-";
 
   useEffect(() => {
-    const loadOperations = async () => {
+    const loadMyOperations = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const res = await apiFetch(`${API_BASE_URL}/api/auth/operations/mine`, {
-          headers: { "Content-Type": "application/json" },
+        const res = await apiFetch(`${API_BASE_URL}/api/auth/operations/details/mine`, {
+          headers: { "Content-Type": "application/json" }
         });
 
-        if (!res) return; // happens if redirected (403/404)
+        if (!res) return;
 
         const data = await res.json();
         setOperations(data);
       } catch (err) {
-        console.error(err);
+        console.error("Error cargando mis operaciones:", err);
+        setError("No se pudieron cargar tus operaciones. Inténtalo de nuevo.");
+      } finally {
+        setIsLoading(false);
       }
     };
-    loadOperations();
+    loadMyOperations();
   }, []);
 
   useEffect(() => {
@@ -60,6 +69,41 @@ export default function MyOperationList() {
     }
   }, [search, operations]);
 
+  if (isLoading) {
+    return (
+      <div className="container py-4">
+        <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
+          <div className="card-body text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+            <p className="mt-3 text-muted">Cargando tus operaciones...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-4">
+        <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
+          <div className="card-body">
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => window.location.reload()}
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-4">
       <div
@@ -71,29 +115,20 @@ export default function MyOperationList() {
             Mis operaciones
           </h2>
 
-          {/* Barra búsqueda + Añadir operación */}
           <div className="d-flex justify-content-between align-items-center mb-4">
-            {/* Input de búsqueda */}
-            <SearchBar value={search} placeholder="Buscar por nombre..." onChange={setSearch} />
+            <SearchBar 
+              value={search} 
+              placeholder="Buscar en mis operaciones..." 
+              onChange={setSearch} 
+            />
 
-            {/* Botón añadir operación */}
             <ButtonProp onClick={() => navigate("/auth/register-operation")}>
-              <img src={DronePlusIcon} style={{ width: "40px", height: "40px" }} />
+              <img src={DronePlusIcon} style={{ width: "40px", height: "40px" }} alt="Nueva operación" />
             </ButtonProp>
           </div>
 
           <ReusableTable
-            headers={[
-              "Nombre",
-              "F. Creación",
-              "A4",
-              "A5",
-              "A6",
-              "A7",
-              "A8",
-              "Última Actualización",
-              "Estado",
-            ]}
+            headers={["Nombre", "F. Creación", "A4", "A5", "A6", "A7", "A8", "Última Actualización", "Estado"]}
             rows={filteredOperations}
             renderRow={(o) => (
               <>
@@ -105,15 +140,40 @@ export default function MyOperationList() {
                 <td>{o.a7 ?? "-"}</td>
                 <td>{o.a8 ?? "-"}</td>
                 <td>{formatDate(o.fechaActualizacion)}</td>
-                <td>{o.estado}</td>
+                <td>
+                  <span className={`badge bg-${getEstadoColor(o.estado)}`}>
+                    {o.estado}
+                  </span>
+                </td>
               </>
             )}
             onRowClick={(o) => navigate(`/auth/operations/${o.idOperacion}`)}
             emptyText="No tienes operaciones registradas."
           />
-          <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
+          
+          {operations.length > 0 && (
+            <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280", fontSize: "0.875rem" }}>
+              Mostrando {filteredOperations.length} de {operations.length} operación{operations.length !== 1 ? 'es' : ''}
+              {search.trim() && ` (filtradas de ${operations.length} total)`}
+            </p>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+function getEstadoColor(estado: string): string {
+  switch (estado) {
+    case "EN_CURSO":
+      return "warning";
+    case "COMPLETADA":
+      return "success";
+    case "CANCELADA":
+      return "danger";
+    case "PENDIENTE":
+      return "info";
+    default:
+      return "secondary";
+  }
 }
