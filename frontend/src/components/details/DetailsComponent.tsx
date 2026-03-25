@@ -7,11 +7,11 @@ import ConfirmModal from "../commons/ConfirmModal";
 import Forbidden from "../commons/Forbidden";
 import NotFound from "../commons/NotFound";
 
-import editIcon from '../../assets/edit_white.svg';
-import deleteIcon from '../../assets/delete_white.svg';
-import arroBackIcon from '../../assets/arrow_back_white.svg';
-import checkIcon from '../../assets/check_white.svg';
-import cancelIcon from '../../assets/cancel_white.svg';
+import editIcon from '../../assets/commons/edit_white.svg';
+import deleteIcon from '../../assets/commons/delete_white.svg';
+import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
+import checkIcon from '../../assets/commons/check_white.svg';
+import cancelIcon from '../../assets/commons/cancel_white.svg';
 
 interface DetailsComponentProps {
     id: string | undefined
@@ -226,6 +226,37 @@ export default function DetailsComponent({
                 <div className="row">
                     <div className="col-md-8 col-12">
                         <div className="d-flex align-items-center mb-4 flex-wrap">
+
+                            {onBack && (
+                                <button 
+                                    className="btn d-flex align-items-center justify-content-center me-3 align-self-start" 
+                                    onClick={onBack}
+                                    style={{ 
+                                        borderRadius: "8px",      // Bordes suavemente redondeados (cuadrado)
+                                        width: "48px",            // Un poco más grande
+                                        height: "48px",           // Un poco más grande
+                                        padding: "0",
+                                        marginTop: "4px",         // Ajustado para alinear mejor con el título grande
+                                        backgroundColor: "transparent",
+                                        border: "none",           // Sin borde como pediste
+                                        transition: "all 0.2s ease" 
+                                    }}
+                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
+                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                    title="Volver"
+                                >
+                                    <img 
+                                        src={arroBackIcon} 
+                                        alt="Back" 
+                                        style={{ 
+                                            width: "28px",        // Icono más grande y visible
+                                            height: "28px",
+                                            filter: "invert(42%) sepia(93%) saturate(395%) hue-rotate(102deg) brightness(92%) contrast(85%)"
+                                        }} 
+                                    />
+                                </button>
+                            )}
+
                             <img
                                 src={imageUrl || "/default-user.jpg"}
                                 alt={data.username}
@@ -294,12 +325,12 @@ export default function DetailsComponent({
                                     <span className="d-none d-sm-block">Borrar</span>
                                 </button>
                             )}
-                            {!editing && onBack && (
+                            {/* {!editing && onBack && (
                                 <button className="btn btn-secondary" onClick={onBack}>
                                     <img src={arroBackIcon} alt="Back" className="arrow-back-icon d-inline d-sm-none ms-2" />
                                     <span className="d-none d-sm-block">Volver</span>
                                 </button>
-                            )}
+                            )} */}
                             {editing && (
                                 <>
                                     <button className="btn btn-success" onClick={handleConfirmClick}>

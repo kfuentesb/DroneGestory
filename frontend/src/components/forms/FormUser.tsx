@@ -4,8 +4,8 @@ import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
 
-import checkIcon from '../../assets/check_white.svg';
-import cancelIcon from '../../assets/cancel_white.svg';
+import checkIcon from '../../assets/commons/check_white.svg';
+import cancelIcon from '../../assets/commons/cancel_white.svg';
 
 function FormUser() {
     const [error, setError] = useState<string | null>(null);

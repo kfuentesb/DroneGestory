@@ -14,6 +14,7 @@
 # Creamos el docker
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
+> docker exec -i dronegestory-db psql -U admin -d aeronaves_db < ./backend/init.sql <br>
 
 # Checkear logs
 > docker logs dronegestory-backend <br>

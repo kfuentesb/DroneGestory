@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 import YoutubeIcon from "../../assets/footer/youtube_video_white.svg";
-import LogoDroneToolsIcon from "../../assets/logo_DRONE.svg";
+import LogoDroneToolsIcon from "../../assets/commons/logo_DRONE.svg";
 
 export default function Footer() {
     return (

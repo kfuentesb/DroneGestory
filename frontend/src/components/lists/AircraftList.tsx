@@ -7,7 +7,7 @@ import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 
-import DronePlusIcon from "../../assets/drone_plus_white.svg";
+import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 
 
 
