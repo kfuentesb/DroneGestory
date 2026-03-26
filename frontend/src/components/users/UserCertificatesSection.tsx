@@ -97,7 +97,14 @@ export default function UserCertificatesSection({
 
     const [showOptional, setShowOptional] = useState(false);
     return (
-        <div className="mb-3">
+        <div className="mb-3"
+            style={{ 
+                marginLeft: "-30px", 
+                marginRight: "-30px",
+                paddingLeft: "20px",
+                paddingRight: "20px"
+            }}
+        >
             <div 
                 className="p-2 rounded-3 shadow-sm" 
                 style={{ 
