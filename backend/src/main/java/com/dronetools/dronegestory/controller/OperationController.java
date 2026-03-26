@@ -1,6 +1,6 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.OperationDTO;
+import com.dronetools.dronegestory.dto.operation.OperationDTO;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.OperationService;

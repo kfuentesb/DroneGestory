@@ -1,7 +1,7 @@
 package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
-import com.dronetools.dronegestory.dto.AnexoRequestDTO;
+import com.dronetools.dronegestory.dto.operation.AnexoRequestDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;

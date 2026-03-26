@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.AnexoRequestDTO;
+import com.dronetools.dronegestory.dto.operation.AnexoHistoricoDTO;
+import com.dronetools.dronegestory.dto.operation.AnexoRequestDTO;
 import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServiceBase<T>> {
 
@@ -40,10 +42,13 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
 
     // Histórico
     @GetMapping("/historico")
-    public List<T> getHistorico(@PathVariable Long operationId) {
+    public List<AnexoHistoricoDTO> getHistorico(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        return repository.findByOperationOrderByNumeroVersionDesc(op);
+        List<T> anexos = repository.findByOperationOrderByNumeroVersionDesc(op);
+        return AnexoHistoricoDTO.fromEntityList(
+                anexos.stream().map(a -> (Anexo) a).collect(Collectors.toList());
+        );
     }
     
     @PutMapping("/{idAnexo}/firmar")

@@ -1,4 +1,4 @@
-package com.dronetools.dronegestory.dto;
+package com.dronetools.dronegestory.dto.operation;
 
 import lombok.Getter;
 import lombok.Setter;
