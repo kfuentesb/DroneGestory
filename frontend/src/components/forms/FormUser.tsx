@@ -4,28 +4,56 @@ import './generic-form.css';
 import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
+import { staticCertificateFields as staticCertificateConfig } from '../users/staticCertificateFields';
+import UserCertificatesSection from '../users/UserCertificatesSection';
 
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
-import infoIcon from '../../assets/commons/info_white.svg';
+
+type CertificateFieldPayload = {
+    certificate: File | null;
+    dateExpire: string | null;
+    dateIndefinite: boolean | null;
+};
+
+type CertificateUploadMetadata = {
+    certificateType: string;
+    fileFieldKey: string | null;
+    expireDate: string | null;
+    dateIndefinite: boolean | null;
+};
+
+type CertificateUploadData = {
+    metadata: CertificateUploadMetadata[];
+    files: Array<{ fileFieldKey: string; file: File }>;
+};
 
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({
+        profilePicture: null,
+        fileA1A3: null,
+        fileA2: null,
+        fileSTS: null,
+        fileFTG: null,
+        fileFPG: null,
+        fileCT: null,
+        fileCP: null,
+        fileCMC2: null,
+        fileCMCLAPL: null
+    });
     const [selectedUserType, setSelectedUserType] = useState<{ value: string; label: string } | null>(null);
     const [showOptional, setShowOptional] = useState(false);
-    const [certFiles, setCertFiles] = useState<Record<string, File | null>>({});
-
     const navigate = useNavigate();
 
-    const [isHovered, setIsHovered] = useState(false);
-
-    const handleMouseEnter = () => setIsHovered(true);
-    const handleMouseLeave = () => setIsHovered(false);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [currentSelection, setCurrentSelection] = useState<string>("");
+    const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
 
     // Allowed file types
-    const allowedTypes = ["image/jpeg", "image/png"];
+    const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const allowedCertificateTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
     const type_user: { value: string; label: string }[] = [
         { value: "PILOT", label: "Piloto" },
@@ -44,11 +72,17 @@ function FormUser() {
         password: "",
         confirmPassword: "",
         catAbierta: "",
-        catEspecíficaEscenarios: "",
-        catEspecíficaAutorización: "",
+        catEspecificaEscenarios: "",
+        catEspecificaAutorizacion: "",
         dateA1A3: "",
         dateA2: "",
         dateSTS: "",
+        dateFTG: "",
+        dateFPG: "",
+        dateCT: "",
+        dateCP: "",
+        dateCMC2: "",
+        dateCMCLAPL: ""
     });
 
     const [errors, setErrors] = useState({
@@ -91,11 +125,21 @@ function FormUser() {
         chkA2: false,
         chkSTS01: false,
         chkSTS02: false,
-        chkSora: false,
-        chkLuc: false,
+        chkFormcnTeoricaGen: false,
+        chkFormcnPracticaGen: false,
+        chkFormCertTeor: false,
+        chkFormCertPract: false,
+        chkFormCMClase2: false,
+        chkFormCMClaseLAPL: false,
         indefiniteA1A3: false,
         indefiniteA2: false,
-        indefiniteSTS: false
+        indefiniteSTS: false,
+        indefiniteFTG: false,
+        indefiniteFPG: false,
+        indefiniteCT: false,
+        indefiniteCP: false,
+        indefiniteCMC2: false,
+        indefiniteCMCLAPL: false
     });
 
     // Función para alternar los checks
@@ -103,37 +147,93 @@ function FormUser() {
         setActiveChecks(prev => ({ ...prev, [id]: !prev[id as keyof typeof activeChecks] }));
     };
 
+    const validateFile = (file: File, isProfilePicture: boolean): string | null => {
+        const acceptedTypes = isProfilePicture ? allowedImageTypes : allowedCertificateTypes;
+
+        if (!acceptedTypes.includes(file.type)) {
+            return isProfilePicture ? "Only JPG and PNG files are allowed." : "Only PDF, JPG and PNG files are allowed.";
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            return "File size must be less than 5MB.";
+        }
+
+        return null;
+    };
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
         const file = event.target.files?.[0];
+        const isProfilePicture = id === "profilePicture";
 
         if (!file) {
-            setSelectedFile(null);
+            setSelectedFiles((prev) => ({ ...prev, [id]: null }));
             setError("");
             return;
         }
 
-        if (!allowedTypes.includes(file.type)) {
-            setError("Only JPG and PNG files are allowed.");
-            setSelectedFile(null);
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            setError("File size must be less than 5MB.");
-            setSelectedFile(null);
+        const validationError = validateFile(file, isProfilePicture);
+        if (validationError) {
+            setError(validationError);
+            setSelectedFiles((prev) => ({ ...prev, [id]: null }));
             return;
         }
 
         console.log(`Uploaded file for: ${id}`);
-        setSelectedFile(file);
+        setSelectedFiles((prev) => ({ ...prev, [id]: file }));
         setError("");
     };
 
-    const handleClearFile = () => {
-        setSelectedFile(null);
+    const handleClearFile = (id: string, inputId: string) => {
+        setSelectedFiles((prev) => ({ ...prev, [id]: null }));
         // Esto resetea el input para permitir volver a elegir el mismo archivo
-        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
+    };
+
+    const staticCertificateFields = staticCertificateConfig.map((field) => ({
+        key: field.key,
+        enabled: Boolean(activeChecks[field.enabledKey as keyof typeof activeChecks]),
+        file: selectedFiles[field.fileKey as keyof typeof selectedFiles],
+        date: formValues[field.dateKey as keyof typeof formValues],
+        indefinite: Boolean(activeChecks[field.indefiniteKey as keyof typeof activeChecks]),
+    }));
+
+    const buildCertificatesPayload = (): CertificateUploadData => {
+        const metadata: CertificateUploadMetadata[] = [];
+        const files: Array<{ fileFieldKey: string; file: File }> = [];
+
+        staticCertificateFields.forEach((field) => {
+            const fileFieldKey = field.file ? `certificate_${field.key}` : null;
+            metadata.push({
+                certificateType: field.key,
+                fileFieldKey,
+                expireDate: field.enabled && !field.indefinite ? (field.date || null) : null,
+                dateIndefinite: field.enabled ? field.indefinite : null,
+            });
+
+            if (field.file && fileFieldKey) {
+                files.push({ fileFieldKey, file: field.file });
+            }
+        });
+
+        selectedCategories.forEach((categoryId) => {
+            const categoryData = conopsDocs[categoryId];
+            const certificateType = `conops_${categoryId}`;
+            const fileFieldKey = categoryData?.certificate ? `certificate_${certificateType}` : null;
+
+            metadata.push({
+                certificateType,
+                fileFieldKey,
+                expireDate: categoryData?.dateIndefinite ? null : (categoryData?.dateExpire || null),
+                dateIndefinite: categoryData?.dateIndefinite ?? null,
+            });
+
+            if (categoryData?.certificate && fileFieldKey) {
+                files.push({ fileFieldKey, file: categoryData.certificate });
+            }
+        });
+
+        return { metadata, files };
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -172,7 +272,7 @@ function FormUser() {
             }
 
             if (formValues.password !== formValues.confirmPassword) {
-                setError("Las contraseñas no coinciden.");
+                setError("Las contraseÃ±as no coinciden.");
                 setLoading(false);
                 return;
             }
@@ -188,11 +288,17 @@ function FormUser() {
             if (telefonoValue !== "") {
                 formData.append("phoneNumber", telefonoValue);
             }
-            if (selectedFile) {
-                formData.append("imageFile", selectedFile, selectedFile.name);
+            if (selectedFiles.profilePicture) {
+                formData.append("imageFile", selectedFiles.profilePicture, selectedFiles.profilePicture.name);
             }
             formData.append("docIdentidad", formValues.docIdentidad);
             formData.append("fechaNac", formValues.fechaNac);
+
+            const certificatesPayload = buildCertificatesPayload();
+            formData.append("certificates", JSON.stringify(certificatesPayload.metadata));
+            certificatesPayload.files.forEach(({ fileFieldKey, file }) => {
+                formData.append(fileFieldKey, file, file.name);
+            });
 
             // Testing consultar token
             // const token = localStorage.getItem('jwt');
@@ -209,11 +315,11 @@ function FormUser() {
             if (!res.ok) {
                 const errorData = await res.json();
                 
-                // Si el backend envía un mensaje específico de duplicado
+                // Si el backend envÃ­a un mensaje especÃ­fico de duplicado
                 if (errorData.message && errorData.message.includes("already exists")) {
-                    setError("El nombre de usuario ya está en uso. Por favor, elige otro.");
+                    setError("El nombre de usuario ya estÃ¡ en uso. Por favor, elige otro.");
                 } else if (res.status === 409 || res.status === 500) {
-                    // Generalmente las violaciones de Constraint devuelven estos códigos
+                    // Generalmente las violaciones de Constraint devuelven estos cÃ³digos
                     setError("Error: El nombre de usuario o el email ya existen.");
                 } else {
                     setError("Ocurrió un error al registrar el usuario.");
@@ -234,11 +340,130 @@ function FormUser() {
         }
     };
 
+    interface Category {
+        id: string;
+        label: string;
+    }
+
+    const CONOPS_CATEGORIES: Category[] = [
+        { id: 'opnoc', label: 'Operaciones nocturnas' },
+        { id: 'sobrevuelo', label: 'Sobrevuelo (vuelo sobre áreas pobladas conocidas o sobre reuniones de personas)' },
+        { id: 'opBVLOS', label: 'Operaciones BVLOS' },
+        { id: 'opBajaAlt', label: 'Operaciones a baja altitud (menos de 500 pies)' },
+        { id: 'espNoSegreg', label: 'Vuelos en espacio aéreo no segregado' },
+        { id: 'transpDepCarg', label: 'Transporte y/o depósito de carga' },
+        { id: 'transpMercPelig', label: 'Transporte de mercancías peligrosas' },
+        { id: 'opMultUASyEnjamb', label: 'Operaciones con múltiples UAS y enjambres' },
+        { id: 'lanzRecpUAeqEsp', label: 'Lanzamiento y recuperación de la UA usando equipo especial' },
+        { id: 'terrenMonta', label: 'Vuelo sobre terreno montañoso' },
+        { id: 'altoGradAutomat', label: 'Operaciones con un alto grado de automatización' },
+        { id: '120mAltAGL', label: 'Operaciones a más de 120m de altura AGL' },
+        { id: 'UASPotenNoElec', label: 'Operaciones con UAS con planta de potencia no eléctrica' },
+        { id: 'espAerContrlFIZ', label: 'Operaciones en espacio aéreo controlado y FIZ' },
+        { id: 'entDromoAeroPuertHeli', label: 'Operaciones en entorno de aeródromos, aeropuertos y helipuertos' },
+        { id: 'esparcirSustancMateriales', label: 'Operaciones que impliquen esparcir o dejar caer sustancias o materiales' }
+    ];
+
+    const addCategory = () => {
+        if (currentSelection && !selectedCategories.includes(currentSelection)) {
+            setSelectedCategories([...selectedCategories, currentSelection]);
+            setConopsDocs((prev) => ({
+                ...prev,
+                [currentSelection]: {
+                    certificate: null,
+                    dateExpire: null,
+                    dateIndefinite: null,
+                },
+            }));
+            setCurrentSelection(""); // Reset select
+        }
+    };
+
+    const removeCategory = (id: string) => {
+        setSelectedCategories(selectedCategories.filter(catId => catId !== id));
+        setConopsDocs((prev) => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+        });
+    };
+
+    const handleFormDateChange = (key: string, value: string) => {
+        setFormValues((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleConopsFileChange = (catId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+        if (!file) {
+            setConopsDocs((prev) => ({
+                ...prev,
+                [catId]: {
+                    ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                    certificate: null,
+                },
+            }));
+            return;
+        }
+
+        const validationError = validateFile(file, false);
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: file,
+            },
+        }));
+        setError("");
+    };
+
+    const handleConopsClearFile = (catId: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: null,
+            },
+        }));
+        const input = document.getElementById(`file-${catId}`) as HTMLInputElement | null;
+        if (input) input.value = "";
+    };
+
+    const handleConopsDateChange = (catId: string, value: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                dateExpire: value || null,
+                dateIndefinite: false,
+            },
+        }));
+    };
+
+    const handleConopsToggleIndefinite = (catId: string) => {
+        setConopsDocs((prev) => {
+            const current = prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null };
+            const nextIndefinite = !current.dateIndefinite;
+            return {
+                ...prev,
+                [catId]: {
+                    ...current,
+                    dateIndefinite: nextIndefinite,
+                    dateExpire: nextIndefinite ? null : current.dateExpire,
+                },
+            };
+        });
+    };
+
     return (
         <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
             <div className="container" style={{ maxWidth: "1000px" }}>
                 <h2 className="text-center mb-4 fw-normal" style={{ color: "#1E1E1E" }}>
-                Formulario Registro Usuario
+                    Formulario Registro Usuario
                 </h2>
 
                 <div className="card shadow-sm p-4" style={{ borderRadius: "8px", border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}>
@@ -358,7 +583,7 @@ function FormUser() {
                             
                             <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
                                 <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                                    {selectedFile ? selectedFile.name : "No hay archivo"}
+                                    {selectedFiles.profilePicture ? selectedFiles.profilePicture.name : "No hay archivo"}
                                 </span>
 
                                 <input
@@ -373,16 +598,16 @@ function FormUser() {
                                     <label
                                         htmlFor="file-upload"
                                         className="btn btn-success"
-                                        style={{ cursor: "pointer", borderTopRightRadius: selectedFile ? "0" : "4px", borderBottomRightRadius: selectedFile ? "0" : "4px" }}
+                                        style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.profilePicture ? "0" : "4px", borderBottomRightRadius: selectedFiles.profilePicture ? "0" : "4px" }}
                                     >
                                         Seleccionar archivo
                                     </label>
 
-                                    {selectedFile && (
+                                    {selectedFiles.profilePicture && (
                                         <button
                                             type="button"
                                             className="btn btn-danger"
-                                            onClick={handleClearFile}
+                                            onClick={() => handleClearFile('profilePicture', 'file-upload')}
                                             style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
                                             title="Eliminar archivo seleccionado"
                                         >
@@ -422,308 +647,29 @@ function FormUser() {
                     {/* Error message */}
                     {error && <p className="text-danger">{error}</p>}
 
-                    {/* SECCIÓN OPCIONAL (Acordeón visual) */}
-                    <div className="mb-3">
-                        <button 
-                            type="button" 
-                            className="btn btn-sm w-100 d-flex justify-content-between align-items-center" 
-                            style={{ backgroundColor: "#F9FAFB", border: "1px dashed #D1D5DB", color: "#6B7280" }}
-                            onClick={() => setShowOptional(!showOptional)}
-                        >
-                            {/* Left Side: Icon + Text */}
-                            {/* <div className="d-flex align-items-center"> */}
-                                <span className="fw-medium">
-                                    {showOptional ? "− Ocultar certificados" : "+ Añadir certificados"}
-                                </span>
-                            {/* </div> */}
-
-                            {/* Right side (Empty or could have a small chevron) */}
-                            <span></span>
-                        </button>
-
-                        {showOptional && (
-                            <div className="mt-3 animate__animated animate__fadeIn">
-                                
-                                {/* Categoría Abierta */}
-                                <div className="p-3 mb-3 border rounded-3 drone-check" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Categoría Abierta
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {infoText}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Subcategoría A1 / A3 */}
-                                    <div className="mb-4">
-                                        {/* Row 1: Subcategory Name */}
-                                        <div className="row">
-                                            <div className="col-12 text-start">
-                                                <div className="form-check">
-                                                    <input 
-                                                        className="form-check-input shadow-none" 
-                                                        type="checkbox" 
-                                                        id="chkA1A3"
-                                                        checked={activeChecks.chkA1A3}
-                                                        onChange={() => handleCheckChange('chkA1A3')} 
-                                                    />
-                                                    <label className="form-check-label small fw-bold" htmlFor="chkA1A3">
-                                                        A1 / A3 (Prueba de superación)
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Row 2: Inputs (Conditional) */}
-                                        {activeChecks.chkA1A3 && (
-                                            <div className="row g-2 mt-1 ms-3 fade-in-input text-start">
-                                                <div className="col-12 col-md-5">
-                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                                                        Certificado PDF
-                                                    </small>
-                                                    <input 
-                                                        type="file" 
-                                                        className="form-control form-control-sm"
-                                                        onChange={(e) => handleFileChange(e, 'fileA1A3')}
-                                                        accept=".pdf,.jpg,.png"
-                                                    />
-                                                </div>
-                                                <div className="col-12 col-md-4">
-                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                                                        Vencimiento
-                                                    </small>
-                                                    <div className="input-group input-group-sm mb-1">
-                                                        <input 
-                                                            type="date" 
-                                                            className="form-control"
-                                                            disabled={activeChecks.indefiniteA1A3}
-                                                            value={activeChecks.indefiniteA1A3 ? "" : formValues.dateA1A3}
-                                                            onChange={(e) => setFormValues({...formValues, dateA1A3: e.target.value})}
-                                                        />
-                                                    </div>
-                                                    <div className="form-check text-start">
-                                                        <input 
-                                                            className="form-check-input shadow-none" 
-                                                            type="checkbox" 
-                                                            id="indefiniteA1A3"
-                                                            checked={activeChecks.indefiniteA1A3}
-                                                            onChange={() => handleCheckChange('indefiniteA1A3')} 
-                                                        />
-                                                        <label className="form-check-label text-muted text-start" htmlFor="indefiniteA1A3" style={{ fontSize: "0.65rem" }}>
-                                                            Indefinido
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Subcategoría A2 */}
-                                    <div className="mb-2">
-                                        {/* Row 1: Subcategory Name */}
-                                        <div className="row">
-                                            <div className="col-12 text-start">
-                                                <div className="form-check">
-                                                    <input 
-                                                        className="form-check-input shadow-none" 
-                                                        type="checkbox" 
-                                                        id="chkA2" 
-                                                        checked={activeChecks.chkA2}
-                                                        onChange={() => handleCheckChange('chkA2')} 
-                                                    />
-                                                    <label className="form-check-label small fw-bold" htmlFor="chkA2">
-                                                        A2 (Certificado de aptitud)
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Row 2: Inputs (Conditional) */}
-                                        {activeChecks.chkA2 && (
-                                            <div className="row g-2 mt-1 ms-3 fade-in-input text-start">
-                                                <div className="col-12 col-md-5">
-                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                                                        Certificado PDF
-                                                    </small>
-                                                    <input 
-                                                        type="file" 
-                                                        className="form-control form-control-sm"
-                                                        onChange={(e) => handleFileChange(e, 'fileA2')}
-                                                        accept=".pdf,.jpg,.png"
-                                                    />
-                                                </div>
-                                                <div className="col-12 col-md-4">
-                                                    <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                                                        Vencimiento
-                                                    </small>
-                                                    <div className="input-group input-group-sm mb-1">
-                                                        <input 
-                                                            type="date" 
-                                                            className="form-control"
-                                                            disabled={activeChecks.indefiniteA2}
-                                                            value={activeChecks.indefiniteA2 ? "" : formValues.dateA2}
-                                                            onChange={(e) => setFormValues({...formValues, dateA2: e.target.value})}
-                                                        />
-                                                    </div>
-                                                    <div className="form-check text-start">
-                                                        <input 
-                                                            className="form-check-input shadow-none" 
-                                                            type="checkbox" 
-                                                            id="indefiniteA2"
-                                                            checked={activeChecks.indefiniteA2}
-                                                            onChange={() => handleCheckChange('indefiniteA2')} 
-                                                        />
-                                                        <label className="form-check-label text-muted text-start" htmlFor="indefiniteA2" style={{ fontSize: "0.65rem" }}>
-                                                            Indefinido
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* CATEGORÍA ESPECÍFICA - STS */}
-                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Categoría específica escenarios estándar
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {infoText}
-                                            </span>
-                                        </div>
-                                    </div>
-                                            
-                                    {/* Row 1: STS Checkbox */}
-                                    <div className="row">
-                                        <div className="col-12 text-start">
-                                            <div className="form-check">
-                                                <input 
-                                                    className="form-check-input shadow-none" 
-                                                    type="checkbox" 
-                                                    id="chkSTS01" 
-                                                    checked={activeChecks.chkSTS01}
-                                                    onChange={() => handleCheckChange('chkSTS01')} 
-                                                />
-                                                <label className="form-check-label small fw-bold" htmlFor="chkSTS01">
-                                                    STS europeo
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Row 2: Inputs (Indented without border) */}
-                                    {activeChecks.chkSTS01 && (
-                                        <div className="row g-2 mt-1 ms-3 fade-in-input text-start">
-                                            <div className="col-12 col-md-5">
-                                                <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                                                    Certificado PDF
-                                                </small>
-                                                <input 
-                                                    type="file" 
-                                                    className="form-control form-control-sm"
-                                                    onChange={(e) => handleFileChange(e, 'fileSTS')}
-                                                    accept=".pdf,.jpg,.png"
-                                                />
-                                            </div>
-                                            <div className="col-12 col-md-4">
-                                                <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                                                    Vencimiento
-                                                </small>
-                                                <div className="input-group input-group-sm mb-1">
-                                                    <input 
-                                                        type="date" 
-                                                        className="form-control"
-                                                        disabled={activeChecks.indefiniteSTS}
-                                                        value={activeChecks.indefiniteSTS ? "" : formValues.dateSTS}
-                                                        onChange={(e) => setFormValues({...formValues, dateSTS: e.target.value})}
-                                                    />
-                                                </div>
-                                                <div className="form-check text-start">
-                                                    <input 
-                                                        className="form-check-input shadow-none" 
-                                                        type="checkbox" 
-                                                        id="indefiniteSTS"
-                                                        checked={activeChecks.indefiniteSTS}
-                                                        onChange={() => handleCheckChange('indefiniteSTS')} 
-                                                    />
-                                                    <label className="form-check-label text-muted text-start" htmlFor="indefiniteSTS" style={{ fontSize: "0.65rem" }}>
-                                                        Indefinido
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* CATEGORÍA ESPECÍFICA - AUTORIZACIÓN */}
-                                <div className="p-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <h6 className="fw-bold mb-3" style={{ color: "#2F8F5B" }}>Bajo Autorización / Otros</h6>
-                                    <div className="row align-items-center mb-2 g-2">
-                                        <div className="col-12 col-md-4">
-                                            <div className="form-check">
-                                                <input className="form-check-input" type="checkbox" id="chkSora" />
-                                                <label className="form-check-label small" htmlFor="chkSora">SORA / Autorización</label>
-                                            </div>
-                                        </div>
-                                        <div className="col-12 col-md-8">
-                                                <input 
-                                                    className="form-check-input" 
-                                                    type="checkbox" 
-                                                    id="chkSora" 
-                                                    checked={activeChecks.chkSora}
-                                                    onChange={() => handleCheckChange('chkSora')} 
-                                                />
-                                        </div>
-                                    </div>
-                                    <div className="row align-items-center g-2">
-                                        <div className="col-12 col-md-4">
-                                            <div className="form-check">
-                                                <input className="form-check-input" type="checkbox" id="chkLuc" />
-                                                <label className="form-check-label small" htmlFor="chkLuc">Certificado LUC</label>
-                                            </div>
-                                        </div>
-                                        <div className="col-12 col-md-8">
-                                                <input 
-                                                    className="form-check-input" 
-                                                    type="checkbox" 
-                                                    id="chkLuc" 
-                                                    checked={activeChecks.chkLuc}
-                                                    onChange={() => handleCheckChange('chkLuc')} 
-                                                />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <UserCertificatesSection
+                        showOptional={showOptional}
+                        onToggleOptional={() => setShowOptional(!showOptional)}
+                        infoText={infoText}
+                        activeChecks={activeChecks as Record<string, boolean>}
+                        selectedFiles={selectedFiles}
+                        formValues={formValues}
+                        onToggleCheck={handleCheckChange}
+                        onFileChange={handleFileChange}
+                        onClearFile={handleClearFile}
+                        conopsCategories={CONOPS_CATEGORIES}
+                        selectedCategories={selectedCategories}
+                        currentSelection={currentSelection}
+                        onCurrentSelectionChange={setCurrentSelection}
+                        onAddCategory={addCategory}
+                        onRemoveCategory={removeCategory}
+                        conopsDocs={conopsDocs}
+                        onConopsFileChange={handleConopsFileChange}
+                        onConopsClearFile={handleConopsClearFile}
+                        onConopsDateChange={handleConopsDateChange}
+                        onConopsToggleIndefinite={handleConopsToggleIndefinite}
+                        onFormDateChange={handleFormDateChange}
+                    />
 
                     <div className="d-flex gap-2 mt-3 justify-content-center">
                         <button type="submit" className="btn btn-success">
@@ -752,7 +698,4 @@ function FormUser() {
 }
 
 export default FormUser
-
-
-
 

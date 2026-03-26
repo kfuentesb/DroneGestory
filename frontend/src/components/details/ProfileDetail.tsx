@@ -78,6 +78,7 @@ export default function ProfileDetail() {
             allowDelete={false}
             onBack={() => navigate("/home")}
             validateForm={validateForm}
+            showCertificates
         />
     );
 }
