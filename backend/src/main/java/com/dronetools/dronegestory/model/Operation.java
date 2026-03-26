@@ -103,16 +103,15 @@ public class Operation {
     
     // Verificar que todos los anexos están FIRMADOS
     public boolean todosAnexosFirmados(){
-        Anexo4 a4 = getAnexo4Actual();
-        Anexo5 a5 = getAnexo5Actual();
-        Anexo6 a6 = getAnexo6Actual();
-        Anexo7 a7 = getAnexo7Actual();
-        Anexo8 a8 = getAnexo8Actual();
+        return esFirmado(getAnexo4Actual()) &&
+                esFirmado(getAnexo5Actual()) &&
+                esFirmado(getAnexo6Actual()) &&
+                esFirmado(getAnexo7Actual()) &&
+                esFirmado(getAnexo8Actual());
+    }
 
-        return a4 != null && a4.getEstado() == AnexoStatus.FIRMADO &&
-                a5 != null && a5.getEstado() == AnexoStatus.FIRMADO &&
-                a6 != null && a6.getEstado() == AnexoStatus.FIRMADO &&
-                a7 != null && a7.getEstado() == AnexoStatus.FIRMADO &&
-                a8 != null && a8.getEstado() == AnexoStatus.FIRMADO;
+    // Helper
+    private boolean esFirmado(AnexoVersionado anexo) {
+        return anexo != null && anexo.getEstado() == AnexoStatus.FIRMADO;
     }
 }
