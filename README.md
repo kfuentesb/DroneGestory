@@ -103,3 +103,4 @@ FUNCIONAL<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Añadir paginación a las vistas con tablas.<br>
 -Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
+-Cambiar el fetch post de ProfileDetail.tsx y el backend de usuario para que no permita la subida de nombre de usuario<br>
