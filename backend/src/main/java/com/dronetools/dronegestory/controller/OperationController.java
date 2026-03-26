@@ -1,12 +1,11 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.OperationDTO;
+import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
+import com.dronetools.dronegestory.dto.operation.OperationListDTO;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
-import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.service.OperationService;
 import com.dronetools.dronegestory.service.UserService;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,56 +22,51 @@ public class OperationController {
     private final OperationService operationService;
     private final UserService userService;
 
-    // Obtener todas las operaciones
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public List<OperationDTO> getAll() {
+    public List<OperationListDTO> getAll() {
         return operationService.getAllOperations()
                 .stream()
-                .map(OperationDTO::new)
+                .map(OperationListDTO::new)
                 .toList();
     }
 
     @GetMapping("/details/mine")
-    public List<OperationDTO> getMyOperations(Authentication authentication) {
+    public List<OperationListDTO> getMyOperations(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        List<Operation> ops = operationService.findOperationsByUserId(user.getId());
-        return ops.stream().map(OperationDTO::new).toList();
+        return operationService.findOperationsByUserId(user.getId())
+                .stream()
+                .map(OperationListDTO::new)
+                .toList();
     }
 
-    // Crear una nueva operación
-//    @PostMapping
-//    public Operation create(@ModelAttribute Operation op) {
-//        return operationService.saveOperation(op);
-//    }
-
     @PostMapping
-    public OperationDTO create(@ModelAttribute Operation op, Principal principal) {
+    public OperationDetailDTO create(@ModelAttribute Operation op, Principal principal) {
         User user = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         op.setCreador(user);
-        Operation savedOp = operationService.saveOperation(op);
-        return new OperationDTO(savedOp);
+        return new OperationDetailDTO(operationService.saveOperation(op));
     }
 
-    // Actualizar una operación existente
     @PutMapping("/{operationId}")
-    public Operation update(@PathVariable Long operationId, @ModelAttribute Operation op) {
-        return operationService.updateOperation(operationId, op);
+    public OperationDetailDTO update(@PathVariable Long operationId, @ModelAttribute Operation op) {
+        return new OperationDetailDTO(operationService.updateOperation(operationId, op));
     }
 
-    // Obtener una operación por su ID
+    @PutMapping("/{operationId}/completar")
+    public OperationDetailDTO completar(@PathVariable Long operationId) {
+        return new OperationDetailDTO(operationService.completarOperation(operationId));
+    }
+
     @GetMapping("/{operationId}")
-    public Operation getById(@PathVariable Long operationId) {
-        return operationService.findById(operationId);
+    public OperationDetailDTO getById(@PathVariable Long operationId) {
+        return new OperationDetailDTO(operationService.findById(operationId));
     }
 
-    // Borrar una operación
     @DeleteMapping("/{operationId}")
     public void delete(@PathVariable Long operationId) {
         operationService.deleteOperation(operationId);
     }
-
 }

@@ -38,7 +38,7 @@ export function ReusableTable<T>({
           ) : (
             rows.map((row, idx) => (
               <tr
-                key={(row as any).id ?? idx}
+                key={(row as any).id ?? (row as any).idOperacion ?? idx}
                 style={{ cursor: onRowClick ? "pointer" : "default" }}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >

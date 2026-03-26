@@ -7,71 +7,116 @@ import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class AnexoServiceBase<T extends Anexo> {
 
     protected final AnexoBaseRepository<T, Long> repository;
     protected final OperationRepository operationRepository;
 
-    public AnexoServiceBase(AnexoBaseRepository<T, Long> repository, OperationRepository operationRepository) {
+    public AnexoServiceBase(AnexoBaseRepository<T, Long> repository,
+                            OperationRepository operationRepository) {
         this.repository = repository;
         this.operationRepository = operationRepository;
     }
 
     @Transactional
-    public T registrarAnexo(Long operationId, T datosNuevos, GetUltimaVersionFunction<Operation, T> getUltimaVersion, GetNextVersionFunction<Operation> getNextVersion) {
+    public T registrarAnexo(Long operationId,
+                            T datosNuevos,
+                            GetUltimaVersionFunction<Operation, T> getUltimaVersion,
+                            GetNextVersionFunction<Operation> getNextVersion) {
         Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
 
-        // BLOQUEO SEGÚN ESTADO
-        if (op.getEstado() == OperationStatus.COMPLETADA) {
-            throw new RuntimeException("La operación está COMPLETADA y no admite más cambios.");
+        validarOperacionEditable(op);
+
+        T ultimaVersion = getUltimaVersion.get(op);
+        if (ultimaVersion == null) {
+            return crearNuevaVersion(op, datosNuevos, getNextVersion);
         }
-
-        // Obtener la última versión
-        T actual = getUltimaVersion.get(op);
-
-        if (actual != null && actual.getEstado() == AnexoStatus.BORRADOR) {
-            actualizarCampos(actual, datosNuevos);
-            return repository.save(actual);
-        } else {
-            datosNuevos.setOperation(op);
-            datosNuevos.setNumeroVersion(getNextVersion.get(op));
-            datosNuevos.setEstado(AnexoStatus.BORRADOR);
-            return repository.save(datosNuevos);
+        if (ultimaVersion.getEstado() == AnexoStatus.BORRADOR) {
+            actualizarCampos(ultimaVersion, datosNuevos);
+            return repository.save(ultimaVersion);
         }
+        throw new RuntimeException("El anexo actual está firmado. Usa rehacer para crear una nueva versión.");
     }
 
-    /**
-     * Debes sobreescribir este método en cada subclase para copiar campos específicos.
-     * Si los campos son iguales, puedes hacerlo aquí; si no, que lo implemente cada hijo.
-     */
-    protected abstract void actualizarCampos(T actual, T nuevosDatos);
+    @Transactional
+    public T rehacerAnexo(Long idAnexoOrigen, GetNextVersionFunction<Operation> getNextVersion) {
+        T anexoOrigen = repository.findById(idAnexoOrigen)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexoOrigen));
+
+        if (anexoOrigen.getEstado() != AnexoStatus.FIRMADO) {
+            throw new RuntimeException("Solo se puede rehacer desde una versión firmada");
+        }
+
+        Operation op = anexoOrigen.getOperation();
+        validarOperacionEditable(op);
+
+        repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
+                .ifPresent(anexo -> {
+                    throw new RuntimeException("Ya existe un borrador para este anexo. Debes editarlo o firmarlo antes.");
+                });
+
+        T nuevaVersion = crearCopia(anexoOrigen);
+        nuevaVersion.setOperation(op);
+        nuevaVersion.setNumeroVersion(getNextVersion.get(op));
+        nuevaVersion.setEstado(AnexoStatus.BORRADOR);
+        nuevaVersion.setFirmadoPor(null);
+        nuevaVersion.setFechaFirma(null);
+        return repository.save(nuevaVersion);
+    }
 
     @Transactional
     public T firmarAnexo(Long idAnexo, String username) {
         T anexo = repository.findById(idAnexo)
-                .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexo));
+
+        validarOperacionEditable(anexo.getOperation());
+
+        if (anexo.getEstado() == AnexoStatus.FIRMADO) {
+            throw new RuntimeException("Anexo ya está firmado");
+        }
 
         anexo.setEstado(AnexoStatus.FIRMADO);
         anexo.setFirmadoPor(username);
         anexo.setFechaFirma(java.time.LocalDate.now());
-
-        T guardado = repository.save(anexo);
-
-        Operation op = guardado.getOperation();
-        // Si todos están firmados, cerramos la operación definitivamente
-        if (op.todosAnexosFirmados()) {
-            op.setEstado(OperationStatus.COMPLETADA);
-            operationRepository.save(op);
-        }
-
-        return guardado;
+        return repository.save(anexo);
     }
 
-    // Funcionales para versión genérica, para operar con métodos propios de Operation
+    private T crearNuevaVersion(Operation op, T datos, GetNextVersionFunction<Operation> getNextVersion) {
+        datos.setOperation(op);
+        datos.setNumeroVersion(getNextVersion.get(op));
+        datos.setEstado(AnexoStatus.BORRADOR);
+        return repository.save(datos);
+    }
+
+    private void validarOperacionEditable(Operation op) {
+        if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
+            throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
+        }
+    }
+
+    private boolean esAdminActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
+    protected abstract T crearCopia(T origen);
+    protected abstract void actualizarCampos(T actual, T nuevosDatos);
+
     @FunctionalInterface
-    public interface GetUltimaVersionFunction<O, T> { T get(O op); }
+    public interface GetUltimaVersionFunction<O, T> {
+        T get(O op);
+    }
+
     @FunctionalInterface
-    public interface GetNextVersionFunction<O> { int get(O op); }
+    public interface GetNextVersionFunction<O> {
+        int get(O op);
+    }
 }

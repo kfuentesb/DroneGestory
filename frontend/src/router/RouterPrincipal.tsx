@@ -17,6 +17,8 @@ import AircraftDetail from "../components/details/AircraftDetail";
 import OperationList from "../components/lists/OperationList";
 import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
+import OperationDetail from "../components/details/OperationDetail";
+import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -58,7 +60,12 @@ export default class RouterPrincipal extends React.Component {
         {/* Operations */}
         <Route path="/auth/operations" element={<OperationList />} />
         <Route path="/auth/operations/details/mine" element={<MyOperationList />} />
-        <Route path="/auth/operations/:id" element={<OperationList />} />
+        <Route path="/auth/operations/:id" element={<OperationDetail />} />
+        <Route path="/auth/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
+        <Route path="/auth/operations/:id/anexo5" element={<OperationAnexoDetail tipoAnexo={5} />} />
+        <Route path="/auth/operations/:id/anexo6" element={<OperationAnexoDetail tipoAnexo={6} />} />
+        <Route path="/auth/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
+        <Route path="/auth/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/auth/register-operation" element={<MultiStepsForm />} />
         
 
