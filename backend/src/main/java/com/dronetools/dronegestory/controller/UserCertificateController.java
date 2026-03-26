@@ -31,7 +31,7 @@ public class UserCertificateController {
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #userId == authentication.principal.id")
     public List<UserCertificateDTO> getByUserId(@PathVariable Integer userId) {
         return userCertificateService.findByUserId(userId);
     }

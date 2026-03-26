@@ -4,11 +4,11 @@ import './generic-form.css';
 import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
-import InsertDoc from '../commons/InsertDoc';
+import { staticCertificateFields as staticCertificateConfig } from '../users/staticCertificateFields';
+import UserCertificatesSection from '../users/UserCertificatesSection';
 
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
-import infoIcon from '../../assets/commons/info_white.svg';
 
 type CertificateFieldPayload = {
     certificate: File | null;
@@ -190,17 +190,13 @@ function FormUser() {
         if (fileInput) fileInput.value = "";
     };
 
-    const staticCertificateFields = [
-        { key: "a1a3", enabled: activeChecks.chkA1A3, file: selectedFiles.fileA1A3, date: formValues.dateA1A3, indefinite: activeChecks.indefiniteA1A3 },
-        { key: "a2", enabled: activeChecks.chkA2, file: selectedFiles.fileA2, date: formValues.dateA2, indefinite: activeChecks.indefiniteA2 },
-        { key: "sts", enabled: activeChecks.chkSTS01, file: selectedFiles.fileSTS, date: formValues.dateSTS, indefinite: activeChecks.indefiniteSTS },
-        { key: "formacionTeoricaGenerica", enabled: activeChecks.chkFormcnTeoricaGen, file: selectedFiles.fileFTG, date: formValues.dateFTG, indefinite: activeChecks.indefiniteFTG },
-        { key: "formacionPracticaGenerica", enabled: activeChecks.chkFormcnPracticaGen, file: selectedFiles.fileFPG, date: formValues.dateFPG, indefinite: activeChecks.indefiniteFPG },
-        { key: "radiofonistaTeorico", enabled: activeChecks.chkFormCertTeor, file: selectedFiles.fileCT, date: formValues.dateCT, indefinite: activeChecks.indefiniteCT },
-        { key: "radiofonistaPractico", enabled: activeChecks.chkFormCertPract, file: selectedFiles.fileCP, date: formValues.dateCP, indefinite: activeChecks.indefiniteCP },
-        { key: "medicoClase2", enabled: activeChecks.chkFormCMClase2, file: selectedFiles.fileCMC2, date: formValues.dateCMC2, indefinite: activeChecks.indefiniteCMC2 },
-        { key: "medicoClaseLAPL", enabled: activeChecks.chkFormCMClaseLAPL, file: selectedFiles.fileCMCLAPL, date: formValues.dateCMCLAPL, indefinite: activeChecks.indefiniteCMCLAPL },
-    ] as const;
+    const staticCertificateFields = staticCertificateConfig.map((field) => ({
+        key: field.key,
+        enabled: Boolean(activeChecks[field.enabledKey as keyof typeof activeChecks]),
+        file: selectedFiles[field.fileKey as keyof typeof selectedFiles],
+        date: formValues[field.dateKey as keyof typeof formValues],
+        indefinite: Boolean(activeChecks[field.indefiniteKey as keyof typeof activeChecks]),
+    }));
 
     const buildCertificatesPayload = (): CertificateUploadData => {
         const metadata: CertificateUploadMetadata[] = [];
@@ -392,6 +388,77 @@ function FormUser() {
         });
     };
 
+    const handleFormDateChange = (key: string, value: string) => {
+        setFormValues((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleConopsFileChange = (catId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+        if (!file) {
+            setConopsDocs((prev) => ({
+                ...prev,
+                [catId]: {
+                    ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                    certificate: null,
+                },
+            }));
+            return;
+        }
+
+        const validationError = validateFile(file, false);
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: file,
+            },
+        }));
+        setError("");
+    };
+
+    const handleConopsClearFile = (catId: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: null,
+            },
+        }));
+        const input = document.getElementById(`file-${catId}`) as HTMLInputElement | null;
+        if (input) input.value = "";
+    };
+
+    const handleConopsDateChange = (catId: string, value: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                dateExpire: value || null,
+                dateIndefinite: false,
+            },
+        }));
+    };
+
+    const handleConopsToggleIndefinite = (catId: string) => {
+        setConopsDocs((prev) => {
+            const current = prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null };
+            const nextIndefinite = !current.dateIndefinite;
+            return {
+                ...prev,
+                [catId]: {
+                    ...current,
+                    dateIndefinite: nextIndefinite,
+                    dateExpire: nextIndefinite ? null : current.dateExpire,
+                },
+            };
+        });
+    };
+
     return (
         <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
             <div className="container" style={{ maxWidth: "1000px" }}>
@@ -580,450 +647,29 @@ function FormUser() {
                     {/* Error message */}
                     {error && <p className="text-danger">{error}</p>}
 
-                    {/* SECCIÓN OPCIONAL (Acordeón visual) */}
-                    <div className="mb-3">
-                        <button 
-                            type="button" 
-                            className="btn btn-sm w-100 d-flex justify-content-between align-items-center" 
-                            style={{ backgroundColor: "#F9FAFB", border: "1px dashed #D1D5DB", color: "#6B7280" }}
-                            onClick={() => setShowOptional(!showOptional)}
-                        >
-                            <span className="fw-medium">
-                                {showOptional ? "- Ocultar certificados" : "+ Añadir certificados"}
-                            </span>
-                        </button>
-
-                        {showOptional && (
-                            <div className="mt-3 animate__animated animate__fadeIn">
-                                
-                                {/* Categoría Abierta */}
-                                <div className="p-3 mb-3 border rounded-3 drone-check" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Categoría Abierta
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {infoText}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Subcategoría A1 / A3 */}
-                                    <InsertDoc
-                                        className="mb-4"
-                                        checkboxId="chkA1A3"
-                                        checkboxLabel="A1 / A3 (Prueba de superación)"
-                                        isChecked={activeChecks.chkA1A3}
-                                        onToggleCheck={() => handleCheckChange('chkA1A3')}
-                                        fileInputId="file-upload-a1a3"
-                                        selectedFile={selectedFiles.fileA1A3}
-                                        onFileChange={(e) => handleFileChange(e, 'fileA1A3')}
-                                        onClearFile={() => handleClearFile('fileA1A3', 'file-upload-a1a3')}
-                                        expirationDate={formValues.dateA1A3}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateA1A3: value })}
-                                        indefiniteId="indefiniteA1A3"
-                                        isIndefinite={activeChecks.indefiniteA1A3}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteA1A3')}
-                                    />
-
-                                    {/* Subcategoría A2 */}
-                                    <InsertDoc
-                                        className="mb-2"
-                                        checkboxId="chkA2"
-                                        checkboxLabel="A2 (Certificado de aptitud)"
-                                        isChecked={activeChecks.chkA2}
-                                        onToggleCheck={() => handleCheckChange('chkA2')}
-                                        fileInputId="file-upload-a2"
-                                        selectedFile={selectedFiles.fileA2}
-                                        onFileChange={(e) => handleFileChange(e, 'fileA2')}
-                                        onClearFile={() => handleClearFile('fileA2', 'file-upload-a2')}
-                                        expirationDate={formValues.dateA2}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateA2: value })}
-                                        indefiniteId="indefiniteA2"
-                                        isIndefinite={activeChecks.indefiniteA2}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteA2')}
-                                    />
-                                </div>
-
-                                {/* CATEGORÍA ESPECÍFICA - STS */}
-                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Categoría específica escenarios estándar
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {infoText}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <InsertDoc
-                                        checkboxId="chkSTS01"
-                                        checkboxLabel="STS europeo"
-                                        isChecked={activeChecks.chkSTS01}
-                                        onToggleCheck={() => handleCheckChange('chkSTS01')}
-                                        fileInputId="file-upload-sts"
-                                        selectedFile={selectedFiles.fileSTS}
-                                        onFileChange={(e) => handleFileChange(e, 'fileSTS')}
-                                        onClearFile={() => handleClearFile('fileSTS', 'file-upload-sts')}
-                                        expirationDate={formValues.dateSTS}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateSTS: value })}
-                                        indefiniteId="indefiniteSTS"
-                                        isIndefinite={activeChecks.indefiniteSTS}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteSTS')}
-                                    />
-                                </div>
-
-                                {/* CATEGORÍA ESPECÍFICA - Bajo autorización */}
-                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Categoría específica bajo autorización
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {"info"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <InsertDoc
-                                        className="mb-4"
-                                        checkboxId="chkFormcnTeoricaGen"
-                                        checkboxLabel="Formación teórica genérica"
-                                        isChecked={activeChecks.chkFormcnTeoricaGen}
-                                        onToggleCheck={() => handleCheckChange('chkFormcnTeoricaGen')}
-                                        fileInputId="file-upload-ftg"
-                                        selectedFile={selectedFiles.fileFTG}
-                                        onFileChange={(e) => handleFileChange(e, 'fileFTG')}
-                                        onClearFile={() => handleClearFile('fileFTG', 'file-upload-ftg')}
-                                        expirationDate={formValues.dateFTG}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateFTG: value })}
-                                        indefiniteId="indefiniteFTG"
-                                        isIndefinite={activeChecks.indefiniteFTG}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteFTG')}
-                                    />
-                                    <InsertDoc
-                                        className="mb-2"
-                                        checkboxId="chkFormcnPracticaGen"
-                                        checkboxLabel="Formación práctica genérica"
-                                        isChecked={activeChecks.chkFormcnPracticaGen}
-                                        onToggleCheck={() => handleCheckChange('chkFormcnPracticaGen')}
-                                        fileInputId="file-upload-fpg"
-                                        selectedFile={selectedFiles.fileFPG}
-                                        onFileChange={(e) => handleFileChange(e, 'fileFPG')}
-                                        onClearFile={() => handleClearFile('fileFPG', 'file-upload-fpg')}
-                                        expirationDate={formValues.dateFPG}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateFPG: value })}
-                                        indefiniteId="indefiniteFPG"
-                                        isIndefinite={activeChecks.indefiniteFPG}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteFPG')}
-                                    />
-                                    <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                        <div className="d-flex align-items-center mb-3">
-                                            <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                                Formaciónes específica Concepto de Operaciones (ConOps)
-                                            </h6>
-                                        </div>
-
-                                        {/* SELECT AND ADD BUTTON */}
-                                        <div className="d-flex gap-2 mb-4">
-                                            <select 
-                                            className="form-select" 
-                                            value={currentSelection}
-                                            onChange={(e) => setCurrentSelection(e.target.value)}
-                                            >
-                                            <option value="">Seleccionar formación específica...</option>
-                                            {CONOPS_CATEGORIES.filter(cat => !selectedCategories.includes(cat.id)).map(cat => (
-                                                <option key={cat.id} value={cat.id}>{cat.label}</option>
-                                            ))}
-                                            </select>
-                                            <button 
-                                            type="button"
-                                            className="btn btn-success" 
-                                            onClick={addCategory}
-                                            disabled={!currentSelection}
-                                            >
-                                            Añadir
-                                            </button>
-                                        </div>
-
-                                        {/* DYNAMIC LIST OF INSERTDOCS */}
-                                        {selectedCategories.map((catId) => {
-                                            const categoryData = CONOPS_CATEGORIES.find(c => c.id === catId);
-
-                                            if (!categoryData) return null;
-                                            return (
-                                            <div key={catId} className="position-relative border-bottom pb-3 mb-3">
-                                                {/* Remove Button */}
-                                                <button 
-                                                type="button"
-                                                onClick={() => removeCategory(catId)}
-                                                className="btn btn-sm btn-outline-danger position-absolute end-0 top-0"
-                                                style={{ zIndex: 10 }}
-                                                >
-                                                    &times; Eliminar
-                                                </button>
-
-                                                <InsertDoc
-                                                showCheckbox={false}
-                                                checkboxId={`chk-${catId}`}
-                                                checkboxLabel={categoryData.label}
-                                                isChecked={true}
-                                                onToggleCheck={() => null}
-                                                fileInputId={`file-${catId}`}
-                                                selectedFile={conopsDocs[catId]?.certificate ?? null}
-                                                onFileChange={(e) => {
-                                                    const file = e.target.files?.[0] ?? null;
-                                                    if (!file) {
-                                                        setConopsDocs((prev) => ({
-                                                            ...prev,
-                                                            [catId]: {
-                                                                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                                                                certificate: null,
-                                                            },
-                                                        }));
-                                                        return;
-                                                    }
-
-                                                    const validationError = validateFile(file, false);
-                                                    if (validationError) {
-                                                        setError(validationError);
-                                                        return;
-                                                    }
-
-                                                    setConopsDocs((prev) => ({
-                                                        ...prev,
-                                                        [catId]: {
-                                                            ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                                                            certificate: file,
-                                                        },
-                                                    }));
-                                                    setError("");
-                                                }}
-                                                onClearFile={() => {
-                                                    setConopsDocs((prev) => ({
-                                                        ...prev,
-                                                        [catId]: {
-                                                            ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                                                            certificate: null,
-                                                        },
-                                                    }));
-                                                    const input = document.getElementById(`file-${catId}`) as HTMLInputElement | null;
-                                                    if (input) input.value = "";
-                                                }}
-                                                expirationDate={conopsDocs[catId]?.dateExpire ?? ""}
-                                                onExpirationDateChange={(val) => setConopsDocs((prev) => ({
-                                                    ...prev,
-                                                    [catId]: {
-                                                        ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                                                        dateExpire: val || null,
-                                                        dateIndefinite: false,
-                                                    },
-                                                }))}
-                                                indefiniteId={`indefinite-${catId}`}
-                                                isIndefinite={conopsDocs[catId]?.dateIndefinite ?? false}
-                                                onToggleIndefinite={() => setConopsDocs((prev) => {
-                                                    const current = prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null };
-                                                    const nextIndefinite = !current.dateIndefinite;
-                                                    return {
-                                                        ...prev,
-                                                        [catId]: {
-                                                            ...current,
-                                                            dateIndefinite: nextIndefinite,
-                                                            dateExpire: nextIndefinite ? null : current.dateExpire,
-                                                        },
-                                                    };
-                                                })}
-                                                />
-                                            </div>
-                                            );
-                                        })}
-                                        </div>
-                                </div>
-
-                                {/* Certificados adicionales */}
-                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Certificados adicionales
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {"info"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Radiofonista UAS */}
-                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Radiofonista UAS
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {"info"}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <InsertDoc
-                                        className="mb-4"
-                                        checkboxId="chkFormCertTeor"
-                                        checkboxLabel="Certificado teórico"
-                                        isChecked={activeChecks.chkFormCertTeor}
-                                        onToggleCheck={() => handleCheckChange('chkFormCertTeor')}
-                                        fileInputId="file-upload-fct"
-                                        selectedFile={selectedFiles.fileCT}
-                                        onFileChange={(e) => handleFileChange(e, 'fileCT')}
-                                        onClearFile={() => handleClearFile('fileCT', 'file-upload-fct')}
-                                        expirationDate={formValues.dateCT}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateCT: value })}
-                                        indefiniteId="indefiniteCT"
-                                        isIndefinite={activeChecks.indefiniteCT}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteCT')}
-                                    />
-
-                                    <InsertDoc
-                                        className="mb-4"
-                                        checkboxId="chkFormCertPract"
-                                        checkboxLabel="Certificado práctico"
-                                        isChecked={activeChecks.chkFormCertPract}
-                                        onToggleCheck={() => handleCheckChange('chkFormCertPract')}
-                                        fileInputId="file-upload-fcp"
-                                        selectedFile={selectedFiles.fileCP}
-                                        onFileChange={(e) => handleFileChange(e, 'fileCP')}
-                                        onClearFile={() => handleClearFile('fileCP', 'file-upload-fcp')}
-                                        expirationDate={formValues.dateCP}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateCP: value })}
-                                        indefiniteId="indefiniteCP"
-                                        isIndefinite={activeChecks.indefiniteCP}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteCP')}
-                                    />
-                                </div>
-
-                                {/* Certificados Médicos */}
-                                <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                                    <div className="d-flex align-items-center mb-3">
-                                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                            Certificados Médicos
-                                        </h6>
-                                        
-                                        <div className="info-tooltip-wrapper ms-2">
-                                            <img 
-                                                src={infoIcon} 
-                                                alt="info" 
-                                                style={{ 
-                                                    width: "16px", 
-                                                    height: "16px", 
-                                                    filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
-                                                    cursor: "pointer" 
-                                                }} 
-                                            />
-                                            <span className="info-tooltip-text">
-                                                {"info"}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <InsertDoc
-                                        className="mb-4"
-                                        checkboxId="chkFormCMClase2"
-                                        checkboxLabel="Clase 2 (MED.A.030 de Reglamento (UE) 1178/2011) / Drones o RPAS > 25Kg"
-                                        isChecked={activeChecks.chkFormCMClase2}
-                                        onToggleCheck={() => handleCheckChange('chkFormCMClase2')}
-                                        fileInputId="file-upload-fcmc2"
-                                        selectedFile={selectedFiles.fileCMC2}
-                                        onFileChange={(e) => handleFileChange(e, 'fileCMC2')}
-                                        onClearFile={() => handleClearFile('fileCMC2', 'file-upload-fcmc2')}
-                                        expirationDate={formValues.dateCMC2}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateCMC2: value })}
-                                        indefiniteId="indefiniteCMC2"
-                                        isIndefinite={activeChecks.indefiniteCMC2}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteCMC2')}
-                                    />
-
-                                    <InsertDoc
-                                        className="mb-4"
-                                        checkboxId="chkFormCMClaseLAPL"
-                                        checkboxLabel="Clase LAPL (MED.A.030 de Reglamento (UE) 1178/2011) / Drones o RPAS < 25Kg"
-                                        isChecked={activeChecks.chkFormCMClaseLAPL}
-                                        onToggleCheck={() => handleCheckChange('chkFormCMClaseLAPL')}
-                                        fileInputId="file-upload-fcmclapl"
-                                        selectedFile={selectedFiles.fileCMCLAPL}
-                                        onFileChange={(e) => handleFileChange(e, 'fileCMCLAPL')}
-                                        onClearFile={() => handleClearFile('fileCMCLAPL', 'file-upload-fcmclapl')}
-                                        expirationDate={formValues.dateCMCLAPL}
-                                        onExpirationDateChange={(value) => setFormValues({ ...formValues, dateCMCLAPL: value })}
-                                        indefiniteId="indefiniteCMCLAPL"
-                                        isIndefinite={activeChecks.indefiniteCMCLAPL}
-                                        onToggleIndefinite={() => handleCheckChange('indefiniteCMCLAPL')}
-                                    />
-
-                                </div>
-
-                            </div>
-                        )}
-                    </div>
+                    <UserCertificatesSection
+                        showOptional={showOptional}
+                        onToggleOptional={() => setShowOptional(!showOptional)}
+                        infoText={infoText}
+                        activeChecks={activeChecks as Record<string, boolean>}
+                        selectedFiles={selectedFiles}
+                        formValues={formValues}
+                        onToggleCheck={handleCheckChange}
+                        onFileChange={handleFileChange}
+                        onClearFile={handleClearFile}
+                        conopsCategories={CONOPS_CATEGORIES}
+                        selectedCategories={selectedCategories}
+                        currentSelection={currentSelection}
+                        onCurrentSelectionChange={setCurrentSelection}
+                        onAddCategory={addCategory}
+                        onRemoveCategory={removeCategory}
+                        conopsDocs={conopsDocs}
+                        onConopsFileChange={handleConopsFileChange}
+                        onConopsClearFile={handleConopsClearFile}
+                        onConopsDateChange={handleConopsDateChange}
+                        onConopsToggleIndefinite={handleConopsToggleIndefinite}
+                        onFormDateChange={handleFormDateChange}
+                    />
 
                     <div className="d-flex gap-2 mt-3 justify-content-center">
                         <button type="submit" className="btn btn-success">

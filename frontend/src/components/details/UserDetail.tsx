@@ -56,6 +56,7 @@ export default function UserDetail() {
         onBack={() => navigate("/auth/users")}
 
         validateForm={validateForm}
+        showCertificates
         />
     )
 }

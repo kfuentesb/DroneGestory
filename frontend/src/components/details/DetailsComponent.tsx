@@ -6,6 +6,8 @@ import DetailEdit from "../commons/props/DetailEdit";
 import ConfirmModal from "../commons/ConfirmModal";
 import Forbidden from "../commons/Forbidden";
 import NotFound from "../commons/NotFound";
+import { getCertificateLabel } from "../users/staticCertificateFields";
+import { UserCertificatesSummarySection } from "../users/UserCertificatesSection";
 
 import editIcon from '../../assets/commons/edit_white.svg';
 import deleteIcon from '../../assets/commons/delete_white.svg';
@@ -24,7 +26,17 @@ interface DetailsComponentProps {
     onDelete?: () => Promise<void>
     onBack?: () => void
     validateForm?: (values: any) => Record<string, string | null>
+    showCertificates?: boolean
 }
+
+type UserCertificate = {
+    id: number;
+    userId: number;
+    certificateType: string;
+    certificateName: string | null;
+    expireDate: string | null;
+    dateIndefinite: boolean | null;
+};
 
 export default function DetailsComponent({
     id,
@@ -37,6 +49,7 @@ export default function DetailsComponent({
     onDelete,
     onBack,
     validateForm,
+    showCertificates = false,
 }: DetailsComponentProps) {
     const { token } = useAuth();
 
@@ -48,6 +61,8 @@ export default function DetailsComponent({
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [removeImage, setRemoveImage] = useState(false);
+    const [certificates, setCertificates] = useState<UserCertificate[]>([]);
+    const [certificatesLoading, setCertificatesLoading] = useState(false);
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
@@ -118,6 +133,36 @@ export default function DetailsComponent({
         };
     }, [data?.imagePath, token, imageEndpoint]);
 
+    useEffect(() => {
+        if (!showCertificates || !id) {
+            return;
+        }
+
+        const loadCertificates = async () => {
+            setCertificatesLoading(true);
+            try {
+                const res = await fetch(`/api/auth/user-certificates/user/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (!res.ok) {
+                    setCertificates([]);
+                    return;
+                }
+
+                const json = (await res.json()) as UserCertificate[];
+                setCertificates(json);
+            } catch (error) {
+                console.error("Error loading certificates:", error);
+                setCertificates([]);
+            } finally {
+                setCertificatesLoading(false);
+            }
+        };
+
+        loadCertificates();
+    }, [id, showCertificates, token]);
+
     const handleConfirmClick = () => {
         if (validateForm) {
             const formErrors = validateForm(formValues);
@@ -136,6 +181,52 @@ export default function DetailsComponent({
     const handleConfirmDelete = () => {
         setConfirmAction("delete");
         setShowConfirm(true);
+    };
+
+    const openCertificate = async (certificate: UserCertificate) => {
+        if (!certificate.certificateName) {
+            return;
+        }
+
+        try {
+            const encodedPath = certificate.certificateName
+                .split("/")
+                .map(encodeURIComponent)
+                .join("/");
+
+            const res = await fetch(`/api/auth/users/images/${encodedPath}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error loading certificate: ${res.status}`);
+            }
+
+            const blob = await res.blob();
+            const isPdfByExtension = certificate.certificateName.toLowerCase().endsWith(".pdf");
+            const fileBlob =
+                isPdfByExtension && (!blob.type || blob.type === "application/octet-stream")
+                    ? new Blob([blob], { type: "application/pdf" })
+                    : blob;
+            const objectUrl = URL.createObjectURL(fileBlob);
+            window.open(objectUrl, "_blank", "noopener,noreferrer");
+            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+        } catch (error) {
+            console.error("Error opening certificate:", error);
+            alert("No se pudo abrir el certificado.");
+        }
+    };
+
+    const formatCertificateDate = (certificate: UserCertificate) => {
+        if (certificate.dateIndefinite) {
+            return "Indefinida";
+        }
+
+        if (!certificate.expireDate) {
+            return "-";
+        }
+
+        return new Date(certificate.expireDate).toLocaleDateString("es-ES");
     };
 
     const handleConfirm = async () => {
@@ -322,6 +413,24 @@ export default function DetailsComponent({
                                 removeImage={removeImage}
                                 setRemoveImage={setRemoveImage}
                             />
+                        )}
+
+                        {showCertificates && !editing && (
+                            <>
+                                {certificatesLoading && <p className="text-muted mb-0">Cargando certificados...</p>}
+                                {!certificatesLoading && (
+                                    <UserCertificatesSummarySection
+                                        items={certificates.map((certificate) => ({
+                                            id: certificate.id,
+                                            certificateType: getCertificateLabel(certificate.certificateType),
+                                            expireDate: formatCertificateDate(certificate),
+                                            dateIndefinite: certificate.dateIndefinite,
+                                            hasFile: Boolean(certificate.certificateName),
+                                            onOpen: certificate.certificateName ? () => openCertificate(certificate) : undefined,
+                                        }))}
+                                    />
+                                )}
+                            </>
                         )}
 
                         <div className="d-flex gap-2 mt-3">
