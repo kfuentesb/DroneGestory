@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +16,16 @@ public class OperationService {
         this.operationRepository = operationRepository;
     }
 
-    // TODO paginación
+    // LISTA: todas las operaciones
+    @Transactional
     public List<Operation> getAllOperations() {
         return operationRepository.findAll();
+    }
+
+    // LISTA: por usuario
+    @Transactional(readOnly = true)
+    public List<Operation> findOperationsByUserId(Integer userId) {
+        return operationRepository.findByCreadorId(userId);
     }
 
     public Operation saveOperation(Operation op) {
@@ -45,5 +53,11 @@ public class OperationService {
     public List<Operation> findOperationsByUserId(Integer userId) {
         return operationRepository.findByCreadorId(userId);
     }
+
+    // Actualizar solo datos básicos (nombre), no estado ni anexos
+    Operation updateOperationBasicData(Long operationId, String nuevoNombre);
+
+    // Completar operación (verifica que todos anexos estén firmados)
+    Operation completarOperation(Long operationId);
 }
 

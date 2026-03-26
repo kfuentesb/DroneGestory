@@ -47,8 +47,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         List<T> anexos = repository.findByOperationOrderByNumeroVersionDesc(op);
         return AnexoHistoricoDTO.fromEntityList(
-                anexos.stream().map(a -> (Anexo) a).collect(Collectors.toList());
-        );
+                anexos.stream().map(a -> (Anexo) a).collect(Collectors.toList()));
     }
     
     @PutMapping("/{idAnexo}/firmar")
