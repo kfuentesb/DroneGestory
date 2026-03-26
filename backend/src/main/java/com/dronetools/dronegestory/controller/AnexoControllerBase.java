@@ -6,6 +6,8 @@ import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServiceBase<T>> {
 
     protected final S service;
@@ -26,6 +28,13 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         return getAnexoActual(op);
+    }
+    
+    @PutMapping("/{idAnexo}/firmar")
+    public T firmar(@PathVariable Long idAnexo, Principal principal) {
+        // Obtenemos el username del token de seguridad (Principal)
+        String username = (principal != null) ? principal.getName() : "Sistema";
+        return service.firmarAnexo(idAnexo, username);
     }
 
     // Métodos que cada controlador hijo debe implementar
