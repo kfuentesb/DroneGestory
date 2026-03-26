@@ -470,178 +470,178 @@ function FormUser() {
                 <form onSubmit={handleSubmit}>
                     {/* Row 1: Nombre, Apellidos, Usuario */}
                     <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, nombre: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Apellidos</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, apellidos: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre de usuario</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-                    </div>
-
-                    {/* Row 2: Email, Telefono */}
-                    <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
-                            Número de teléfono{" "}
-                            <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
-                                (Opcional)
-                            </span>
-                            </label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
-                    </div>
-
-                    {/* Row 3: Doc Identidad y Fecha Nacimiento */}
-                    <div className="row mb-3">
                         <div className="col-12 col-md mb-3 mb-md-0">
-                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Documento Identidad (DNI/NIF/Pasaporte)</label>
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre</label>
                             <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Ej: 12345678X"
-                                value={formValues.docIdentidad}
-                                onChange={(e) => setFormValues({ ...formValues, docIdentidad: e.target.value })}
-                                style={{ ...backgroundBorderInputs, border: errors.docIdentidad ? "1px solid red" : "1px solid #D1D5DB" }}
+                            type="text"
+                            className="form-control"
+                            onChange={(e) => setFormValues({ ...formValues, nombre: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
+
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Apellidos</label>
+                            <input
+                            type="text"
+                            className="form-control"
+                            onChange={(e) => setFormValues({ ...formValues, apellidos: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
+
+                        <div className="col-12 col-md">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Nombre de usuario</label>
+                            <input
+                            type="text"
+                            className="form-control"
+                            onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
+                        </div>
+
+                        {/* Row 2: Email, Telefono */}
+                        <div className="row mb-3">
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
+                            <input
+                            type="text"
+                            className="form-control"
+                            onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
                             />
                         </div>
 
                         <div className="col-12 col-md">
                             <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
-                                Fecha de Nacimiento{" "}
+                                Número de teléfono{" "}
                                 <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
                                     (Opcional)
                                 </span>
-                            </label>
+                                </label>
                             <input
-                                type="date"
-                                className="form-control"
-                                value={formValues.fechaNac}
-                                onChange={(e) => setFormValues({ ...formValues, fechaNac: e.target.value })}
-                                style={{ ...backgroundBorderInputs, border: errors.fechaNac ? "1px solid red" : "1px solid #D1D5DB" }}
+                            type="text"
+                            className="form-control"
+                            onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
                             />
                         </div>
-                    </div>
-
-                    {/* Row 4: Tipo de usuario, Imagen */}
-                    <div className="row mb-3">
-                        <div className="col-12 col-md mb-3 mb-md-0">
-                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
-                            <Select
-                                options={type_user}
-                                styles={backgroundBorderInputsSelect}
-                                placeholder="Seleccione el tipo de usuario"
-                                value={selectedUserType}
-                                onChange={(val) => setSelectedUserType(val)}
-                            />
                         </div>
 
-                        <div className="col-12 col-md">
-                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
-                                Imagen de perfil{" "}
-                                <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
-                                    (Opcional)
-                                </span>
-                            </label>
-                            
-                            <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
-                                <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                                    {selectedFiles.profilePicture ? selectedFiles.profilePicture.name : "No hay archivo"}
-                                </span>
-
+                        {/* Row 3: Doc Identidad y Fecha Nacimiento */}
+                        <div className="row mb-3">
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Documento Identidad (DNI/NIF/Pasaporte)</label>
                                 <input
-                                    id="file-upload"
-                                    type="file"
-                                    accept=".jpg,.jpeg,.png"
-                                    onChange={(e) => handleFileChange(e, 'profilePicture')}
-                                    style={{ display: "none" }}
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Ej: 12345678X"
+                                    value={formValues.docIdentidad}
+                                    onChange={(e) => setFormValues({ ...formValues, docIdentidad: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.docIdentidad ? "1px solid red" : "1px solid #D1D5DB" }}
                                 />
+                            </div>
 
-                                <div className="ms-auto d-flex">
-                                    <label
-                                        htmlFor="file-upload"
-                                        className="btn btn-success"
-                                        style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.profilePicture ? "0" : "4px", borderBottomRightRadius: selectedFiles.profilePicture ? "0" : "4px" }}
-                                    >
-                                        Seleccionar archivo
-                                    </label>
+                            <div className="col-12 col-md">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                                    Fecha de Nacimiento{" "}
+                                    <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                        (Opcional)
+                                    </span>
+                                </label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={formValues.fechaNac}
+                                    onChange={(e) => setFormValues({ ...formValues, fechaNac: e.target.value })}
+                                    style={{ ...backgroundBorderInputs, border: errors.fechaNac ? "1px solid red" : "1px solid #D1D5DB" }}
+                                />
+                            </div>
+                        </div>
 
-                                    {selectedFiles.profilePicture && (
-                                        <button
-                                            type="button"
-                                            className="btn btn-danger"
-                                            onClick={() => handleClearFile('profilePicture', 'file-upload')}
-                                            style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
-                                            title="Eliminar archivo seleccionado"
+                        {/* Row 4: Tipo de usuario, Imagen */}
+                        <div className="row mb-3">
+                            <div className="col-12 col-md mb-3 mb-md-0">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
+                                <Select
+                                    options={type_user}
+                                    styles={backgroundBorderInputsSelect}
+                                    placeholder="Seleccione el tipo de usuario"
+                                    value={selectedUserType}
+                                    onChange={(val) => setSelectedUserType(val)}
+                                />
+                            </div>
+
+                            <div className="col-12 col-md">
+                                <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                                    Imagen de perfil{" "}
+                                    <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                        (Opcional)
+                                    </span>
+                                </label>
+                                
+                                <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
+                                    <span className="text-truncate" style={{ maxWidth: "150px" }}>
+                                        {selectedFiles.profilePicture ? selectedFiles.profilePicture.name : "No hay archivo"}
+                                    </span>
+
+                                    <input
+                                        id="file-upload"
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png"
+                                        onChange={(e) => handleFileChange(e, 'profilePicture')}
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <div className="ms-auto d-flex">
+                                        <label
+                                            htmlFor="file-upload"
+                                            className="btn btn-success"
+                                            style={{ cursor: "pointer", borderTopRightRadius: selectedFiles.profilePicture ? "0" : "4px", borderBottomRightRadius: selectedFiles.profilePicture ? "0" : "4px" }}
                                         >
-                                            ✕
-                                        </button>
-                                    )}
+                                            Seleccionar archivo
+                                        </label>
+
+                                        {selectedFiles.profilePicture && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-danger"
+                                                onClick={() => handleClearFile('profilePicture', 'file-upload')}
+                                                style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                                title="Eliminar archivo seleccionado"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Row 5: Contraseña */}
-                    <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={formValues.password}
-                            onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
-                            style={{ ...backgroundBorderInputs, border: errors.password ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
+                        {/* Row 5: Contraseña */}
+                        <div className="row mb-3">
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                value={formValues.password}
+                                onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.password ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
 
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={formValues.confirmPassword}
-                            onChange={(e) => setFormValues({ ...formValues, confirmPassword: e.target.value })}
-                            style={{ ...backgroundBorderInputs, border: errors.confirmPassword ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
+                        <div className="col-12 col-md">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                value={formValues.confirmPassword}
+                                onChange={(e) => setFormValues({ ...formValues, confirmPassword: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.confirmPassword ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                        </div>
                     </div>
 
                     {/* Error message */}
