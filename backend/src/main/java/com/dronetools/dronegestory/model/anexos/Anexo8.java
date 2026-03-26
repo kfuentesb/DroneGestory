@@ -20,7 +20,7 @@ public class Anexo8 extends Anexo {
 
     public Anexo8() {
         super();
-        this.setTipoAnexo(7);
+        this.setTipoAnexo(8);
         this.setEstado(AnexoStatus.BORRADOR);
     }
 }
