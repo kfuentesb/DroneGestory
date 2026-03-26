@@ -2,9 +2,11 @@ package com.dronetools.dronegestory.dto.operation;
 
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Data
 public class OperationListDTO {
     private Long idOperacion;
     private String nombreOperacion;

@@ -1,10 +1,13 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.common.AnexoVersionado;
+import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class OperationDetailDTO {
@@ -15,16 +18,8 @@ public class OperationDetailDTO {
     private LocalDateTime fechaActualizacion;
     private OperationStatus estadoOperacion;
     private boolean completada;
-
-    // Anexos actuales (última versión de cada uno)
-    private AnexoInfoDTO anexo4;
-    private AnexoInfoDTO anexo5;
-    private AnexoInfoDTO anexo6;
-    private AnexoInfoDTO anexo7;
-    private AnexoInfoDTO anexo8;
-
-    // Indicador para alerta "todos firmados, ¿completar?"
     private boolean todosAnexosFirmados;
+    private List<OperationAnexoDetailDTO> anexos;
 
     public OperationDetailDTO(Operation op) {
         this.idOperacion = op.getIdOperacion();
@@ -34,23 +29,35 @@ public class OperationDetailDTO {
         this.fechaActualizacion = op.getFechaActualizacion();
         this.estadoOperacion = op.getEstado();
         this.completada = op.getEstado() == OperationStatus.COMPLETADA;
-
-        // Mapear anexos actuales
-        this.anexo4 = mapAnexo(op.getAnexo4Actual());
-        this.anexo5 = mapAnexo(op.getAnexo5Actual());
-        this.anexo6 = mapAnexo(op.getAnexo6Actual());
-        this.anexo7 = mapAnexo(op.getAnexo7Actual());
-        this.anexo8 = mapAnexo(op.getAnexo8Actual());
-
         this.todosAnexosFirmados = op.todosAnexosFirmados();
+        this.anexos = List.of(
+                buildAnexoDetail(4, op.getAnexo4Actual(), op.getAnexos4()),
+                buildAnexoDetail(5, op.getAnexo5Actual(), op.getAnexos5()),
+                buildAnexoDetail(6, op.getAnexo6Actual(), op.getAnexos6()),
+                buildAnexoDetail(7, op.getAnexo7Actual(), op.getAnexos7()),
+                buildAnexoDetail(8, op.getAnexo8Actual(), op.getAnexos8())
+        );
     }
 
-    private AnexoInfoDTO mapAnexo(com.dronetools.dronegestory.common.AnexoVersionado anexo) {
-        if (anexo == null) return AnexoInfoDTO.empty();
-        return new AnexoInfoDTO(
-                ((com.dronetools.dronegestory.model.Anexo) anexo).getId(),
-                anexo.getNumeroVersion(),
-                anexo.getEstado()
+    private OperationAnexoDetailDTO buildAnexoDetail(int tipoAnexo, AnexoVersionado actual, List<? extends Anexo> versiones) {
+        return new OperationAnexoDetailDTO(
+                tipoAnexo,
+                mapAnexo(actual),
+                mapHistorico(versiones)
         );
+    }
+
+    private AnexoInfoDTO mapAnexo(AnexoVersionado anexo) {
+        if (anexo == null) {
+            return AnexoInfoDTO.empty();
+        }
+        Anexo anexoEntity = (Anexo) anexo;
+        return new AnexoInfoDTO(anexoEntity.getId(), anexo.getNumeroVersion(), anexo.getEstado());
+    }
+
+    private List<AnexoHistoricoDTO> mapHistorico(List<? extends Anexo> anexos) {
+        return anexos.stream()
+                .map(AnexoHistoricoDTO::fromEntity)
+                .toList();
     }
 }

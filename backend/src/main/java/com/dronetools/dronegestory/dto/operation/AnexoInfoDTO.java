@@ -5,20 +5,22 @@ import lombok.Data;
 
 @Data
 public class AnexoInfoDTO {
-    private Long id;              // ID del anexo (para firmar/ver)
-    private int numeroVersion;    // v1, v2, etc.
-    private AnexoStatus estado;   // BORRADOR o FIRMADO
-    private String color;         // "AMARILLO" o "VERDE" (para frontend)
+    private Long id;
+    private int numeroVersion;
+    private AnexoStatus estado;
+    private String color;
 
-    // Constructor helper
     public AnexoInfoDTO(Long id, int numeroVersion, AnexoStatus estado) {
         this.id = id;
         this.numeroVersion = numeroVersion;
         this.estado = estado;
-        this.color = estado == AnexoStatus.BORRADOR ? "AMARILLO" : "VERDE";
+        if (estado == null) {
+            this.color = "GRIS";
+        } else {
+            this.color = estado == AnexoStatus.BORRADOR ? "AMARILLO" : "VERDE";
+        }
     }
 
-    // Versión para "no existe"
     public static AnexoInfoDTO empty() {
         return new AnexoInfoDTO(null, 0, null);
     }
