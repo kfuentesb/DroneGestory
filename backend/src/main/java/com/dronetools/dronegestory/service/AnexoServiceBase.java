@@ -13,63 +13,96 @@ public abstract class AnexoServiceBase<T extends Anexo> {
     protected final AnexoBaseRepository<T, Long> repository;
     protected final OperationRepository operationRepository;
 
-    public AnexoServiceBase(AnexoBaseRepository<T, Long> repository, OperationRepository operationRepository) {
+    public AnexoServiceBase(AnexoBaseRepository<T, Long> repository,
+                            OperationRepository operationRepository) {
         this.repository = repository;
         this.operationRepository = operationRepository;
     }
 
-    @Transactional
-    public T registrarAnexo(Long operationId, T datosNuevos, GetUltimaVersionFunction<Operation, T> getUltimaVersion, GetNextVersionFunction<Operation> getNextVersion) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+    /**
+     * Flujo automático:
+     * 1. Hay BORRADOR → actualiza con datos nuevos
+     * 2. Hay FIRMADO → crea v(N+1) copiando datos del firmado
+     * 3. No hay nada → crea v1 con datos nuevos
+     */
 
-        // BLOQUEO SEGÚN ESTADO
-        if (op.getEstado() == OperationStatus.COMPLETADA) {
-            throw new RuntimeException("La operación está COMPLETADA y no admite más cambios.");
+    @Transactional
+    public T registrarAnexo(Long operationId,
+                            T datosNuevos,
+                            GetUltimaVersionFunction<Operation, T> getUltimaVersion,
+                            GetNextVersionFunction<Operation> getNextVersion) {
+        Operation op = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada" + operationId));
+
+        // Bloqueo si operación completada
+        if (op.getEstado() == OperationStatus.COMPLETADA){
+            throw new RuntimeException("Operación Completada. Sólo lectura permitida.");
         }
 
         // Obtener la última versión
-        T actual = getUltimaVersion.get(op);
+        T ultimaVersion = getUltimaVersion.get(op);
 
-        if (actual != null && actual.getEstado() == AnexoStatus.BORRADOR) {
-            actualizarCampos(actual, datosNuevos);
-            return repository.save(actual);
+        if (ultimaVersion == null) {
+            // Caso 3: Primera versión
+            return crearNuevaVersion(op, datosNuevos, getNextVersion);
+        } else if (ultimaVersion.getEstado() == AnexoStatus.BORRADOR){
+            // Caso 1: Actualizar borrador existente
+            actualizarCampos(ultimaVersion, datosNuevos);
+            return repository.save(ultimaVersion);
         } else {
-            datosNuevos.setOperation(op);
-            datosNuevos.setNumeroVersion(getNextVersion.get(op));
-            datosNuevos.setEstado(AnexoStatus.BORRADOR);
-            return repository.save(datosNuevos);
+            // Caso 2: Ultima versión Firmada -> crear copia pegando datos
+            T nuevaVersion = crearCopia(ultimaVersion);
+            nuevaVersion.setOperation(op);
+            nuevaVersion.setNumeroVersion(getNextVersion.get(op));
+            nuevaVersion.setEstado(AnexoStatus.BORRADOR);
+            nuevaVersion.setFirmadoPor(null);
+            nuevaVersion.setFechaFirma(null);
+
+            // Aplicar modificaciones del usuario sobre la copia
+            actualizarCampos(nuevaVersion, datosNuevos);
+            return repository.save(nuevaVersion);
         }
     }
 
-    /**
-     * Debes sobreescribir este método en cada subclase para copiar campos específicos.
-     * Si los campos son iguales, puedes hacerlo aquí; si no, que lo implemente cada hijo.
-     */
-    protected abstract void actualizarCampos(T actual, T nuevosDatos);
+    private T crearNuevaVersion(Operation op, T datos, GetNextVersionFunction<Operation> getNextVersion) {
+        datos.setOperation(op);
+        datos.setNumeroVersion(getNextVersion.get(op));
+        datos.setEstado(AnexoStatus.BORRADOR);
+        return repository.save(datos);
+    }
+
+    private void verificarCompletarOperacion(Operation op) {
+        if (op.todosAnexosFirmados()) {
+            op.setEstado(OperationStatus.COMPLETADA);
+            operationRepository.save(op);
+        }
+    }
 
     @Transactional
     public T firmarAnexo(Long idAnexo, String username) {
         T anexo = repository.findById(idAnexo)
-                .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexo));
+
+        if (anexo.getEstado() == AnexoStatus.FIRMADO) {
+            throw new RuntimeException("Anexo ya está firmado");
+        }
 
         anexo.setEstado(AnexoStatus.FIRMADO);
         anexo.setFirmadoPor(username);
         anexo.setFechaFirma(java.time.LocalDate.now());
 
         T guardado = repository.save(anexo);
-
-        Operation op = guardado.getOperation();
-        // Si todos están firmados, cerramos la operación definitivamente
-        if (op.todosAnexosFirmados()) {
-            op.setEstado(OperationStatus.COMPLETADA);
-            operationRepository.save(op);
-        }
+        verificarCompletarOperacion(guardado.getOperation());
 
         return guardado;
     }
+    // Copia los campos especificos del anexo
+    protected abstract T crearCopia(T origen);
 
-    // Funcionales para versión genérica, para operar con métodos propios de Operation
+    // Actualizar campos con datos del request
+    protected abstract void actualizarCampos(T actual, T nuevosDatos);
+
+    // Funcionales para acceder a métodos de Operation
     @FunctionalInterface
     public interface GetUltimaVersionFunction<O, T> { T get(O op); }
     @FunctionalInterface
