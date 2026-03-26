@@ -1,6 +1,6 @@
-// Anexo7Controller.java
 package com.dronetools.dronegestory.controller.anexos;
 
+import com.dronetools.dronegestory.controller.AnexoControllerBase;
 import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.service.anexos.Anexo7Service;
@@ -9,26 +9,19 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth/operations/{operationId}/anexo7")
-public class Anexo7Controller {
+public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service> {
 
-    private final Anexo7Service anexo7Service;
-    private final OperationRepository operationRepository;
-
-    public Anexo7Controller(Anexo7Service anexo7Service, OperationRepository operationRepository) {
-        this.anexo7Service = anexo7Service;
-        this.operationRepository = operationRepository;
+    public Anexo7Controller(Anexo7Service service, OperationRepository operationRepository) {
+        super(service, operationRepository);
     }
 
-    @PostMapping
-    public Anexo7 saveOrUpdateAnexo5(@PathVariable Long operationId, @RequestBody Anexo7 input) {
-        // El controlador ahora solo delega la responsabilidad al servicio
-        return anexo7Service.registrarAnexo7(operationId, input);
+    @Override
+    protected Anexo7 registrar(Long operationId, Anexo7 input) {
+        return service.registrarAnexo7(operationId, input);
     }
 
-    @GetMapping("/actual")
-    public Anexo7 getActual(@PathVariable Long operationId) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+    @Override
+    protected Anexo7 getAnexoActual(Operation op) {
         return op.getAnexo7Actual();
     }
 }
