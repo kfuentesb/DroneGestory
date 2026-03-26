@@ -55,6 +55,11 @@ public class OperationController {
         return new OperationDetailDTO(operationService.updateOperation(operationId, op));
     }
 
+    @PutMapping("/{operationId}/completar")
+    public OperationDetailDTO completar(@PathVariable Long operationId) {
+        return new OperationDetailDTO(operationService.completarOperation(operationId));
+    }
+
     @GetMapping("/{operationId}")
     public OperationDetailDTO getById(@PathVariable Long operationId) {
         return new OperationDetailDTO(operationService.findById(operationId));

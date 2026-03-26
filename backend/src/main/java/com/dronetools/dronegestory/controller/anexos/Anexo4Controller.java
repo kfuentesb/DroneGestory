@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth/operations/{operationId}/anexo4")
-@CrossOrigin(origins = "*")
 public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service> {
 
     public Anexo4Controller(Anexo4Service service,
@@ -23,6 +22,11 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     @Override
     protected Anexo4 registrar(Long operationId, Anexo4 input) {
         return service.registrarAnexo4(operationId, input);
+    }
+
+    @Override
+    protected Anexo4 rehacerDesde(Long idAnexo) {
+        return service.rehacerAnexo4(idAnexo);
     }
 
     @Override

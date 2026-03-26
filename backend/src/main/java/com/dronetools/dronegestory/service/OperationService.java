@@ -3,6 +3,8 @@ package com.dronetools.dronegestory.service;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,7 @@ public class OperationService {
     @Transactional
     public Operation updateOperation(Long operationId, Operation opActualizada) {
         Operation op = findById(operationId);
+        validarOperacionEditable(op);
         op.setNombreOperacion(opActualizada.getNombreOperacion());
         return operationRepository.save(op);
     }
@@ -53,6 +56,7 @@ public class OperationService {
     @Transactional
     public Operation updateOperationBasicData(Long operationId, String nuevoNombre) {
         Operation op = findById(operationId);
+        validarOperacionEditable(op);
         op.setNombreOperacion(nuevoNombre);
         return operationRepository.save(op);
     }
@@ -65,5 +69,20 @@ public class OperationService {
         }
         op.setEstado(OperationStatus.COMPLETADA);
         return operationRepository.save(op);
+    }
+
+    private void validarOperacionEditable(Operation op) {
+        if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
+            throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
+        }
+    }
+
+    private boolean esAdminActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 }

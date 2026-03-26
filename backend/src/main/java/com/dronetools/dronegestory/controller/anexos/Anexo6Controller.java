@@ -32,6 +32,11 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     }
 
     @Override
+    protected Anexo6 rehacerDesde(Long idAnexo) {
+        return service.rehacerAnexo6(idAnexo);
+    }
+
+    @Override
     protected Anexo6 getAnexoActual(Operation op) {
         return op.getAnexo6Actual();
     }

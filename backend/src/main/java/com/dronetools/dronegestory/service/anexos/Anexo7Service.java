@@ -1,9 +1,9 @@
 package com.dronetools.dronegestory.service.anexos;
 
-import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
+import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +20,11 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo7Actual,
                 Operation::getNextVersionAnexo7);
+    }
+
+    @Transactional
+    public Anexo7 rehacerAnexo7(Long idAnexoOrigen) {
+        return rehacerAnexo(idAnexoOrigen, Operation::getNextVersionAnexo7);
     }
 
     @Override

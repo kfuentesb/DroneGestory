@@ -1,9 +1,9 @@
 package com.dronetools.dronegestory.service.anexos;
 
-import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
+import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +22,11 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 Operation::getNextVersionAnexo4);
     }
 
-    /**
-     * Actualiza campos del borrador con datos del request.
-     * Se usa cuando se guarda un borrador existente.
-     */
+    @Transactional
+    public Anexo4 rehacerAnexo4(Long idAnexoOrigen) {
+        return rehacerAnexo(idAnexoOrigen, Operation::getNextVersionAnexo4);
+    }
+
     @Override
     protected void actualizarCampos(Anexo4 destino, Anexo4 origen) {
         destino.setTextoPrueba(origen.getTextoPrueba());
@@ -35,9 +36,6 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
     protected Anexo4 crearCopia(Anexo4 origen) {
         Anexo4 copia = new Anexo4();
         copia.setTextoPrueba(origen.getTextoPrueba());
-        // Añadir más campos aquí
         return copia;
     }
-
-
 }
