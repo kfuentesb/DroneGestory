@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
@@ -6,8 +6,9 @@ import DetailEdit from "../commons/props/DetailEdit";
 import ConfirmModal from "../commons/ConfirmModal";
 import Forbidden from "../commons/Forbidden";
 import NotFound from "../commons/NotFound";
-import { getCertificateLabel } from "../users/staticCertificateFields";
-import { UserCertificatesSummarySection } from "../users/UserCertificatesSection";
+import { getCertificateLabel, staticCertificateFields as staticCertificateConfig } from "../users/staticCertificateFields";
+import UserCertificatesSection, { UserCertificatesSummarySection } from "../users/UserCertificatesSection";
+import { CONOPS_CATEGORIES } from "../users/conopsCategories";
 
 import editIcon from '../../assets/commons/edit_white.svg';
 import deleteIcon from '../../assets/commons/delete_white.svg';
@@ -38,6 +39,58 @@ type UserCertificate = {
     dateIndefinite: boolean | null;
 };
 
+type CertificateFieldPayload = {
+    certificate: File | null;
+    dateExpire: string | null;
+    dateIndefinite: boolean | null;
+};
+
+const defaultSelectedFiles: Record<string, File | null> = {
+    fileA1A3: null,
+    fileA2: null,
+    fileSTS: null,
+    fileFTG: null,
+    fileFPG: null,
+    fileCT: null,
+    fileCP: null,
+    fileCMC2: null,
+    fileCMCLAPL: null,
+};
+
+const defaultCertFormValues: Record<string, string> = {
+    dateA1A3: "",
+    dateA2: "",
+    dateSTS: "",
+    dateFTG: "",
+    dateFPG: "",
+    dateCT: "",
+    dateCP: "",
+    dateCMC2: "",
+    dateCMCLAPL: "",
+};
+
+const defaultActiveChecks: Record<string, boolean> = {
+    chkA1A3: false,
+    chkA2: false,
+    chkSTS01: false,
+    chkSTS02: false,
+    chkFormcnTeoricaGen: false,
+    chkFormcnPracticaGen: false,
+    chkFormCertTeor: false,
+    chkFormCertPract: false,
+    chkFormCMClase2: false,
+    chkFormCMClaseLAPL: false,
+    indefiniteA1A3: false,
+    indefiniteA2: false,
+    indefiniteSTS: false,
+    indefiniteFTG: false,
+    indefiniteFPG: false,
+    indefiniteCT: false,
+    indefiniteCP: false,
+    indefiniteCMC2: false,
+    indefiniteCMCLAPL: false,
+};
+
 export default function DetailsComponent({
     id,
     endpoint,
@@ -63,6 +116,14 @@ export default function DetailsComponent({
     const [removeImage, setRemoveImage] = useState(false);
     const [certificates, setCertificates] = useState<UserCertificate[]>([]);
     const [certificatesLoading, setCertificatesLoading] = useState(false);
+    const [certificateSelectedFiles, setCertificateSelectedFiles] = useState<Record<string, File | null>>(defaultSelectedFiles);
+    const [certificateFormValues, setCertificateFormValues] = useState<Record<string, string>>(defaultCertFormValues);
+    const [certificateActiveChecks, setCertificateActiveChecks] = useState<Record<string, boolean>>(defaultActiveChecks);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [currentSelection, setCurrentSelection] = useState<string>("");
+    const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
+    const [existingStaticFileNames, setExistingStaticFileNames] = useState<Record<string, string>>({});
+    const [existingConopsFileNames, setExistingConopsFileNames] = useState<Record<string, string>>({});
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
@@ -163,6 +224,58 @@ export default function DetailsComponent({
         loadCertificates();
     }, [id, showCertificates, token]);
 
+    useEffect(() => {
+        if (!showCertificates) {
+            return;
+        }
+
+        const nextChecks = { ...defaultActiveChecks };
+        const nextForm = { ...defaultCertFormValues };
+        const nextCategories: string[] = [];
+        const nextConopsDocs: Record<string, CertificateFieldPayload> = {};
+        const nextStaticNames: Record<string, string> = {};
+        const nextConopsNames: Record<string, string> = {};
+
+        certificates.forEach((certificate) => {
+            const staticField = staticCertificateConfig.find((field) => field.key === certificate.certificateType);
+            const filename = certificate.certificateName?.split("/").pop() ?? "";
+
+            if (staticField) {
+                nextChecks[staticField.enabledKey] = true;
+                nextChecks[staticField.indefiniteKey] = Boolean(certificate.dateIndefinite);
+                nextForm[staticField.dateKey] = certificate.expireDate ?? "";
+                if (filename) {
+                    nextStaticNames[staticField.fileKey] = filename;
+                }
+                return;
+            }
+
+            if (certificate.certificateType.startsWith("conops_")) {
+                const categoryId = certificate.certificateType.replace("conops_", "");
+                if (!nextCategories.includes(categoryId)) {
+                    nextCategories.push(categoryId);
+                }
+                nextConopsDocs[categoryId] = {
+                    certificate: null,
+                    dateExpire: certificate.expireDate ?? null,
+                    dateIndefinite: certificate.dateIndefinite ?? false,
+                };
+                if (filename) {
+                    nextConopsNames[categoryId] = filename;
+                }
+            }
+        });
+
+        setCertificateSelectedFiles({ ...defaultSelectedFiles });
+        setCertificateActiveChecks(nextChecks);
+        setCertificateFormValues(nextForm);
+        setSelectedCategories(nextCategories);
+        setConopsDocs(nextConopsDocs);
+        setExistingStaticFileNames(nextStaticNames);
+        setExistingConopsFileNames(nextConopsNames);
+        setCurrentSelection("");
+    }, [certificates, showCertificates]);
+
     const handleConfirmClick = () => {
         if (validateForm) {
             const formErrors = validateForm(formValues);
@@ -229,6 +342,232 @@ export default function DetailsComponent({
         return new Date(certificate.expireDate).toLocaleDateString("es-ES");
     };
 
+    const handleCertificateCheckChange = (key: string) => {
+        setCertificateActiveChecks((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const validateCertificateFile = (file: File): string | null => {
+        const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+            return "Solo PDF, JPG, PNG o WEBP.";
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            return "El archivo debe pesar menos de 5MB.";
+        }
+        return null;
+    };
+
+    const handleCertificateFileChange = (event: ChangeEvent<HTMLInputElement>, key: string) => {
+        const file = event.target.files?.[0] ?? null;
+        if (!file) {
+            setCertificateSelectedFiles((prev) => ({ ...prev, [key]: null }));
+            return;
+        }
+
+        const fileError = validateCertificateFile(file);
+        if (fileError) {
+            alert(fileError);
+            return;
+        }
+        setCertificateSelectedFiles((prev) => ({ ...prev, [key]: file }));
+    };
+
+    const handleCertificateClearFile = (key: string, inputId: string) => {
+        setCertificateSelectedFiles((prev) => ({ ...prev, [key]: null }));
+        const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
+        if (fileInput) fileInput.value = "";
+    };
+
+    const addCategory = () => {
+        if (currentSelection && !selectedCategories.includes(currentSelection)) {
+            setSelectedCategories((prev) => [...prev, currentSelection]);
+            setConopsDocs((prev) => ({
+                ...prev,
+                [currentSelection]: {
+                    certificate: null,
+                    dateExpire: null,
+                    dateIndefinite: null,
+                },
+            }));
+            setCurrentSelection("");
+        }
+    };
+
+    const removeCategory = (categoryId: string) => {
+        setSelectedCategories((prev) => prev.filter((idValue) => idValue !== categoryId));
+        setConopsDocs((prev) => {
+            const next = { ...prev };
+            delete next[categoryId];
+            return next;
+        });
+    };
+
+    const handleConopsFileChange = (catId: string, event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+        if (!file) {
+            setConopsDocs((prev) => ({
+                ...prev,
+                [catId]: {
+                    ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                    certificate: null,
+                },
+            }));
+            return;
+        }
+
+        const fileError = validateCertificateFile(file);
+        if (fileError) {
+            alert(fileError);
+            return;
+        }
+
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: file,
+            },
+        }));
+    };
+
+    const handleConopsClearFile = (catId: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: null,
+            },
+        }));
+        const input = document.getElementById(`file-${catId}`) as HTMLInputElement | null;
+        if (input) input.value = "";
+    };
+
+    const handleConopsDateChange = (catId: string, value: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                dateExpire: value || null,
+                dateIndefinite: false,
+            },
+        }));
+    };
+
+    const handleConopsToggleIndefinite = (catId: string) => {
+        setConopsDocs((prev) => {
+            const current = prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null };
+            const nextIndefinite = !current.dateIndefinite;
+            return {
+                ...prev,
+                [catId]: {
+                    ...current,
+                    dateIndefinite: nextIndefinite,
+                    dateExpire: nextIndefinite ? null : current.dateExpire,
+                },
+            };
+        });
+    };
+
+    const syncCertificates = async () => {
+        if (!showCertificates || !id) return;
+
+        const existingByType = new Map(certificates.map((certificate) => [certificate.certificateType, certificate]));
+        const desiredTypes = new Set<string>();
+
+        const desiredStatic = staticCertificateConfig.map((field) => ({
+            type: field.key,
+            enabled: Boolean(certificateActiveChecks[field.enabledKey]),
+            file: certificateSelectedFiles[field.fileKey],
+            expireDate: certificateFormValues[field.dateKey] || null,
+            dateIndefinite: Boolean(certificateActiveChecks[field.indefiniteKey]),
+        }));
+
+        const desiredConops = selectedCategories.map((categoryId) => ({
+            type: `conops_${categoryId}`,
+            file: conopsDocs[categoryId]?.certificate ?? null,
+            expireDate: conopsDocs[categoryId]?.dateExpire ?? null,
+            dateIndefinite: Boolean(conopsDocs[categoryId]?.dateIndefinite),
+        }));
+
+        for (const item of desiredStatic) {
+            if (!item.enabled) continue;
+            desiredTypes.add(item.type);
+            const existing = existingByType.get(item.type);
+            const shouldPersist = Boolean(item.file) || Boolean(item.expireDate) || item.dateIndefinite || Boolean(existing);
+            if (!shouldPersist) continue;
+
+            const formData = new FormData();
+            formData.append("certificateType", item.type);
+            if (item.expireDate && !item.dateIndefinite) formData.append("expireDate", item.expireDate);
+            formData.append("dateIndefinite", item.dateIndefinite ? "true" : "false");
+            if (item.file) formData.append("file", item.file, item.file.name);
+
+            const url = existing
+                ? `/api/auth/user-certificates/${existing.id}/upload`
+                : `/api/auth/user-certificates/user/${id}/upload`;
+            const method = existing ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Error guardando certificados.");
+            }
+        }
+
+        for (const item of desiredConops) {
+            desiredTypes.add(item.type);
+            const existing = existingByType.get(item.type);
+            const shouldPersist = Boolean(item.file) || Boolean(item.expireDate) || item.dateIndefinite || Boolean(existing);
+            if (!shouldPersist) continue;
+
+            const formData = new FormData();
+            formData.append("certificateType", item.type);
+            if (item.expireDate && !item.dateIndefinite) formData.append("expireDate", item.expireDate);
+            formData.append("dateIndefinite", item.dateIndefinite ? "true" : "false");
+            if (item.file) formData.append("file", item.file, item.file.name);
+
+            const url = existing
+                ? `/api/auth/user-certificates/${existing.id}/upload`
+                : `/api/auth/user-certificates/user/${id}/upload`;
+            const method = existing ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Error guardando certificados ConOps.");
+            }
+        }
+
+        for (const certificate of certificates) {
+            if (!desiredTypes.has(certificate.certificateType)) {
+                const res = await fetch(`/api/auth/user-certificates/${certificate.id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(errorText || "Error eliminando certificado.");
+                }
+            }
+        }
+
+        const refreshed = await fetch(`/api/auth/user-certificates/user/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        if (refreshed.ok) {
+            const json = (await refreshed.json()) as UserCertificate[];
+            setCertificates(json);
+        }
+    };
+
     const handleConfirm = async () => {
         setShowConfirm(false);
 
@@ -271,6 +610,14 @@ export default function DetailsComponent({
             }
 
             const updated = await res.json();
+
+            if (showCertificates) {
+                try {
+                    await syncCertificates();
+                } catch (certificateError: any) {
+                    alert("Datos guardados, pero hubo un problema con certificados: " + (certificateError?.message || "Error desconocido"));
+                }
+            }
 
             if (updated.fechaNac) {
                 updated.fechaNac = updated.fechaNac.split('T')[0];
@@ -431,6 +778,35 @@ export default function DetailsComponent({
                                     />
                                 )}
                             </>
+                        )}
+
+                        {showCertificates && editing && (
+                            <div className="mt-3">
+                                <UserCertificatesSection
+                                    activeChecks={certificateActiveChecks}
+                                    selectedFiles={certificateSelectedFiles}
+                                    formValues={certificateFormValues}
+                                    onToggleCheck={handleCertificateCheckChange}
+                                    onFileChange={handleCertificateFileChange}
+                                    onClearFile={handleCertificateClearFile}
+                                    conopsCategories={CONOPS_CATEGORIES}
+                                    selectedCategories={selectedCategories}
+                                    currentSelection={currentSelection}
+                                    onCurrentSelectionChange={setCurrentSelection}
+                                    onAddCategory={addCategory}
+                                    onRemoveCategory={removeCategory}
+                                    conopsDocs={conopsDocs}
+                                    onConopsFileChange={handleConopsFileChange}
+                                    onConopsClearFile={handleConopsClearFile}
+                                    onConopsDateChange={handleConopsDateChange}
+                                    onConopsToggleIndefinite={handleConopsToggleIndefinite}
+                                    existingStaticFileNames={existingStaticFileNames}
+                                    existingConopsFileNames={existingConopsFileNames}
+                                    onFormDateChange={(key, value) =>
+                                        setCertificateFormValues((prev) => ({ ...prev, [key]: value }))
+                                    }
+                                />
+                            </div>
                         )}
 
                         <div className="d-flex gap-2 mt-3">

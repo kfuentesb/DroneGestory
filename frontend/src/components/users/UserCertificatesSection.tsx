@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState,  } from 'react';
 import InsertDoc from "../commons/InsertDoc";
 import infoIcon from "../../assets/commons/info_white.svg";
 
@@ -14,9 +14,6 @@ type Category = {
 };
 
 type UserCertificatesSectionProps = {
-    showOptional: boolean;
-    onToggleOptional: () => void;
-    infoText: React.ReactNode;
     activeChecks: Record<string, boolean>;
     selectedFiles: Record<string, File | null>;
     formValues: Record<string, string>;
@@ -35,6 +32,8 @@ type UserCertificatesSectionProps = {
     onConopsDateChange: (catId: string, value: string) => void;
     onConopsToggleIndefinite: (catId: string) => void;
     onFormDateChange: (key: string, value: string) => void;
+    existingStaticFileNames?: Record<string, string>;
+    existingConopsFileNames?: Record<string, string>;
 };
 
 export type CertificateSummaryItem = {
@@ -45,6 +44,15 @@ export type CertificateSummaryItem = {
     hasFile: boolean;
     onOpen?: () => void;
 };
+
+const infoText = (
+    <>
+        En caso de que se disponga <b>de los tres certificados de piloto a distancia</b>, 
+        con fechas de caducidad distintas en cada uno de ellos, <b>será la del certificado 
+        de piloto a distancia en STS la que dará validez a todos los certificados anteriores, 
+        unificando la fecha de caducidad al del nivel superior</b>.
+    </>
+);
 
 function InfoBadge({ text }: { text: React.ReactNode }) {
     return (
@@ -65,9 +73,6 @@ function InfoBadge({ text }: { text: React.ReactNode }) {
 }
 
 export default function UserCertificatesSection({
-    showOptional,
-    onToggleOptional,
-    infoText,
     activeChecks,
     selectedFiles,
     formValues,
@@ -86,7 +91,11 @@ export default function UserCertificatesSection({
     onConopsDateChange,
     onConopsToggleIndefinite,
     onFormDateChange,
+    existingStaticFileNames = {},
+    existingConopsFileNames = {},
 }: UserCertificatesSectionProps) {
+
+    const [showOptional, setShowOptional] = useState(false);
     return (
         <div className="mb-3">
             <div 
@@ -103,10 +112,10 @@ export default function UserCertificatesSection({
                     type="button"
                     className="btn btn-success w-100 d-flex justify-content-center align-items-center py-2 shadow-sm border-0"
                     style={{ borderRadius: "8px", fontWeight: "600" }}
-                    onClick={onToggleOptional}
+                    onClick={() => setShowOptional(!showOptional)}
                 >
                     <span className="me-2">{showOptional ? "−" : "+"}</span>
-                    {showOptional ? "Ocultar certificados" : "Añadir certificados"}
+                    {showOptional ? "Ocultar certificados" : "Certificados"}
                 </button>
 
                 {showOptional && (
@@ -121,12 +130,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-4"
-                                checkboxId="chkA1A3"
                                 checkboxLabel="A1 / A3 (Prueba de superacion)"
                                 isChecked={activeChecks.chkA1A3}
                                 onToggleCheck={() => onToggleCheck("chkA1A3")}
                                 fileInputId="file-upload-a1a3"
                                 selectedFile={selectedFiles.fileA1A3}
+                                existingFileName={existingStaticFileNames.fileA1A3}
                                 onFileChange={(e) => onFileChange(e, "fileA1A3")}
                                 onClearFile={() => onClearFile("fileA1A3", "file-upload-a1a3")}
                                 expirationDate={formValues.dateA1A3}
@@ -138,12 +147,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-2"
-                                checkboxId="chkA2"
                                 checkboxLabel="A2 (Certificado de aptitud)"
                                 isChecked={activeChecks.chkA2}
                                 onToggleCheck={() => onToggleCheck("chkA2")}
                                 fileInputId="file-upload-a2"
                                 selectedFile={selectedFiles.fileA2}
+                                existingFileName={existingStaticFileNames.fileA2}
                                 onFileChange={(e) => onFileChange(e, "fileA2")}
                                 onClearFile={() => onClearFile("fileA2", "file-upload-a2")}
                                 expirationDate={formValues.dateA2}
@@ -163,12 +172,12 @@ export default function UserCertificatesSection({
                             </div>
 
                             <InsertDoc
-                                checkboxId="chkSTS01"
                                 checkboxLabel="STS europeo"
                                 isChecked={activeChecks.chkSTS01}
                                 onToggleCheck={() => onToggleCheck("chkSTS01")}
                                 fileInputId="file-upload-sts"
                                 selectedFile={selectedFiles.fileSTS}
+                                existingFileName={existingStaticFileNames.fileSTS}
                                 onFileChange={(e) => onFileChange(e, "fileSTS")}
                                 onClearFile={() => onClearFile("fileSTS", "file-upload-sts")}
                                 expirationDate={formValues.dateSTS}
@@ -189,12 +198,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-4"
-                                checkboxId="chkFormcnTeoricaGen"
                                 checkboxLabel="Formacion teorica generica"
                                 isChecked={activeChecks.chkFormcnTeoricaGen}
                                 onToggleCheck={() => onToggleCheck("chkFormcnTeoricaGen")}
                                 fileInputId="file-upload-ftg"
                                 selectedFile={selectedFiles.fileFTG}
+                                existingFileName={existingStaticFileNames.fileFTG}
                                 onFileChange={(e) => onFileChange(e, "fileFTG")}
                                 onClearFile={() => onClearFile("fileFTG", "file-upload-ftg")}
                                 expirationDate={formValues.dateFTG}
@@ -206,12 +215,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-2"
-                                checkboxId="chkFormcnPracticaGen"
                                 checkboxLabel="Formacion practica generica"
                                 isChecked={activeChecks.chkFormcnPracticaGen}
                                 onToggleCheck={() => onToggleCheck("chkFormcnPracticaGen")}
                                 fileInputId="file-upload-fpg"
                                 selectedFile={selectedFiles.fileFPG}
+                                existingFileName={existingStaticFileNames.fileFPG}
                                 onFileChange={(e) => onFileChange(e, "fileFPG")}
                                 onClearFile={() => onClearFile("fileFPG", "file-upload-fpg")}
                                 expirationDate={formValues.dateFPG}
@@ -253,24 +262,15 @@ export default function UserCertificatesSection({
                                     if (!categoryData) return null;
 
                                     return (
-                                        <div key={catId} className="position-relative border-bottom pb-3 mb-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => onRemoveCategory(catId)}
-                                                className="btn btn-sm btn-outline-danger position-absolute end-0 top-0"
-                                                style={{ zIndex: 10 }}
-                                            >
-                                                &times; Eliminar
-                                            </button>
-
+                                        <div key={catId} className="border-bottom pb-3 mb-3">
                                             <InsertDoc
-                                                showCheckbox={false}
-                                                checkboxId={`chk-${catId}`}
+                                                showAddBtn={true}
                                                 checkboxLabel={categoryData.label}
                                                 isChecked={true}
-                                                onToggleCheck={() => null}
+                                                onToggleCheck={() => onRemoveCategory(catId)}
                                                 fileInputId={`file-${catId}`}
                                                 selectedFile={conopsDocs[catId]?.certificate ?? null}
+                                                existingFileName={existingConopsFileNames[catId]}
                                                 onFileChange={(e) => onConopsFileChange(catId, e)}
                                                 onClearFile={() => onConopsClearFile(catId)}
                                                 expirationDate={conopsDocs[catId]?.dateExpire ?? ""}
@@ -304,12 +304,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-4"
-                                checkboxId="chkFormCertTeor"
                                 checkboxLabel="Certificado teorico"
                                 isChecked={activeChecks.chkFormCertTeor}
                                 onToggleCheck={() => onToggleCheck("chkFormCertTeor")}
                                 fileInputId="file-upload-fct"
                                 selectedFile={selectedFiles.fileCT}
+                                existingFileName={existingStaticFileNames.fileCT}
                                 onFileChange={(e) => onFileChange(e, "fileCT")}
                                 onClearFile={() => onClearFile("fileCT", "file-upload-fct")}
                                 expirationDate={formValues.dateCT}
@@ -320,13 +320,14 @@ export default function UserCertificatesSection({
                             />
 
                             <InsertDoc
+                                
                                 className="mb-4"
-                                checkboxId="chkFormCertPract"
                                 checkboxLabel="Certificado practico"
                                 isChecked={activeChecks.chkFormCertPract}
                                 onToggleCheck={() => onToggleCheck("chkFormCertPract")}
                                 fileInputId="file-upload-fcp"
                                 selectedFile={selectedFiles.fileCP}
+                                existingFileName={existingStaticFileNames.fileCP}
                                 onFileChange={(e) => onFileChange(e, "fileCP")}
                                 onClearFile={() => onClearFile("fileCP", "file-upload-fcp")}
                                 expirationDate={formValues.dateCP}
@@ -347,12 +348,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-4"
-                                checkboxId="chkFormCMClase2"
                                 checkboxLabel="Clase 2 (MED.A.030 de Reglamento (UE) 1178/2011) / Drones o RPAS > 25Kg"
                                 isChecked={activeChecks.chkFormCMClase2}
                                 onToggleCheck={() => onToggleCheck("chkFormCMClase2")}
                                 fileInputId="file-upload-fcmc2"
                                 selectedFile={selectedFiles.fileCMC2}
+                                existingFileName={existingStaticFileNames.fileCMC2}
                                 onFileChange={(e) => onFileChange(e, "fileCMC2")}
                                 onClearFile={() => onClearFile("fileCMC2", "file-upload-fcmc2")}
                                 expirationDate={formValues.dateCMC2}
@@ -364,12 +365,12 @@ export default function UserCertificatesSection({
 
                             <InsertDoc
                                 className="mb-4"
-                                checkboxId="chkFormCMClaseLAPL"
                                 checkboxLabel="Clase LAPL (MED.A.030 de Reglamento (UE) 1178/2011) / Drones o RPAS < 25Kg"
                                 isChecked={activeChecks.chkFormCMClaseLAPL}
                                 onToggleCheck={() => onToggleCheck("chkFormCMClaseLAPL")}
                                 fileInputId="file-upload-fcmclapl"
                                 selectedFile={selectedFiles.fileCMCLAPL}
+                                existingFileName={existingStaticFileNames.fileCMCLAPL}
                                 onFileChange={(e) => onFileChange(e, "fileCMCLAPL")}
                                 onClearFile={() => onClearFile("fileCMCLAPL", "file-upload-fcmclapl")}
                                 expirationDate={formValues.dateCMCLAPL}

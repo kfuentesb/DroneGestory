@@ -6,6 +6,7 @@ import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
 import { staticCertificateFields as staticCertificateConfig } from '../users/staticCertificateFields';
 import UserCertificatesSection from '../users/UserCertificatesSection';
+import { CONOPS_CATEGORIES } from '../users/conopsCategories';
 
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
@@ -96,15 +97,6 @@ function FormUser() {
         password: false,
         confirmPassword: false
     });
-
-    const infoText = (
-        <>
-            En caso de que se disponga <b>de los tres certificados de piloto a distancia</b>, 
-            con fechas de caducidad distintas en cada uno de ellos, <b>será la del certificado 
-            de piloto a distancia en STS la que dará validez a todos los certificados anteriores, 
-            unificando la fecha de caducidad al del nivel superior</b>.
-        </>
-    );
 
     const backgroundBorderInputsSelect = {
         control: (provided: any) => ({
@@ -339,30 +331,6 @@ function FormUser() {
             setLoading(false);
         }
     };
-
-    interface Category {
-        id: string;
-        label: string;
-    }
-
-    const CONOPS_CATEGORIES: Category[] = [
-        { id: 'opnoc', label: 'Operaciones nocturnas' },
-        { id: 'sobrevuelo', label: 'Sobrevuelo (vuelo sobre áreas pobladas conocidas o sobre reuniones de personas)' },
-        { id: 'opBVLOS', label: 'Operaciones BVLOS' },
-        { id: 'opBajaAlt', label: 'Operaciones a baja altitud (menos de 500 pies)' },
-        { id: 'espNoSegreg', label: 'Vuelos en espacio aéreo no segregado' },
-        { id: 'transpDepCarg', label: 'Transporte y/o depósito de carga' },
-        { id: 'transpMercPelig', label: 'Transporte de mercancías peligrosas' },
-        { id: 'opMultUASyEnjamb', label: 'Operaciones con múltiples UAS y enjambres' },
-        { id: 'lanzRecpUAeqEsp', label: 'Lanzamiento y recuperación de la UA usando equipo especial' },
-        { id: 'terrenMonta', label: 'Vuelo sobre terreno montañoso' },
-        { id: 'altoGradAutomat', label: 'Operaciones con un alto grado de automatización' },
-        { id: '120mAltAGL', label: 'Operaciones a más de 120m de altura AGL' },
-        { id: 'UASPotenNoElec', label: 'Operaciones con UAS con planta de potencia no eléctrica' },
-        { id: 'espAerContrlFIZ', label: 'Operaciones en espacio aéreo controlado y FIZ' },
-        { id: 'entDromoAeroPuertHeli', label: 'Operaciones en entorno de aeródromos, aeropuertos y helipuertos' },
-        { id: 'esparcirSustancMateriales', label: 'Operaciones que impliquen esparcir o dejar caer sustancias o materiales' }
-    ];
 
     const addCategory = () => {
         if (currentSelection && !selectedCategories.includes(currentSelection)) {
@@ -648,9 +616,6 @@ function FormUser() {
                     {error && <p className="text-danger">{error}</p>}
 
                     <UserCertificatesSection
-                        showOptional={showOptional}
-                        onToggleOptional={() => setShowOptional(!showOptional)}
-                        infoText={infoText}
                         activeChecks={activeChecks as Record<string, boolean>}
                         selectedFiles={selectedFiles}
                         formValues={formValues}
@@ -670,6 +635,7 @@ function FormUser() {
                         onConopsToggleIndefinite={handleConopsToggleIndefinite}
                         onFormDateChange={handleFormDateChange}
                     />
+
 
                     <div className="d-flex gap-2 mt-3 justify-content-center">
                         <button type="submit" className="btn btn-success">

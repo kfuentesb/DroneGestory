@@ -3,9 +3,11 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.dto.UserCertificateDTO;
 import com.dronetools.dronegestory.service.UserCertificateService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -42,10 +44,38 @@ public class UserCertificateController {
         return ResponseEntity.ok(userCertificateService.create(dto));
     }
 
+    @PostMapping(value = "/user/{userId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UserCertificateDTO> createWithFile(
+            @PathVariable Integer userId,
+            @RequestParam("certificateType") String certificateType,
+            @RequestParam(value = "expireDate", required = false) String expireDate,
+            @RequestParam(value = "dateIndefinite", required = false) Boolean dateIndefinite,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ) {
+        return ResponseEntity.ok(
+                userCertificateService.createWithFile(userId, certificateType, expireDate, dateIndefinite, file)
+        );
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UserCertificateDTO> update(@PathVariable Integer id, @RequestBody UserCertificateDTO dto) {
         return userCertificateService.update(id, dto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping(value = "/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UserCertificateDTO> updateWithFile(
+            @PathVariable Integer id,
+            @RequestParam("certificateType") String certificateType,
+            @RequestParam(value = "expireDate", required = false) String expireDate,
+            @RequestParam(value = "dateIndefinite", required = false) Boolean dateIndefinite,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ) {
+        return userCertificateService.updateWithFile(id, certificateType, expireDate, dateIndefinite, file)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
