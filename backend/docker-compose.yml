@@ -13,3 +13,4 @@ services:
       - postgres_data:/var/lib/postgresql/data
 volumes:
   postgres_data:
+    name: dronegestory_postgres_data

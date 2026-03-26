@@ -55,6 +55,7 @@ services:
 
 volumes:
   postgres_data:
+    name: dronegestory_postgres_data
 
 networks:
   drone_network:
