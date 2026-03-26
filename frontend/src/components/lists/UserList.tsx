@@ -6,6 +6,7 @@ import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
+import Pagination from "../commons/props/Pagination";
 
 type User = {
   id: number;
@@ -21,6 +22,8 @@ export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // console.log("UserList MOUNTED"); TESTING
 
@@ -65,6 +68,15 @@ export default function UserList() {
     u.type,
   ]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, users.length]);
+
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="container py-4">
       <div
@@ -89,7 +101,7 @@ export default function UserList() {
 
           <ReusableTable
             headers={["Nombre", "Usuario", "Email", "Teléfono", "Tipo"]}
-            rows={filteredUsers}
+            rows={paginatedUsers}
             renderRow={(p) => (
               <>
                 <td>{p.firstName} {p.lastName}</td>
@@ -119,6 +131,13 @@ export default function UserList() {
             )}
             onRowClick={(p) => navigate(`/auth/users/${p.id}`)}
             emptyText="No hay usuarios registrados."
+          />
+
+          <Pagination
+            totalItems={filteredUsers.length}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
           />
 
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>

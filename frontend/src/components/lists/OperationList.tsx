@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
+import Pagination from "../commons/props/Pagination";
 
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 
@@ -27,6 +28,8 @@ export default function OperationList() {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [search, setSearch] = useState("");
   const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const navigate = useNavigate();
 
   // Formatear fecha
@@ -63,6 +66,15 @@ export default function OperationList() {
     }
   }, [search, operations]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, operations.length]);
+
+  const paginatedOperations = filteredOperations.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="container py-4">
       <div
@@ -98,7 +110,7 @@ export default function OperationList() {
               "Última Actualización",
               "Estado"
             ]}
-            rows={filteredOperations}
+            rows={paginatedOperations}
             renderRow={(o) => (
               <>
                 <td>{o.nombreOperacion}</td>
@@ -119,6 +131,13 @@ export default function OperationList() {
             )}
             onRowClick={(o) => navigate(`/auth/operations/${o.idOperacion}`)}
             emptyText="No hay operaciones registradas."
+          />
+
+          <Pagination
+            totalItems={filteredOperations.length}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
           />
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
         </div>

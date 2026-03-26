@@ -6,6 +6,7 @@ import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
+import Pagination from "../commons/props/Pagination";
 
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 
@@ -45,6 +46,8 @@ type Aircraft = {
 export default function AircraftList() {
   const [aircrafts, setAircrafts] = useState<Aircraft[]>([]);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const navigate = useNavigate();
 
 
@@ -73,6 +76,15 @@ export default function AircraftList() {
     a.aircraftClass,
     a.config,
   ]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, aircrafts.length]);
+
+  const paginatedAircrafts = filteredAircrafts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="container py-4">
@@ -109,7 +121,7 @@ export default function AircraftList() {
               "Energía impacto (J)",
               "Tiene cámara",
             ]}
-            rows={filteredAircrafts}
+            rows={paginatedAircrafts}
             renderRow={(a) => (
               <>
                 <td>{a.manufacturer}</td>
@@ -130,6 +142,13 @@ export default function AircraftList() {
             )}
             onRowClick={(a) => navigate(`/auth/aircrafts/${a.id}`)}
             emptyText="No hay aeronaves registradas."
+          />
+
+          <Pagination
+            totalItems={filteredAircrafts.length}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
           />
           <p className="text-muted mt-3 mb-0" style={{ color: "#6B7280" }}></p>
         </div>

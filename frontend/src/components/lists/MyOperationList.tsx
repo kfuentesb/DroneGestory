@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
+import Pagination from "../commons/props/Pagination";
 
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 
@@ -27,6 +28,8 @@ export default function MyOperationList() {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [search, setSearch] = useState("");
   const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -68,6 +71,15 @@ export default function MyOperationList() {
       );
     }
   }, [search, operations]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, operations.length]);
+
+  const paginatedOperations = filteredOperations.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isLoading) {
     return (
@@ -129,7 +141,7 @@ export default function MyOperationList() {
 
           <ReusableTable
             headers={["Nombre", "F. Creación", "A4", "A5", "A6", "A7", "A8", "Última Actualización", "Estado"]}
-            rows={filteredOperations}
+            rows={paginatedOperations}
             renderRow={(o) => (
               <>
                 <td>{o.nombreOperacion}</td>
@@ -149,6 +161,13 @@ export default function MyOperationList() {
             )}
             onRowClick={(o) => navigate(`/auth/operations/${o.idOperacion}`)}
             emptyText="No tienes operaciones registradas."
+          />
+
+          <Pagination
+            totalItems={filteredOperations.length}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
           />
           
           {operations.length > 0 && (
