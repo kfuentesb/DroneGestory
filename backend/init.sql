@@ -14,4 +14,4 @@ INSERT INTO aircraft (
 ) VALUES
 (1001, 'DroneCorp', 'Falcon One', 987654, 'C2', 7.120, 1.780, 120.500, 'Multirrotor', 410.325, true),
 (1002, 'AeroMaker Industries', 'Glider X', 764321, 'No', 2.050, 2.950, 60.300, 'Avion', 85.000, false),
-(1003, 'DroneTools', 'Condor', 584924, 'A4', 3.453, 3.650, 75.600, 'Dron', 100.000, true);
+(1003, 'DroneTools', 'Condor', 584924, 'C5', 3.453, 3.650, 75.600, 'Dron', 100.000, true);
