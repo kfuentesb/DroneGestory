@@ -33,26 +33,32 @@ public class AircraftService {
 
     // Crear un nueva aeronave con archivo
     public Aircraft createWithFile(Aircraft aircraft, MultipartFile imageFile) throws IOException {
+        Aircraft savedAircraft = aircraftRepository.save(aircraft);
+
         if (imageFile != null && !imageFile.isEmpty()) {
-            String originalName = imageFile.getOriginalFilename();
-            String safeName = (originalName == null || originalName.isBlank())
-                    ? "upload"
-                    : Paths.get(originalName).getFileName().toString();
-            String filename = System.currentTimeMillis() + "_" + safeName;
             Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Files.createDirectories(uploadDir);
-            Path target = uploadDir.resolve(filename);
+            Path profileDir = uploadDir.resolve(Paths.get("aircraft", savedAircraft.getId().toString(), "profile")).normalize();
+            Files.createDirectories(profileDir);
+
+            String filename = buildProfileFilename(savedAircraft.getId(), imageFile.getOriginalFilename());
+            Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
-            aircraft.setImagePath(filename);
+
+            savedAircraft.setImagePath(
+                    Paths.get("aircraft", savedAircraft.getId().toString(), "profile", filename)
+                            .toString()
+                            .replace("\\", "/")
+            );
         }
 
-        return aircraftRepository.save(aircraft);
+        return aircraftRepository.save(savedAircraft);
     }
 
     public Aircraft updateWithFile(
         Integer id, 
         Aircraft updatedAircraft, 
         MultipartFile imageFile, 
+        boolean removeImage,
         boolean mtomPresent, 
         boolean wingspanPresent,
         boolean maxSpeedPresent,
@@ -100,25 +106,49 @@ public class AircraftService {
         }
 
         // --- Lógica de Imagen ---
-        if (imageFile != null && !imageFile.isEmpty()) {
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Files.createDirectories(uploadDir);
-            String oldImage = aircraft.getImagePath();
-            String originalName = imageFile.getOriginalFilename();
-            String safeName = (originalName == null || originalName.isBlank()) ? "upload" : Paths.get(originalName).getFileName().toString();
-            
-            String filename = aircraft.getModel() + "_" + aircraft.getSerialNumber() + "_" + safeName;
-            Path target = uploadDir.resolve(filename);
-            imageFile.transferTo(target.toFile());
-            aircraft.setImagePath(filename);
+        Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path profileDir = uploadDir.resolve(Paths.get("aircraft", aircraft.getId().toString(), "profile")).normalize();
+        String oldImage = aircraft.getImagePath();
 
-            if (oldImage != null && !oldImage.isBlank()) {
-                Path oldFile = uploadDir.resolve(oldImage).normalize();
-                Files.deleteIfExists(oldFile);
-            }
+        if (removeImage) {
+            deleteExistingImage(uploadDir, oldImage);
+            aircraft.setImagePath(null);
+        } else if (imageFile != null && !imageFile.isEmpty()) {
+            Files.createDirectories(profileDir);
+            deleteExistingImage(uploadDir, oldImage);
+
+            String filename = buildProfileFilename(aircraft.getId(), imageFile.getOriginalFilename());
+            Path target = profileDir.resolve(filename);
+            imageFile.transferTo(target.toFile());
+
+            aircraft.setImagePath(
+                    Paths.get("aircraft", aircraft.getId().toString(), "profile", filename)
+                            .toString()
+                            .replace("\\", "/")
+            );
         }
 
         return aircraftRepository.save(aircraft);
+    }
+
+    private void deleteExistingImage(Path uploadDir, String oldImage) throws IOException {
+        if (oldImage == null || oldImage.isBlank()) {
+            return;
+        }
+
+        Path oldFile = uploadDir.resolve(oldImage).normalize();
+        if (oldFile.startsWith(uploadDir)) {
+            Files.deleteIfExists(oldFile);
+        }
+    }
+
+    private String buildProfileFilename(Integer aircraftId, String originalFilename) {
+        String safeName = (originalFilename == null || originalFilename.isBlank())
+                ? "upload"
+                : Paths.get(originalFilename).getFileName().toString();
+        int dot = safeName.lastIndexOf('.');
+        String extension = dot >= 0 ? safeName.substring(dot) : "";
+        return "aircraft_" + aircraftId + "_profile" + extension;
     }
 
     // Eliminar un aircraft por ID

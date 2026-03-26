@@ -65,6 +65,7 @@ public class AircraftController {
             @PathVariable Integer id,
             @ModelAttribute Aircraft aircraft,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
 
@@ -77,6 +78,7 @@ public class AircraftController {
             id, 
             aircraft, 
             imageFile, 
+            removeImage,
             mtomPresent, 
             wingspanPresent, 
             maxSpeedPresent, 
@@ -97,8 +99,20 @@ public class AircraftController {
         }
     }
 
-    @GetMapping("/images/{filename:.+}")// el ":.+" hace que ignore si tiene puntos en la base de datos, y lo tiene
-    public ResponseEntity<Resource> getAircraftImage(@PathVariable String filename) throws IOException {
+    @GetMapping("/images/**")
+    public ResponseEntity<Resource> getAircraftImage(HttpServletRequest request) throws IOException {
+        String requestUri = request.getRequestURI();
+        String marker = "/api/auth/aircraft/images/";
+        int markerIndex = requestUri.indexOf(marker);
+        if (markerIndex < 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String filename = requestUri.substring(markerIndex + marker.length());
+        if (filename.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadsDir.resolve(filename).normalize();
 
