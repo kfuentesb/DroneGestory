@@ -2,8 +2,6 @@ package com.dronetools.dronegestory.repository;
 
 import com.dronetools.dronegestory.model.Operation;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

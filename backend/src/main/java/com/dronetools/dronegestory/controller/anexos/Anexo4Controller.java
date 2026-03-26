@@ -3,9 +3,7 @@ package com.dronetools.dronegestory.controller.anexos;
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
-import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import org.springframework.web.bind.annotation.*;
 

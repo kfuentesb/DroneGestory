@@ -2,7 +2,6 @@ package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
@@ -23,17 +22,22 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 Operation::getNextVersionAnexo4);
     }
 
+    /**
+     * Actualiza campos del borrador con datos del request.
+     * Se usa cuando se guarda un borrador existente.
+     */
     @Override
-    protected void actualizarCampos(Anexo4 actual, Anexo4 nuevosDatos) {
-        // TODO Rellenar campos
-        actual.setDescripcion(nuevosDatos.getDescripcion());
-        actual.setFechaHoraPrevista(nuevosDatos.getFechaHoraPrevista());
-        actual.setMediosMateriales(nuevosDatos.getMediosMateriales());
-        actual.setDireccion(nuevosDatos.getDireccion());
-        actual.setCoords(nuevosDatos.getCoords());
-        actual.setImagenEspacioAereo(nuevosDatos.getImagenEspacioAereo());
-        actual.setImagenZonaVuelo(nuevosDatos.getImagenZonaVuelo());
-        actual.setEspacioAereoControlado(nuevosDatos.getEspacioAereoControlado());
-
+    protected void actualizarCampos(Anexo4 destino, Anexo4 origen) {
+        destino.setTextoPrueba(origen.getTextoPrueba());
     }
+
+    @Override
+    protected Anexo4 crearCopia(Anexo4 origen) {
+        Anexo4 copia = new Anexo4();
+        copia.setTextoPrueba(origen.getTextoPrueba());
+        // Añadir más campos aquí
+        return copia;
+    }
+
+
 }

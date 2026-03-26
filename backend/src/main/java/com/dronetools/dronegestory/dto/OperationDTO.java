@@ -2,13 +2,11 @@ package com.dronetools.dronegestory.dto;
 
 import com.dronetools.dronegestory.common.AnexoVersionado;
 import com.dronetools.dronegestory.model.Operation;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Getter
 @Setter

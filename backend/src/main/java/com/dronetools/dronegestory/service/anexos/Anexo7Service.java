@@ -7,7 +7,6 @@ import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.dronetools.dronegestory.model.enums.AnexoStatus;
 
 @Service
 public class Anexo7Service extends AnexoServiceBase<Anexo7> {
@@ -24,7 +23,14 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
     }
 
     @Override
-    protected void actualizarCampos(Anexo7 actual, Anexo7 nuevosDatos) {
-        actual.setTextoPrueba(nuevosDatos.getTextoPrueba());
+    protected Anexo7 crearCopia(Anexo7 origen) {
+        Anexo7 copia = new Anexo7();
+        copia.setTextoPrueba(origen.getTextoPrueba());
+        return copia;
+    }
+
+    @Override
+    protected void actualizarCampos(Anexo7 destino, Anexo7 origen) {
+        destino.setTextoPrueba(origen.getTextoPrueba());
     }
 }
