@@ -7,6 +7,7 @@ import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 import { fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
+import Pagination from "../commons/props/Pagination";
 import {
   formatDateTime,
   getAnexoColorStyle,
@@ -49,16 +50,32 @@ export default function OperationsTableView({
   emptyText,
 }: OperationsTableViewProps) {
   const navigate = useNavigate();
+
+  // 1. Estados (Hooks siempre arriba)
   const [operations, setOperations] = useState<OperationListDTO[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
+  // 2. Custom Hooks (Deben ir antes de cualquier return condicional)
+  const filteredOperations = useSearchFilter(operations, search, (op) => [
+    op.nombreOperacion,
+    op.nombreCreador,
+    op.estado,
+    op.anexo4Version,
+    op.anexo5Version,
+    op.anexo6Version,
+    op.anexo7Version,
+    op.anexo8Version,
+  ]);
+
+  // 3. Efectos
   useEffect(() => {
     const loadOperations = async () => {
       setIsLoading(true);
       setError(null);
-
       try {
         const data = await fetchOperations(endpoint);
         setOperations(data);
@@ -69,21 +86,21 @@ export default function OperationsTableView({
         setIsLoading(false);
       }
     };
-
     loadOperations();
   }, [endpoint]);
 
-  const filteredOperations = useSearchFilter(operations, search, (operation) => [
-    operation.nombreOperacion,
-    operation.nombreCreador,
-    operation.estado,
-    operation.anexo4Version,
-    operation.anexo5Version,
-    operation.anexo6Version,
-    operation.anexo7Version,
-    operation.anexo8Version,
-  ]);
+  // Resetear página al buscar o cambiar datos
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, operations.length]);
 
+  // 4. Lógica de cálculo (No son hooks, pueden ir aquí)
+  const paginatedOperations = filteredOperations.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // 5. RENDERS CONDICIONALES (Solo después de declarar todos los hooks)
   if (isLoading) {
     return (
       <div className="container py-4">
@@ -101,10 +118,8 @@ export default function OperationsTableView({
     return (
       <div className="container py-4">
         <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
-          <div className="card-body">
-            <div className="alert alert-danger mb-3" role="alert">
-              {error}
-            </div>
+          <div className="card-body text-center">
+            <div className="alert alert-danger mb-3">{error}</div>
             <ButtonProp onClick={() => window.location.reload()}>Reintentar</ButtonProp>
           </div>
         </div>
@@ -112,16 +127,12 @@ export default function OperationsTableView({
     );
   }
 
+  // 6. RENDER PRINCIPAL
   return (
     <div className="container py-4">
-      <div
-        className="card shadow-sm"
-        style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}
-      >
+      <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
         <div className="card-body">
-          <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-            {title}
-          </h2>
+          <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>{title}</h2>
 
           <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
             <SearchBar
@@ -129,26 +140,17 @@ export default function OperationsTableView({
               placeholder="Buscar por nombre, creador o estado..."
               onChange={setSearch}
             />
-
             <ButtonProp onClick={() => navigate("/auth/register-operation")}>
-              <img src={DronePlusIcon} style={{ width: "32px", height: "32px" }} alt="Nueva operación" />
+              <img src={DronePlusIcon} style={{ width: "32px", height: "32px" }} alt="Nueva" />
             </ButtonProp>
           </div>
 
           <ReusableTable
             headers={[
-              "Nombre",
-              "Creador",
-              "Creación",
-              "Anexo 4",
-              "Anexo 5",
-              "Anexo 6",
-              "Anexo 7",
-              "Anexo 8",
-              "Estado",
-              "Aviso",
+              "Nombre", "Creador", "Creación", "Anexo 4", "Anexo 5", 
+              "Anexo 6", "Anexo 7", "Anexo 8", "Estado", "Aviso"
             ]}
-            rows={filteredOperations}
+            rows={paginatedOperations} // Usamos la lista paginada
             renderRow={(operation) => (
               <>
                 <td>{operation.nombreOperacion}</td>
@@ -165,9 +167,7 @@ export default function OperationsTableView({
                 <td className="text-center">
                   {operation.todosFirmadosPendiente ? (
                     <span className="badge text-bg-warning">Revisar cierre</span>
-                  ) : (
-                    "-"
-                  )}
+                  ) : "-"}
                 </td>
               </>
             )}
@@ -175,11 +175,12 @@ export default function OperationsTableView({
             emptyText={emptyText}
           />
 
-          {operations.length > 0 && (
-            <p className="text-muted mt-3 mb-0" style={{ fontSize: "0.875rem" }}>
-              Mostrando {filteredOperations.length} de {operations.length} operaciones
-            </p>
-          )}
+          <Pagination
+              totalItems={filteredOperations.length}
+              currentPage={currentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

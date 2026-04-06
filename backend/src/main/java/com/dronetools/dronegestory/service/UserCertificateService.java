@@ -5,6 +5,10 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,15 +36,24 @@ public class UserCertificateService {
     }
 
     public Optional<UserCertificateDTO> findById(Integer id) {
-        return userCertificateRepository.findById(id).map(this::toDto);
+        return userCertificateRepository.findById(id)
+                .map(certificate -> {
+                    assertCanManageCertificate(certificate);
+                    return toDto(certificate);
+                });
     }
 
     public List<UserCertificateDTO> findByUserId(Integer userId) {
-        return userCertificateRepository.findByUserId(userId).stream().map(this::toDto).toList();
+        User currentUser = getAuthenticatedUser();
+        Integer effectiveUserId = userId;
+        if (!isPrivileged(currentUser)) {
+            effectiveUserId = currentUser.getId();
+        }
+        return userCertificateRepository.findByUserId(effectiveUserId).stream().map(this::toDto).toList();
     }
 
     public UserCertificateDTO create(UserCertificateDTO dto) {
-        User user = resolveUser(dto.userId());
+        User user = resolveWriteTargetUser(dto.userId());
 
         UserCertificate certificate = new UserCertificate();
         certificate.setUser(user);
@@ -54,7 +67,8 @@ public class UserCertificateService {
 
     public Optional<UserCertificateDTO> update(Integer id, UserCertificateDTO dto) {
         return userCertificateRepository.findById(id).map(existing -> {
-            User user = resolveUser(dto.userId());
+            assertCanManageCertificate(existing);
+            User user = resolveWriteTargetUser(dto.userId());
             existing.setUser(user);
             existing.setCertificateType(dto.certificateType());
             existing.setCertificateName(dto.certificateName());
@@ -67,6 +81,9 @@ public class UserCertificateService {
     public void deleteById(Integer id) {
         UserCertificate certificate = userCertificateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User certificate not found with id: " + id));
+
+        assertCanManageCertificate(certificate);
+
         deleteStoredFile(certificate.getCertificateName());
         userCertificateRepository.delete(certificate);
     }
@@ -78,7 +95,7 @@ public class UserCertificateService {
             Boolean dateIndefinite,
             MultipartFile file
     ) {
-        User user = resolveUser(userId);
+        User user = resolveWriteTargetUser(userId);
         UserCertificate certificate = new UserCertificate();
         certificate.setUser(user);
         certificate.setCertificateType(certificateType);
@@ -94,6 +111,7 @@ public class UserCertificateService {
             MultipartFile file
     ) {
         return userCertificateRepository.findById(id).map(certificate -> {
+            assertCanManageCertificate(certificate);
             certificate.setCertificateType(certificateType);
             applyMetadataAndFile(certificate, certificateType, expireDateRaw, dateIndefinite, file);
             return toDto(userCertificateRepository.save(certificate));
@@ -106,6 +124,40 @@ public class UserCertificateService {
         }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    }
+
+    private User resolveWriteTargetUser(Integer requestedUserId) {
+        User currentUser = getAuthenticatedUser();
+        if (isPrivileged(currentUser)) {
+            return resolveUser(requestedUserId);
+        }
+        return currentUser;
+    }
+
+    private void assertCanManageCertificate(UserCertificate certificate) {
+        User currentUser = getAuthenticatedUser();
+        if (isPrivileged(currentUser)) {
+            return;
+        }
+        boolean isOwner = certificate.getUser().getId().equals(currentUser.getId());
+        if (!isOwner) {
+            throw new AccessDeniedException("You do not have permission to modify this certificate.");
+        }
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("User not authenticated.");
+        }
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("Authenticated user not found."));
+    }
+
+    private boolean isPrivileged(User user) {
+        return user.getType() == com.dronetools.dronegestory.model.enums.UserType.ADMIN
+                || user.getType() == com.dronetools.dronegestory.model.enums.UserType.MANAGER;
     }
 
     private void applyMetadataAndFile(

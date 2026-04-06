@@ -89,8 +89,6 @@ pip install bcrypt
 
 //TODO LIST<br>
 VISUAL<br>
--Conseguir logo. Sustituir logo de arriba de react por el logo de la empresa <br>
--Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria <br>
 -Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
@@ -105,6 +103,5 @@ VISUAL<br>
 -Añadir ver operación en detalle<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
--Cambiar el fetch post de ProfileDetail.tsx y el backend de usuario para que no permita la subida de nombre de usuario<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 -Paginacion infinita sin limite
