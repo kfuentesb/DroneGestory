@@ -1,5 +1,5 @@
 package com.dronetools.dronegestory.model.enums;
 
 public enum AircraftClass {
-    No, C0, C1, C2, C3, C4, C5, C6
+    No, C0, C1, C2, C3, C4, Legacy
 }

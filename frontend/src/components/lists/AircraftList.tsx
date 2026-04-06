@@ -10,15 +10,13 @@ import Pagination from "../commons/props/Pagination";
 
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 
-
-
 type Aircraft = {
   id: number;
   // Obligatorios
   manufacturer?: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
   model: string;
   serialNumber?: string;
-  aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "C5" | "C6";
+  aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
   wingspan?: number;             // En metros (BigDecimal)
   maxSpeed?: number;             // En m/s (BigDecimal)
