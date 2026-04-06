@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@svar-ui/react-filemanager": "^2.5.0",
+    "chonky": "^2.3.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.1.1",

@@ -19,6 +19,7 @@ import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/OperationDetail";
 import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
+import FileBrowserView from "../components/docs/FileBrowserView";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -83,6 +84,15 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/auth/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/auth/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/auth/register-operation" element={<MultiStepsForm />} />
+
+        <Route 
+          path="/auth/docs" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <FileBrowserView />
+            </ProtectedRoute>
+          } 
+        />
         
 
         {/* Error */}
