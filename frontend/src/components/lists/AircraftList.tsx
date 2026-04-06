@@ -16,7 +16,7 @@ type Aircraft = {
   manufacturer?: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
   model: string;
   serialNumber?: string;
-  aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4";
+  aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "Legacy";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
   wingspan?: number;             // En metros (BigDecimal)
   maxSpeed?: number;             // En m/s (BigDecimal)

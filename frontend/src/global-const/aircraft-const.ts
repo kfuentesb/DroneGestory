@@ -5,8 +5,7 @@ export const aircraftClasses = [
     { value: "C2", label: "C2" },
     { value: "C3", label: "C3" },
     { value: "C4", label: "C4" },
-    { value: "C5", label: "C5" },
-    { value: "C6", label: "C6" }
+    { value: "Legacy", label: "Legacy" },
 ];
 
 export const configs = [
