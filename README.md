@@ -79,6 +79,7 @@ npm i react-select
 npm i react-error-boundary
 npm i react-pro-sidebar
 npm i react-hook-form
+npm i @svar-ui/react-filemanager
 ```
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
