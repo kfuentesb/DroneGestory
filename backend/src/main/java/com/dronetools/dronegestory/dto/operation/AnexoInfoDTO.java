@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Data;
 
@@ -23,5 +24,10 @@ public class AnexoInfoDTO {
 
     public static AnexoInfoDTO empty() {
         return new AnexoInfoDTO(null, 0, null);
+    }
+
+    public static AnexoInfoDTO from(Anexo anexo) {
+        if (anexo == null) return null;
+        return new AnexoInfoDTO(anexo.getId(), anexo.getNumeroVersion(), anexo.getEstado());
     }
 }

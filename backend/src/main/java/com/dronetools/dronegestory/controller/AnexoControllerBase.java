@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.dto.operation.AnexoHistoricoDTO;
+import com.dronetools.dronegestory.dto.operation.AnexoInfoDTO;
 import com.dronetools.dronegestory.dto.operation.AnexoRequestDTO;
 import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.Operation;
@@ -29,9 +30,10 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     }
 
     @PostMapping
-    public T saveOrUpdate(@PathVariable Long operationId, @ModelAttribute AnexoRequestDTO dto) {
+    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute AnexoRequestDTO dto) {
         T input = convertDtoToEntity(dto);
-        return registrar(operationId, input);
+        T saved = registrar(operationId, input); // sigue en sesión
+        return AnexoInfoDTO.from(saved);        // crea este método estático si no lo tienes
     }
 
     @GetMapping("/actual")
@@ -51,9 +53,10 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     }
 
     @PutMapping("/{idAnexo}/firmar")
-    public T firmar(@PathVariable Long idAnexo, Principal principal) {
+    public AnexoInfoDTO firmar(@PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
-        return service.firmarAnexo(idAnexo, username);
+        T anexo = service.firmarAnexo(idAnexo, username);
+        return AnexoInfoDTO.from(anexo);
     }
 
     @PostMapping("/{idAnexo}/rehacer")
