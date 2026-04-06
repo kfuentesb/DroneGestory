@@ -108,3 +108,4 @@ VISUAL<br>
 -Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
 -Cambiar el fetch post de ProfileDetail.tsx y el backend de usuario para que no permita la subida de nombre de usuario<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
+-Paginacion infinita sin limite
