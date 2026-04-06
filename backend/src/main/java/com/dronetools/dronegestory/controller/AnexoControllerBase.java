@@ -37,10 +37,10 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     }
 
     @GetMapping("/actual")
-    public T getActual(@PathVariable Long operationId) {
+    public AnexoInfoDTO getActual(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        return getAnexoActual(op);
+        return AnexoInfoDTO.from(getAnexoActual(op));
     }
 
     @GetMapping("/historico")
@@ -60,8 +60,9 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     }
 
     @PostMapping("/{idAnexo}/rehacer")
-    public T rehacer(@PathVariable Long idAnexo) {
-        return rehacerDesde(idAnexo);
+    public AnexoInfoDTO rehacer(@PathVariable Long idAnexo) {
+        T anexoRehecho = rehacerDesde(idAnexo);
+        return AnexoInfoDTO.from(anexoRehecho); // mapeo a DTO dentro de la sesión
     }
 
     protected abstract T registrar(Long operationId, T input);
