@@ -10,6 +10,7 @@ import ArrowForward from '../../assets/commons/arrow_forward_white.svg';
 import UsersIcon from '../../assets/sidebar/group_white.svg';
 import DroneIcon from '../../assets/sidebar/drone_white.svg';
 import FlyIcon from '../../assets/sidebar/fly_drone_white.svg';
+import DocIcon from '../../assets/sidebar/docs.svg';
 
 interface SidebarMenuProps {
     toggled: boolean;
@@ -129,6 +130,18 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                     )}
                     <MenuItem onClick={() => { navigate("/auth/operations/details/mine"); setToggled(false); }}>Listar mis operaciones</MenuItem>
                     <MenuItem onClick={() => { navigate("/auth/register-operation"); setToggled(false); }}>Registrar operacion</MenuItem>
+                </SubMenu>
+                
+                {/* 5. Docs Section */}
+                <SubMenu
+                    label="Documentación"
+                    open={openMenu === "docs"}
+                    onOpenChange={() => handleToggle("docs")}
+                    icon={<img src={DocIcon} alt="Docs" style={{ width: "18px", height: "18px" }} />}
+                >
+                    {canManage && (
+                        <MenuItem onClick={() => { navigate("/auth/docs"); setToggled(false); }}>Servidor</MenuItem>
+                    )}
                 </SubMenu>
             </Menu>
         </Sidebar>
