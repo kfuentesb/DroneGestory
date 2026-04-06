@@ -54,7 +54,7 @@ const infoText = (
     </>
 );
 
-function InfoBadge({ text }: { text: React.ReactNode }) {
+export function InfoBadge({ text }: { text: React.ReactNode }) {
     return (
         <div className="info-tooltip-wrapper ms-2">
             <img

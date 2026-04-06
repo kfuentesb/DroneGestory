@@ -4,6 +4,7 @@ import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';
 import { aircraftClasses, configs, LIMITS } from '../../global-const/aircraft-const';
+import { InfoBadge } from '../users/UserCertificatesSection';
 
 type SelectOption = { value: string; label: string };
 
@@ -24,6 +25,26 @@ export default function FormAircraft() {
     hasCamera: null as SelectOption | null,
     image: null as File | null,
   });
+
+  const infoText = (
+    <>
+        <p>Los UAS que no sean de construcción privada y cumplan con la directiva de comercialización
+        de productos aplicable actualmente en la Unión Europea (Decisión 768/2008/CE), pero no pertenezcan
+        a una de las clases C0, C1, C2, C3 o C4 establecidas en el Reglamento Delegado (UE) 2019/945 de
+        la Comisión, podrán seguir utilizándose si han sido introducidos en el mercado de la Unión Europea
+        antes del 1 de enero de 2024 de la siguiente forma:
+        </p>
+        <ul>
+          <li>Si la masa máxima de despegue de la aeronave no tripulada es inferior a 250g, incluida la
+            carga útil, operación en subcategoría A1.
+          </li>
+          <li>Si la masa máxima de despegue de la aeronave no tripulada es inferior a 25kg, incluidos
+            el carburante y la carga útil, operación en subcategoría A3.
+          </li>
+        </ul>
+
+    </>
+);
 
   // Mantenemos tu estado de errores, pero añadimos soporte para mensajes de texto
   const [errors, setErrors] = useState<any>({
@@ -209,7 +230,9 @@ export default function FormAircraft() {
             {/* Row 2: Clase, MTOM, Dimensión */}
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label d-block text-start ps-1">Clase</label>
+                <label className="form-label d-block text-start ps-1">Clase
+                  <InfoBadge text={infoText} />
+                </label>
                 <Select
                   options={aircraftClasses}
                   styles={backgroundBorderInputsSelect}
