@@ -25,10 +25,7 @@ public class OperationController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public List<OperationListDTO> getAll() {
-        return operationService.getAllOperations()
-                .stream()
-                .map(OperationListDTO::new)
-                .toList();
+        return operationService.getAllOperationListDTOs();
     }
 
     @GetMapping("/details/mine")
@@ -36,10 +33,7 @@ public class OperationController {
         String username = authentication.getName();
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return operationService.findOperationsByUserId(user.getId())
-                .stream()
-                .map(OperationListDTO::new)
-                .toList();
+        return operationService.getMyOperationListDTOs(user.getId());
     }
 
     @PostMapping

@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
+import com.dronetools.dronegestory.dto.operation.OperationListDTO;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
@@ -28,14 +29,6 @@ public class OperationService {
     @Transactional(readOnly = true)
     public List<Operation> findOperationsByUserId(Integer userId) {
         return operationRepository.findByCreadorId(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public OperationDetailDTO findByIdDto(Long operationId) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        // La sesión sigue abierta, aquí puedes acceder a cualquier relación (creador, anexos, etc.)
-        return new OperationDetailDTO(op);
     }
 
     @Transactional
@@ -93,5 +86,32 @@ public class OperationService {
         }
         return authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
+    // DTO
+    @Transactional(readOnly = true)
+    public OperationDetailDTO findByIdDto(Long operationId) {
+        Operation op = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        // La sesión sigue abierta, aquí puedes acceder a cualquier relación (creador, anexos, etc.)
+        return new OperationDetailDTO(op);
+    }
+
+    // Trae todas las operaciones como DTOs
+    @Transactional(readOnly = true)
+    public List<OperationListDTO> getAllOperationListDTOs() {
+        return operationRepository.findAll()
+                .stream()
+                .map(OperationListDTO::new)
+                .toList();
+    }
+
+    // Trae solo las operaciones de un usuario como DTOs
+    @Transactional(readOnly = true)
+    public List<OperationListDTO> getMyOperationListDTOs(Integer userId) {
+        return operationRepository.findByCreadorId(userId)
+                .stream()
+                .map(OperationListDTO::new)
+                .toList();
     }
 }
