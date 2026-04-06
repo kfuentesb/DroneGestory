@@ -62,7 +62,7 @@ public class OperationController {
 
     @GetMapping("/{operationId}")
     public OperationDetailDTO getById(@PathVariable Long operationId) {
-        return new OperationDetailDTO(operationService.findById(operationId));
+        return operationService.findByIdDto(operationId);
     }
 
     @DeleteMapping("/{operationId}")
