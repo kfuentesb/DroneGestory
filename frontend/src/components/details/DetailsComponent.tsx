@@ -589,6 +589,7 @@ export default function DetailsComponent({
 
             fields.forEach((field) => {
                 if (field.type === 'file') return;
+                if (field.readOnly) return;
                 const value = formValues[field.key];
                 if (value === null || value === undefined || value.toString().trim() === "") return;
                 const stringValue = value.toString().trim();

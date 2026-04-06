@@ -25,7 +25,7 @@ public class UserCertificateController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> getById(@PathVariable Integer id) {
         return userCertificateService.findById(id)
                 .map(ResponseEntity::ok)
@@ -33,19 +33,19 @@ public class UserCertificateController {
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated()")
     public List<UserCertificateDTO> getByUserId(@PathVariable Integer userId) {
         return userCertificateService.findByUserId(userId);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> create(@RequestBody UserCertificateDTO dto) {
         return ResponseEntity.ok(userCertificateService.create(dto));
     }
 
     @PostMapping(value = "/user/{userId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> createWithFile(
             @PathVariable Integer userId,
             @RequestParam("certificateType") String certificateType,
@@ -59,7 +59,7 @@ public class UserCertificateController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> update(@PathVariable Integer id, @RequestBody UserCertificateDTO dto) {
         return userCertificateService.update(id, dto)
                 .map(ResponseEntity::ok)
@@ -67,7 +67,7 @@ public class UserCertificateController {
     }
 
     @PutMapping(value = "/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> updateWithFile(
             @PathVariable Integer id,
             @RequestParam("certificateType") String certificateType,
@@ -81,7 +81,7 @@ public class UserCertificateController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         userCertificateService.deleteById(id);
         return ResponseEntity.noContent().build();
