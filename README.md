@@ -99,7 +99,6 @@ VISUAL<br>
 
 -DRONES<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
--Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
 -Añadir datos opcionales en aircraft <br>
 
 -OPERACIONES<br>
