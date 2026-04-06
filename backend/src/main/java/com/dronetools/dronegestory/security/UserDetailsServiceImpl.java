@@ -1,6 +1,5 @@
 package com.dronetools.dronegestory.security;
 
-import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
