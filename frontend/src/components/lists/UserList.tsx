@@ -25,8 +25,6 @@ export default function UserList() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // console.log("UserList MOUNTED"); TESTING
-
   useEffect(() => {
     const loadUsers = async () => {
       try {
