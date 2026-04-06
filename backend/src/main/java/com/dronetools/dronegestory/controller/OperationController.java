@@ -41,17 +41,17 @@ public class OperationController {
         User user = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         op.setCreador(user);
-        return new OperationDetailDTO(operationService.saveOperation(op));
+        return operationService.saveOperationDto(op); // Nuevo método
     }
 
     @PutMapping("/{operationId}")
     public OperationDetailDTO update(@PathVariable Long operationId, @ModelAttribute Operation op) {
-        return new OperationDetailDTO(operationService.updateOperation(operationId, op));
+        return operationService.updateOperationDto(operationId, op);
     }
 
     @PutMapping("/{operationId}/completar")
     public OperationDetailDTO completar(@PathVariable Long operationId) {
-        return new OperationDetailDTO(operationService.completarOperation(operationId));
+        return operationService.completarOperationDto(operationId);
     }
 
     @GetMapping("/{operationId}")

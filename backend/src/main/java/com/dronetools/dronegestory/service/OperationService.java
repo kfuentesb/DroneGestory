@@ -32,16 +32,18 @@ public class OperationService {
     }
 
     @Transactional
-    public Operation saveOperation(Operation op) {
-        return operationRepository.save(op);
+    public OperationDetailDTO saveOperationDto(Operation op) {
+        Operation saved = operationRepository.save(op);
+        return new OperationDetailDTO(saved);
     }
 
     @Transactional
-    public Operation updateOperation(Long operationId, Operation opActualizada) {
+    public OperationDetailDTO updateOperationDto(Long operationId, Operation opActualizada) {
         Operation op = findById(operationId);
         validarOperacionEditable(op);
         op.setNombreOperacion(opActualizada.getNombreOperacion());
-        return operationRepository.save(op);
+        Operation saved = operationRepository.save(op);
+        return new OperationDetailDTO(saved);
     }
 
     @Transactional(readOnly = true)
@@ -113,5 +115,16 @@ public class OperationService {
                 .stream()
                 .map(OperationListDTO::new)
                 .toList();
+    }
+
+    @Transactional
+    public OperationDetailDTO completarOperationDto(Long operationId) {
+        Operation op = findById(operationId);
+        if (!op.todosAnexosFirmados()) {
+            throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
+        }
+        op.setEstado(OperationStatus.COMPLETADA);
+        operationRepository.save(op);
+        return new OperationDetailDTO(op); // El mapping ocurre aquí, en sesión
     }
 }
