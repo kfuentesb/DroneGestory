@@ -105,3 +105,6 @@ VISUAL<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
+
+-DOCUMENTACIONES<br>
+-Arreglar la barra de busqueda<br>
