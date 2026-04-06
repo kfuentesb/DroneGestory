@@ -52,12 +52,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout", "/api/auth/logout/", "/auth/logout", "/auth/logout/").permitAll()
     
                         .requestMatchers(HttpMethod.GET, "/api/auth/users/me").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/users/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/users/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/auth/users").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/auth/users/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/pilots/**").hasAnyRole("ADMIN", "MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

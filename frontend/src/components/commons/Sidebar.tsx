@@ -104,17 +104,18 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                 )}
 
                 {/* 3. Admin Aircraft Section */}
-                {canManage && (
                     <SubMenu
-                        label="Administrar aeronaves"
+                        label={canManage ? "Administrar aeronaves" : "Aeronaves"}
                         open={openMenu === "aircraft"}
                         onOpenChange={() => handleToggle("aircraft")}
                         icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                     >
+
                         <MenuItem onClick={() => { navigate("/auth/aircrafts"); setToggled(false); }}>Listar Aeronaves</MenuItem>
-                        <MenuItem onClick={() => { navigate("/auth/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
+                        {canManage && (
+                            <MenuItem onClick={() => { navigate("/auth/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
+                        )}
                     </SubMenu>
-                )}
 
                 {/* 4. Operations Section */}
                 <SubMenu

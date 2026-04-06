@@ -40,14 +40,30 @@ export default class RouterPrincipal extends React.Component {
             </ProtectedRoute>
           } 
         />
-        <Route path="/auth/users/:id" element={<UserDetail />} />
-        <Route path="/auth/register-user" element={<FormUser />} />
+        <Route 
+          path="/auth/users/:id" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <UserDetail />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/auth/register-user" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormUser />
+            </ProtectedRoute>
+          } 
+        />
 
         <Route path="/profile/:id" element={<ProfileDetail />} />
 
         {/* Aircrafts */}
         <Route path="/auth/aircrafts" element={<AircraftList />} />
         <Route path="/auth/aircrafts/:id" element={<AircraftDetail />} />
+        
+        {/* Registrar aeronave está restringido */}
         <Route 
           path="/auth/register-aircraft" 
           element={

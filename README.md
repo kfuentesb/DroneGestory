@@ -93,15 +93,18 @@ VISUAL<br>
 -Conseguir meter iconos para el footer, ya sea descargando .svg o usando una libreria <br>
 -Buscar una fuente de letra diferente (pero que siga siendo profesional) <br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
+
+-GENERALES<br>
+-Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
+
+-DRONES<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Cambiar footer, actualmente es footer para una página genérica, no aporta nada, pero no borrarlo. <br>
-FUNCIONAL<br>
 -Añadir datos opcionales en aircraft <br>
--Añadir posibilidad de borrar imagen en modificar, tanto para dron<br>
--Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
+
+-OPERACIONES<br>
 -Añadir ver operación en detalle<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
--Añadir paginación a las vistas con tablas.<br>
 -Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
 -Cambiar el fetch post de ProfileDetail.tsx y el backend de usuario para que no permita la subida de nombre de usuario<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>

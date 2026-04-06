@@ -4,6 +4,7 @@ import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
 
 import { aircraftFields } from "./AircraftFields"
+import { useAuth } from "../commons/hooks/useAuth";
 
 
 // esta es la vista que ve un admin cuando selecciona un dron de la lista de drones
@@ -11,6 +12,9 @@ export default function AircraftDetail() {
 
     const { id } = useParams()
     const navigate = useNavigate()
+
+    const { role } = useAuth()
+    const canManage = role === "ADMIN" || role === "MANAGER"
 
     const handleDelete = async () => {
         if (!confirm("¿Eliminar dron?")) return
@@ -45,8 +49,8 @@ export default function AircraftDetail() {
         imageEndpoint={`${API_BASE_URL}/api/auth/aircraft/images`}
         fields={aircraftFields}
 
-        allowEdit
-        allowDelete
+        allowEdit={canManage}
+        allowDelete={canManage}
 
         onDelete={handleDelete}
         onBack={() => navigate("/auth/aircrafts")}
