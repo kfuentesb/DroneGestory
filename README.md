@@ -99,7 +99,6 @@ VISUAL<br>
 
 -USUARIO<br>
 -Al crear un usuario con un correo, el correo puede estar mal y a la hora de modificarlo saltar error de validación.<br>
--Botón borrar no funciona<br>
 -Los certificados pueden crearse sin certificado y solo con fecha<br>
 
 -DRONES<br>
@@ -113,3 +112,4 @@ VISUAL<br>
 
 -DOCUMENTACIONES<br>
 -Arreglar la barra de busqueda<br>
+-El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>

@@ -3,8 +3,6 @@ import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
 import { userFields } from "./UserFields"
 
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
-
 
 // esta es la vista que ve un admin cuando selecciona un usario de la lista de usuarios
 export default function UserDetail() {
@@ -13,15 +11,12 @@ export default function UserDetail() {
     const navigate = useNavigate()
 
     const handleDelete = async () => {
-    // await apiFetch(`${API_BASE_URL}/api/users/${id}`, {
-        //     method: "DELETE"
-        // })
 
-      await apiFetch(`/api/users/${id}`, {
+        await apiFetch(`/api/users/${id}`, {
             method: "DELETE"
         })
 
-      navigate("/users")
+        navigate("/users")
     }
 
     const validateForm = (values:any) => {
@@ -42,21 +37,19 @@ export default function UserDetail() {
 
     return (
         <DetailsComponent
-        id={id}
-      // endpoint={`${API_BASE_URL}/api/users`}
-      // imageEndpoint={`${API_BASE_URL}/api/users/images`}
-      endpoint={`/api/users`}
-      imageEndpoint={`/api/users/images`}
-        fields={userFields}
+            id={id}
+            endpoint={`/api/users`}
+            imageEndpoint={`/api/users/images`}
+            fields={userFields}
 
-        allowEdit
-        allowDelete
+            allowEdit
+            allowDelete
 
-        onDelete={handleDelete}
-      onBack={() => navigate("/users")}
+            onDelete={handleDelete}
+            onBack={() => navigate("/users")}
 
-        validateForm={validateForm}
-        showCertificates
+            validateForm={validateForm}
+            showCertificates
         />
     )
 }

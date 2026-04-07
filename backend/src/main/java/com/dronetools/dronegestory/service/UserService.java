@@ -292,10 +292,12 @@ public class UserService {
     }
 
     // Eliminar un usuario por id
+    @Transactional
     public void deleteById(Integer id) {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("User not found with id: " + id);
         }
+        userCertificateRepository.deleteByUserId(id);
         userRepository.deleteById(id);
     }
 
