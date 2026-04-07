@@ -169,13 +169,13 @@ export default function FormAircraft() {
         formData.append("imageFile", selectedFile, selectedFile.name);
       }
 
-      const res = await apiFetch(`${API_BASE_URL}/api/auth/aircraft`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/aircraft`, {
         method: "POST",
         body: formData
       });
 
       if (!res) return;
-      navigate("/auth/aircrafts");
+            navigate("/aircrafts");
 
     } catch (err: any) {
       setError(err.message);
@@ -398,7 +398,7 @@ export default function FormAircraft() {
               <button
                 type="button"
                 className="btn btn-secondary px-4"
-                onClick={() => navigate("/auth/aircrafts")}
+                            onClick={() => navigate("/aircrafts")}
                 disabled={loading}
               >
                 Cancelar

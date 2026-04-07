@@ -52,7 +52,7 @@ export default function AircraftList() {
   useEffect(() => {
     const loadAircrafts = async () => {
       try {
-        const res = await apiFetch(`${API_BASE_URL}/api/auth/aircraft`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/aircraft`, {
           headers: { "Content-Type": "application/json" }
         });
 
@@ -101,7 +101,7 @@ export default function AircraftList() {
             <SearchBar value={search} onChange={setSearch} />
 
             {/* Botón añadir aeronave */}
-            <ButtonProp onClick={() => navigate("/auth/register-aircraft")}>
+        <ButtonProp onClick={() => navigate("/register-aircraft")}>
               <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
             </ButtonProp>
           </div>
@@ -138,7 +138,7 @@ export default function AircraftList() {
                 </td>
               </>
             )}
-            onRowClick={(a) => navigate(`/auth/aircrafts/${a.id}`)}
+                        onRowClick={(a) => navigate(`/aircrafts/${a.id}`)}
             emptyText="No hay aeronaves registradas."
           />
 

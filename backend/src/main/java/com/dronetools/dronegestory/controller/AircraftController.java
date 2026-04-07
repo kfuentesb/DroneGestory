@@ -25,7 +25,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/auth/aircraft")
+@RequestMapping("/api/aircraft")
 @RequiredArgsConstructor
 public class AircraftController {
 
@@ -102,7 +102,7 @@ public class AircraftController {
     @GetMapping("/images/**")
     public ResponseEntity<Resource> getAircraftImage(HttpServletRequest request) throws IOException {
         String requestUri = request.getRequestURI();
-        String marker = "/api/auth/aircraft/images/";
+        String marker = "/api/aircraft/images/";
         int markerIndex = requestUri.indexOf(marker);
         if (markerIndex < 0) {
             return ResponseEntity.badRequest().build();

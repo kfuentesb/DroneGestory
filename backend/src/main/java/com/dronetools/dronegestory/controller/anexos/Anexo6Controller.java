@@ -10,7 +10,7 @@ import com.dronetools.dronegestory.service.anexos.Anexo6Service;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth/operations/{operationId}/anexo6")
+@RequestMapping("/api/operations/{operationId}/anexo6")
 public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service> {
 
     public Anexo6Controller(Anexo6Service service,

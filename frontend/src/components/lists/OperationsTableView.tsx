@@ -140,7 +140,7 @@ export default function OperationsTableView({
               placeholder="Buscar por nombre, creador o estado..."
               onChange={setSearch}
             />
-            <ButtonProp onClick={() => navigate("/auth/register-operation")}>
+                <ButtonProp onClick={() => navigate("/register-operation")}>
               <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
             </ButtonProp>
           </div>
@@ -170,7 +170,7 @@ export default function OperationsTableView({
                 </td>
               </>
             )}
-            onRowClick={(operation) => navigate(`/auth/operations/${operation.idOperacion}`)}
+                    onRowClick={(operation) => navigate(`/operations/${operation.idOperacion}`)}
             emptyText={emptyText}
           />
 

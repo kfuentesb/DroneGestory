@@ -4,7 +4,7 @@ export default function MyOperationList() {
   return (
     <OperationsTableView
       title="Mis operaciones"
-      endpoint="/api/auth/operations/details/mine"
+            endpoint="/api/operations/details/mine"
       emptyText="No tienes operaciones registradas."
     />
   );

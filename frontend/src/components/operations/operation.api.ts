@@ -14,7 +14,7 @@ export async function fetchOperations(path: string) {
 }
 
 export async function fetchOperationDetail(id: string | number) {
-  const response = await apiFetch(`/api/auth/operations/${id}`, {
+  const response = await apiFetch(`/api/operations/${id}`, {
     headers: { "Content-Type": "application/json" },
   });
 
@@ -29,7 +29,7 @@ export async function createOperation(nombreOperacion: string) {
   const formData = new FormData();
   formData.append("nombreOperacion", nombreOperacion);
 
-  const response = await apiFetch("/api/auth/operations", {
+  const response = await apiFetch("/api/operations", {
     method: "POST",
     body: formData,
   });
@@ -45,7 +45,7 @@ export async function saveAnexo(operationId: number, tipoAnexo: number, textoPru
   const formData = new FormData();
   formData.append("textoPrueba", textoPrueba);
 
-  const response = await apiFetch(`/api/auth/operations/${operationId}/anexo${tipoAnexo}`, {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo${tipoAnexo}`, {
     method: "POST",
     body: formData,
   });
@@ -58,7 +58,7 @@ export async function saveAnexo(operationId: number, tipoAnexo: number, textoPru
 
 export async function signAnexo(operationId: number, tipoAnexo: number, anexoId: number) {
   const response = await apiFetch(
-    `/api/auth/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/firmar`,
+    `/api/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/firmar`,
     {
       method: "PUT",
     },
@@ -72,7 +72,7 @@ export async function signAnexo(operationId: number, tipoAnexo: number, anexoId:
 
 export async function remakeAnexo(operationId: number, tipoAnexo: number, anexoId: number) {
   const response = await apiFetch(
-    `/api/auth/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/rehacer`,
+    `/api/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/rehacer`,
     {
       method: "POST",
     },
@@ -85,7 +85,7 @@ export async function remakeAnexo(operationId: number, tipoAnexo: number, anexoI
 }
 
 export async function completeOperation(operationId: number) {
-  const response = await apiFetch(`/api/auth/operations/${operationId}/completar`, {
+  const response = await apiFetch(`/api/operations/${operationId}/completar`, {
     method: "PUT",
   });
 

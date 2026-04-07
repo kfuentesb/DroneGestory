@@ -28,7 +28,7 @@ export default function UserList() {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const res = await apiFetch(`${API_BASE_URL}/api/auth/users`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/users`, {
           headers: { "Content-Type": "application/json" }
         });
 
@@ -92,7 +92,7 @@ export default function UserList() {
             <SearchBar value={search} placeholder="Buscar por usuario..." onChange={setSearch} />
 
             {/* Botón añadir aeronave */}
-            <ButtonProp onClick={() => navigate("/auth/register-user")}>
+            <ButtonProp onClick={() => navigate("/register-user")}>
               + Añadir usuario
             </ButtonProp>
           </div>
@@ -127,7 +127,7 @@ export default function UserList() {
                 </td>
               </>
             )}
-            onRowClick={(p) => navigate(`/auth/users/${p.id}`)}
+                        onRowClick={(p) => navigate(`/users/${p.id}`)}
             emptyText="No hay usuarios registrados."
           />
 

@@ -44,7 +44,7 @@ export default function ProfileDetail() {
 
         if (!token) return;// esto me resolvio el bug de cerrar sesion siendo piloto en una vista con fetch
 
-        apiFetch(`/api/auth/users/me`) 
+    apiFetch(`/api/users/me`)
             .then(res => {
                 if (res) {
                     setStatus(res.status);
@@ -69,10 +69,10 @@ export default function ProfileDetail() {
         <DetailsComponent
             id={meData.id.toString()}
             initialData={meData}
-            // endpoint={`${API_BASE_URL}/api/auth/users`}
-            // imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
-            endpoint={`/api/auth/users`}
-            imageEndpoint={`/api/auth/users/images`}
+      // endpoint={`${API_BASE_URL}/api/users`}
+      // imageEndpoint={`${API_BASE_URL}/api/users/images`}
+      endpoint={`/api/users`}
+      imageEndpoint={`/api/users/images`}
             fields={processedFields}
             allowEdit={true}
             allowDelete={false}

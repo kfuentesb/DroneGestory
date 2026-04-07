@@ -13,15 +13,15 @@ export default function UserDetail() {
     const navigate = useNavigate()
 
     const handleDelete = async () => {
-        // await apiFetch(`${API_BASE_URL}/api/auth/users/${id}`, {
+    // await apiFetch(`${API_BASE_URL}/api/users/${id}`, {
         //     method: "DELETE"
         // })
 
-        await apiFetch(`/api/auth/users/${id}`, {
+      await apiFetch(`/api/users/${id}`, {
             method: "DELETE"
         })
 
-        navigate("/auth/users")
+      navigate("/users")
     }
 
     const validateForm = (values:any) => {
@@ -43,17 +43,17 @@ export default function UserDetail() {
     return (
         <DetailsComponent
         id={id}
-        // endpoint={`${API_BASE_URL}/api/auth/users`}
-        // imageEndpoint={`${API_BASE_URL}/api/auth/users/images`}
-        endpoint={`/api/auth/users`}
-        imageEndpoint={`/api/auth/users/images`}
+      // endpoint={`${API_BASE_URL}/api/users`}
+      // imageEndpoint={`${API_BASE_URL}/api/users/images`}
+      endpoint={`/api/users`}
+      imageEndpoint={`/api/users/images`}
         fields={userFields}
 
         allowEdit
         allowDelete
 
         onDelete={handleDelete}
-        onBack={() => navigate("/auth/users")}
+      onBack={() => navigate("/users")}
 
         validateForm={validateForm}
         showCertificates

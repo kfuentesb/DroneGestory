@@ -29,12 +29,12 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Commons */}
         <Route path="/home" element={<Home />} />
-        <Route path="/auth/login" element={<LogIn />} />
-        <Route path="/auth/dashboard" element={<Dashboard />} />
+        <Route path="/login" element={<LogIn />} />
+        <Route path="/dashboard" element={<Dashboard />} />
 
         {/* Users */}
         <Route 
-          path="/auth/users" 
+          path="/users" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <UserList />
@@ -42,7 +42,7 @@ export default class RouterPrincipal extends React.Component {
           } 
         />
         <Route 
-          path="/auth/users/:id" 
+          path="/users/:id" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <UserDetail />
@@ -50,7 +50,7 @@ export default class RouterPrincipal extends React.Component {
           } 
         />
         <Route 
-          path="/auth/register-user" 
+          path="/register-user" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <FormUser />
@@ -61,12 +61,12 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/profile/:id" element={<ProfileDetail />} />
 
         {/* Aircrafts */}
-        <Route path="/auth/aircrafts" element={<AircraftList />} />
-        <Route path="/auth/aircrafts/:id" element={<AircraftDetail />} />
+        <Route path="/aircrafts" element={<AircraftList />} />
+        <Route path="/aircrafts/:id" element={<AircraftDetail />} />
         
         {/* Registrar aeronave está restringido */}
         <Route 
-          path="/auth/register-aircraft" 
+          path="/register-aircraft" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <FormAircraft />
@@ -75,18 +75,18 @@ export default class RouterPrincipal extends React.Component {
         />
 
         {/* Operations */}
-        <Route path="/auth/operations" element={<OperationList />} />
-        <Route path="/auth/operations/details/mine" element={<MyOperationList />} />
-        <Route path="/auth/operations/:id" element={<OperationDetail />} />
-        <Route path="/auth/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
-        <Route path="/auth/operations/:id/anexo5" element={<OperationAnexoDetail tipoAnexo={5} />} />
-        <Route path="/auth/operations/:id/anexo6" element={<OperationAnexoDetail tipoAnexo={6} />} />
-        <Route path="/auth/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
-        <Route path="/auth/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
-        <Route path="/auth/register-operation" element={<MultiStepsForm />} />
+        <Route path="/operations" element={<OperationList />} />
+        <Route path="/operations/details/mine" element={<MyOperationList />} />
+        <Route path="/operations/:id" element={<OperationDetail />} />
+        <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
+        <Route path="/operations/:id/anexo5" element={<OperationAnexoDetail tipoAnexo={5} />} />
+        <Route path="/operations/:id/anexo6" element={<OperationAnexoDetail tipoAnexo={6} />} />
+        <Route path="/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
+        <Route path="/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
+        <Route path="/register-operation" element={<MultiStepsForm />} />
 
         <Route 
-          path="/auth/docs" 
+          path="/docs" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <FileBrowserView />

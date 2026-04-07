@@ -324,7 +324,7 @@ function FormUser() {
             // Testing consultar token
             // const token = localStorage.getItem('jwt');
             // console.log("JWT enviado:", token);
-            const res = await apiFetch(`${API_BASE_URL}/api/auth/users`, {
+            const res = await apiFetch(`${API_BASE_URL}/api/users`, {
                 method: "POST",
                 body: formData,
             });
@@ -352,7 +352,7 @@ function FormUser() {
             const data = await res.json();
             console.log("User created:", data);
             
-            navigate("/auth/users"); // redirect to users list after success
+            navigate("/users"); // redirect to users list after success
 
         } catch (err: any) {
             setError(err.message);
@@ -711,7 +711,7 @@ function FormUser() {
                         <button
                             type="button"
                             className="btn btn-secondary"
-                            onClick={() => navigate("/auth/users")}
+                            onClick={() => navigate("/users")}
                         >
                             <img src={cancelIcon} alt="Cancel" className="cancel-icon d-inline d-sm-none" />
                             <span className="d-none d-sm-block">

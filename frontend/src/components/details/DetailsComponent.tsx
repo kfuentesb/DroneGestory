@@ -213,7 +213,7 @@ export default function DetailsComponent({
         const loadCertificates = async () => {
             setCertificatesLoading(true);
             try {
-                const res = await fetch(`/api/auth/user-certificates/user/${id}`, {
+                const res = await fetch(`/api/user-certificates/user/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -336,7 +336,7 @@ export default function DetailsComponent({
                 .map(encodeURIComponent)
                 .join("/");
 
-            const res = await fetch(`/api/auth/users/images/${encodedPath}`, {
+            const res = await fetch(`/api/users/images/${encodedPath}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -571,8 +571,8 @@ export default function DetailsComponent({
             if (item.file) formData.append("file", item.file, item.file.name);
 
             const url = existing
-                ? `/api/auth/user-certificates/${existing.id}/upload`
-                : `/api/auth/user-certificates/user/${id}/upload`;
+                ? `/api/user-certificates/${existing.id}/upload`
+                : `/api/user-certificates/user/${id}/upload`;
             const method = existing ? "PUT" : "POST";
 
             const res = await fetch(url, {
@@ -599,8 +599,8 @@ export default function DetailsComponent({
             if (item.file) formData.append("file", item.file, item.file.name);
 
             const url = existing
-                ? `/api/auth/user-certificates/${existing.id}/upload`
-                : `/api/auth/user-certificates/user/${id}/upload`;
+                ? `/api/user-certificates/${existing.id}/upload`
+                : `/api/user-certificates/user/${id}/upload`;
             const method = existing ? "PUT" : "POST";
 
             const res = await fetch(url, {
@@ -634,8 +634,8 @@ export default function DetailsComponent({
             if (doc.certificate) formData.append("file", doc.certificate, doc.certificate.name);
 
             const url = existing
-                ? `/api/auth/user-certificates/${existing.id}/upload`
-                : `/api/auth/user-certificates/user/${id}/upload`;
+                ? `/api/user-certificates/${existing.id}/upload`
+                : `/api/user-certificates/user/${id}/upload`;
             const method = existing ? "PUT" : "POST";
 
             const res = await fetch(url, {
@@ -655,7 +655,7 @@ export default function DetailsComponent({
 
         for (const certificate of certificates) {
             if (!isAdditionalType(certificate.certificateType) && !desiredTypes.has(certificate.certificateType)) {
-                const res = await fetch(`/api/auth/user-certificates/${certificate.id}`, {
+                const res = await fetch(`/api/user-certificates/${certificate.id}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -666,7 +666,7 @@ export default function DetailsComponent({
             }
 
             if (isAdditionalType(certificate.certificateType) && !desiredAdditionalIds.has(certificate.id)) {
-                const res = await fetch(`/api/auth/user-certificates/${certificate.id}`, {
+                const res = await fetch(`/api/user-certificates/${certificate.id}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -677,7 +677,7 @@ export default function DetailsComponent({
             }
         }
 
-        const refreshed = await fetch(`/api/auth/user-certificates/user/${id}`, {
+        const refreshed = await fetch(`/api/user-certificates/user/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
         if (refreshed.ok) {

@@ -22,7 +22,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    apiFetch("/api/auth/dashboard")
+      apiFetch("/api/dashboard")
       .then((res) => {
         if (!res) return;
         if (!res.ok) throw new Error("Error cargando resumen");

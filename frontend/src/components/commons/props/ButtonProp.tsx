@@ -13,7 +13,7 @@ const ButtonProp: React.FC<ButtonProp> = ({
     /**
      * EJEMPLOS PARA REUSO
         //Añadir aeronave
-        <ButtonProp onClick={() => navigate("/auth/register-aircraft")}>
+            <ButtonProp onClick={() => navigate("/register-aircraft")}>
             + Añadir aeronave
         </ButtonProp>
 

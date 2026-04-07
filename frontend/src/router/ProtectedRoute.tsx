@@ -11,7 +11,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
     const location = useLocation();
     
     if (!token) {
-        return <Navigate to="/auth/login" state={{ from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(role || "")) {

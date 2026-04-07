@@ -23,7 +23,7 @@ export default function MultiStepsForm() {
         return;
       }
 
-      navigate(`/auth/operations/${created.idOperacion}`);
+      navigate(`/operations/${created.idOperacion}`);
     } catch (err) {
       console.error("Error creando operación:", err);
       setError("No se pudo crear la operación.");

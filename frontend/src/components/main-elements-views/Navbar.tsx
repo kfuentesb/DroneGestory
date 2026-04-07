@@ -13,7 +13,7 @@ function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/auth/login");
+        navigate("/login");
   };
 
   return (
@@ -37,7 +37,7 @@ function Navbar() {
             {/* CONTENEDOR DE BOTONES */}
             <div className="ms-auto d-flex justify-content-center justify-content-lg-end w-100 w-lg-auto">
               {!username ? (
-                <NavLink to="/auth/login" className="btn" style={{ backgroundColor: "#1F6B43" }}>
+                <NavLink to="/login" className="btn" style={{ backgroundColor: "#1F6B43" }}>
                   <img src={LoginIcon} alt="Login" />
                 </NavLink>
               ) : (

@@ -19,11 +19,11 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
         if (!confirm("¿Eliminar dron?")) return
 
-        await apiFetch(`${API_BASE_URL}/api/auth/aircraft/${id}`, {
+        await apiFetch(`${API_BASE_URL}/api/aircraft/${id}`, {
         method: "DELETE"
         })
 
-        navigate("/auth/aircrafts")
+        navigate("/aircrafts")
     }
 
     const validateForm = (values:any) => {
@@ -45,15 +45,15 @@ export default function AircraftDetail() {
     return (
         <DetailsComponent
         id={id}
-        endpoint={`${API_BASE_URL}/api/auth/aircraft`}
-        imageEndpoint={`${API_BASE_URL}/api/auth/aircraft/images`}
+            endpoint={`${API_BASE_URL}/api/aircraft`}
+            imageEndpoint={`${API_BASE_URL}/api/aircraft/images`}
         fields={aircraftFields}
 
         allowEdit={canManage}
         allowDelete={canManage}
 
         onDelete={handleDelete}
-        onBack={() => navigate("/auth/aircrafts")}
+            onBack={() => navigate("/aircrafts")}
 
         validateForm={validateForm}
 

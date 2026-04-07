@@ -48,20 +48,20 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/home", "/home").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/login/", "/auth/login", "/auth/login/").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/logout", "/api/auth/logout/", "/auth/logout", "/auth/logout/").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/login", "/api/login/").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/logout", "/api/logout/").permitAll()
     
-                        .requestMatchers("/api/auth/user-certificates/**").authenticated()
+                        .requestMatchers("/api/user-certificates/**").authenticated()
 
-                        .requestMatchers(HttpMethod.GET, "/api/auth/users/me").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/users/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.POST, "/api/auth/users").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/api/auth/users/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/users/**").authenticated()
 
-                        .requestMatchers(HttpMethod.GET, "/api/auth/aircraft/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.PUT, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/auth/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/aircraft/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
 
                         .anyRequest().authenticated()
                 )

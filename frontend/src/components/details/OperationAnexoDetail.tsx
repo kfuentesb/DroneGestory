@@ -176,7 +176,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     <div className="container py-4">
       <button
         className="btn btn-link ps-0 text-decoration-none mb-2"
-        onClick={() => navigate(`/auth/operations/${operation.idOperacion}`)}
+            onClick={() => navigate(`/operations/${operation.idOperacion}`)}
       >
         Volver a la operación
       </button>

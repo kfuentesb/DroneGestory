@@ -8,7 +8,7 @@ const Home: React.FC = () => {
 
   if (username) {
     // Usuario conectado, mostrar dashboard
-    return <Navigate to="/auth/dashboard" />
+        return <Navigate to="/dashboard" />
   }
   
   return (
@@ -36,7 +36,7 @@ const Home: React.FC = () => {
               con una interfaz moderna y segura.
             </p>
             <div className="d-flex justify-content-center gap-3 mt-4">
-              <NavLink className="nav-link" to="/auth/login">
+                        <NavLink className="nav-link" to="/login">
               <button
                 className="btn px-4"
                 style={{ backgroundColor: "#2F8F5B", color: "white" }}

@@ -32,7 +32,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/api/auth/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -113,7 +113,7 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> getUserImage(HttpServletRequest request) throws IOException {
         String requestUri = request.getRequestURI();
-        String marker = "/api/auth/users/images/";
+        String marker = "/api/users/images/";
         int markerIndex = requestUri.indexOf(marker);
         if (markerIndex < 0) {
             return ResponseEntity.badRequest().build();

@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/auth/user-certificates")
+@RequestMapping("/api/user-certificates")
 @RequiredArgsConstructor
 public class UserCertificateController {
 

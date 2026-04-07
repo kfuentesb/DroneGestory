@@ -204,7 +204,7 @@ export default function OperationDetail() {
                       </div>
                     </div>
 
-                    <ButtonProp onClick={() => navigate(`/auth/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
+                        <ButtonProp onClick={() => navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
                       Ver anexo
                     </ButtonProp>
                   </div>

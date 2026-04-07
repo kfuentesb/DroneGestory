@@ -99,8 +99,8 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         onOpenChange={() => handleToggle("users")}
                         icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
                     >
-                        <MenuItem onClick={() => { navigate("/auth/users"); setToggled(false); }}>Listar usuarios</MenuItem>
-                        <MenuItem onClick={() => { navigate("/auth/register-user"); setToggled(false); }}>Registrar usuario</MenuItem>
+                        <MenuItem onClick={() => { navigate("/users"); setToggled(false); }}>Listar usuarios</MenuItem>
+                        <MenuItem onClick={() => { navigate("/register-user"); setToggled(false); }}>Registrar usuario</MenuItem>
                     </SubMenu>
                 )}
 
@@ -112,9 +112,9 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}
                     >
 
-                        <MenuItem onClick={() => { navigate("/auth/aircrafts"); setToggled(false); }}>Listar Aeronaves</MenuItem>
+                        <MenuItem onClick={() => { navigate("/aircrafts"); setToggled(false); }}>Listar Aeronaves</MenuItem>
                         {canManage && (
-                            <MenuItem onClick={() => { navigate("/auth/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
+                            <MenuItem onClick={() => { navigate("/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
                         )}
                     </SubMenu>
 
@@ -126,23 +126,25 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
                     {canManage && (
-                        <MenuItem onClick={() => { navigate("/auth/operations"); setToggled(false); }}>Listar operaciones (admin)</MenuItem>
+                        <MenuItem onClick={() => { navigate("/operations"); setToggled(false); }}>Listar operaciones (admin)</MenuItem>
                     )}
-                    <MenuItem onClick={() => { navigate("/auth/operations/details/mine"); setToggled(false); }}>Listar mis operaciones</MenuItem>
-                    <MenuItem onClick={() => { navigate("/auth/register-operation"); setToggled(false); }}>Registrar operacion</MenuItem>
+                    <MenuItem onClick={() => { navigate("/operations/details/mine"); setToggled(false); }}>Listar mis operaciones</MenuItem>
+                    <MenuItem onClick={() => { navigate("/register-operation"); setToggled(false); }}>Registrar operacion</MenuItem>
                 </SubMenu>
                 
                 {/* 5. Docs Section */}
-                <SubMenu
+                {canManage && (<SubMenu
                     label="Documentación"
                     open={openMenu === "docs"}
                     onOpenChange={() => handleToggle("docs")}
                     icon={<img src={DocIcon} alt="Docs" style={{ width: "18px", height: "18px" }} />}
                 >
-                    {canManage && (
-                        <MenuItem onClick={() => { navigate("/auth/docs"); setToggled(false); }}>Servidor</MenuItem>
-                    )}
+                    <MenuItem onClick={() => { navigate("#"); setToggled(false); }}>Operadora</MenuItem>
+                    <MenuItem onClick={() => { navigate("#"); setToggled(false); }}>Personal</MenuItem>
+                    <MenuItem onClick={() => { navigate("#"); setToggled(false); }}>Aeronaves</MenuItem>
+                    <MenuItem onClick={() => { navigate("/docs"); setToggled(false); }}>Servidor File Manager</MenuItem>
                 </SubMenu>
+                )}
             </Menu>
         </Sidebar>
     );
