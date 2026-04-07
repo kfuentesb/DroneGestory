@@ -63,7 +63,7 @@ export default function OperationsTableView({
   const filteredOperations = useSearchFilter(operations, search, (op) => [
     op.nombreOperacion,
     op.nombreCreador,
-    op.estado,
+    op.todosFirmadosPendiente ? "CIERRE PENDIENTE" : op.estado,
     op.anexo4Version,
     op.anexo5Version,
     op.anexo6Version,
