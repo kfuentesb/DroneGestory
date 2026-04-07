@@ -96,9 +96,15 @@ VISUAL<br>
 -GENERALES<br>
 -Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
 
+-USUARIO<br>
+-Al crear un usuario con un correo, el correo puede estar mal y a la hora de modificarlo saltar error de validación.<br>
+-Botón borrar no funciona<br>
+-Los certificados pueden crearse sin certificado y solo con fecha<br>
+
 -DRONES<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Añadir datos opcionales en aircraft <br>
+-Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
