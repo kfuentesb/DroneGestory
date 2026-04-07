@@ -13,7 +13,7 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
                     cursor: "pointer",
                 }}
             />
-            <span className="info-tooltip-text">{text}</span>
+            <span className="info-tooltip-text z-3">{text}</span>
         </div>
     );
 }
