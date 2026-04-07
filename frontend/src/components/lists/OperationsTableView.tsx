@@ -4,7 +4,7 @@ import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
-import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
+import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import { fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
@@ -63,7 +63,7 @@ export default function OperationsTableView({
   const filteredOperations = useSearchFilter(operations, search, (op) => [
     op.nombreOperacion,
     op.nombreCreador,
-    op.estado,
+    op.todosFirmadosPendiente ? "CIERRE PENDIENTE" : op.estado,
     op.anexo4Version,
     op.anexo5Version,
     op.anexo6Version,
@@ -141,14 +141,14 @@ export default function OperationsTableView({
               onChange={setSearch}
             />
             <ButtonProp onClick={() => navigate("/auth/register-operation")}>
-              <img src={DronePlusIcon} style={{ width: "32px", height: "32px" }} alt="Nueva" />
+              <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
             </ButtonProp>
           </div>
 
           <ReusableTable
             headers={[
               "Nombre", "Creador", "Creación", "Anexo 4", "Anexo 5", 
-              "Anexo 6", "Anexo 7", "Anexo 8", "Estado", "Aviso"
+              "Anexo 6", "Anexo 7", "Anexo 8", "Estado"
             ]}
             rows={paginatedOperations} // Usamos la lista paginada
             renderRow={(operation) => (
@@ -162,12 +162,11 @@ export default function OperationsTableView({
                 <td className="text-center"><AnexoBadge version={operation.anexo7Version} color={operation.anexo7Color} /></td>
                 <td className="text-center"><AnexoBadge version={operation.anexo8Version} color={operation.anexo8Color} /></td>
                 <td className="text-center">
-                  <StatusBadge label={operation.estado} style={getOperationStatusStyle(operation.estado)} />
-                </td>
-                <td className="text-center">
                   {operation.todosFirmadosPendiente ? (
-                    <span className="badge text-bg-warning">Revisar cierre</span>
-                  ) : "-"}
+                    <StatusBadge label="CIERRE PENDIENTE" style={getOperationStatusStyle("PENDIENTE")} />
+                  ) : (
+                    <StatusBadge label={operation.estado} style={getOperationStatusStyle(operation.estado)} />
+                  )}
                 </td>
               </>
             )}
