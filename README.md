@@ -98,8 +98,6 @@ VISUAL<br>
 -Añadir animación de carga con el ciruclo dando vueltas a todos los fetches que usan: Cargando...<br>
 
 -USUARIO<br>
--Al crear un usuario con un correo, el correo puede estar mal y a la hora de modificarlo saltar error de validación.<br>
--Los certificados pueden crearse sin certificado y solo con fecha<br>
 
 -DRONES<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
