@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "../commons/hooks/useAuth";
 
 // Assets - Ensure these paths match your project structure
 import HomeIcon from '../../assets/sidebar/home_white.svg';

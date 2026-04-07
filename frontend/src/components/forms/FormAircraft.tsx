@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';
 import { aircraftClasses, configs, LIMITS } from '../../global-const/aircraft-const';
 import { InfoBadge } from '../users/UserCertificatesSection';
+import './generic-form.css';
 
 type SelectOption = { value: string; label: string };
 

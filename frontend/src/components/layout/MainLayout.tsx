@@ -1,5 +1,5 @@
 import { useState } from "react";
-import SidebarMenu from "../commons/Sidebar";
+import SidebarMenu from "../main-elements-views/Sidebar";
 import { useAuth } from "../commons/hooks/useAuth";  
 
 export default function MainLayout({ children }: any) {
