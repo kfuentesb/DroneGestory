@@ -3,6 +3,7 @@ import React from "react";
 interface InsertDocProps {
     className?: string;
     showAddBtn?: boolean;
+    hideHeader?: boolean;
     checkboxLabel: string;
     isChecked: boolean;
     onToggleCheck: () => void;
@@ -26,6 +27,7 @@ interface InsertDocProps {
 export default function InsertDoc({
     className,
     showAddBtn = true,
+    hideHeader = false,
     checkboxLabel,
     isChecked,
     onToggleCheck,
@@ -49,7 +51,7 @@ export default function InsertDoc({
 
     return (
         <div className={className}>
-            {showAddBtn && (
+            {!hideHeader && showAddBtn && (
                 <div className="row mb-2">
                     <div className="col-12 text-start d-flex align-items-center gap-2">
                         {/* 1. THE ACTION BUTTON */}
