@@ -8,7 +8,7 @@ const createOperationFields: FieldConfig[] = [
   { name: "nombreOperacion", label: "Nombre de la operación", type: "text", required: true },
 ];
 
-export default function FormOperation() {
+export default function FormOperationAnexo() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +100,7 @@ export default function FormOperation() {
             submitButtonText={submitting ? "Creando..." : "Crear operación"}
           />
 
+          {/* Visual: Selección de usuarios (NO se envía al backend) */}
           <div className="mt-4">
             <label className="form-label fw-bold">Seleccionar usuarios implicados</label>
             <Select
@@ -114,8 +115,25 @@ export default function FormOperation() {
                 control: base => ({ ...base, backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" })
               }}
             />
+            {selectedUsers.length > 0 &&
+              <div className="mt-2">
+                <small className="text-muted">Seleccionados:</small>
+                <ul className="mb-0">
+                  {selectedUsers.map(u => (
+                    <li key={u.value} style={{ fontSize: 14 }}>
+                      {u.label}
+                      <button type="button" className="btn btn-sm btn-link text-danger ms-2 p-0 pb-1"
+                        style={{ fontSize: "0.9em" }}
+                        onClick={() => setSelectedUsers(prev => prev.filter(x => x.value !== u.value))}
+                      >Quitar</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            }
           </div>
 
+          {/* Visual: Selección de drones (NO se envía al backend) */}
           <div className="mt-4">
             <label className="form-label fw-bold">Seleccionar drones implicados</label>
             <Select
@@ -130,7 +148,24 @@ export default function FormOperation() {
                 control: base => ({ ...base, backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" })
               }}
             />
+            {selectedAircrafts.length > 0 &&
+              <div className="mt-2">
+                <small className="text-muted">Seleccionados:</small>
+                <ul className="mb-0">
+                  {selectedAircrafts.map(a => (
+                    <li key={a.value} style={{ fontSize: 14 }}>
+                      {a.label}
+                      <button type="button" className="btn btn-sm btn-link text-danger ms-2 p-0 pb-1"
+                        style={{ fontSize: "0.9em" }}
+                        onClick={() => setSelectedAircrafts(prev => prev.filter(x => x.value !== a.value))}
+                      >Quitar</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            }
           </div>
+
         </div>
       </div>
     </div>
