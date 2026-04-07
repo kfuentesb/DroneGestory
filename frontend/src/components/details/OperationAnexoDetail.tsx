@@ -202,7 +202,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
 
         <div className="d-flex gap-2 flex-wrap">
-          <ButtonProp onClick={() => void loadOperation()}>Recargar</ButtonProp>
+          <ButtonProp
+              onClick={() => void handleSave()}
+              disabled={!canEditDraft || saving || !draftValue.trim()}
+            >
+              {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
+            </ButtonProp>
           <ButtonProp
             className="btn"
             style={{ backgroundColor: "#92400E", color: "#FFFFFF", fontWeight: "bold" }}
