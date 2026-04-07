@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.dto.UserCertificateUploadRequest;
 import com.dronetools.dronegestory.dto.UserNameResponse;
+import com.dronetools.dronegestory.dto.UserPasswordUpdateRequest;
 import com.dronetools.dronegestory.dto.UserResponse;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.UserService;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,6 +109,29 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<?> updatePassword(
+            @PathVariable Integer id,
+            @RequestBody UserPasswordUpdateRequest request,
+            Authentication authentication
+    ) {
+        try {
+            if (request == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body is required.");
+            }
+            userService.updatePassword(
+                    id,
+                    authentication != null ? authentication.getName() : null,
+                    request.currentPassword(),
+                    request.newPassword()
+            );
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
     }
 
     @GetMapping("/images/**")

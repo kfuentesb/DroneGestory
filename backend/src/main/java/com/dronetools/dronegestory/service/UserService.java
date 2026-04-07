@@ -19,9 +19,11 @@ import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
+    private static final Pattern PASSWORD_POLICY = Pattern.compile("^(?=.*\\d).{8,}$");
 
     private final UserRepository userRepository;
     private final UserCertificateRepository userCertificateRepository;
@@ -289,6 +291,31 @@ public class UserService {
         }
 
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void updatePassword(Integer id, String actorUsername, String actorPassword, String newPassword) {
+        if (actorUsername == null || actorUsername.isBlank()) {
+            throw new IllegalArgumentException("Authenticated user is required.");
+        }
+        if (actorPassword == null || actorPassword.isBlank()) {
+            throw new IllegalArgumentException("Current session password is required.");
+        }
+        if (newPassword == null || !PASSWORD_POLICY.matcher(newPassword).matches()) {
+            throw new IllegalArgumentException("Password must be at least 8 characters and include at least 1 number.");
+        }
+
+        User actor = userRepository.findByUsername(actorUsername)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found."));
+        if (!passwordEncoder.matches(actorPassword, actor.getPassword())) {
+            throw new IllegalArgumentException("Current session password is invalid.");
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     // Eliminar un usuario por id

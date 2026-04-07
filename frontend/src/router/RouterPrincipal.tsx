@@ -21,6 +21,7 @@ import OperationDetail from "../components/details/OperationDetail";
 import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormOperation from "../components/forms/FormOperation";
+import FormUserPassword from "../components/forms/FormUserPassword";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -49,6 +50,14 @@ export default class RouterPrincipal extends React.Component {
               <UserDetail />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/users/:id/password"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormUserPassword />
+            </ProtectedRoute>
+          }
         />
         <Route 
           path="/register-user" 
