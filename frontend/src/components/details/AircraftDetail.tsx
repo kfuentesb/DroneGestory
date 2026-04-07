@@ -44,18 +44,19 @@ export default function AircraftDetail() {
 
     return (
         <DetailsComponent
-        id={id}
+            id={id}
             endpoint={`${API_BASE_URL}/api/aircraft`}
             imageEndpoint={`${API_BASE_URL}/api/aircraft/images`}
-        fields={aircraftFields}
+            defaultImage="drone"
+            fields={aircraftFields}
 
-        allowEdit={canManage}
-        allowDelete={canManage}
+            allowEdit={canManage}
+            allowDelete={canManage}
 
-        onDelete={handleDelete}
+            onDelete={handleDelete}
             onBack={() => navigate("/aircrafts")}
 
-        validateForm={validateForm}
+            validateForm={validateForm}
 
         />
     )

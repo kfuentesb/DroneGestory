@@ -20,6 +20,7 @@ interface DetailsComponentProps {
     id: string | undefined
     endpoint: string
     imageEndpoint?: string
+    defaultImage?: "user" | "drone"
     fields: any[]
     initialData?: any;
     allowEdit?: boolean
@@ -106,6 +107,7 @@ export default function DetailsComponent({
     fields,
     initialData,
     imageEndpoint,
+    defaultImage = "user",
     allowEdit,
     allowDelete,
     onDelete,
@@ -777,6 +779,8 @@ export default function DetailsComponent({
         inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
     };
 
+    const defaultProfileImage = defaultImage === "drone" ? "/default-drone.png" : "/default-user.jpg";
+
     return (
         <div className="container-fluid py-4">
             <div className="card p-4 shadow-sm">
@@ -815,25 +819,24 @@ export default function DetailsComponent({
                             )}
 
                             <img
-                                src={imageUrl || "/default-user.jpg"}
+                                src={imageUrl || defaultProfileImage}
                                 alt={data.username}
-                                onError={(e) => ((e.target as HTMLImageElement).src = "/default-user.jpg")}
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = defaultProfileImage;
+                                }}
                                 className="rounded me-3 d-none d-sm-block flex-shrink-0"
                                 style={{ width: "110px", height: "110px", objectFit: "cover" }}
                             />
 
                             <div className="d-flex flex-column flex-grow-1" style={{ minWidth: 0 }}>
-                                {/* 1. Nombre con margen inferior para separarlo del username */}
                                 <h2 className="mb-1 text-break text-start w-100 fw-bold">
                                     {data.firstName} {data.lastName}
                                 </h2>
 
-                                {/* 2. Username con margen inferior para separarlo de las etiquetas */}
                                 <small className="text-muted text-start mb-2" style={{ fontSize: "0.95rem" }}>
                                     @{data.username}
                                 </small>
-
-                                {/* 3. Contenedor de etiquetas con un pequeño margen superior */}
+                                
                                 <div className="d-flex align-items-center flex-wrap gap-2 mt-1">
                                     <span
                                         className="px-2 py-1 fw-bold flex-shrink-0"
