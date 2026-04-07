@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./commons/hooks/useAuth";
-import { apiFetch } from "../api";
+import { useAuth } from "../commons/hooks/useAuth";
+import { apiFetch } from "../../api";
 
 function LogIn() {
   const [username, setUsername] = useState("");

@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, Navigate } from "react-router-dom";
 import Dashboard from "../dashboard/Dashboard";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "../commons/hooks/useAuth";
 
 const Home: React.FC = () => {
   const { username } = useAuth();
