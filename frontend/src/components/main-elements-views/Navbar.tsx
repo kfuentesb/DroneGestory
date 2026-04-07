@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "../commons/hooks/useAuth";
 
 import LoginIcon from "../../assets/navbar/login_white.svg";
 import LogoutIcon from "../../assets/navbar/logout_white.svg";
