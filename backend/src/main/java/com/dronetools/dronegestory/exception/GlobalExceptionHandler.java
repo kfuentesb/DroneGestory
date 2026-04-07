@@ -42,10 +42,10 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage()); 
     }
 
-    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConflict(org.springframework.dao.DataIntegrityViolationException ex) {
-        return buildResponse(HttpStatus.CONFLICT, "El identificador ya está en uso, porfavor cambielo.");
-    }
+    // @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    // public ResponseEntity<Map<String, Object>> handleConflict(org.springframework.dao.DataIntegrityViolationException ex) {
+    //     return buildResponse(HttpStatus.CONFLICT, "El identificador ya está en uso, porfavor cambielo.");
+    // }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
