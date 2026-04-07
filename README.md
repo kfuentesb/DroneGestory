@@ -79,6 +79,7 @@ npm i react-select
 npm i react-error-boundary
 npm i react-pro-sidebar
 npm i react-hook-form
+npm i @svar-ui/react-filemanager
 ```
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
@@ -101,6 +102,7 @@ VISUAL<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
--Añadir vista de archivos de los documentos en el servidor usando (https://chonky.io/)<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
--Corregir paginacion infinita sin limite
+
+-DOCUMENTACIONES<br>
+-Arreglar la barra de busqueda<br>

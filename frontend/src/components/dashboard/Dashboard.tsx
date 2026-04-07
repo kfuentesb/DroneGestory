@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "./commons/hooks/useAuth";
-import { apiFetch } from "../api";
+import { useAuth } from "../commons/hooks/useAuth";
+import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
-import StatCard from "./commons/props/StatCard";
-import StatCardSkeleton from "./commons/props/StatCardSkeleton";
-import DashboardHeader from "./commons/Dashboard/DashboardHeader";
+import StatCard from "../commons/props/StatCard";
+import StatCardSkeleton from "../commons/props/StatCardSkeleton";
+import DashboardHeader from "./DashboardHeader";
 
 interface DashboardData {
   totalUsuarios: number;

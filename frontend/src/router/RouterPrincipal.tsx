@@ -2,15 +2,15 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 
-import LogIn from "../components/LogIn";
+import LogIn from "../components/main-elements-views/LogIn";
 import UserList from "../components/lists/UserList";
 import UserDetail from "../components/details/UserDetail";
-import Home from "../components/commons/Home";
+import Home from "../components/main-elements-views/Home";
 import FormUser from "../components/forms/FormUser";
 import FormAircraft from "../components/forms/FormAircraft";
-import Dashboard from "../components/Dashboard";
-import Forbidden from "../components/commons/Forbidden";
-import NotFound from "../components/commons/NotFound";
+import Dashboard from "../components/dashboard/Dashboard";
+import Forbidden from "../components/main-elements-views/Forbidden";
+import NotFound from "../components/main-elements-views/NotFound";
 import AircraftList from "../components/lists/AircraftList";
 import ProfileDetail from "../components/details/ProfileDetail";
 import AircraftDetail from "../components/details/AircraftDetail";
@@ -19,6 +19,7 @@ import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/OperationDetail";
 import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
+import FileBrowserView from "../components/docs/FileBrowserView";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -83,6 +84,15 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/auth/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/auth/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/auth/register-operation" element={<MultiStepsForm />} />
+
+        <Route 
+          path="/auth/docs" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <FileBrowserView />
+            </ProtectedRoute>
+          } 
+        />
         
 
         {/* Error */}

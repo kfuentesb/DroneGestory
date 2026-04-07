@@ -5,7 +5,7 @@ import DetailsComponent from "./DetailsComponent";
 import { apiFetch } from "../../api";
 import { userFields } from "./UserFields";
 import { useAuth } from "../commons/hooks/useAuth";
-import Forbidden from "../commons/Forbidden";
+import Forbidden from "../main-elements-views/Forbidden";
 
 export default function ProfileDetail() {
 
