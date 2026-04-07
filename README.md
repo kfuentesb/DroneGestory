@@ -95,6 +95,7 @@ VISUAL<br>
 
 -GENERALES<br>
 -Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
+-Añadir animación de carga con el ciruclo dando vueltas a todos los fetches que usan: Cargando...<br>
 
 -USUARIO<br>
 -Al crear un usuario con un correo, el correo puede estar mal y a la hora de modificarlo saltar error de validación.<br>
