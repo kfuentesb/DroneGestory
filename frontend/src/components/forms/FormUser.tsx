@@ -1,6 +1,6 @@
 import React, { useState,  } from 'react';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
-import './generic-form.css';
+import '../../styles/generic-form.css';
 import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
