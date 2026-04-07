@@ -1,5 +1,8 @@
 import type { FieldConfig } from "./FieldConfig";
 
+export const USER_PASSWORD_ERROR = "La contrasena debe tener 8 o mas caracteres y al menos 1 numero";
+export const validateUserPassword = (value: string) => /^(?=.*\d).{8,}$/.test(value);
+
 export const userFields: FieldConfig[] = [
     {
         label: "Nombre",
@@ -61,8 +64,11 @@ export const userFields: FieldConfig[] = [
         label: "Fecha de Nacimiento",
         key: "fechaNac",
         type: "date",
-        validate: () => true,
-        error: ""
+        validate: (v: string | null | undefined) => {
+            if (!v || v.toString().trim() === "") return true;
+            return new Date(v).getTime() <= Date.now();
+        },
+        error: "La fecha de nacimiento no puede ser futura"
     },
     {
         label: "Tipo de usuario",
