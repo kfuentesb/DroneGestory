@@ -139,9 +139,9 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                     onOpenChange={() => handleToggle("docs")}
                     icon={<img src={DocIcon} alt="Docs" style={{ width: "18px", height: "18px" }} />}
                 >
-                    <MenuItem onClick={() => { navigate("#"); setToggled(false); }}>Operadora</MenuItem>
-                    <MenuItem onClick={() => { navigate("#"); setToggled(false); }}>Personal</MenuItem>
-                    <MenuItem onClick={() => { navigate("#"); setToggled(false); }}>Aeronaves</MenuItem>
+                    <MenuItem onClick={() => { navigate("/docs/operadora"); setToggled(false); }}>Operadora</MenuItem>
+                    <MenuItem onClick={() => { navigate("/docs/personal"); setToggled(false); }}>Personal</MenuItem>
+                    <MenuItem onClick={() => { navigate("/docs/aircrafts"); setToggled(false); }}>Aeronaves</MenuItem>
                     <MenuItem onClick={() => { navigate("/docs"); setToggled(false); }}>Servidor File Manager</MenuItem>
                 </SubMenu>
                 )}
