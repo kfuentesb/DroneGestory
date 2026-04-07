@@ -4,7 +4,7 @@ import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
-import FlyDroneIconPlus from "../../assets/sidebar/fly_drone_white.svg";
+import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import { fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
