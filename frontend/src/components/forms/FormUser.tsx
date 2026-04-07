@@ -17,6 +17,14 @@ type CertificateFieldPayload = {
     dateIndefinite: boolean | null;
 };
 
+export type AdditionalCertificatePayload = {
+    id: string;
+    label: string;
+    certificate: File | null;
+    dateExpire: string;
+    dateIndefinite: boolean;
+};
+
 type CertificateUploadMetadata = {
     certificateType: string;
     fileFieldKey: string | null;
@@ -427,6 +435,35 @@ function FormUser() {
         });
     };
 
+    const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
+
+    const handleAddAdditionalDoc = () => {
+        if (additionalDocs.length < 10) {
+            const newDoc: AdditionalCertificatePayload = {
+                id: crypto.randomUUID(),
+                label: "",
+                certificate: null,
+                dateExpire: "",
+                dateIndefinite: false
+            };
+            setAdditionalDocs(prev => [...prev, newDoc]);
+        }
+    };
+
+    const handleRemoveAdditionalDoc = (id: string) => {
+        setAdditionalDocs(prev => prev.filter(doc => doc.id !== id));
+    };
+
+    const handleAdditionalFieldChange = (
+        id: string, 
+        field: keyof AdditionalCertificatePayload, 
+        value: any
+    ) => {
+        setAdditionalDocs(prev => 
+            prev.map(doc => (doc.id === id ? { ...doc, [field]: value } : doc))
+        );
+    };
+
     return (
         <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
             <div className="container" style={{ maxWidth: "1000px" }}>
@@ -634,6 +671,11 @@ function FormUser() {
                         onConopsDateChange={handleConopsDateChange}
                         onConopsToggleIndefinite={handleConopsToggleIndefinite}
                         onFormDateChange={handleFormDateChange}
+
+                        additionalDocs={additionalDocs}
+                        onAddAdditionalDoc={handleAddAdditionalDoc}
+                        onRemoveAdditionalDoc={handleRemoveAdditionalDoc}
+                        onAdditionalFieldChange={handleAdditionalFieldChange}
                     />
 
 
