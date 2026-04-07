@@ -4,8 +4,8 @@ import Select from 'react-select';
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';
 import { aircraftClasses, configs, LIMITS } from '../../global-const/aircraft-const';
-import { InfoBadge } from '../users/UserCertificatesSection';
-import './generic-form.css';
+import { InfoBadge } from '../commons/InfoBadge';
+import '../../styles/generic-form.css';
 
 type SelectOption = { value: string; label: string };
 
