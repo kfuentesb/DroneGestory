@@ -87,8 +87,8 @@ export default function OperationDetail() {
     return [
       { label: "Creador", value: operation.nombreCreador },
       { label: "Creación", value: formatDateTime(operation.fechaCreacion) },
-      { label: "Actualización", value: formatDateTime(operation.fechaActualizacion) },
       { label: "Todos los anexos firmados", value: operation.todosAnexosFirmados ? "Sí" : "No" },
+      { label: "Actualización", value: formatDateTime(operation.fechaActualizacion) },
     ];
   }, [operation]);
 
@@ -134,7 +134,18 @@ export default function OperationDetail() {
           </button>
           <h2 className="mb-2">{operation.nombreOperacion}</h2>
           <div className="d-flex gap-2 flex-wrap">
-            <Badge label={operation.estadoOperacion} style={getOperationStatusStyle(operation.estadoOperacion)} />
+            <Badge
+                label={
+                  operation.todosAnexosFirmados && !operation.completada
+                    ? "CIERRE PENDIENTE"
+                    : operation.estadoOperacion
+                }
+                style={
+                  operation.todosAnexosFirmados && !operation.completada
+                    ? getOperationStatusStyle("PENDIENTE")
+                    : getOperationStatusStyle(operation.estadoOperacion)
+                }
+              />
             <Badge
               label={operation.completada ? "Completada" : "En edición"}
               style={operation.completada ? getAnexoColorStyle("VERDE") : getAnexoColorStyle("AMARILLO")}
@@ -143,7 +154,6 @@ export default function OperationDetail() {
         </div>
 
         <div className="d-flex gap-2 flex-wrap">
-          <ButtonProp onClick={() => void loadOperation()}>Recargar</ButtonProp>
           <ButtonProp
             className="btn"
             style={{ backgroundColor: "#166534", color: "#FFFFFF", fontWeight: "bold" }}
