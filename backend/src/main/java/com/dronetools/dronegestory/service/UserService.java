@@ -111,7 +111,11 @@ public class UserService {
                 continue;
             }
 
-            String certificateType = certificateRequest.certificateType();
+            String certificateType = resolveCertificateType(
+                    certificateRequest.certificateType(),
+                    certificateRequest.certificateLabel(),
+                    certificateRequest.fileFieldKey()
+            );
             String fileFieldKey = certificateRequest.fileFieldKey();
             Boolean dateIndefinite = certificateRequest.dateIndefinite();
             java.time.LocalDate expireDate = null;
@@ -172,6 +176,22 @@ public class UserService {
         }
 
         return savedUser;
+    }
+
+    private String resolveCertificateType(String certificateType, String certificateLabel, String fileFieldKey) {
+        if (certificateType != null && !certificateType.isBlank()) {
+            return certificateType.trim();
+        }
+
+        if (certificateLabel != null && !certificateLabel.isBlank()) {
+            return certificateLabel.trim();
+        }
+
+        if (fileFieldKey != null && !fileFieldKey.isBlank()) {
+            return fileFieldKey.replaceFirst("^certificate_", "").trim();
+        }
+
+        return null;
     }
 
     // Actualizar un usuario existente

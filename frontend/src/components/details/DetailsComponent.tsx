@@ -45,6 +45,15 @@ type CertificateFieldPayload = {
     dateIndefinite: boolean | null;
 };
 
+type AdditionalCertificatePayload = {
+    id: string;
+    existingCertificateId?: number;
+    label: string;
+    certificate: File | null;
+    dateExpire: string | null;
+    dateIndefinite: boolean | null;
+};
+
 const defaultSelectedFiles: Record<string, File | null> = {
     fileA1A3: null,
     fileA2: null,
@@ -124,6 +133,8 @@ export default function DetailsComponent({
     const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
     const [existingStaticFileNames, setExistingStaticFileNames] = useState<Record<string, string>>({});
     const [existingConopsFileNames, setExistingConopsFileNames] = useState<Record<string, string>>({});
+    const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
+    const [existingAdditionalFileNames, setExistingAdditionalFileNames] = useState<Record<string, string>>({});
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
@@ -235,6 +246,8 @@ export default function DetailsComponent({
         const nextConopsDocs: Record<string, CertificateFieldPayload> = {};
         const nextStaticNames: Record<string, string> = {};
         const nextConopsNames: Record<string, string> = {};
+        const nextAdditionalDocs: AdditionalCertificatePayload[] = [];
+        const nextAdditionalNames: Record<string, string> = {};
 
         certificates.forEach((certificate) => {
             const staticField = staticCertificateConfig.find((field) => field.key === certificate.certificateType);
@@ -263,6 +276,20 @@ export default function DetailsComponent({
                 if (filename) {
                     nextConopsNames[categoryId] = filename;
                 }
+                return;
+            }
+
+            const additionalId = `existing-${certificate.id}`;
+            nextAdditionalDocs.push({
+                id: additionalId,
+                existingCertificateId: certificate.id,
+                label: certificate.certificateType || "",
+                certificate: null,
+                dateExpire: certificate.expireDate ?? null,
+                dateIndefinite: certificate.dateIndefinite ?? false,
+            });
+            if (filename) {
+                nextAdditionalNames[additionalId] = filename;
             }
         });
 
@@ -273,6 +300,8 @@ export default function DetailsComponent({
         setConopsDocs(nextConopsDocs);
         setExistingStaticFileNames(nextStaticNames);
         setExistingConopsFileNames(nextConopsNames);
+        setAdditionalDocs(nextAdditionalDocs);
+        setExistingAdditionalFileNames(nextAdditionalNames);
         setCurrentSelection("");
     }, [certificates, showCertificates]);
 
@@ -468,11 +497,50 @@ export default function DetailsComponent({
         });
     };
 
+    const handleAddAdditionalDoc = () => {
+        if (additionalDocs.length >= 10) {
+            return;
+        }
+        setAdditionalDocs((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                label: "",
+                certificate: null,
+                dateExpire: null,
+                dateIndefinite: false,
+            },
+        ]);
+    };
+
+    const handleRemoveAdditionalDoc = (idValue: string) => {
+        setAdditionalDocs((prev) => prev.filter((doc) => doc.id !== idValue));
+    };
+
+    const handleAdditionalFieldChange = (
+        idValue: string,
+        field: keyof AdditionalCertificatePayload,
+        value: any
+    ) => {
+        setAdditionalDocs((prev) =>
+            prev.map((doc) => (doc.id === idValue ? { ...doc, [field]: value } : doc))
+        );
+    };
+
     const syncCertificates = async () => {
         if (!showCertificates || !id) return;
 
-        const existingByType = new Map(certificates.map((certificate) => [certificate.certificateType, certificate]));
+        const staticKeys = new Set(staticCertificateConfig.map((field) => field.key));
+        const isConopsType = (certificateType: string) => certificateType.startsWith("conops_");
+        const isAdditionalType = (certificateType: string) => !staticKeys.has(certificateType) && !isConopsType(certificateType);
+
+        const existingByType = new Map(
+            certificates
+                .filter((certificate) => !isAdditionalType(certificate.certificateType))
+                .map((certificate) => [certificate.certificateType, certificate])
+        );
         const desiredTypes = new Set<string>();
+        const desiredAdditionalIds = new Set<number>();
 
         const desiredStatic = staticCertificateConfig.map((field) => ({
             type: field.key,
@@ -546,8 +614,58 @@ export default function DetailsComponent({
             }
         }
 
+        for (const doc of additionalDocs) {
+            const existingCertificateId = doc.existingCertificateId;
+            const existing = existingCertificateId
+                ? certificates.find((certificate) => certificate.id === existingCertificateId)
+                : undefined;
+
+            const label = doc.label.trim();
+            const hasAnyData = Boolean(label) || Boolean(doc.certificate) || Boolean(doc.dateExpire) || Boolean(doc.dateIndefinite) || Boolean(existing);
+            if (!hasAnyData) {
+                continue;
+            }
+
+            const formData = new FormData();
+            const finalType = label || existing?.certificateType || `additional_${doc.id}`;
+            formData.append("certificateType", finalType);
+            if (doc.dateExpire && !doc.dateIndefinite) formData.append("expireDate", doc.dateExpire);
+            formData.append("dateIndefinite", doc.dateIndefinite ? "true" : "false");
+            if (doc.certificate) formData.append("file", doc.certificate, doc.certificate.name);
+
+            const url = existing
+                ? `/api/auth/user-certificates/${existing.id}/upload`
+                : `/api/auth/user-certificates/user/${id}/upload`;
+            const method = existing ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Error guardando certificados adicionales.");
+            }
+
+            if (existing?.id) {
+                desiredAdditionalIds.add(existing.id);
+            }
+        }
+
         for (const certificate of certificates) {
-            if (!desiredTypes.has(certificate.certificateType)) {
+            if (!isAdditionalType(certificate.certificateType) && !desiredTypes.has(certificate.certificateType)) {
+                const res = await fetch(`/api/auth/user-certificates/${certificate.id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(errorText || "Error eliminando certificado.");
+                }
+            }
+
+            if (isAdditionalType(certificate.certificateType) && !desiredAdditionalIds.has(certificate.id)) {
                 const res = await fetch(`/api/auth/user-certificates/${certificate.id}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
@@ -803,6 +921,11 @@ export default function DetailsComponent({
                                     onConopsToggleIndefinite={handleConopsToggleIndefinite}
                                     existingStaticFileNames={existingStaticFileNames}
                                     existingConopsFileNames={existingConopsFileNames}
+                                    additionalDocs={additionalDocs}
+                                    onAddAdditionalDoc={handleAddAdditionalDoc}
+                                    onRemoveAdditionalDoc={handleRemoveAdditionalDoc}
+                                    onAdditionalFieldChange={handleAdditionalFieldChange}
+                                    existingAdditionalFileNames={existingAdditionalFileNames}
                                     onFormDateChange={(key, value) =>
                                         setCertificateFormValues((prev) => ({ ...prev, [key]: value }))
                                     }

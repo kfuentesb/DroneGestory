@@ -8,8 +8,9 @@ type CertificateFieldPayload = {
     dateIndefinite: boolean | null;
 };
 
-interface AdditionalCertificatePayload {
+export interface AdditionalCertificatePayload {
     id: string;
+    existingCertificateId?: number;
     label: string;
     certificate: File | null;
     dateExpire: string | null;

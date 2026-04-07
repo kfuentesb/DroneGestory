@@ -19,6 +19,7 @@ type CertificateFieldPayload = {
 
 export type AdditionalCertificatePayload = {
     id: string;
+    existingCertificateId?: number;
     label: string;
     certificate: File | null;
     dateExpire: string;
@@ -230,6 +231,26 @@ function FormUser() {
 
             if (categoryData?.certificate && fileFieldKey) {
                 files.push({ fileFieldKey, file: categoryData.certificate });
+            }
+        });
+
+        additionalDocs.forEach((doc) => {
+            const label = doc.label.trim();
+            const hasAnyData = Boolean(label) || Boolean(doc.certificate) || Boolean(doc.dateExpire) || Boolean(doc.dateIndefinite);
+            if (!hasAnyData) {
+                return;
+            }
+
+            const fileFieldKey = doc.certificate ? `certificate_additional_${doc.id}` : null;
+            metadata.push({
+                certificateType: label || `additional_${doc.id}`,
+                fileFieldKey,
+                expireDate: doc.dateIndefinite ? null : (doc.dateExpire || null),
+                dateIndefinite: doc.dateIndefinite,
+            });
+
+            if (doc.certificate && fileFieldKey) {
+                files.push({ fileFieldKey, file: doc.certificate });
             }
         });
 

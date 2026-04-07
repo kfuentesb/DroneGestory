@@ -48,13 +48,20 @@ public class UserCertificateController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> createWithFile(
             @PathVariable Integer userId,
-            @RequestParam("certificateType") String certificateType,
+            @RequestParam(value = "certificateType", required = false) String certificateType,
+            @RequestParam(value = "certificateLabel", required = false) String certificateLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
             @RequestParam(value = "dateIndefinite", required = false) Boolean dateIndefinite,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
         return ResponseEntity.ok(
-                userCertificateService.createWithFile(userId, certificateType, expireDate, dateIndefinite, file)
+                userCertificateService.createWithFile(
+                        userId,
+                        resolveCertificateType(certificateType, certificateLabel),
+                        expireDate,
+                        dateIndefinite,
+                        file
+                )
         );
     }
 
@@ -70,12 +77,19 @@ public class UserCertificateController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserCertificateDTO> updateWithFile(
             @PathVariable Integer id,
-            @RequestParam("certificateType") String certificateType,
+            @RequestParam(value = "certificateType", required = false) String certificateType,
+            @RequestParam(value = "certificateLabel", required = false) String certificateLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
             @RequestParam(value = "dateIndefinite", required = false) Boolean dateIndefinite,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
-        return userCertificateService.updateWithFile(id, certificateType, expireDate, dateIndefinite, file)
+        return userCertificateService.updateWithFile(
+                        id,
+                        resolveCertificateType(certificateType, certificateLabel),
+                        expireDate,
+                        dateIndefinite,
+                        file
+                )
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -85,5 +99,15 @@ public class UserCertificateController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         userCertificateService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private String resolveCertificateType(String certificateType, String certificateLabel) {
+        if (certificateType != null && !certificateType.isBlank()) {
+            return certificateType.trim();
+        }
+        if (certificateLabel != null && !certificateLabel.isBlank()) {
+            return certificateLabel.trim();
+        }
+        throw new IllegalArgumentException("Either certificateType or certificateLabel is required.");
     }
 }
