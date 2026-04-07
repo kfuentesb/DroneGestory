@@ -20,6 +20,7 @@ import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/OperationDetail";
 import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
+import FormOperation from "../components/forms/FormOperation";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -83,7 +84,7 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/operations/:id/anexo6" element={<OperationAnexoDetail tipoAnexo={6} />} />
         <Route path="/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
-        <Route path="/register-operation" element={<MultiStepsForm />} />
+        <Route path="/register-operation" element={<FormOperation />} />
 
         <Route 
           path="/docs" 
