@@ -143,7 +143,6 @@ export default function OperationDetail() {
         </div>
 
         <div className="d-flex gap-2 flex-wrap">
-          <ButtonProp onClick={() => void loadOperation()}>Recargar</ButtonProp>
           <ButtonProp
             className="btn"
             style={{ backgroundColor: "#166534", color: "#FFFFFF", fontWeight: "bold" }}
