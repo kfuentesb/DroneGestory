@@ -99,7 +99,6 @@ VISUAL<br>
 
 -USUARIO<br>
 -Al crear un usuario con un correo, el correo puede estar mal y a la hora de modificarlo saltar error de validación.<br>
--Botón borrar no funciona<br>
 -Los certificados pueden crearse sin certificado y solo con fecha<br>
 
 -DRONES<br>
