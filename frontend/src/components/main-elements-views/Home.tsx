@@ -1,19 +1,16 @@
 import React from "react";
 import { NavLink, Navigate } from "react-router-dom";
-import Dashboard from "../dashboard/Dashboard";
 import { useAuth } from "../commons/hooks/useAuth";
 
 const Home: React.FC = () => {
   const { username } = useAuth();
 
   if (username) {
-    // Usuario conectado, mostrar dashboard
-        return <Navigate to="/dashboard" />
+      return <Navigate to="/dashboard" />
   }
   
   return (
     <main style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
-      {/* HERO */}
       <section className="container py-5">
         <div className="d-flex justify-content-center g-5">
           <div className="col-md-6">
