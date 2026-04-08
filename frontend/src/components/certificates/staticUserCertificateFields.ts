@@ -1,4 +1,4 @@
-export type StaticCertificateFieldConfig = {
+export type StaticUserCertificateFieldConfig = {
     key: string;
     label: string;
     enabledKey: string;
@@ -7,7 +7,7 @@ export type StaticCertificateFieldConfig = {
     indefiniteKey: string;
 };
 
-export const staticCertificateFields: StaticCertificateFieldConfig[] = [
+export const staticUserCertificateFields: StaticUserCertificateFieldConfig[] = [
     {
         key: "a1a3",
         label: "Certificado A1/A3",
@@ -82,10 +82,10 @@ export const staticCertificateFields: StaticCertificateFieldConfig[] = [
     },
 ];
 
-const staticCertificateLabelMap = new Map(staticCertificateFields.map((field) => [field.key, field.label]));
+const staticUserCertificateLabelMap = new Map(staticUserCertificateFields.map((field) => [field.key, field.label]));
 
 export function getCertificateLabel(certificateType: string): string {
-    const staticLabel = staticCertificateLabelMap.get(certificateType);
+    const staticLabel = staticUserCertificateLabelMap.get(certificateType);
     if (staticLabel) {
         return staticLabel;
     }

@@ -4,9 +4,9 @@ import '../../styles/generic-form.css';
 import Select from 'react-select';
 import { apiFetch } from '../../api';
 import { useNavigate } from "react-router-dom";
-import { staticCertificateFields as staticCertificateConfig } from '../users/staticCertificateFields';
-import UserCertificatesSection from '../users/UserCertificatesSection';
-import { CONOPS_CATEGORIES } from '../users/conopsCategories';
+import { staticUserCertificateFields as staticUserCertificateConfig } from '../certificates/staticUserCertificateFields';
+import UserCertificatesSection from '../certificates/UserCertificatesSection';
+import { CONOPS_CATEGORIES } from '../certificates/conopsCategories';
 import { userFields, validateUserPassword, USER_PASSWORD_ERROR } from '../details/UserFields';
 
 import checkIcon from '../../assets/commons/check_white.svg';

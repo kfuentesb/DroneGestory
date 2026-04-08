@@ -6,9 +6,9 @@ import DetailEdit from "../commons/props/DetailEdit";
 import ConfirmModal from "../commons/ConfirmModal";
 import Forbidden from "../main-elements-views/Forbidden";
 import NotFound from "../main-elements-views/NotFound";
-import { getCertificateLabel, staticCertificateFields as staticCertificateConfig } from "../users/staticCertificateFields";
-import UserCertificatesSection, { UserCertificatesSummarySection } from "../users/UserCertificatesSection";
-import { CONOPS_CATEGORIES } from "../users/conopsCategories";
+import { getCertificateLabel, staticUserCertificateFields as staticUserCertificateConfig } from "../certificates/staticUserCertificateFields";
+import UserCertificatesSection, { UserCertificatesSummarySection } from "../certificates/UserCertificatesSection";
+import { CONOPS_CATEGORIES } from "../certificates/conopsCategories";
 
 import editIcon from '../../assets/commons/edit_white.svg';
 import deleteIcon from '../../assets/commons/delete_white.svg';
