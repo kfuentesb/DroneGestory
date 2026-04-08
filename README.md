@@ -94,9 +94,11 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
--Añadir animación de carga con el ciruclo dando vueltas a todos los fetches que usan: Cargando...<br>
+-Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.
+-Crear la vista de opciones
 
 -USUARIO<br>
+-Un usuario no admin no puede ver su propio perfil
 
 -DRONES<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
