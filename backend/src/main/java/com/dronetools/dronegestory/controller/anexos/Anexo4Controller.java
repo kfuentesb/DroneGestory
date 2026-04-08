@@ -10,18 +10,21 @@ import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
 public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service> {
 
-    //private final AircraftRepository aircraftRepository;
-
     public Anexo4Controller(Anexo4Service service,
                             OperationRepository operationRepository,
                             Anexo4Repository repository) {
         super(service, operationRepository, repository);
-        //this.aircraftRepository = aircraftRepository;
     }
 
     @GetMapping("/actual/detalle")
@@ -36,10 +39,50 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     }
 
     @PostMapping
-    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute Anexo4RequestDTO dto) {
+    public AnexoInfoDTO saveOrUpdate(
+            @PathVariable Long operationId,
+            @ModelAttribute Anexo4RequestDTO dto,
+            @RequestParam(value = "fileEspacioAereo", required = false) MultipartFile fileEspacioAereo,
+            @RequestParam(value = "fileZonaVuelo", required = false) MultipartFile fileZonaVuelo) {
         Anexo4 anexo = convertDtoToEntity(dto);
+        handleFileUpload(operationId, anexo, fileEspacioAereo, fileZonaVuelo);
         Anexo4 saved = service.registrarAnexo4(operationId, anexo);
         return AnexoInfoDTO.from(saved);
+    }
+
+    private void handleFileUpload(Long operationId, Anexo4 anexo,
+                                  MultipartFile fileEspacioAereo,
+                                  MultipartFile fileZonaVuelo) {
+        Path uploadBase = Paths.get("uploads", "operations", operationId.toString(), "anexo4")
+                .toAbsolutePath().normalize();
+        try {
+            if (fileEspacioAereo != null && !fileEspacioAereo.isEmpty()) {
+                Files.createDirectories(uploadBase);
+                String filename = "espacio_aereo_" + fileEspacioAereo.getOriginalFilename();
+                Path target = uploadBase.resolve(filename).normalize();
+                if (!target.startsWith(uploadBase)) {
+                    throw new RuntimeException("Ruta de archivo no válida");
+                }
+                fileEspacioAereo.transferTo(target.toFile());
+                anexo.setImagenEspacioAereo(
+                        Paths.get("operations", operationId.toString(), "anexo4", filename)
+                                .toString().replace("\\", "/"));
+            }
+            if (fileZonaVuelo != null && !fileZonaVuelo.isEmpty()) {
+                Files.createDirectories(uploadBase);
+                String filename = "zona_vuelo_" + fileZonaVuelo.getOriginalFilename();
+                Path target = uploadBase.resolve(filename).normalize();
+                if (!target.startsWith(uploadBase)) {
+                    throw new RuntimeException("Ruta de archivo no válida");
+                }
+                fileZonaVuelo.transferTo(target.toFile());
+                anexo.setImagenZonaVuelo(
+                        Paths.get("operations", operationId.toString(), "anexo4", filename)
+                                .toString().replace("\\", "/"));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar el archivo: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -70,17 +113,11 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         // Personal como String
         anexo.setPersonal(dto.getPersonal());
 
-        // Imágenes
+        // Imágenes (se sobreescribirán si se sube un archivo en handleFileUpload)
         anexo.setImagenEspacioAereo(dto.getImagenEspacioAereo());
         anexo.setImagenZonaVuelo(dto.getImagenZonaVuelo());
 
-        // Drones - buscar entidades por ID
-//        if (dto.getDronesIds() != null && !dto.getDronesIds().isEmpty()) {
-//            List<Aircraft> drones = aircraftRepository.findAllById(dto.getDronesIds());
-//            anexo.setDrones(drones);
-//        }
-
-        // Booleands sección 4
+        // Booleanos sección 4
         anexo.setEspacioAereoControlado(dto.getEspacioAereoControlado());
         anexo.setEstudioAeronauticoCoordinado(dto.getEstudioAeronauticoCoordinado());
         anexo.setEntornoAerodromos(dto.getEntornoAerodromos());
@@ -99,7 +136,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         anexo.setZonasProtMedioambiental(dto.getZonasProtMedioambiental());
         anexo.setDisponeCoordGestor(dto.getDisponeCoordGestor());
 
-        // Booleands sección 6
+        // Booleanos sección 6
         anexo.setConopsYModeloSemantico(dto.getConopsYModeloSemantico());
         anexo.setAplicaModelo(dto.getAplicaModelo());
         anexo.setDefineGeografiaVueloConops(dto.getDefineGeografiaVueloConops());

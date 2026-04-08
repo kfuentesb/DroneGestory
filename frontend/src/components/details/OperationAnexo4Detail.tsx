@@ -134,6 +134,8 @@ export default function OperationAnexo4Detail() {
 
   const [operation, setOperation] = useState<OperationDetailDTO | null>(null);
   const [form, setForm] = useState<Anexo4Data>({ ...EMPTY_FORM });
+  const [fileEspacioAereo, setFileEspacioAereo] = useState<File | null>(null);
+  const [fileZonaVuelo, setFileZonaVuelo] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [signing, setSigning] = useState(false);
@@ -189,7 +191,9 @@ export default function OperationAnexo4Detail() {
     if (!operation) return;
     try {
       setSaving(true);
-      await saveAnexo4Full(operation.idOperacion, form);
+      await saveAnexo4Full(operation.idOperacion, form, fileEspacioAereo, fileZonaVuelo);
+      setFileEspacioAereo(null);
+      setFileZonaVuelo(null);
       await loadData();
     } catch (err) {
       console.error("Error guardando Anexo 4:", err);
@@ -457,7 +461,10 @@ export default function OperationAnexo4Detail() {
                 disabled={!canEdit || saving}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) setField("imagenEspacioAereo", file.name);
+                  if (file) {
+                    setFileEspacioAereo(file);
+                    setField("imagenEspacioAereo", file.name);
+                  }
                 }}
               />
             </div>
@@ -624,7 +631,10 @@ export default function OperationAnexo4Detail() {
                 disabled={!canEdit || saving}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) setField("imagenZonaVuelo", file.name);
+                  if (file) {
+                    setFileZonaVuelo(file);
+                    setField("imagenZonaVuelo", file.name);
+                  }
                 }}
               />
             </div>
@@ -635,9 +645,6 @@ export default function OperationAnexo4Detail() {
           <SectionHeader number="6" title="Requisitos y limitaciones" />
 
           <div className="row">
-            <div className="col-12 mb-1">
-              <p className="text-muted small mb-2">6.1 ConOps y modelo semántico</p>
-            </div>
             <div className="col-md-6 col-12">
               <CheckboxRow
                 id="conopsYModeloSemantico"
@@ -700,7 +707,6 @@ export default function OperationAnexo4Detail() {
             </div>
 
             <div className="col-12 mt-2">
-              <p className="text-muted small mb-2">6.2 NOTAMs</p>
             </div>
             <div className="col-md-6 col-12">
               <CheckboxRow

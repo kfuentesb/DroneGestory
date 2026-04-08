@@ -110,7 +110,12 @@ export async function fetchAnexo4Detail(operationId: string | number): Promise<A
   return JSON.parse(text) as Anexo4Data;
 }
 
-export async function saveAnexo4Full(operationId: string | number, data: Anexo4Data) {
+export async function saveAnexo4Full(
+  operationId: string | number,
+  data: Anexo4Data,
+  fileEspacioAereo?: File | null,
+  fileZonaVuelo?: File | null,
+) {
   const formData = new FormData();
 
   const appendIfNotNull = (key: string, value: string | boolean | null | undefined) => {
@@ -125,8 +130,9 @@ export async function saveAnexo4Full(operationId: string | number, data: Anexo4D
   appendIfNotNull("mediosMateriales", data.mediosMateriales);
   appendIfNotNull("direccion", data.direccion);
   appendIfNotNull("coords", data.coords);
-  appendIfNotNull("imagenEspacioAereo", data.imagenEspacioAereo);
-  appendIfNotNull("imagenZonaVuelo", data.imagenZonaVuelo);
+  // Image strings only sent when no file is uploaded
+  if (!fileEspacioAereo) appendIfNotNull("imagenEspacioAereo", data.imagenEspacioAereo);
+  if (!fileZonaVuelo) appendIfNotNull("imagenZonaVuelo", data.imagenZonaVuelo);
   appendIfNotNull("espacioAereoControlado", data.espacioAereoControlado);
   appendIfNotNull("estudioAeronauticoCoordinado", data.estudioAeronauticoCoordinado);
   appendIfNotNull("entornoAerodromos", data.entornoAerodromos);
@@ -155,6 +161,14 @@ export async function saveAnexo4Full(operationId: string | number, data: Anexo4D
   appendIfNotNull("notams", data.notams);
   appendIfNotNull("revisaNotams", data.revisaNotams);
   appendIfNotNull("tsaOCondicionada", data.tsaOCondicionada);
+
+  // Append actual File objects when present
+  if (fileEspacioAereo) {
+    formData.append("fileEspacioAereo", fileEspacioAereo);
+  }
+  if (fileZonaVuelo) {
+    formData.append("fileZonaVuelo", fileZonaVuelo);
+  }
 
   const response = await apiFetch(`/api/operations/${operationId}/anexo4`, {
     method: "POST",
