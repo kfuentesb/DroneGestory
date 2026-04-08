@@ -10,7 +10,14 @@ import '../../styles/generic-form.css';
 
 type SelectOption = { value: string; label: string };
 
-export default function FormAircraft() {
+interface FormAircraftProps {
+  initialValues?: {
+    manufacturer?: string;
+    model?: string;
+  };
+}
+
+export default function FormAircraft({ initialValues }: FormAircraftProps) {
   const yesNoOptions: SelectOption[] = [
     { value: "true", label: "Sí" },
     { value: "false", label: "No" }
@@ -28,8 +35,8 @@ export default function FormAircraft() {
   const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
   const [activeChecks, setActiveChecks] = useState<Record<string, boolean>>({});
   const [formValues, setFormValues] = useState({
-    manufacturer: "",
-    model: "",
+    manufacturer: initialValues?.manufacturer ?? "",
+    model: initialValues?.model ?? "",
     serialNumber: "",
     aircraftClass: null as SelectOption | null,
     mtom: 0,
@@ -292,7 +299,13 @@ export default function FormAircraft() {
                   className="form-control"
                   value={formValues.manufacturer}
                   onChange={e => setFormValues({ ...formValues, manufacturer: e.target.value })}
-                  style={{ ...backgroundBorderInputs, border: errors.manufacturer ? "1px solid red" : "1px solid #D1D5DB" }}
+                  style={{ 
+                    ...backgroundBorderInputs, 
+                    backgroundColor: !!initialValues?.manufacturer ? "#e9ecef" : backgroundBorderInputs.backgroundColor,
+                    cursor: !!initialValues?.manufacturer ? "not-allowed" : "auto",
+                    border: errors.manufacturer ? "1px solid red" : "1px solid #D1D5DB" 
+                  }}
+                  disabled={!!initialValues?.manufacturer}
                 />
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
@@ -302,7 +315,13 @@ export default function FormAircraft() {
                   className="form-control"
                   value={formValues.model}
                   onChange={e => setFormValues({ ...formValues, model: e.target.value })}
-                  style={{ ...backgroundBorderInputs, border: errors.model ? "1px solid red" : "1px solid #D1D5DB" }}
+                  style={{ 
+                    ...backgroundBorderInputs, 
+                    backgroundColor: !!initialValues?.model ? "#e9ecef" : backgroundBorderInputs.backgroundColor,
+                    cursor: !!initialValues?.model ? "not-allowed" : "auto",
+                    border: errors.model ? "1px solid red" : "1px solid #D1D5DB" 
+                  }}
+                  disabled={!!initialValues?.model}
                 />
               </div>
               <div className="col-12 col-md">

@@ -7,7 +7,6 @@ import UserList from "../components/lists/UserList";
 import UserDetail from "../components/details/UserDetail";
 import Home from "../components/main-elements-views/Home";
 import FormUser from "../components/forms/FormUser";
-import FormAircraft from "../components/forms/FormAircraft";
 import Dashboard from "../components/dashboard/Dashboard";
 import Forbidden from "../components/main-elements-views/Forbidden";
 import NotFound from "../components/main-elements-views/NotFound";
@@ -21,6 +20,7 @@ import OperationDetail from "../components/details/OperationDetail";
 import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
+import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
 
 import FormAnexo4 from "../components/forms/FormAnexo4";
 
@@ -80,7 +80,7 @@ export default class RouterPrincipal extends React.Component {
           path="/register-aircraft" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
-              <FormAircraft />
+              <RegisterAircraftFlow />
             </ProtectedRoute>
           } 
         />
