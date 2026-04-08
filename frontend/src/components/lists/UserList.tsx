@@ -4,7 +4,7 @@ import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
-import { ReusableTable } from "../commons/props/ReusableTable";
+import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
 
@@ -75,6 +75,14 @@ export default function UserList() {
     currentPage * ITEMS_PER_PAGE
   );
 
+  const userHeaders: TableHeader[] = [
+    { label: "Nombre", key: "firstName", sortable: true },
+    { label: "Usuario", key: "username", sortable: true },
+    { label: "Email", key: "email", sortable: true },
+    { label: "Teléfono", key: "phoneNumber", sortable: true },
+    { label: "Tipo", key: "type", sortable: true },
+  ];
+
   return (
     <div className="container py-4">
       <div
@@ -98,7 +106,7 @@ export default function UserList() {
           </div>
 
           <ReusableTable
-            headers={["Nombre", "Usuario", "Email", "Teléfono", "Tipo"]}
+            headers={userHeaders}
             rows={paginatedUsers}
             renderRow={(p) => (
               <>

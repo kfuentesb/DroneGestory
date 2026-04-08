@@ -94,14 +94,9 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
--Cambiar las tablas de mostrar en lista para que se puedan reorganizar por columna<br>
--Añadir animación de carga con el ciruclo dando vueltas a todos los fetches que usan: Cargando...
--Cambiar error de inicio de sesión -> SERVIDOR MUERTO
-<br>
+-Añadir animación de carga con el ciruclo dando vueltas a todos los fetches que usan: Cargando...<br>
 
 -USUARIO<br>
--Al crear un usuario con un correo, el correo puede estar mal y a la hora de modificarlo saltar error de validación.<br>
--Los certificados pueden crearse sin certificado y solo con fecha<br>
 
 -DRONES<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>

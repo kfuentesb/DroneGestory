@@ -4,7 +4,7 @@ import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
-import { ReusableTable } from "../commons/props/ReusableTable";
+import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
 
@@ -56,7 +56,7 @@ export default function AircraftList() {
           headers: { "Content-Type": "application/json" }
         });
 
-        if (!res) return; // happens if redirected (403/404)
+        if (!res) return;
 
         const data = await res.json();
         setAircrafts(data);
@@ -84,6 +84,19 @@ export default function AircraftList() {
     currentPage * ITEMS_PER_PAGE
   );
 
+  const userHeaders: TableHeader[] = [
+    { label: "Fabricante", key: "manufacturer", sortable: true },
+    { label: "Modelo", key: "model", sortable: true },
+    { label: "Nº Serie", key: "serialNumber", sortable: true },
+    { label: "Clase", key: "aircraftClass", sortable: true },
+    { label: "MTOM", key: "mtom", sortable: true},
+    { label: "Dimensión", key: "wingspan", sortable: true},
+    { label: "Velocidad", key: "maxSpeed", sortable: true},
+    { label: "Configuración", key: "config", sortable: true },
+    { label: "Energía impacto", key: "impactEnergy", sortable: true},
+    { label: "Cámara", key: "hasCamera", sortable: true },
+  ];
+
   return (
     <div className="container py-4">
       <div
@@ -95,30 +108,16 @@ export default function AircraftList() {
             Aeronaves registradas
           </h2>
 
-          {/* Barra búsqueda + Añadir aeronave */}
           <div className="d-flex justify-content-between align-items-center mb-4">
-            {/* Input de búsqueda */}
             <SearchBar value={search} onChange={setSearch} />
 
-            {/* Botón añadir aeronave */}
         <ButtonProp onClick={() => navigate("/register-aircraft")}>
               <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
             </ButtonProp>
           </div>
 
           <ReusableTable
-            headers={[
-              "Fabricante",
-              "Modelo",
-              "Nº Serie",
-              "Clase",
-              "MTOM (Kg)",
-              "Dimensión (m)",
-              "Velocidad (m/s)",
-              "Configuración",
-              "Energía impacto (J)",
-              "Tiene cámara",
-            ]}
+            headers={userHeaders}
             rows={paginatedAircrafts}
             renderRow={(a) => (
               <>
@@ -126,11 +125,13 @@ export default function AircraftList() {
                 <td>{a.model}</td>
                 <td>{a.serialNumber ?? "-"}</td>
                 <td>{a.aircraftClass}</td>
-                <td>{a.mtom ?? "-"}</td>
-                <td>{a.wingspan ?? "-"}</td>
-                <td>{a.maxSpeed ?? "-"}</td>
+                <td>
+                  {a.mtom ?? "-"} <b> Kg</b>
+                </td>
+                <td>{a.wingspan ?? "-"} <b>m</b></td>
+                <td>{a.maxSpeed ?? "-"} <b>m/s</b></td>
                 <td>{a.config}</td>
-                <td>{a.impactEnergy ?? "-"}</td>
+                <td>{a.impactEnergy ?? "-"} <b>J</b></td>
                 <td className = "text-center">
                   <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
                     {a.hasCamera ? "Sí" : "No"}

@@ -7,9 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { staticCertificateFields as staticCertificateConfig } from '../users/staticCertificateFields';
 import UserCertificatesSection from '../users/UserCertificatesSection';
 import { CONOPS_CATEGORIES } from '../users/conopsCategories';
+import { userFields, validateUserPassword, USER_PASSWORD_ERROR } from '../details/UserFields';
 
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
+
 
 type CertificateFieldPayload = {
     certificate: File | null;
@@ -36,6 +38,18 @@ type CertificateUploadMetadata = {
 type CertificateUploadData = {
     metadata: CertificateUploadMetadata[];
     files: Array<{ fileFieldKey: string; file: File }>;
+};
+
+type FormErrors = {
+    nombre: string | null;
+    apellidos: string | null;
+    username: string | null;
+    email: string | null;
+    telefono: string | null;
+    docIdentidad: string | null;
+    fechaNac: string | null;
+    password: string | null;
+    confirmPassword: string | null;
 };
 
 function FormUser() {
@@ -95,17 +109,18 @@ function FormUser() {
         dateCMCLAPL: ""
     });
 
-    const [errors, setErrors] = useState({
-        nombre: false,
-        apellidos: false,
-        username: false,
-        email: false,
-        telefono: false,
-        docIdentidad: false,
-        fechaNac: false,
-        password: false,
-        confirmPassword: false
+    const [errors, setErrors] = useState<FormErrors>({
+        nombre: null,
+        apellidos: null,
+        username: null,
+        email: null,
+        telefono: null,
+        docIdentidad: null,
+        fechaNac: null,
+        password: null,
+        confirmPassword: null
     });
+    const [userTypeError, setUserTypeError] = useState<string | null>(null);
 
     const backgroundBorderInputsSelect = {
         control: (provided: any) => ({
@@ -142,6 +157,15 @@ function FormUser() {
         indefiniteCMC2: false,
         indefiniteCMCLAPL: false
     });
+
+    const fieldByKey = new Map(userFields.map((field) => [field.key, field]));
+
+    const getValidationError = (fieldKey: string, value: any): string | null => {
+        const field = fieldByKey.get(fieldKey);
+        if (!field?.validate) return null;
+        return field.validate(value) ? null : (field.error || "Campo invalido");
+    };
+
 
     // Función para alternar los checks
     const handleCheckChange = (id: string) => {
@@ -264,56 +288,51 @@ function FormUser() {
 
         try {
             const telefonoValue = formValues.telefono.trim();
-            const telefonoInvalid = telefonoValue !== "" && !/^\d{9}$/.test(telefonoValue);
-
-            const newErrors = {
-                nombre: !formValues.nombre.trim(),
-                apellidos: !formValues.apellidos.trim(),
-                username: !formValues.username.trim(),
-                email: !formValues.email.trim(),
-                telefono: telefonoInvalid,
-                docIdentidad: !formValues.docIdentidad.trim(),
-                fechaNac: false,
-                password: !formValues.password.trim(),
-                confirmPassword: !formValues.confirmPassword.trim()
+            const newErrors: FormErrors = {
+                nombre: getValidationError("firstName", formValues.nombre.trim()),
+                apellidos: getValidationError("lastName", formValues.apellidos.trim()),
+                username: getValidationError("username", formValues.username.trim()),
+                email: getValidationError("email", formValues.email.trim()),
+                telefono: getValidationError("phoneNumber", telefonoValue),
+                docIdentidad: getValidationError("docIdentidad", formValues.docIdentidad.trim()),
+                fechaNac: getValidationError("fechaNac", formValues.fechaNac.trim()),
+                password: validateUserPassword(formValues.password) ? null : USER_PASSWORD_ERROR,
+                confirmPassword: formValues.confirmPassword.trim()
+                    ? (formValues.password === formValues.confirmPassword ? null : "Las contrasenas no coinciden.")
+                    : "Confirma la contrasena."
             };
 
             setErrors(newErrors);
+            setUserTypeError(selectedUserType ? null : "Seleccione un tipo de usuario.");
 
-            if (Object.values(newErrors).some(Boolean)) {
-                setError("Por favor complete todos los campos obligatorios.");
+            if (Object.values(newErrors).some((v) => v !== null) || !selectedUserType) {
+                setError(null);
                 setLoading(false);
                 return;
             }
 
-            if (!selectedUserType) {
-                setError("Seleccione un tipo de usuario.");
-                setLoading(false);
-                return;
-            }
-
-            if (formValues.password !== formValues.confirmPassword) {
-                setError("Las contraseÃ±as no coinciden.");
+            if (selectedUserType && formValues.password !== formValues.confirmPassword) {
+                setError("Las contraseñas no coinciden.");
                 setLoading(false);
                 return;
             }
 
             // Use FormData for file upload
             const formData = new FormData();
-            formData.append("firstName", formValues.nombre);
-            formData.append("lastName", formValues.apellidos);
-            formData.append("username", formValues.username);
-            formData.append("email", formValues.email);
+            formData.append("firstName", formValues.nombre.trim());
+            formData.append("lastName", formValues.apellidos.trim());
+            formData.append("username", formValues.username.trim());
+            formData.append("email", formValues.email.trim());
             formData.append("password", formValues.password);
-            formData.append("type", selectedUserType.value);
+            formData.append("type", selectedUserType?.value || "");
             if (telefonoValue !== "") {
                 formData.append("phoneNumber", telefonoValue);
             }
             if (selectedFiles.profilePicture) {
                 formData.append("imageFile", selectedFiles.profilePicture, selectedFiles.profilePicture.name);
             }
-            formData.append("docIdentidad", formValues.docIdentidad);
-            formData.append("fechaNac", formValues.fechaNac);
+            formData.append("docIdentidad", formValues.docIdentidad.trim());
+            formData.append("fechaNac", formValues.fechaNac.trim());
 
             const certificatesPayload = buildCertificatesPayload();
             formData.append("certificates", JSON.stringify(certificatesPayload.metadata));
@@ -504,6 +523,7 @@ function FormUser() {
                         onChange={(e) => setFormValues({ ...formValues, nombre: e.target.value })}
                         style={{ ...backgroundBorderInputs, border: errors.nombre ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
+                        {errors.nombre && <small className="text-danger">{errors.nombre}</small>}
                     </div>
 
                     <div className="col-12 col-md mb-3 mb-md-0">
@@ -514,6 +534,7 @@ function FormUser() {
                         onChange={(e) => setFormValues({ ...formValues, apellidos: e.target.value })}
                         style={{ ...backgroundBorderInputs, border: errors.apellidos ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
+                        {errors.apellidos && <small className="text-danger">{errors.apellidos}</small>}
                     </div>
 
                     <div className="col-12 col-md">
@@ -524,35 +545,38 @@ function FormUser() {
                         onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
                         style={{ ...backgroundBorderInputs, border: errors.username ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
+                        {errors.username && <small className="text-danger">{errors.username}</small>}
                     </div>
                     </div>
 
                     {/* Row 2: Email, Telefono */}
                     <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Correo electrónico</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                onChange={(e) => setFormValues({ ...formValues, email: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.email ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                            {errors.email && <small className="text-danger">{errors.email}</small>}
+                        </div>
 
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
-                            Número de teléfono{" "}
-                            <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
-                                (Opcional)
-                            </span>
-                            </label>
-                        <input
-                        type="text"
-                        className="form-control"
-                        onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
-                        style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                    </div>
+                        <div className="col-12 col-md">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                                Número de teléfono{" "}
+                                <span style={{ fontSize: "0.85em", color: "#6B7280" }}>
+                                    (Opcional)
+                                </span>
+                                </label>
+                            <input
+                            type="text"
+                            className="form-control"
+                            onChange={(e) => setFormValues({ ...formValues, telefono: e.target.value })}
+                            style={{ ...backgroundBorderInputs, border: errors.telefono ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                            {errors.telefono && <small className="text-danger">{errors.telefono}</small>}
+                        </div>
                     </div>
 
                     {/* Row 3: Doc Identidad y Fecha Nacimiento */}
@@ -567,6 +591,7 @@ function FormUser() {
                                 onChange={(e) => setFormValues({ ...formValues, docIdentidad: e.target.value })}
                                 style={{ ...backgroundBorderInputs, border: errors.docIdentidad ? "1px solid red" : "1px solid #D1D5DB" }}
                             />
+                            {errors.docIdentidad && <small className="text-danger">{errors.docIdentidad}</small>}
                         </div>
 
                         <div className="col-12 col-md">
@@ -583,6 +608,7 @@ function FormUser() {
                                 onChange={(e) => setFormValues({ ...formValues, fechaNac: e.target.value })}
                                 style={{ ...backgroundBorderInputs, border: errors.fechaNac ? "1px solid red" : "1px solid #D1D5DB" }}
                             />
+                            {errors.fechaNac && <small className="text-danger">{errors.fechaNac}</small>}
                         </div>
                     </div>
 
@@ -595,8 +621,12 @@ function FormUser() {
                                 styles={backgroundBorderInputsSelect}
                                 placeholder="Seleccione el tipo de usuario"
                                 value={selectedUserType}
-                                onChange={(val) => setSelectedUserType(val)}
+                                onChange={(val) => {
+                                    setSelectedUserType(val);
+                                    setUserTypeError(null);
+                                }}
                             />
+                            {userTypeError && <small className="text-danger">{userTypeError}</small>}
                         </div>
 
                         <div className="col-12 col-md">
@@ -656,6 +686,7 @@ function FormUser() {
                             onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
                             style={{ ...backgroundBorderInputs, border: errors.password ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
+                        {errors.password && <small className="text-danger">{errors.password}</small>}
                     </div>
 
                     <div className="col-12 col-md">
@@ -667,6 +698,7 @@ function FormUser() {
                             onChange={(e) => setFormValues({ ...formValues, confirmPassword: e.target.value })}
                             style={{ ...backgroundBorderInputs, border: errors.confirmPassword ? "1px solid red" : "1px solid #D1D5DB" }}
                         />
+                        {errors.confirmPassword && <small className="text-danger">{errors.confirmPassword}</small>}
                     </div>
                     </div>
 
