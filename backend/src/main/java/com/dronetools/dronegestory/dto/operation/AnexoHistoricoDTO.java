@@ -10,6 +10,7 @@ import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,7 +20,7 @@ public class AnexoHistoricoDTO {
     private AnexoStatus estado;
     private String color;
     private String firmadoPor;
-    private LocalDate fechaFirma;
+    private LocalDateTime fechaFirma;
     private String textoPrueba;
 
     public static AnexoHistoricoDTO fromEntity(Anexo anexo) {
@@ -42,7 +43,7 @@ public class AnexoHistoricoDTO {
 
     private static String extractTextoPrueba(Anexo anexo) {
         if (anexo instanceof Anexo4 anexo4) {
-            return anexo4.getTextoPrueba();
+            return anexo4.getDescripcion();
         }
         if (anexo instanceof Anexo5 anexo5) {
             return anexo5.getTextoPrueba();

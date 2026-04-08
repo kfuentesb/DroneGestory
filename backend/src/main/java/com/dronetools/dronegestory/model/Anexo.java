@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "anexos_base")
@@ -38,5 +39,5 @@ public abstract class Anexo implements AnexoVersionado {
     private String firmadoPor;
 
     @Column(name = "fecha_firma")
-    private LocalDate fechaFirma;
+    private LocalDateTime fechaFirma;
 }

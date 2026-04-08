@@ -1,56 +1,30 @@
-package com.dronetools.dronegestory.model.anexos;
+package com.dronetools.dronegestory.dto.operation;
 
-import com.dronetools.dronegestory.common.CampoDinamico;
-import com.dronetools.dronegestory.model.Aircraft;
-import com.dronetools.dronegestory.model.Anexo;
-import com.dronetools.dronegestory.model.User;
-import com.dronetools.dronegestory.model.enums.AnexoStatus;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "anexo4")
 @Getter
 @Setter
-public class Anexo4 extends Anexo {
-
-    // FORMULARIO
-    @Column(name = "descripcion")
+public class Anexo4RequestDTO {
+    // CAMPOS PRINCIPALES
     private String descripcion;
-
-    @Column(name = "fecha_hora_prevista")
     private LocalDateTime fechaHoraPrevista;
-
     private String mediosMateriales;
     private String direccion;
     private String coords;
 
-    // Texto personal
-    private String personal;
+    // RELACIONES
+    private String personal;   // IDs de usuarios
+//    private List<Integer> dronesIds;     // IDs de drones
 
-    // ---- RELACIÓN CON DRONES (UAS) ----
-//    @ManyToMany
-//    @JoinTable(
-//            name = "anexo4_aircrafts",
-//            joinColumns = @JoinColumn(name = "anexo4_id"),
-//            inverseJoinColumns = @JoinColumn(name = "aircraft_id")
-//    )
-//    private List<Aircraft> drones = new ArrayList<>();
-
-    // --- Imágenes ---
-    @Column(name = "imagen_espacio_aereo")
+    // IMÁGENES
     private String imagenEspacioAereo;
-
-    @Column(name = "imagen_zona_vuelo")
     private String imagenZonaVuelo;
 
-    // BOOLEANS
-    // --- Sección 4. ZONAS GEOGRÁFICAS de UAS ---
+    // BOOLEANS (sección 4 - Zonas geográficas)
     private Boolean espacioAereoControlado; // 4.1
     private Boolean estudioAeronauticoCoordinado; // 4.1.1
     private Boolean entornoAerodromos; // 4.2
@@ -69,7 +43,7 @@ public class Anexo4 extends Anexo {
     private Boolean zonasProtMedioambiental; // 4.8
     private Boolean disponeCoordGestor; // 4.8.1
 
-    // --- Seccion 6. Requisitos y limitaciones en zona de vuelo
+    // BOOLEANS (sección 6 - Requisitos y limitaciones en zona de vuelo)
     private Boolean conopsYModeloSemantico; // 6.1
     private Boolean aplicaModelo; // 6.1.1
     private Boolean defineGeografiaVueloConops; // 6.1.2
@@ -83,15 +57,5 @@ public class Anexo4 extends Anexo {
     private Boolean tsaOCondicionada; // 6.2.2
     private Boolean otrasLimitaciones; // 6.3
 
-    // Clase campoDinamico en package commons
-//    @ElementCollection
-//    @CollectionTable(name = "anexo4_campo_dinamico",
-//            joinColumns = @JoinColumn(name="anexo4_id"))
-//    private List<CampoDinamico> campos = new ArrayList<>();
-
-    public Anexo4() {
-        super();
-        this.setTipoAnexo(4);
-        this.setEstado(AnexoStatus.BORRADOR);
-    }
+    // Si quieres: puedes añadir más campos según evolucione el modelo/anexo.
 }

@@ -23,6 +23,8 @@ import FileBrowserView from "../components/docs/FileBrowserView";
 // import FormOperation from "../components/forms/FormOperation";
 import FormUserPassword from "../components/forms/FormUserPassword";
 
+import FormAnexo4 from "../components/forms/FormAnexo4";
+
 export default class RouterPrincipal extends React.Component {
   render() {
     return (
@@ -94,6 +96,7 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/register-operation" element={<MultiStepsForm />} />
+        <Route path="/operations/:id/anexo4" element={<FormAnexo4 />} />
 
         <Route 
           path="/docs" 

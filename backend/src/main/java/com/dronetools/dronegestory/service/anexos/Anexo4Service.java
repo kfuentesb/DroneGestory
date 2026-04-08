@@ -29,13 +29,119 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
     @Override
     protected void actualizarCampos(Anexo4 destino, Anexo4 origen) {
-        destino.setTextoPrueba(origen.getTextoPrueba());
+        // Campos simples
+        destino.setDescripcion(origen.getDescripcion());
+        destino.setFechaHoraPrevista(origen.getFechaHoraPrevista());
+        destino.setMediosMateriales(origen.getMediosMateriales());
+        destino.setDireccion(origen.getDireccion());
+        destino.setCoords(origen.getCoords());
+
+        // Imágenes
+        destino.setImagenEspacioAereo(origen.getImagenEspacioAereo());
+        destino.setImagenZonaVuelo(origen.getImagenZonaVuelo());
+
+        // Personal y Drones
+        destino.setPersonal(origen.getPersonal());
+
+//        destino.getDrones().clear();
+//        if (origen.getDrones() != null) {
+//            destino.getDrones().addAll(origen.getDrones());
+//        }
+
+        // Booleands sección 4
+        destino.setEspacioAereoControlado(origen.getEspacioAereoControlado());
+        destino.setEstudioAeronauticoCoordinado(origen.getEstudioAeronauticoCoordinado());
+        destino.setEntornoAerodromos(origen.getEntornoAerodromos());
+        destino.setDistanciaMinimaInfraestructuras(origen.getDistanciaMinimaInfraestructuras());
+        destino.setZonasProhibidasFlexible(origen.getZonasProhibidasFlexible());
+        destino.setCumpleCondiciones(origen.getCumpleCondiciones());
+        destino.setZonasSeguridad(origen.getZonasSeguridad());
+        destino.setPermisoPrevioSeguridad(origen.getPermisoPrevioSeguridad());
+        destino.setServiciosEsencialesComunidad(origen.getServiciosEsencialesComunidad());
+        destino.setPermisoPrevioServicios(origen.getPermisoPrevioServicios());
+        destino.setEntornosUrbanos(origen.getEntornosUrbanos());
+        destino.setCumplenDistanciasEdificios(origen.getCumplenDistanciasEdificios());
+        destino.setComunicacionMinisterioInterior(origen.getComunicacionMinisterioInterior());
+        destino.setZonaResVueloFotografico(origen.getZonaResVueloFotografico());
+        destino.setPermisoCecaf(origen.getPermisoCecaf());
+        destino.setZonasProtMedioambiental(origen.getZonasProtMedioambiental());
+        destino.setDisponeCoordGestor(origen.getDisponeCoordGestor());
+
+        // Booleands sección 6
+        destino.setConopsYModeloSemantico(origen.getConopsYModeloSemantico());
+        destino.setAplicaModelo(origen.getAplicaModelo());
+        destino.setDefineGeografiaVueloConops(origen.getDefineGeografiaVueloConops());
+        destino.setDefineVolContigencia(origen.getDefineVolContigencia());
+        destino.setDefineMargenRiesgoTierra(origen.getDefineMargenRiesgoTierra());
+        destino.setDefineZonaTerrestreControlada(origen.getDefineZonaTerrestreControlada());
+        destino.setPlanificaUbicacionObservadores(origen.getPlanificaUbicacionObservadores());
+        destino.setCalculaAreaYEvaluaRiesgo(origen.getCalculaAreaYEvaluaRiesgo());
+        destino.setNotams(origen.getNotams());
+        destino.setRevisaNotams(origen.getRevisaNotams());
+        destino.setTsaOCondicionada(origen.getTsaOCondicionada());
+        destino.setOtrasLimitaciones(origen.getOtrasLimitaciones());
     }
 
+    /**
+     * Crea una copia exacta del anexo firmado para la nueva versión.
+     * Se usa cuando el usuario pulsa "Rehacer" en un anexo firmado.
+     */
     @Override
     protected Anexo4 crearCopia(Anexo4 origen) {
         Anexo4 copia = new Anexo4();
-        copia.setTextoPrueba(origen.getTextoPrueba());
+
+        // Campos simples
+        copia.setDescripcion(origen.getDescripcion());
+        copia.setFechaHoraPrevista(origen.getFechaHoraPrevista());
+        copia.setMediosMateriales(origen.getMediosMateriales());
+        copia.setDireccion(origen.getDireccion());
+        copia.setCoords(origen.getCoords());
+
+        // Imágenes
+        copia.setImagenEspacioAereo(origen.getImagenEspacioAereo());
+        copia.setImagenZonaVuelo(origen.getImagenZonaVuelo());
+
+        // Relaciones (copiar referencias, no clonar entidades)
+        copia.setPersonal(origen.getPersonal());
+
+//        if (origen.getDrones() != null) {
+//            copia.getDrones().addAll(origen.getDrones());
+//        }
+
+        // Booleands sección 4
+        copia.setEspacioAereoControlado(origen.getEspacioAereoControlado());
+        copia.setEstudioAeronauticoCoordinado(origen.getEstudioAeronauticoCoordinado());
+        copia.setEntornoAerodromos(origen.getEntornoAerodromos());
+        copia.setDistanciaMinimaInfraestructuras(origen.getDistanciaMinimaInfraestructuras());
+        copia.setZonasProhibidasFlexible(origen.getZonasProhibidasFlexible());
+        copia.setCumpleCondiciones(origen.getCumpleCondiciones());
+        copia.setZonasSeguridad(origen.getZonasSeguridad());
+        copia.setPermisoPrevioSeguridad(origen.getPermisoPrevioSeguridad());
+        copia.setServiciosEsencialesComunidad(origen.getServiciosEsencialesComunidad());
+        copia.setPermisoPrevioServicios(origen.getPermisoPrevioServicios());
+        copia.setEntornosUrbanos(origen.getEntornosUrbanos());
+        copia.setCumplenDistanciasEdificios(origen.getCumplenDistanciasEdificios());
+        copia.setComunicacionMinisterioInterior(origen.getComunicacionMinisterioInterior());
+        copia.setZonaResVueloFotografico(origen.getZonaResVueloFotografico());
+        copia.setPermisoCecaf(origen.getPermisoCecaf());
+        copia.setZonasProtMedioambiental(origen.getZonasProtMedioambiental());
+        copia.setDisponeCoordGestor(origen.getDisponeCoordGestor());
+
+        // Booleands sección 6
+        copia.setConopsYModeloSemantico(origen.getConopsYModeloSemantico());
+        copia.setAplicaModelo(origen.getAplicaModelo());
+        copia.setDefineGeografiaVueloConops(origen.getDefineGeografiaVueloConops());
+        copia.setDefineVolContigencia(origen.getDefineVolContigencia());
+        copia.setDefineMargenRiesgoTierra(origen.getDefineMargenRiesgoTierra());
+        copia.setDefineZonaTerrestreControlada(origen.getDefineZonaTerrestreControlada());
+        copia.setPlanificaUbicacionObservadores(origen.getPlanificaUbicacionObservadores());
+        copia.setCalculaAreaYEvaluaRiesgo(origen.getCalculaAreaYEvaluaRiesgo());
+        copia.setNotams(origen.getNotams());
+        copia.setRevisaNotams(origen.getRevisaNotams());
+        copia.setTsaOCondicionada(origen.getTsaOCondicionada());
+        copia.setOtrasLimitaciones(origen.getOtrasLimitaciones());
+
         return copia;
     }
+
 }
