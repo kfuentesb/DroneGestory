@@ -15,6 +15,7 @@ import deleteIcon from '../../assets/commons/delete_white.svg';
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
+import LoadingSpinner from "../commons/Loading";
 
 interface DetailsComponentProps {
     id: string | undefined
@@ -54,6 +55,12 @@ type AdditionalCertificatePayload = {
     dateExpire: string | null;
     dateIndefinite: boolean | null;
 };
+
+interface LoadingState {
+    data: boolean;
+    certificates: boolean;
+    image: boolean;
+}
 
 const defaultSelectedFiles: Record<string, File | null> = {
     fileA1A3: null,
@@ -119,14 +126,20 @@ export default function DetailsComponent({
 
     const [data, setData] = useState<any>(initialData || null);
     const [status, setStatus] = useState<number>(200);
-    const [loading, setLoading] = useState(!initialData);
+    const [loading, setLoading] = useState<LoadingState>({
+        data: true,
+        image: false,
+        certificates: false
+    });
+    const updateLoading = (key: keyof typeof loading, value: boolean) => {
+        setLoading(prev => ({ ...prev, [key]: value }));
+    };
     const [editing, setEditing] = useState(false);
     const [formValues, setFormValues] = useState<any>(initialData || {});
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [removeImage, setRemoveImage] = useState(false);
     const [certificates, setCertificates] = useState<UserCertificate[]>([]);
-    const [certificatesLoading, setCertificatesLoading] = useState(false);
     const [certificateSelectedFiles, setCertificateSelectedFiles] = useState<Record<string, File | null>>(defaultSelectedFiles);
     const [certificateFormValues, setCertificateFormValues] = useState<Record<string, string>>(defaultCertFormValues);
     const [certificateActiveChecks, setCertificateActiveChecks] = useState<Record<string, boolean>>(defaultActiveChecks);
@@ -143,12 +156,8 @@ export default function DetailsComponent({
 
     // Cargar datos iniciales
     useEffect(() => {
-        if (initialData) {
-            setLoading(false);
-            return;
-        }
         const loadData = async () => {
-            setLoading(true);
+            updateLoading('data', true);
             const url = id ? `${endpoint}/${id}` : endpoint;
             try {
                 const res = await fetch(url, {
@@ -164,7 +173,7 @@ export default function DetailsComponent({
                 console.error("Fetch error:", error);
                 setStatus(500);
             } finally {
-                setLoading(false);
+                updateLoading('data', false);
             }
         };
         loadData();
@@ -175,9 +184,10 @@ export default function DetailsComponent({
         let objectUrl: string | null = null;
 
         const loadImage = async () => {
-            // Si no hay imagen en la DB o no hay endpoint, reseteamos la URL local
+            updateLoading('image', true);
             if (!data?.imagePath || !imageEndpoint) {
                 setImageUrl(null);
+                updateLoading('image', false);
                 return;
             }
 
@@ -197,6 +207,8 @@ export default function DetailsComponent({
             } catch (error) {
                 console.error("Error loading image:", error);
                 setImageUrl(null);
+            } finally {
+                updateLoading('image', false);
             }
         };
 
@@ -213,7 +225,7 @@ export default function DetailsComponent({
         }
 
         const loadCertificates = async () => {
-            setCertificatesLoading(true);
+            updateLoading('certificates', true);
             try {
                 const res = await fetch(`/api/user-certificates/user/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
@@ -230,7 +242,7 @@ export default function DetailsComponent({
                 console.error("Error loading certificates:", error);
                 setCertificates([]);
             } finally {
-                setCertificatesLoading(false);
+                updateLoading('certificates', false);
             }
         };
 
@@ -763,9 +775,13 @@ export default function DetailsComponent({
         setConfirmAction(null);
     };
 
-    if (loading) return <p className="p-4 text-center">Cargando...</p>;
+    const isAnythingLoading = Object.values(loading).some(v => v === true);
+
+    if (isAnythingLoading) {
+        return <LoadingSpinner message="Sincronizando datos..." />;
+    }
     if (status === 403) return <Forbidden />;
-    if (status === 404 || (!data && !loading)) return <NotFound />;
+    if (status === 404 || (!data && !loading.data)) return <NotFound />;
     if (status >= 500) return <div className="text-center p-5">Error interno del servidor</div>;
 
     const typeColors: Record<string, { backgroundColor: string; color: string }> = {
@@ -886,8 +902,8 @@ export default function DetailsComponent({
 
                         {showCertificates && !editing && (
                             <>
-                                {certificatesLoading && <p className="text-muted mb-0">Cargando certificados...</p>}
-                                {!certificatesLoading && (
+                                {(loading as LoadingState).certificates && <p className="text-muted mb-0">Cargando certificados...</p>}
+                                {!(loading as LoadingState).certificates && (
                                     <UserCertificatesSummarySection
                                         items={certificates.map((certificate) => ({
                                             id: certificate.id,

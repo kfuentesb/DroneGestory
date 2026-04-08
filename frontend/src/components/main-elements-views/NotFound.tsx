@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UnderConstructionGif from "../../assets/commons/under-construction90s-90s.gif";
+import LoadingSpinner from "../commons/Loading"; // Adjust path as needed
 
 export default function NotFound() {
     const navigate = useNavigate();
+    // Start as true so the spinner shows immediately
+    const [imgLoading, setImgLoading] = useState(true);
 
     return (
         <div
@@ -14,6 +18,12 @@ export default function NotFound() {
                 backgroundColor: "#F3F4F6",
             }}
         >
+            {imgLoading && (
+                <div style={{ position: "absolute" }}>
+                    <LoadingSpinner message="Preparando vista..." />
+                </div>
+            )}
+
             <div
                 style={{
                     textAlign: "center",
@@ -23,14 +33,17 @@ export default function NotFound() {
                     border: "1px solid #E5E7EB",
                     maxWidth: "500px",
                     width: "90%",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    visibility: imgLoading ? "hidden" : "visible",
+                    opacity: imgLoading ? 0 : 1,
+                    transition: "opacity 0.3s ease-in-out"
                 }}
             >
-                {/* Añadimos el GIF antes del título */}
                 <div style={{ marginBottom: "20px" }}>
                     <img 
                         src={UnderConstructionGif} 
                         alt="Bajo construcción" 
+                        onLoad={() => setImgLoading(false)}
                         style={{ 
                             maxWidth: "200px", 
                             height: "auto",
