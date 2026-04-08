@@ -5,14 +5,28 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from '../../api';
 import { aircraftClasses, configs, LIMITS } from '../../global-const/aircraft-const';
 import { InfoBadge } from '../commons/InfoBadge';
+import InsertDoc from "../commons/InsertDoc"
 import '../../styles/generic-form.css';
 
 type SelectOption = { value: string; label: string };
 
 export default function FormAircraft() {
+  const yesNoOptions: SelectOption[] = [
+    { value: "true", label: "Sí" },
+    { value: "false", label: "No" }
+  ];
+
+  const optionalYesNoOptions: SelectOption[] = [
+    { value: "true", label: "Sí" },
+    { value: "false", label: "No" },
+    { value: "optional", label: "Opcional" }
+  ];
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
+  const [activeChecks, setActiveChecks] = useState<Record<string, boolean>>({});
   const [formValues, setFormValues] = useState({
     manufacturer: "",
     model: "",
@@ -24,6 +38,14 @@ export default function FormAircraft() {
     config: null as SelectOption | null,
     impactEnergy: 0,
     hasCamera: null as SelectOption | null,
+    privatelyBuilt: null as SelectOption | null,
+    parachute: null as SelectOption | null,
+    hasInsurance: null as SelectOption | null,
+    insuranceDate: "",
+    hasFts: null as SelectOption | null,
+    tether: null as SelectOption | null,
+    accessories: "",
+    observations: "",
     image: null as File | null,
   });
 
@@ -59,6 +81,7 @@ export default function FormAircraft() {
     config: false,
     impactEnergy: false,
     hasCamera: false,
+    insuranceDate: false,
   });
 
   const navigate = useNavigate();
@@ -100,6 +123,7 @@ export default function FormAircraft() {
 
   const handleClearFile = () => {
         setSelectedFile(null);
+        setFormValues({ ...formValues, image: null });
         const fileInput = document.getElementById('file-upload') as HTMLInputElement;
         if (fileInput) fileInput.value = "";
     };
@@ -139,6 +163,10 @@ export default function FormAircraft() {
 
       config: !formValues.config,
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
+      insuranceDate:
+        formValues.hasInsurance?.value === "true" &&
+        !activeChecks["indefinite-insurance"] &&
+        !formValues.insuranceDate,
     };
 
     setErrors(newErrors);
@@ -164,6 +192,33 @@ export default function FormAircraft() {
       formData.append("config", formValues.config?.value ?? "");
       formData.append("impactEnergy", String(formValues.impactEnergy));
       formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
+      if (formValues.privatelyBuilt) {
+        formData.append("privatelyBuilt", formValues.privatelyBuilt.value);
+      }
+      if (formValues.parachute) {
+        formData.append("parachute", formValues.parachute.value);
+      }
+      if (formValues.hasInsurance) {
+        formData.append("hasInsurance", formValues.hasInsurance.value);
+      }
+      if (formValues.hasInsurance?.value === "true" && formValues.insuranceDate && !activeChecks["indefinite-insurance"]) {
+        formData.append("insuranceDate", formValues.insuranceDate);
+      }
+      if (formValues.hasFts) {
+        formData.append("hasFts", formValues.hasFts.value);
+      }
+      if (formValues.tether && formValues.tether.value !== "optional") {
+        formData.append("tether", formValues.tether.value);
+      }
+      if (formValues.accessories.trim()) {
+        formData.append("accessories", formValues.accessories.trim());
+      }
+      if (formValues.observations.trim()) {
+        formData.append("observations", formValues.observations.trim());
+      }
+      if (insuranceFile) {
+        formData.append("insuranceFile", insuranceFile, insuranceFile.name);
+      }
 
       if (selectedFile) {
         formData.append("imageFile", selectedFile, selectedFile.name);
@@ -183,6 +238,41 @@ export default function FormAircraft() {
       setLoading(false);
     }
   };
+
+  const onToggleCheck = (field: string) => {
+    setActiveChecks((prev) => {
+      const next = !prev[field];
+      if (field === "indefinite-insurance" && next) {
+        setFormValues((current) => ({ ...current, insuranceDate: "" }));
+      }
+      return { ...prev, [field]: next };
+    });
+  }
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const file = e.target.files?.[0] ?? null;
+    if (field === "insuranceFile") {
+      setInsuranceFile(file);
+    }
+  }
+
+  const onClearFile = (field: string, inputId: string) => {
+    if (field === "insuranceFile") {
+      setInsuranceFile(null);
+    }
+    const input = document.getElementById(inputId) as HTMLInputElement | null;
+    if (input) {
+      input.value = "";
+    }
+  }
+
+  const onFormDateChange = (field: string, value: string | null) => {
+    if (field === "insuranceDate") {
+      const nextValue = value ?? "";
+      setFormValues((prev) => ({ ...prev, insuranceDate: nextValue }));
+      setErrors((prev: any) => ({ ...prev, insuranceDate: false }));
+    }
+  }
 
   return (
     <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
@@ -325,10 +415,7 @@ export default function FormAircraft() {
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label d-block text-start ps-1">Cámara</label>
                 <Select
-                  options={[
-                    { value: "true", label: "Sí" },
-                    { value: "false", label: "No" }
-                  ]}
+                  options={yesNoOptions}
                   styles={backgroundBorderInputsSelect}
                   placeholder="¿Tiene cámara?"
                   value={formValues.hasCamera}
@@ -389,7 +476,139 @@ export default function FormAircraft() {
               </div>
             </div>
 
+            {/* Row 5: Construcción, seguro responsabilidad civil, FTS */}
+            <div className="row mb-3">
+              <div className="col-12 col-md mb-3 mb-md-0">
+                <label className="form-label d-block text-start ps-1">Construcción privada</label>
+                <Select
+                  options={yesNoOptions}
+                  styles={backgroundBorderInputsSelect}
+                  placeholder="¿Es de construcción privada?"
+                  value={formValues.privatelyBuilt}
+                  onChange={val => setFormValues({ ...formValues, privatelyBuilt: val })}
+                />
+                {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
+              </div>
+              <div className="col-12 col-md mb-3 mb-md-0">
+                <label className="form-label d-block text-start ps-1">Paracaídas</label>
+                <Select
+                  options={yesNoOptions}
+                  styles={backgroundBorderInputsSelect}
+                  placeholder="¿Tiene paracaídas?"
+                  value={formValues.parachute}
+                  onChange={val => setFormValues({ ...formValues, parachute: val })}
+                />
+                {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
+              </div>
+            </div>
+
+            {/* Row 6: Seguro Responsabilidad Civil */}
+            <div className="row mb-3">
+              <div className="col-12 col-md mb-3 mb-md-0">
+                <label className="form-label d-block text-start ps-1">Seguro Responsabilidad Civil</label>
+                
+                <Select
+                  options={yesNoOptions}
+                  styles={backgroundBorderInputsSelect}
+                  placeholder="¿Tiene seguro?"
+                  value={formValues.hasInsurance || null}
+                  onChange={(val) =>
+                    setFormValues((prev) => {
+                      if (val?.value !== "true") {
+                        setActiveChecks((checks) => ({ ...checks, ["indefinite-insurance"]: false }));
+                      }
+                      return {
+                        ...prev,
+                        hasInsurance: val,
+                        insuranceDate: val?.value === "true" ? prev.insuranceDate : "",
+                      };
+                    })
+                  }
+                />
+
+                {/* CONDITIONAL RENDERING: Only shows if "Sí" is selected */}
+                {/* {formValues.hasInsurance?.value === "true" && (
+                  <div className="mt-3 animate__animated animate__fadeIn"> 
+                    <InsertDoc
+                      className="mb-2"
+                      showAddBtn={false}
+                      checkboxLabel="Adjuntar Seguro"
+                      isChecked={true}
+                      onToggleCheck={() => undefined}
+                      fileInputId="file-upload-insurance"
+                      selectedFile={insuranceFile}
+                      existingFileName={null}
+                      onFileChange={(e: any) => onFileChange(e, "insuranceFile")}
+                      onClearFile={() => onClearFile("insuranceFile", "file-upload-insurance")}
+                      expirationDate={formValues.insuranceDate || ""}
+                      onExpirationDateChange={(value: any) => onFormDateChange("insuranceDate", value)}
+                      indefiniteId="indefinite-insurance"
+                      isIndefinite={!!activeChecks["indefinite-insurance"]}
+                      onToggleIndefinite={() => onToggleCheck("indefinite-insurance")}
+                    />
+                    {errors.insuranceDate && (
+                      <div className="text-danger small">Si marca seguro, indique vencimiento o indefinido.</div>
+                    )}
+                  </div>
+                )} */}
+
+                {/* {errors.hasInsurance && <div className="text-danger small">Campo requerido</div>} */}
+              </div>
+            </div>
+
+            {/* Row 7: FTS / Cautivo */}
+            <div className="row mb-3">
+              <div className="col-12 col-md">
+                <label className="form-label d-block text-start ps-1">Sistema de Terminación de Vuelo</label>
+                <Select
+                  options={yesNoOptions}
+                  styles={backgroundBorderInputsSelect}
+                  placeholder="¿Tiene FTS?"
+                  value={formValues.hasFts}
+                  onChange={val => setFormValues({ ...formValues, hasFts: val })}
+                />
+                {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
+              </div>
+              <div className="col-12 col-md mb-3 mb-md-0">
+                <label className="form-label d-block text-start ps-1">Cautivo</label>
+                <Select
+                  options={optionalYesNoOptions}
+                  styles={backgroundBorderInputsSelect}
+                  placeholder="¿Es cautivo?"
+                  value={formValues.tether}
+                  onChange={val => setFormValues({ ...formValues, tether: val })}
+                />
+                {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
+              </div>
+            </div>
+
+            {/* Row 8: Accesorios / Notas */}
+            <div className="row mb-3">
+              <div className="col-12 col-md">
+                <div className="d-flex align-items-center mb-2">
+                    <label className="form-label mb-0 ps-1">Accesorios / Notas</label>
+                    <InfoBadge text="Detalla los accesorios, FTS o cualquier nota adicional del equipo." />
+                </div>
+                
+                <textarea
+                    className="form-control"
+                    placeholder="Describe los accesorios o detalles adicionales aquí..."
+                    rows={4} 
+                    style={{
+                        ...backgroundBorderInputs,
+                        resize: 'vertical',
+                        minHeight: '100px'
+                    }}
+                    value={formValues.observations}
+                    onChange={e => setFormValues({ ...formValues, observations: e.target.value, accessories: e.target.value })}
+                />
+                {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
+              </div>
+            </div>
+
             {error && <p className="text-danger text-center">{error}</p>}
+
+            
 
             <div className="d-flex gap-2 mt-3 justify-content-center">
               <button type="submit" className="btn btn-success px-4" disabled={loading}>
