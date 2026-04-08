@@ -1,5 +1,5 @@
 import { apiFetch } from "../../api";
-import type { OperationDetailDTO, OperationListDTO } from "./operation.types";
+import type { Anexo4Fields, Anexo4ResponseDTO, OperationDetailDTO, OperationListDTO } from "./operation.types";
 
 export async function fetchOperations(path: string) {
   const response = await apiFetch(path, {
@@ -94,4 +94,38 @@ export async function completeOperation(operationId: number) {
   }
 
   return (await response.json()) as OperationDetailDTO;
+}
+
+export async function fetchAnexo4Detail(operationId: number | string) {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/detalle`, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  const text = await response.text();
+  if (!text) return null;
+  return JSON.parse(text) as Anexo4ResponseDTO;
+}
+
+export async function saveAnexo4(operationId: number | string, fields: Anexo4Fields) {
+  const formData = new FormData();
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value !== "") {
+      formData.append(key, value);
+    }
+  });
+
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return await response.json();
 }

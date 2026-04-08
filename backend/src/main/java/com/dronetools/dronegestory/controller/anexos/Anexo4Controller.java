@@ -2,17 +2,14 @@ package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
 import com.dronetools.dronegestory.dto.operation.Anexo4RequestDTO;
+import com.dronetools.dronegestory.dto.operation.Anexo4ResponseDTO;
 import com.dronetools.dronegestory.dto.operation.AnexoInfoDTO;
-import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
@@ -29,9 +26,20 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
     @PostMapping
     public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute Anexo4RequestDTO dto) {
-        Anexo4 anexo = convertDtoToEntity(dto); // O tu mapping preferido (manual, mapstruct...)
+        Anexo4 anexo = convertDtoToEntity(dto);
         Anexo4 saved = service.registrarAnexo4(operationId, anexo);
         return AnexoInfoDTO.from(saved);
+    }
+
+    @GetMapping("/detalle")
+    public Anexo4ResponseDTO getDetalle(@PathVariable Long operationId) {
+        Operation op = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        Anexo4 anexo = op.getAnexo4Actual();
+        if (anexo == null) {
+            return null;
+        }
+        return Anexo4ResponseDTO.fromEntity(anexo);
     }
 
     @Override
