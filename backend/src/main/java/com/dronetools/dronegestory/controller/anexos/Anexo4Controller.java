@@ -9,6 +9,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,14 +33,14 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     }
 
     @GetMapping("/detalle")
-    public Anexo4ResponseDTO getDetalle(@PathVariable Long operationId) {
+    public ResponseEntity<Anexo4ResponseDTO> getDetalle(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         Anexo4 anexo = op.getAnexo4Actual();
         if (anexo == null) {
-            return null;
+            return ResponseEntity.noContent().build();
         }
-        return Anexo4ResponseDTO.fromEntity(anexo);
+        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo));
     }
 
     @Override

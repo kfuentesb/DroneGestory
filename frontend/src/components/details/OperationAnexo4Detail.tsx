@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../commons/ConfirmModal";
 import ButtonProp from "../commons/props/ButtonProp";
@@ -118,7 +118,7 @@ export default function OperationAnexo4Detail() {
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!id) {
       setError("No se ha indicado la operación.");
       setLoading(false);
@@ -147,12 +147,11 @@ export default function OperationAnexo4Detail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     void loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [loadData]);
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === 4) ?? null,

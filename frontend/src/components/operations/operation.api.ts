@@ -113,7 +113,7 @@ export async function fetchAnexo4Detail(operationId: number | string) {
 export async function saveAnexo4(operationId: number | string, fields: Anexo4Fields) {
   const formData = new FormData();
   Object.entries(fields).forEach(([key, value]) => {
-    if (value !== "") {
+    if (value != null && value !== "") {
       formData.append(key, value);
     }
   });

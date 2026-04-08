@@ -68,6 +68,12 @@ export default function MultiStepsForm() {
     }
   };
 
+  const getStepButtonClass = (idx: number, currentStep: number) => {
+    if (idx === currentStep) return "btn btn-sm btn-primary";
+    if (idx < currentStep) return "btn btn-sm btn-success";
+    return "btn btn-sm btn-outline-secondary";
+  };
+
   const stepLabels = ["Datos de la operación", "Anexo 4"];
 
   return (
@@ -91,7 +97,7 @@ export default function MultiStepsForm() {
                 <button
                   key={idx}
                   type="button"
-                  className={`btn btn-sm ${idx === step ? "btn-primary" : idx < step ? "btn-success" : "btn-outline-secondary"}`}
+                  className={getStepButtonClass(idx, step)}
                   onClick={() => {
                     if (idx < step) setStep(idx);
                   }}
