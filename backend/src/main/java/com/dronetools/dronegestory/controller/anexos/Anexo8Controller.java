@@ -19,13 +19,6 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
     }
 
     @Override
-    protected Anexo8 convertDtoToEntity(AnexoRequestDTO dto) {
-        Anexo8 anexo = new Anexo8();
-        anexo.setTextoPrueba(dto.getTextoPrueba());
-        return anexo;
-    }
-
-    @Override
     protected Anexo8 registrar(Long operationId, Anexo8 input) {
         return service.registrarAnexo8(operationId, input);
     }

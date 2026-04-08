@@ -81,7 +81,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
 
         anexo.setEstado(AnexoStatus.FIRMADO);
         anexo.setFirmadoPor(username);
-        anexo.setFechaFirma(java.time.LocalDate.now());
+        anexo.setFechaFirma(java.time.LocalDateTime.now());
         return repository.save(anexo);
     }
 

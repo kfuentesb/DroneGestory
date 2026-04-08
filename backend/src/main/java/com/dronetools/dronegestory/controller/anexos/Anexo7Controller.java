@@ -19,13 +19,6 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     }
 
     @Override
-    protected Anexo7 convertDtoToEntity(AnexoRequestDTO dto) {
-        Anexo7 anexo = new Anexo7();
-        anexo.setTextoPrueba(dto.getTextoPrueba());
-        return anexo;
-    }
-
-    @Override
     protected Anexo7 registrar(Long operationId, Anexo7 input) {
         return service.registrarAnexo7(operationId, input);
     }
