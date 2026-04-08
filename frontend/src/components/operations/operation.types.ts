@@ -3,6 +3,54 @@ export type OperationStatus = "CANCELADA" | "EN_CURSO" | "PENDIENTE" | "COMPLETA
 export type AnexoColor = "AMARILLO" | "VERDE" | "GRIS";
 export type AnexoStatus = "BORRADOR" | "FIRMADO" | null;
 
+export type Anexo4Data = {
+  id?: number | null;
+  numeroVersion?: number;
+  estado?: AnexoStatus;
+  // Sección 1: Información sobre las operaciones
+  descripcion?: string | null;
+  fechaHoraPrevista?: string | null;
+  personal?: string | null;
+  mediosMateriales?: string | null;
+  // Sección 2: Evaluación del escenario
+  direccion?: string | null;
+  coords?: string | null;
+  // Sección 3: Espacio aéreo (imagen)
+  imagenEspacioAereo?: string | null;
+  // Sección 4: Zonas geográficas UAS
+  espacioAereoControlado?: boolean | null;
+  estudioAeronauticoCoordinado?: boolean | null;
+  entornoAerodromos?: boolean | null;
+  distanciaMinimaInfraestructuras?: boolean | null;
+  zonasProhibidasFlexible?: boolean | null;
+  cumpleCondiciones?: boolean | null;
+  zonasSeguridad?: boolean | null;
+  permisoPrevioSeguridad?: boolean | null;
+  serviciosEsencialesComunidad?: boolean | null;
+  permisoPrevioServicios?: boolean | null;
+  entornosUrbanos?: boolean | null;
+  cumplenDistanciasEdificios?: boolean | null;
+  comunicacionMinisterioInterior?: boolean | null;
+  zonaResVueloFotografico?: boolean | null;
+  permisoCecaf?: boolean | null;
+  zonasProtMedioambiental?: boolean | null;
+  disponeCoordGestor?: boolean | null;
+  // Sección 5: Zona de vuelo (imagen)
+  imagenZonaVuelo?: string | null;
+  // Sección 6: Requisitos y limitaciones
+  conopsYModeloSemantico?: boolean | null;
+  aplicaModelo?: boolean | null;
+  defineGeografiaVueloConops?: boolean | null;
+  defineVolContigencia?: boolean | null;
+  defineMargenRiesgoTierra?: boolean | null;
+  defineZonaTerrestreControlada?: boolean | null;
+  planificaUbicacionObservadores?: boolean | null;
+  calculaAreaYEvaluaRiesgo?: boolean | null;
+  notams?: boolean | null;
+  revisaNotams?: boolean | null;
+  tsaOCondicionada?: boolean | null;
+};
+
 export type OperationListDTO = {
   idOperacion: number;
   nombreOperacion: string;

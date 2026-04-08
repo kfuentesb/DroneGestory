@@ -1,25 +1,30 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BaseForm, { type FieldConfig } from "./BaseForm";
+import ConfirmModal from "../ConfirmModal";
 import { createOperation } from "../../operations/operation.api";
-
-const createOperationFields: FieldConfig[] = [
-  { name: "nombreOperacion", label: "Nombre de la operación", type: "text", required: true },
-];
 
 export default function MultiStepsForm() {
   const navigate = useNavigate();
+  const [nombreOperacion, setNombreOperacion] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateOperation = async (data: { nombreOperacion: string }) => {
+  const handleSiguiente = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nombreOperacion.trim()) return;
+    setShowConfirm(true);
+  };
+
+  const handleConfirm = async () => {
     setSubmitting(true);
     setError(null);
 
     try {
-      const created = await createOperation(data.nombreOperacion.trim());
+      const created = await createOperation(nombreOperacion.trim());
 
       if (!created) {
+        setError("No se pudo crear la operación.");
         return;
       }
 
@@ -29,6 +34,7 @@ export default function MultiStepsForm() {
       setError("No se pudo crear la operación.");
     } finally {
       setSubmitting(false);
+      setShowConfirm(false);
     }
   };
 
@@ -43,17 +49,42 @@ export default function MultiStepsForm() {
       <div className="d-flex justify-content-center align-items-center">
         <div className="card shadow p-4" style={{ maxWidth: 500, width: "100%" }}>
           <h3 className="mb-3 text-center">Registrar operación</h3>
-          <p className="text-muted text-center">
-            La operación se crea primero y los anexos se gestionan después desde su detalle específico.
-          </p>
-          <BaseForm
-            fields={createOperationFields}
-            onSubmit={handleCreateOperation}
-            showGuardarButton={false}
-            submitButtonText={submitting ? "Creando..." : "Crear operación"}
-          />
+          <form onSubmit={handleSiguiente}>
+            <div className="mb-3">
+              <label className="form-label fw-bold" htmlFor="nombreOperacion">
+                Nombre de la operación
+              </label>
+              <input
+                id="nombreOperacion"
+                type="text"
+                className="form-control"
+                value={nombreOperacion}
+                onChange={(e) => setNombreOperacion(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="d-flex justify-content-end">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!nombreOperacion.trim() || submitting}
+              >
+                Siguiente
+              </button>
+            </div>
+          </form>
         </div>
       </div>
+
+      <ConfirmModal
+        show={showConfirm}
+        title="Crear operación"
+        message={`¿Deseas crear la operación "${nombreOperacion}"?`}
+        onConfirm={() => void handleConfirm()}
+        onCancel={() => setShowConfirm(false)}
+        variant="primary"
+      />
     </div>
   );
 }

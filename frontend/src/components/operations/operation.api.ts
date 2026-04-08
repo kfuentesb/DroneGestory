@@ -1,5 +1,5 @@
 import { apiFetch } from "../../api";
-import type { OperationDetailDTO, OperationListDTO } from "./operation.types";
+import type { Anexo4Data, OperationDetailDTO, OperationListDTO } from "./operation.types";
 
 export async function fetchOperations(path: string) {
   const response = await apiFetch(path, {
@@ -94,4 +94,75 @@ export async function completeOperation(operationId: number) {
   }
 
   return (await response.json()) as OperationDetailDTO;
+}
+
+export async function fetchAnexo4Detail(operationId: string | number): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/actual/detalle`, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  const text = await response.text();
+  if (!text) return null;
+  return JSON.parse(text) as Anexo4Data;
+}
+
+export async function saveAnexo4Full(operationId: string | number, data: Anexo4Data) {
+  const formData = new FormData();
+
+  const appendIfNotNull = (key: string, value: string | boolean | null | undefined) => {
+    if (value !== null && value !== undefined && value !== "") {
+      formData.append(key, String(value));
+    }
+  };
+
+  appendIfNotNull("descripcion", data.descripcion);
+  appendIfNotNull("fechaHoraPrevista", data.fechaHoraPrevista);
+  appendIfNotNull("personal", data.personal);
+  appendIfNotNull("mediosMateriales", data.mediosMateriales);
+  appendIfNotNull("direccion", data.direccion);
+  appendIfNotNull("coords", data.coords);
+  appendIfNotNull("imagenEspacioAereo", data.imagenEspacioAereo);
+  appendIfNotNull("imagenZonaVuelo", data.imagenZonaVuelo);
+  appendIfNotNull("espacioAereoControlado", data.espacioAereoControlado);
+  appendIfNotNull("estudioAeronauticoCoordinado", data.estudioAeronauticoCoordinado);
+  appendIfNotNull("entornoAerodromos", data.entornoAerodromos);
+  appendIfNotNull("distanciaMinimaInfraestructuras", data.distanciaMinimaInfraestructuras);
+  appendIfNotNull("zonasProhibidasFlexible", data.zonasProhibidasFlexible);
+  appendIfNotNull("cumpleCondiciones", data.cumpleCondiciones);
+  appendIfNotNull("zonasSeguridad", data.zonasSeguridad);
+  appendIfNotNull("permisoPrevioSeguridad", data.permisoPrevioSeguridad);
+  appendIfNotNull("serviciosEsencialesComunidad", data.serviciosEsencialesComunidad);
+  appendIfNotNull("permisoPrevioServicios", data.permisoPrevioServicios);
+  appendIfNotNull("entornosUrbanos", data.entornosUrbanos);
+  appendIfNotNull("cumplenDistanciasEdificios", data.cumplenDistanciasEdificios);
+  appendIfNotNull("comunicacionMinisterioInterior", data.comunicacionMinisterioInterior);
+  appendIfNotNull("zonaResVueloFotografico", data.zonaResVueloFotografico);
+  appendIfNotNull("permisoCecaf", data.permisoCecaf);
+  appendIfNotNull("zonasProtMedioambiental", data.zonasProtMedioambiental);
+  appendIfNotNull("disponeCoordGestor", data.disponeCoordGestor);
+  appendIfNotNull("conopsYModeloSemantico", data.conopsYModeloSemantico);
+  appendIfNotNull("aplicaModelo", data.aplicaModelo);
+  appendIfNotNull("defineGeografiaVueloConops", data.defineGeografiaVueloConops);
+  appendIfNotNull("defineVolContigencia", data.defineVolContigencia);
+  appendIfNotNull("defineMargenRiesgoTierra", data.defineMargenRiesgoTierra);
+  appendIfNotNull("defineZonaTerrestreControlada", data.defineZonaTerrestreControlada);
+  appendIfNotNull("planificaUbicacionObservadores", data.planificaUbicacionObservadores);
+  appendIfNotNull("calculaAreaYEvaluaRiesgo", data.calculaAreaYEvaluaRiesgo);
+  appendIfNotNull("notams", data.notams);
+  appendIfNotNull("revisaNotams", data.revisaNotams);
+  appendIfNotNull("tsaOCondicionada", data.tsaOCondicionada);
+
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response) {
+    return null;
+  }
+  return true;
 }

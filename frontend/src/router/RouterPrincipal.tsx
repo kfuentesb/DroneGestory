@@ -19,10 +19,9 @@ import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/OperationDetail";
 import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
+import OperationAnexo4Detail from "../components/details/OperationAnexo4Detail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
-
-import FormAnexo4 from "../components/forms/FormAnexo4";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -89,13 +88,12 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/operations" element={<OperationList />} />
         <Route path="/operations/details/mine" element={<MyOperationList />} />
         <Route path="/operations/:id" element={<OperationDetail />} />
-        <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
+        <Route path="/operations/:id/anexo4" element={<OperationAnexo4Detail />} />
         <Route path="/operations/:id/anexo5" element={<OperationAnexoDetail tipoAnexo={5} />} />
         <Route path="/operations/:id/anexo6" element={<OperationAnexoDetail tipoAnexo={6} />} />
         <Route path="/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/register-operation" element={<MultiStepsForm />} />
-        <Route path="/operations/:id/anexo4" element={<FormAnexo4 />} />
 
         <Route 
           path="/docs" 
@@ -105,7 +103,6 @@ export default class RouterPrincipal extends React.Component {
             </ProtectedRoute>
           } 
         />
-        
 
         {/* Error */}
         <Route path="/403" element={<Forbidden />} />
