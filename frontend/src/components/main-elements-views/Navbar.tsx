@@ -14,7 +14,7 @@ function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-        navigate("/login");
+    navigate("/login");
   };
 
   return (
@@ -37,24 +37,20 @@ function Navbar() {
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
             {/* CONTENEDOR DE BOTONES */}
             <div className="ms-auto d-flex justify-content-center justify-content-lg-end w-100 w-lg-auto">
-              {!username ? (
-                <NavLink to="/login" className="btn" style={{ backgroundColor: "#1F6B43" }}>
-                  <img src={LoginIcon} alt="Login" />
-                </NavLink>
-              ) : (
                 <div className="d-flex gap-3 py-3 py-lg-0">
-
                   <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
                     style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
                     onClick={() => navigate("/home")}>
                     <img src={HomeIcon} alt="Home" style={{ width: "20px" }} />
                   </button>
 
-                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
-                    style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
-                    onClick={() => navigate("/profile/me")}>
-                    <img src={IdentityIcon} alt="Profile" style={{ width: "20px" }} />
-                  </button>
+                  {username && (
+                    <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                      style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
+                      onClick={() => navigate("/profile/me")}>
+                      <img src={IdentityIcon} alt="Profile" style={{ width: "20px" }} />
+                    </button>
+                  )}
 
                   <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
                     style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
@@ -62,13 +58,20 @@ function Navbar() {
                     <img src={SettingsIcon} alt="Settings" style={{ width: "20px" }} />
                   </button>
 
-                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
-                    style={{ backgroundColor: "#F44C4C", width: "45px", height: "45px", borderRadius: "8px" }}
-                    onClick={handleLogout}>
-                    <img src={LogoutIcon} alt="Logout" style={{ width: "20px" }} />
-                  </button>
+                  {username ? (
+                    <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                      style={{ backgroundColor: "#F44C4C", width: "45px", height: "45px", borderRadius: "8px" }}
+                      onClick={handleLogout}>
+                      <img src={LogoutIcon} alt="Logout" style={{ width: "20px" }} />
+                    </button>
+                  ) : (
+                    <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                      style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
+                      onClick={() => navigate("/login")}>
+                      <img src={LoginIcon} alt="Login" style={{ width: "20px" }} />
+                    </button>
+                  )}
                 </div>
-              )}
             </div>
           </div>
         </div>
