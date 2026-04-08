@@ -23,7 +23,7 @@ public class Anexo4ResponseDTO {
     // Si tienes personal como String, deja String. Si algún día es List<User>, cambia a List<UserLightDTO>
     private String personal;
 
-    private List<AircraftLightDTO> drones;
+    //private List<AircraftLightDTO> drones;
 
     private String imagenEspacioAereo;
     private String imagenZonaVuelo;

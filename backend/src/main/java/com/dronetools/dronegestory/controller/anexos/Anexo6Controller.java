@@ -19,13 +19,6 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     }
 
     @Override
-    protected Anexo6 convertDtoToEntity(AnexoRequestDTO dto) {
-        Anexo6 anexo = new Anexo6();
-        anexo.setTextoPrueba(dto.getTextoPrueba());
-        return anexo;
-    }
-
-    @Override
     protected Anexo6 registrar(Long operationId, Anexo6 input) {
         return service.registrarAnexo6(operationId, input);
     }
