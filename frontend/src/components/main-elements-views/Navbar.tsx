@@ -6,6 +6,7 @@ import LogoutIcon from "../../assets/navbar/logout_white.svg";
 import SettingsIcon from "../../assets/navbar/settings_white.svg";
 import IdentityIcon from "../../assets/navbar/identity_white.svg";
 import DroneToolsIcon from "../../assets/commons/logo_dronetools.svg";
+import HomeIcon from "../../assets/sidebar/home_white.svg";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -42,6 +43,13 @@ function Navbar() {
                 </NavLink>
               ) : (
                 <div className="d-flex gap-3 py-3 py-lg-0">
+
+                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                    style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
+                    onClick={() => navigate("/home")}>
+                    <img src={HomeIcon} alt="Home" style={{ width: "20px" }} />
+                  </button>
+
                   <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
                     style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
                     onClick={() => navigate("/profile/me")}>
