@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
-import { ReusableTable } from "../commons/props/ReusableTable";
+import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import { fetchOperations } from "../operations/operation.api";
@@ -51,7 +51,6 @@ export default function OperationsTableView({
 }: OperationsTableViewProps) {
   const navigate = useNavigate();
 
-  // 1. Estados (Hooks siempre arriba)
   const [operations, setOperations] = useState<OperationListDTO[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +58,6 @@ export default function OperationsTableView({
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // 2. Custom Hooks (Deben ir antes de cualquier return condicional)
   const filteredOperations = useSearchFilter(operations, search, (op) => [
     op.nombreOperacion,
     op.nombreCreador,
@@ -71,7 +69,6 @@ export default function OperationsTableView({
     op.anexo8Version,
   ]);
 
-  // 3. Efectos
   useEffect(() => {
     const loadOperations = async () => {
       setIsLoading(true);
@@ -94,13 +91,11 @@ export default function OperationsTableView({
     setCurrentPage(1);
   }, [search, operations.length]);
 
-  // 4. Lógica de cálculo (No son hooks, pueden ir aquí)
   const paginatedOperations = filteredOperations.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  // 5. RENDERS CONDICIONALES (Solo después de declarar todos los hooks)
   if (isLoading) {
     return (
       <div className="container py-4">
@@ -127,7 +122,18 @@ export default function OperationsTableView({
     );
   }
 
-  // 6. RENDER PRINCIPAL
+  const opHeaders: TableHeader[] = [
+    { label: "Nombre", key: "nombreOperacion", sortable: true },
+    { label: "Creador", key: "nombreCreador", sortable: true },
+    { label: "Creación", key: "fechaCreacion", sortable: true },
+    { label: "Anexo 4", key: "anexo4Version", sortable: false },
+    { label: "Anexo 5", key: "anexo5Version", sortable: false },
+    { label: "Anexo 6", key: "anexo6Version", sortable: false },
+    { label: "Anexo 7", key: "anexo7Version", sortable: false },
+    { label: "Anexo 8", key: "anexo8Version", sortable: false },
+    { label: "Estado", key: "estado", sortable: true },
+  ];
+
   return (
     <div className="container py-4">
       <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
@@ -146,11 +152,8 @@ export default function OperationsTableView({
           </div>
 
           <ReusableTable
-            headers={[
-              "Nombre", "Creador", "Creación", "Anexo 4", "Anexo 5", 
-              "Anexo 6", "Anexo 7", "Anexo 8", "Estado"
-            ]}
-            rows={paginatedOperations} // Usamos la lista paginada
+            headers={opHeaders}
+            rows={paginatedOperations}
             renderRow={(operation) => (
               <>
                 <td>{operation.nombreOperacion}</td>
