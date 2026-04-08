@@ -215,7 +215,7 @@ function FormUser() {
         if (fileInput) fileInput.value = "";
     };
 
-    const staticCertificateFields = staticCertificateConfig.map((field) => ({
+    const staticCertificateFields = staticUserCertificateConfig.map((field) => ({
         key: field.key,
         enabled: Boolean(activeChecks[field.enabledKey as keyof typeof activeChecks]),
         file: selectedFiles[field.fileKey as keyof typeof selectedFiles],
