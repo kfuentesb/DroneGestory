@@ -264,7 +264,7 @@ export default function DetailsComponent({
         const nextAdditionalNames: Record<string, string> = {};
 
         certificates.forEach((certificate) => {
-            const staticField = staticCertificateConfig.find((field) => field.key === certificate.certificateType);
+            const staticField = staticUserCertificateConfig.find((field) => field.key === certificate.certificateType);
             const filename = certificate.certificateName?.split("/").pop() ?? "";
 
             if (staticField) {
@@ -544,7 +544,7 @@ export default function DetailsComponent({
     const syncCertificates = async () => {
         if (!showCertificates || !id) return;
 
-        const staticKeys = new Set(staticCertificateConfig.map((field) => field.key));
+        const staticKeys = new Set(staticUserCertificateConfig.map((field) => field.key));
         const isConopsType = (certificateType: string) => certificateType.startsWith("conops_");
         const isAdditionalType = (certificateType: string) => !staticKeys.has(certificateType) && !isConopsType(certificateType);
 
@@ -556,7 +556,7 @@ export default function DetailsComponent({
         const desiredTypes = new Set<string>();
         const desiredAdditionalIds = new Set<number>();
 
-        const desiredStatic = staticCertificateConfig.map((field) => ({
+        const desiredStatic = staticUserCertificateConfig.map((field) => ({
             type: field.key,
             enabled: Boolean(certificateActiveChecks[field.enabledKey]),
             file: certificateSelectedFiles[field.fileKey],
