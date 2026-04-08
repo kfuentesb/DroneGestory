@@ -9,6 +9,7 @@ import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
 
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
+import LoadingSpinner from "../commons/Loading";
 
 type Aircraft = {
   id: number;
@@ -47,10 +48,12 @@ export default function AircraftList() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
 
   useEffect(() => {
     const loadAircrafts = async () => {
+      setIsLoading(true);
       try {
       const res = await apiFetch(`${API_BASE_URL}/api/aircraft`, {
           headers: { "Content-Type": "application/json" }
@@ -62,6 +65,8 @@ export default function AircraftList() {
         setAircrafts(data);
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadAircrafts();
@@ -78,6 +83,10 @@ export default function AircraftList() {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, aircrafts.length]);
+
+  if (isLoading) {
+    return <LoadingSpinner message="Cargando aeronaves..." />;
+  }
 
   const paginatedAircrafts = filteredAircrafts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,

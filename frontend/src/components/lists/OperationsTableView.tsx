@@ -13,6 +13,7 @@ import {
   getAnexoColorStyle,
   getOperationStatusStyle,
 } from "../operations/operation.utils";
+import LoadingSpinner from "../commons/Loading";
 
 type OperationsTableViewProps = {
   title: string;
@@ -97,16 +98,7 @@ export default function OperationsTableView({
   );
 
   if (isLoading) {
-    return (
-      <div className="container py-4">
-        <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
-          <div className="card-body text-center py-5">
-            <div className="spinner-border text-primary" role="status" />
-            <p className="mt-3 mb-0 text-muted">Cargando operaciones...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando operaciones..." />;
   }
 
   if (error) {

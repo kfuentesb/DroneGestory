@@ -7,6 +7,7 @@ import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
+import LoadingSpinner from "../commons/Loading";
 
 type User = {
   id: number;
@@ -24,9 +25,11 @@ export default function UserList() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadUsers = async () => {
+      setIsLoading(true);
       try {
       const res = await apiFetch(`${API_BASE_URL}/api/users`, {
           headers: { "Content-Type": "application/json" }
@@ -38,10 +41,28 @@ export default function UserList() {
         setUsers(data);
       } catch (err) {
         console.error(err);
+      } finally{
+        setIsLoading(false);
       }
     };
     loadUsers();
   }, []);
+
+  const filteredUsers = useSearchFilter(users, search, (u) => [
+    `${u.firstName} ${u.lastName}`,
+    u.username,
+    u.email,
+    u.phoneNumber ?? "",
+    u.type,
+  ]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, users.length]);
+
+  if (isLoading) {
+    return <LoadingSpinner message="Cargando usuarios..." />;
+  }
 
   const typeColors: Record<string, { backgroundColor: string; color: string }> = {
     ADMIN: {
@@ -57,18 +78,6 @@ export default function UserList() {
       color: "#1F6B43",
     },
   };
-
-  const filteredUsers = useSearchFilter(users, search, (u) => [
-    `${u.firstName} ${u.lastName}`,
-    u.username,
-    u.email,
-    u.phoneNumber ?? "",
-    u.type,
-  ]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, users.length]);
 
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
