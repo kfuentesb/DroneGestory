@@ -17,8 +17,8 @@ public class Anexo4RequestDTO {
     private String coords;
 
     // RELACIONES
-    private List<Integer> personalIds;   // IDs de usuarios
-    private List<Integer> dronesIds;     // IDs de drones
+    private String personal;   // IDs de usuarios
+//    private List<Integer> dronesIds;     // IDs de drones
 
     // IMÁGENES
     private String imagenEspacioAereo;

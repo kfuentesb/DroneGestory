@@ -2,7 +2,6 @@ package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.dto.operation.AnexoHistoricoDTO;
 import com.dronetools.dronegestory.dto.operation.AnexoInfoDTO;
-import com.dronetools.dronegestory.dto.operation.AnexoRequestDTO;
 import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
@@ -29,12 +28,12 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
         this.repository = repository;
     }
 
-    @PostMapping
-    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute AnexoRequestDTO dto) {
-        T input = convertDtoToEntity(dto);
-        T saved = registrar(operationId, input); // sigue en sesión
-        return AnexoInfoDTO.from(saved);        // crea este método estático si no lo tienes
-    }
+//    @PostMapping
+//    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute AnexoRequestDTO dto) {
+//        T input = convertDtoToEntity(dto);
+//        T saved = registrar(operationId, input); // sigue en sesión
+//        return AnexoInfoDTO.from(saved);        // crea este método estático si no lo tienes
+//    }
 
     @GetMapping("/actual")
     public AnexoInfoDTO getActual(@PathVariable Long operationId) {
@@ -68,5 +67,4 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     protected abstract T registrar(Long operationId, T input);
     protected abstract T rehacerDesde(Long idAnexo);
     protected abstract T getAnexoActual(Operation op);
-    protected abstract T convertDtoToEntity(AnexoRequestDTO dto);
 }

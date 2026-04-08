@@ -26,23 +26,21 @@ public class Anexo4 extends Anexo {
     @Column(name = "fecha_hora_prevista")
     private LocalDateTime fechaHoraPrevista;
 
-    // ---- RELACIÓN CON USUARIOS QUE OPERAN (PERSONAL) ----
-    @ManyToMany
-    @JoinTable(
-            name = "anexo4_personal",
-            joinColumns = @JoinColumn(name = "anexo4_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> personal = new ArrayList<>();
+    private String mediosMateriales;
+    private String direccion;
+    private String coords;
+
+    // Texto personal
+    private String personal;
 
     // ---- RELACIÓN CON DRONES (UAS) ----
-    @ManyToMany
-    @JoinTable(
-            name = "anexo4_aircrafts",
-            joinColumns = @JoinColumn(name = "anexo4_id"),
-            inverseJoinColumns = @JoinColumn(name = "aircraft_id")
-    )
-    private List<Aircraft> drones = new ArrayList<>();
+//    @ManyToMany
+//    @JoinTable(
+//            name = "anexo4_aircrafts",
+//            joinColumns = @JoinColumn(name = "anexo4_id"),
+//            inverseJoinColumns = @JoinColumn(name = "aircraft_id")
+//    )
+//    private List<Aircraft> drones = new ArrayList<>();
 
     // --- Imágenes ---
     @Column(name = "imagen_espacio_aereo")
