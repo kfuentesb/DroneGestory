@@ -86,7 +86,7 @@ export function ReusableTable<T>({
                 style={{ cursor: h.sortable !== false ? "pointer" : "default", userSelect: "none"}}
                 className="position-relative"
               >
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center justify-content-center">
                   <span className="text-truncate" style={{ maxWidth: "150px" }}>
                     {h.label}
                   </span>
