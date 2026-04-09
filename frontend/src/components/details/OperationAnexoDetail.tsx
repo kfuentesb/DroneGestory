@@ -20,6 +20,7 @@ import {
   getAnexoLabel,
   getOperationStatusStyle,
 } from "../operations/operation.utils";
+import FormOperationAnexo4Detail from "../forms/FormOperationAnexo4Detail";
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
@@ -60,6 +61,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
 
+  const isAnexo4 = tipoAnexo === 4;
+
   const loadOperation = async () => {
     if (!id) {
       setError("No se ha indicado la operación.");
@@ -79,7 +82,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
       setOperation(data);
       const anexo = data.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null;
-      setDraftValue(buildDraft(anexo));
+      if (!isAnexo4) {
+        setDraftValue(buildDraft(anexo));
+      }
     } catch (err) {
       console.error("Error cargando anexo:", err);
       setError("No se pudo cargar el anexo.");
@@ -176,7 +181,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     <div className="container py-4">
       <button
         className="btn btn-link ps-0 text-decoration-none mb-2"
-            onClick={() => navigate(`/operations/${operation.idOperacion}`)}
+        onClick={() => navigate(`/operations/${operation.idOperacion}`)}
       >
         Volver a la operación
       </button>
@@ -202,12 +207,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
 
         <div className="d-flex gap-2 flex-wrap">
-          <ButtonProp
+          {!isAnexo4 && (
+            <ButtonProp
               onClick={() => void handleSave()}
               disabled={!canEditDraft || saving || !draftValue.trim()}
             >
               {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
             </ButtonProp>
+          )}
           <ButtonProp
             className="btn"
             style={{ backgroundColor: "#92400E", color: "#FFFFFF", fontWeight: "bold" }}
@@ -263,27 +270,38 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       <div className="card shadow-sm mb-4" style={{ border: "1px solid #E5E7EB" }}>
         <div className="card-body">
           <h4 className="mb-3">Documento actual</h4>
-          <label className="form-label fw-bold" htmlFor={`draft-anexo-${tipoAnexo}`}>
-            Texto de prueba
-          </label>
-          <textarea
-            id={`draft-anexo-${tipoAnexo}`}
-            className="form-control"
-            rows={8}
-            value={draftValue}
-            disabled={!canEditDraft || saving}
-            onChange={(event) => setDraftValue(event.target.value)}
-            placeholder={`Contenido de ${getAnexoLabel(tipoAnexo)}`}
-          />
 
-          <div className="d-flex gap-2 flex-wrap mt-3">
-            <ButtonProp
-              onClick={() => void handleSave()}
-              disabled={!canEditDraft || saving || !draftValue.trim()}
-            >
-              {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
-            </ButtonProp>
-          </div>
+          {isAnexo4 ? (
+            <FormOperationAnexo4Detail
+              operationId={operation.idOperacion}
+              disabled={!canEditDraft}
+              onSaved={() => void loadOperation()}
+            />
+          ) : (
+            <>
+              <label className="form-label fw-bold" htmlFor={`draft-anexo-${tipoAnexo}`}>
+                Texto de prueba
+              </label>
+              <textarea
+                id={`draft-anexo-${tipoAnexo}`}
+                className="form-control"
+                rows={8}
+                value={draftValue}
+                disabled={!canEditDraft || saving}
+                onChange={(event) => setDraftValue(event.target.value)}
+                placeholder={`Contenido de ${getAnexoLabel(tipoAnexo)}`}
+              />
+
+              <div className="d-flex gap-2 flex-wrap mt-3">
+                <ButtonProp
+                  onClick={() => void handleSave()}
+                  disabled={!canEditDraft || saving || !draftValue.trim()}
+                >
+                  {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
+                </ButtonProp>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
