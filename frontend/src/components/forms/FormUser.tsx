@@ -621,6 +621,7 @@ function FormUser() {
                                 styles={backgroundBorderInputsSelect}
                                 placeholder="Seleccione el tipo de usuario"
                                 value={selectedUserType}
+                                isClearable
                                 onChange={(val) => {
                                     setSelectedUserType(val);
                                     setUserTypeError(null);
