@@ -49,7 +49,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 id={`file-${field.key}`}
                                 type="file"
                                 accept=".jpg,.jpeg,.png"
-                                disabled={field.readOnly} // <-- BLOQUEO AQUÍ
+                                disabled={field.readOnly}
                                 style={{ display: "none" }}
                                 onChange={(e) => {
                                     const file = e.target.files?.[0] || null;
@@ -127,6 +127,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             onChange={(e) =>
                                 setValues({ ...values, [field.key]: e.target.value })
                             }
+                            style={{cursor: field.readOnly ? "not-allowed" : "pointer"}}
                         />
                     )}
 

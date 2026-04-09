@@ -1,9 +1,11 @@
 package com.dronetools.dronegestory.service;
 
+import com.dronetools.dronegestory.dto.AircraftDocumentationUploadRequest;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.repository.AircraftRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,9 +18,14 @@ import java.util.Optional;
 public class AircraftService {
 
     private final AircraftRepository aircraftRepository;
+    private final AircraftDocumentationService aircraftDocumentationService;
 
-    public AircraftService(AircraftRepository aircraftRepository){
+    public AircraftService(
+            AircraftRepository aircraftRepository,
+            AircraftDocumentationService aircraftDocumentationService
+    ){
         this.aircraftRepository = aircraftRepository;
+        this.aircraftDocumentationService = aircraftDocumentationService;
     }
 
     // Obtener todos los aircrafts
@@ -52,6 +59,17 @@ public class AircraftService {
         }
 
         return aircraftRepository.save(savedAircraft);
+    }
+
+    public Aircraft createWithFileAndDocumentation(
+            Aircraft aircraft,
+            MultipartFile imageFile,
+            List<AircraftDocumentationUploadRequest> documentations,
+            MultipartHttpServletRequest multipartRequest
+    ) throws IOException {
+        Aircraft savedAircraft = createWithFile(aircraft, imageFile);
+        aircraftDocumentationService.saveFromUploadRequests(savedAircraft, documentations, multipartRequest);
+        return savedAircraft;
     }
 
     public Aircraft updateWithFile(
@@ -156,6 +174,7 @@ public class AircraftService {
         if (!aircraftRepository.existsById(id)) {
             throw new RuntimeException("Aircraft no encontrado con id: " + id);
         }
+        aircraftDocumentationService.deleteByAircraftId(id);
         aircraftRepository.deleteById(id);
     }
 }

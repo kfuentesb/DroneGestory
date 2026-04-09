@@ -816,7 +816,7 @@ export default function DetailsComponent({
                                         marginTop: "4px",
                                         backgroundColor: "transparent",
                                         border: "none",
-                                        transition: "all 0.2s ease" 
+                                        transition: "all 0.2s ease"
                                     }}
                                     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
                                     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}

@@ -1,9 +1,12 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.AircraftDocumentationUploadRequest;
 import com.dronetools.dronegestory.dto.aircraft.AircraftRequestDTO;
 import com.dronetools.dronegestory.dto.aircraft.AircraftResponseDTO;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.service.AircraftService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
@@ -32,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @RestController
@@ -60,9 +65,24 @@ public class AircraftController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AircraftResponseDTO> createAircraftWithFile(
             @ModelAttribute AircraftRequestDTO dto,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "documentations", required = false) String documentationsJson,
+            MultipartHttpServletRequest multipartRequest
     ) throws IOException {
-        Aircraft createdAircraft = aircraftService.createWithFile(dto.toEntity(), imageFile);
+        List<AircraftDocumentationUploadRequest> documentations = Collections.emptyList();
+        if (documentationsJson != null && !documentationsJson.isBlank()) {
+            documentations = new ObjectMapper().readValue(
+                    documentationsJson,
+                    new TypeReference<List<AircraftDocumentationUploadRequest>>() {}
+            );
+        }
+
+        Aircraft createdAircraft = aircraftService.createWithFileAndDocumentation(
+                dto.toEntity(),
+                imageFile,
+                documentations,
+                multipartRequest
+        );
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(createdAircraft));
     }
 

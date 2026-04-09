@@ -11,7 +11,6 @@ export default function ProfileDetail() {
 
     const [meData, setMeData] = useState<any>(null);
     const [status, setStatus] = useState(200);
-    const [profileId, setProfileId] = useState<number | undefined>(undefined);
     const { token } = useAuth();
     const navigate = useNavigate();
 
@@ -69,10 +68,8 @@ export default function ProfileDetail() {
         <DetailsComponent
             id={meData.id.toString()}
             initialData={meData}
-      // endpoint={`${API_BASE_URL}/api/users`}
-      // imageEndpoint={`${API_BASE_URL}/api/users/images`}
-      endpoint={`/api/users`}
-      imageEndpoint={`/api/users/images`}
+            endpoint={`/api/users`}
+            imageEndpoint={`/api/users/images`}
             fields={processedFields}
             allowEdit={true}
             allowDelete={false}

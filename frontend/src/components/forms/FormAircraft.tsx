@@ -5,11 +5,23 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { aircraftClasses, configs, LIMITS } from "../../global-const/aircraft-const";
 import { InfoBadge } from "../commons/InfoBadge";
+import AircraftDocumentationSection, {
+  aircraftDocumentationFields,
+  getVisibleAircraftDocumentationFields,
+} from "../certificates/AircraftDocumentationSection";
 import "../../styles/generic-form.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 type SelectOption = { value: string; label: string };
+
+type AircraftDocumentationUploadRequest = {
+  documentationType: string;
+  documentationLabel: string;
+  fileFieldKey: string | null;
+  expireDate: string | null;
+  dateIndefinite: boolean | null;
+};
 
 interface FormAircraftProps {
   initialValues?: {
@@ -33,6 +45,21 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [documentationFiles, setDocumentationFiles] = useState<Record<string, File | null>>(
+    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.fileKey, null]))
+  );
+  const [documentationFormValues, setDocumentationFormValues] = useState<Record<string, string>>(
+    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.dateKey, ""]))
+  );
+  const [documentationChecks, setDocumentationChecks] = useState<Record<string, boolean>>(
+    Object.fromEntries(
+      aircraftDocumentationFields.flatMap((f) => [
+        [f.enabledKey, false],
+        [f.indefiniteKey, false],
+      ])
+    )
+  );
 
   const [formValues, setFormValues] = useState({
     manufacturer: initialValues?.manufacturer ?? "",
@@ -65,11 +92,16 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
     config: false,
     impactEnergy: false,
     hasCamera: false,
-    tooMuchTextAccesories: false
+    tooMuchTextAccesories: false,
   });
 
   const navigate = useNavigate();
-  const allowedTypes = ["image/jpeg", "image/png"];
+  const isExistingModel = Boolean(initialValues?.manufacturer && initialValues?.model);
+  const showInsuranceDocumentation = formValues.hasEnsurance?.value === "true";
+  const showFTSDocumentation = formValues.hasFTS?.value === "true";
+  const showParachuteDocumentation = formValues.hasParachute?.value === "true";
+  const allowedImageTypes = ["image/jpeg", "image/png"];
+  const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
   const backgroundBorderInputsSelect = {
     control: (provided: any) => ({
@@ -95,6 +127,83 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
     </>
   );
 
+  const validateDocumentationFile = (file: File): string | null => {
+    if (!allowedDocumentationTypes.includes(file.type)) {
+      return "Solo PDF, JPG, PNG o WEBP.";
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return "El archivo debe pesar menos de 5MB.";
+    }
+    return null;
+  };
+
+  const handleDocumentationToggle = (id: string) => {
+    setDocumentationChecks((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleDocumentationFileChange = (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) {
+      setDocumentationFiles((prev) => ({ ...prev, [id]: null }));
+      return;
+    }
+
+    const validationError = validateDocumentationFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setDocumentationFiles((prev) => ({ ...prev, [id]: file }));
+    setError(null);
+  };
+
+  const handleDocumentationClearFile = (id: string, inputId: string) => {
+    setDocumentationFiles((prev) => ({ ...prev, [id]: null }));
+    const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
+    if (fileInput) fileInput.value = "";
+  };
+
+  const handleDocumentationDateChange = (key: string, value: string) => {
+    setDocumentationFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const buildDocumentationPayload = (): {
+    metadata: AircraftDocumentationUploadRequest[];
+    files: Array<{ fileFieldKey: string; file: File }>;
+  } => {
+    const metadata: AircraftDocumentationUploadRequest[] = [];
+    const files: Array<{ fileFieldKey: string; file: File }> = [];
+    const visibleDocumentationFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
+
+    visibleDocumentationFields.forEach((field) => {
+      const enabled = Boolean(documentationChecks[field.enabledKey]);
+      const indefinite = Boolean(documentationChecks[field.indefiniteKey]);
+      const expireDate = documentationFormValues[field.dateKey] || null;
+      const file = documentationFiles[field.fileKey];
+      const fileFieldKey = file ? `documentation_${field.key}` : null;
+
+      const hasAnyData = enabled || indefinite || Boolean(expireDate) || Boolean(file);
+      if (!hasAnyData) {
+        return;
+      }
+
+      metadata.push({
+        documentationType: field.key,
+        documentationLabel: field.label,
+        fileFieldKey,
+        expireDate: indefinite ? null : expireDate,
+        dateIndefinite: enabled ? indefinite : null,
+      });
+
+      if (file && fileFieldKey) {
+        files.push({ fileFieldKey, file });
+      }
+    });
+
+    return { metadata, files };
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -103,7 +212,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
       setError("");
       return;
     }
-    if (!allowedTypes.includes(file.type)) {
+    if (!allowedImageTypes.includes(file.type)) {
       setError("Solo se permiten imágenes JPG o PNG.");
       return;
     }
@@ -156,7 +265,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
         Number(formValues.impactEnergy) > LIMITS.MAX_ENERGY,
       config: !formValues.config,
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
-      tooMuchTextAccesories: formValues.accessories.length > 800
+      tooMuchTextAccesories: formValues.accessories.length > 800,
     };
 
     setErrors(newErrors);
@@ -172,16 +281,16 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
 
     try {
       const formData = new FormData();
-      if(formValues.manufacturer)formData.append("manufacturer", formValues.manufacturer);
-      if(formValues.model)formData.append("model", formValues.model);
-      if(formValues.serialNumber)formData.append("serialNumber", formValues.serialNumber);
-      if(formValues.aircraftClass)formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
-      if(formValues.mtom)formData.append("mtom", String(formValues.mtom));
-      if(formValues.wingspan)formData.append("wingspan", String(formValues.wingspan));
-      if(formValues.maxSpeed)formData.append("maxSpeed", String(formValues.maxSpeed));
-      if(formValues.config)formData.append("config", formValues.config?.value ?? "");
-      if(formValues.impactEnergy)formData.append("impactEnergy", String(formValues.impactEnergy));
-      if(formValues.hasCamera)formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
+      if (formValues.manufacturer) formData.append("manufacturer", formValues.manufacturer);
+      if (formValues.model) formData.append("model", formValues.model);
+      if (formValues.serialNumber) formData.append("serialNumber", formValues.serialNumber);
+      if (formValues.aircraftClass) formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
+      if (formValues.mtom) formData.append("mtom", String(formValues.mtom));
+      if (formValues.wingspan) formData.append("wingspan", String(formValues.wingspan));
+      if (formValues.maxSpeed) formData.append("maxSpeed", String(formValues.maxSpeed));
+      if (formValues.config) formData.append("config", formValues.config?.value ?? "");
+      if (formValues.impactEnergy) formData.append("impactEnergy", String(formValues.impactEnergy));
+      if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
 
       if (formValues.privatelyBuilt) formData.append("privatelyBuilt", formValues.privatelyBuilt.value);
       if (formValues.hasParachute) formData.append("hasParachute", formValues.hasParachute.value);
@@ -190,6 +299,12 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
       if (formValues.cautive) formData.append("cautive", formValues.cautive.value);
       if (formValues.accessories.trim()) formData.append("accessories", formValues.accessories.trim());
       if (selectedFile) formData.append("imageFile", selectedFile, selectedFile.name);
+
+      const documentationPayload = buildDocumentationPayload();
+      formData.append("documentations", JSON.stringify(documentationPayload.metadata));
+      documentationPayload.files.forEach(({ fileFieldKey, file }) => {
+        formData.append(fileFieldKey, file, file.name);
+      });
 
       const res = await apiFetch(`${API_BASE_URL}/api/aircraft`, {
         method: "POST",
@@ -233,6 +348,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   }}
                   disabled={!!initialValues?.manufacturer}
                 />
+                {errors.manufacturer && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label d-block text-start ps-1">Modelo</label>
@@ -249,6 +365,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   }}
                   disabled={!!initialValues?.model}
                 />
+                {errors.model && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md">
                 <label className="form-label d-block text-start ps-1">Nº Serie</label>
@@ -260,6 +377,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   onChange={(e) => setFormValues({ ...formValues, serialNumber: e.target.value })}
                   style={{ ...backgroundBorderInputs, border: errors.serialNumber ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
+                {errors.serialNumber && <div className="text-danger small">Campo requerido</div>}
               </div>
             </div>
 
@@ -481,7 +599,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
 
             <div className="row mb-3">
               <div className="col-12 col-md">
-                <label className="form-label d-block text-start ps-1">Accesorios</label>
+                <label className="form-label d-block text-start ps-1">Accesorios / Notas (800 caracteres)</label>
                 <textarea
                   className="form-control"
                   placeholder="Describe accesorios o notas relevantes"
@@ -495,6 +613,20 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
             </div>
 
             {error && <p className="text-danger text-center">{error}</p>}
+
+            <AircraftDocumentationSection
+              isExistingModel={isExistingModel}
+              showInsuranceDocumentation={showInsuranceDocumentation}
+              showFTSDocumentation={showFTSDocumentation}
+              showParachuteDocumentation={showParachuteDocumentation}
+              activeChecks={documentationChecks}
+              selectedFiles={documentationFiles}
+              formValues={documentationFormValues}
+              onToggleCheck={handleDocumentationToggle}
+              onFileChange={handleDocumentationFileChange}
+              onClearFile={handleDocumentationClearFile}
+              onFormDateChange={handleDocumentationDateChange}
+            />
 
             <div className="d-flex gap-2 mt-3 justify-content-center">
               <button type="submit" className="btn btn-success px-4" disabled={loading}>
