@@ -118,6 +118,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       setSaving(true);
       await saveAnexo(operation.idOperacion, tipoAnexo, draftValue.trim());
       await loadOperation();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(`Error guardando ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo guardar ${getAnexoLabel(tipoAnexo)}.`);
@@ -304,7 +305,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
       </div>
 
-      <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB" }}>
+      {/* <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB" }}>
         <div className="card-body">
           <h4 className="mb-3">Versiones registradas</h4>
 
@@ -339,7 +340,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             </div>
           )}
         </div>
-      </div>
+      </div> */}
 
       <ConfirmModal
         show={showSignConfirm}

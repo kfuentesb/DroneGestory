@@ -64,7 +64,7 @@ function SectionTitle({ children }: { children: string }) {
 
 export default function FormOperationAnexo4Detail({
   operationId,
-  operationTitle,
+  //operationTitle,
   initialValues,
   disabled,
   onSaved,
@@ -125,6 +125,7 @@ export default function FormOperationAnexo4Detail({
 
       alert("Anexo 4 guardado correctamente");
       onSaved?.();
+      // window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       alert(err?.message || "Error al guardar el anexo.");
     } finally {
@@ -175,116 +176,143 @@ export default function FormOperationAnexo4Detail({
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
         <h3 className="fw-bold mb-1 text-dark">APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL</h3>
-
-        <form onSubmit={handleSubmit}>
-          {/* SECCIÓN 1 */}
-          <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
-          <div className="mb-3">
-            <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
-            <textarea
-              className="form-control bg-white border"
-              rows={3}
-              value={formValues.descripcion ?? ""}
-              onChange={(e) => handleChange("descripcion", e.target.value)}
-              disabled={disabled || saving}
-            />
-          </div>
-          <div className="row">
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold small text-uppercase text-muted">Fechas y horas previstas</label>
-              <input
-                type="datetime-local"
+        <div
+          style={
+            disabled
+              ? {
+                  filter: "grayscale(1)",
+                  opacity: 0.7,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                }
+              : undefined
+          }
+        >
+          <form onSubmit={handleSubmit}>
+            {/* SECCIÓN 1 */}
+            <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
+            <div className="mb-3">
+              <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
+              <textarea
                 className="form-control bg-white border"
-                value={formValues.fechaHoraPrevista ?? ""}
-                onChange={(e) => handleChange("fechaHoraPrevista", e.target.value)}
+                rows={3}
+                value={formValues.descripcion ?? ""}
+                onChange={(e) => handleChange("descripcion", e.target.value)}
                 disabled={disabled || saving}
               />
             </div>
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold small text-uppercase text-muted">Medios materiales</label>
+            <div className="mb-3">
+              <label className="form-label fw-bold small text-uppercase text-muted">Personal necesario</label>
               <input
-                type="text"
-                className="form-control bg-white border"
-                value={formValues.mediosMateriales ?? ""}
-                onChange={(e) => handleChange("mediosMateriales", e.target.value)}
+                  type="text"
+                  className="form-control bg-white border"
+                  value={formValues.personal ?? ""}
+                  onChange={(e) => handleChange("personal", e.target.value)}
+                  disabled={disabled || saving}
+                />
+            </div>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold small text-uppercase text-muted">Fechas y horas previstas</label>
+                <input
+                  type="datetime-local"
+                  className="form-control bg-white border"
+                  value={formValues.fechaHoraPrevista ?? ""}
+                  onChange={(e) => handleChange("fechaHoraPrevista", e.target.value)}
+                  disabled={disabled || saving}
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold small text-uppercase text-muted">Medios materiales</label>
+                <input
+                  type="text"
+                  className="form-control bg-white border"
+                  value={formValues.mediosMateriales ?? ""}
+                  onChange={(e) => handleChange("mediosMateriales", e.target.value)}
+                  disabled={disabled || saving}
+                />
+              </div>
+            </div>
+
+            {/* SECCIÓN 2 */}
+            <SectionTitle>SECCIÓN 2: Evaluación del escenario de operaciones</SectionTitle>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold small text-uppercase text-muted">Dirección</label>
+                <input
+                  type="text"
+                  className="form-control bg-white border"
+                  value={formValues.direccion ?? ""}
+                  onChange={(e) => handleChange("direccion", e.target.value)}
+                  disabled={disabled || saving}
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold small text-uppercase text-muted">Coordenadas</label>
+                <input
+                  type="text"
+                  className="form-control bg-white border"
+                  value={formValues.coords ?? ""}
+                  onChange={(e) => handleChange("coords", e.target.value)}
+                  disabled={disabled || saving}
+                />
+              </div>
+            </div>
+
+            {/* SECCIÓN 3 */}
+            <SectionTitle>SECCIÓN 3: Espacio aéreo</SectionTitle>
+            <div className="mb-3 border rounded p-3 bg-white">
+              <label className="form-label fw-bold small text-uppercase text-muted">Imagen del espacio aéreo</label>
+              <input
+                type="file"
+                className="form-control"
+                onChange={(e) => handleChange("imagenEspacioAereo", e.target.files?.[0] ?? null)}
                 disabled={disabled || saving}
               />
             </div>
-          </div>
 
-          {/* SECCIÓN 2 */}
-          <SectionTitle>SECCIÓN 2: Evaluación del escenario de operaciones</SectionTitle>
-          <div className="row">
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold small text-uppercase text-muted">Dirección</label>
+            {/* SECCIÓN 4 */}
+            <SectionTitle>SECCIÓN 4: Zonas geográficas de UAS</SectionTitle>
+            <div className="bg-white border rounded p-3 mb-4 text-start">
+              {SECCIONES_CONFIG.seccion4.map(renderApartadoRow)}
+            </div>
+
+            {/* SECCIÓN 5 */}
+            <SectionTitle>SECCIÓN 5: Zona de vuelo</SectionTitle>
+            <div className="mb-3 p-3 bg-white rounded border shadow-none">
+              <label className="form-label fw-bold text-uppercase small text-muted">Imagen zona de vuelo</label>
               <input
-                type="text"
-                className="form-control bg-white border"
-                value={formValues.direccion ?? ""}
-                onChange={(e) => handleChange("direccion", e.target.value)}
+                type="file"
+                className="form-control"
+                onChange={(e) => handleChange("imagenZonaVuelo", e.target.files?.[0] ?? null)}
                 disabled={disabled || saving}
               />
+              <div className="form-text mt-2">Adjunte el mapa detallado de la zona de operación.</div>
             </div>
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold small text-uppercase text-muted">Coordenadas</label>
-              <input
-                type="text"
-                className="form-control bg-white border"
-                value={formValues.coords ?? ""}
-                onChange={(e) => handleChange("coords", e.target.value)}
-                disabled={disabled || saving}
-              />
+
+            {/* SECCIÓN 6 */}
+            <SectionTitle>SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo</SectionTitle>
+            <div className="bg-white border rounded p-3 mb-4 text-start">
+              {SECCIONES_CONFIG.seccion6.map(renderApartadoRow)}
             </div>
-          </div>
 
-          {/* SECCIÓN 3 */}
-          <SectionTitle>SECCIÓN 3: Espacio aéreo</SectionTitle>
-          <div className="mb-3 border rounded p-3 bg-white">
-            <label className="form-label fw-bold small text-uppercase text-muted">Imagen del espacio aéreo</label>
-            <input
-              type="file"
-              className="form-control"
-              onChange={(e) => handleChange("imagenEspacioAereo", e.target.files?.[0] ?? null)}
-              disabled={disabled || saving}
-            />
+            <div className="d-flex justify-content-end mt-5 pt-3 border-top">
+              <button type="submit" className="btn btn-success btn-lg px-5 shadow-sm" disabled={disabled || saving}>
+                {saving ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Guardando...
+                  </>
+                ) : "Guardar borrador"}
+              </button>
+            </div>
+          </form>
+        </div>
+        {disabled && (
+          <div className="alert alert-secondary mt-4">
+            El anexo está firmado. No se puede editar. Pulsa <strong>Rehacer versión</strong> para poder modificar.
           </div>
-
-          {/* SECCIÓN 4 */}
-          <SectionTitle>SECCIÓN 4: Zonas geográficas de UAS</SectionTitle>
-          <div className="bg-white border rounded p-3 mb-4 text-start">
-             {SECCIONES_CONFIG.seccion4.map(renderApartadoRow)}
-          </div>
-
-          {/* SECCIÓN 5 */}
-          <SectionTitle>SECCIÓN 5: Zona de vuelo</SectionTitle>
-          <div className="mb-3 p-3 bg-white rounded border shadow-none">
-            <label className="form-label fw-bold text-uppercase small text-muted">Imagen zona de vuelo</label>
-            <input
-              type="file"
-              className="form-control"
-              onChange={(e) => handleChange("imagenZonaVuelo", e.target.files?.[0] ?? null)}
-              disabled={disabled || saving}
-            />
-            <div className="form-text mt-2">Adjunte el mapa detallado de la zona de operación.</div>
-          </div>
-
-          {/* SECCIÓN 6 */}
-          <SectionTitle>SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo</SectionTitle>
-          <div className="bg-white border rounded p-3 mb-4 text-start">
-             {SECCIONES_CONFIG.seccion6.map(renderApartadoRow)}
-          </div>
-
-          <div className="d-flex justify-content-end mt-5 pt-3 border-top">
-            <button type="submit" className="btn btn-success btn-lg px-5 shadow-sm" disabled={disabled || saving}>
-              {saving ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Guardando...
-                </>
-              ) : "Guardar borrador"}
-            </button>
-          </div>
-        </form>
+        )}
       </div>
     </div>
   );
