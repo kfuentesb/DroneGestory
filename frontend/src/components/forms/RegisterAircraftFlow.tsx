@@ -105,69 +105,86 @@ export default function RegisterAircraftFlow() {
   }
 
   return (
-    <div className="container py-4">
-      <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
-        <div className="card-body" style={{ maxWidth: "780px", margin: "0 auto" }}>
-          <h2 className="mb-2" style={{ color: "#1E1E1E" }}>Registrar aeronave</h2>
-          <p className="text-muted mb-4">Elige si quieres crear un modelo nuevo o partir de uno existente.</p>
+    <div className="container py-4 position-relative">
+  {/* Static Volver Arrow */}
+  <button
+    type="button"
+    className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted hover-dark"
+    style={{ position: "absolute", top: "10px", left: "20px", zIndex: 10 }}
+    onClick={() => navigate("/aircrafts")}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+      <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+    </svg>
+    <span className="ms-2 fw-medium">Volver</span>
+  </button>
 
-          <div className="d-flex gap-2 mb-3">
-            <button
-              type="button"
-              className={`btn ${mode === "new" ? "btn-success" : "btn-outline-success"}`}
-              onClick={() => setMode("new")}
-            >
-              Nuevo modelo
-            </button>
-            <button
-              type="button"
-              className={`btn ${mode === "existing" ? "btn-success" : "btn-outline-success"}`}
-              onClick={() => setMode("existing")}
-            >
-              Modelo existente
-            </button>
-          </div>
+  <div className="card shadow-sm mt-5" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
+    <div className="card-body py-5" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+      <h2 className="mb-2 fw-bold" style={{ color: "#1E1E1E" }}>Registrar aeronave</h2>
+      <p className="text-muted mb-4">Selecciona el método de registro para comenzar.</p>
 
-          {mode === "existing" && (
-            <div className="mb-3">
-              <label className="form-label d-block text-start ps-1">Seleccionar fabricante y modelo</label>
-              <Select
-                options={modelOptions}
-                value={selectedOption}
-                onChange={(value) => setSelectedOption(value as AircraftModelOption)}
-                placeholder="Selecciona un modelo existente"
-                isClearable
-                noOptionsMessage={() => "No hay modelos disponibles"}
-              />
-              {modelOptions.length === 0 && (
-                <div className="text-muted small mt-2">
-                  No hay aeronaves registradas todavía. Puedes continuar con "Nuevo modelo".
-                </div>
-              )}
-            </div>
-          )}
-
-          {error && <p className="text-danger mb-3">{error}</p>}
-
-          <div className="d-flex gap-2">
-            <button
-              type="button"
-              className="btn btn-success"
-              disabled={isContinueDisabled}
-              onClick={() => setShowForm(true)}
-            >
-              Continuar
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => navigate("/aircrafts")}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+      {/* Main Selection Buttons */}
+      <div className="d-flex justify-content-center gap-3 mb-2">
+        <button
+          type="button"
+          className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
+          onClick={() => {
+            setMode("new");
+            setShowForm(true);
+          }}
+        >
+          Nuevo modelo
+        </button>
+        
+        <button
+          type="button"
+          className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
+          onClick={() => setMode("existing")}
+        >
+          Modelo existente
+        </button>
       </div>
+
+      {/* Existing Model Selection View */}
+      {mode === "existing" && (
+        <div className="mt-4 text-start animate__animated animate__fadeInUp">
+          <hr className="mb-4" style={{ opacity: 0.1 }} />
+          <label className="form-label fw-medium ps-1">Buscar fabricante y modelo</label>
+          <Select
+            options={modelOptions}
+            value={selectedOption}
+            onChange={(value) => setSelectedOption(value as AircraftModelOption)}
+            placeholder="Escribe para buscar..."
+            isClearable
+          />
+          
+          <button
+            type="button"
+            className="btn btn-success w-100 mt-3 py-2 fw-bold"
+            disabled={!selectedOption}
+            onClick={() => setShowForm(true)}
+          >
+            Continuar
+          </button>
+        </div>
+      )}
     </div>
+  </div>
+
+  {/* CSS for the Hover Transition */}
+  <style>{`
+    .transition-btn {
+      transition: all 0.3s ease !important;
+      border-width: 2px !important;
+    }
+    .transition-btn:hover {
+      color: white !important;
+      background-color: #198754 !important; /* Bootstrap Success Green */
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+  `}</style>
+</div>
   );
 }
