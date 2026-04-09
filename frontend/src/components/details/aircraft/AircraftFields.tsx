@@ -82,7 +82,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Cámara",
     key: "hasCamera",
     type: "select",
-    options: ["No", "Sí"],
+    options: ["Sí", "No"],
     format: (v: any) => {
       if (v === true) return "Sí";
       if (v === false) return "No";
@@ -94,7 +94,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Construcción privada",
     key: "privatelyBuilt",
     type: "select",
-    options: ["No", "Sí"],
+    options: ["Sí", "No"],
     format: (v: any) => {
       if (v === true) return "Sí";
       if (v === false) return "No";
@@ -105,7 +105,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Paracaídas",
     key: "hasParachute",
     type: "select",
-    options: ["No", "Sí"],
+    options: ["Sí", "No"],
     format: (v: any) => {
       if (v === true) return "Sí";
       if (v === false) return "No";
@@ -116,7 +116,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Seguro RC",
     key: "hasEnsurance",
     type: "select",
-    options: ["No", "Sí"],
+    options: ["Sí", "No"],
     format: (v: any) => {
       if (v === true) return "Sí";
       if (v === false) return "No";
@@ -127,7 +127,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Sistema FTS",
     key: "hasFTS",
     type: "select",
-    options: ["No", "Sí"],
+    options: ["Sí", "No"],
     format: (v: any) => {
       if (v === true) return "Sí";
       if (v === false) return "No";
@@ -138,11 +138,11 @@ export const aircraftFields: FieldConfig[] = [
     label: "Cautivo",
     key: "cautive",
     type: "select",
-    options: ["YES", "NO", "OPTIONAL"],
+    options: ["Sí", "No", "Opcional"],
     format: (v: any) => {
-      if (v === "YES") return "Sí";
-      if (v === "NO") return "No";
-      if (v === "OPTIONAL") return "Opcional";
+      if (v === "Sí") return "Sí";
+      if (v === "No") return "No";
+      if (v === "Opcional") return "Opcional";
       return "No especificado";
     },
   },
