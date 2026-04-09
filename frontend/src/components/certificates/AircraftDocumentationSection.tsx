@@ -9,6 +9,7 @@ export type AircraftDocumentationFieldConfig = {
   fileKey: string;
   dateKey: string;
   indefiniteKey: string;
+  infoLabel: string;
 };
 
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
@@ -19,6 +20,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileCaracterizacion",
     dateKey: "dateCaracterizacion",
     indefiniteKey: "indefiniteCaracterizacion",
+    infoLabel: "Siempre | Expecifica",
   },
   {
     key: "manualUsuario",
@@ -27,6 +29,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileManualUsuario",
     dateKey: "dateManualUsuario",
     indefiniteKey: "indefiniteManualUsuario",
+    infoLabel: "Siempre | Modelo",
   },
   {
     key: "manualMantenimiento",
@@ -35,6 +38,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileManualMantenimiento",
     dateKey: "dateManualMantenimiento",
     indefiniteKey: "indefiniteManualMantenimiento",
+    infoLabel: "Siempre | Modelo",
   },
   {
     key: "seguroResponsabilidadCivil",
@@ -43,6 +47,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileSeguroRC",
     dateKey: "dateSeguroRC",
     indefiniteKey: "indefiniteSeguroRC",
+    infoLabel: "Condicional | Específica",
   },
   {
     key: "manualUsuarioFTS",
@@ -51,6 +56,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileManualUsuarioFTS",
     dateKey: "dateManualUsuarioFTS",
     indefiniteKey: "indefiniteManualUsuarioFTS",
+    infoLabel: "Condicional | Modelo",
   },
   {
     key: "documentoTecnicoFTS",
@@ -59,6 +65,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileDocTecnicoFTS",
     dateKey: "dateDocTecnicoFTS",
     indefiniteKey: "indefiniteDocTecnicoFTS",
+    infoLabel: "Condicional | Modelo",
   },
   {
     key: "manualUsuarioParacaidas",
@@ -67,6 +74,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileManualUsuarioParacaidas",
     dateKey: "dateManualUsuarioParacaidas",
     indefiniteKey: "indefiniteManualUsuarioParacaidas",
+    infoLabel: "Condicional | Modelo",
   },
   {
     key: "documentoTecnicoParacaidas",
@@ -75,6 +83,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileDocTecnicoParacaidas",
     dateKey: "dateDocTecnicoParacaidas",
     indefiniteKey: "indefiniteDocTecnicoParacaidas",
+    infoLabel: "Condicional | Modelo",
   },
   {
     key: "otraDocumentacion",
@@ -83,10 +92,15 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     fileKey: "fileOtraDocumentacion",
     dateKey: "dateOtraDocumentacion",
     indefiniteKey: "indefiniteOtraDocumentacion",
+    infoLabel: "Específica",
   },
 ];
 
 type AircraftDocumentationSectionProps = {
+  isExistingModel: boolean;
+  showInsuranceDocumentation: boolean;
+  showFTSDocumentation: boolean;
+  showParachuteDocumentation: boolean;
   activeChecks: Record<string, boolean>;
   selectedFiles: Record<string, File | null>;
   formValues: Record<string, string>;
@@ -96,7 +110,45 @@ type AircraftDocumentationSectionProps = {
   onFormDateChange: (key: string, value: string) => void;
 };
 
+const EXISTING_MODEL_HIDDEN_KEYS = new Set([
+  "manualUsuarioFTS",
+  "documentoTecnicoFTS",
+  "manualUsuarioParacaidas",
+  "documentoTecnicoParacaidas",
+]);
+
+export function getVisibleAircraftDocumentationFields(
+  isExistingModel: boolean,
+  showInsuranceDocumentation: boolean,
+  showFTSDocumentation: boolean,
+  showParachuteDocumentation: boolean
+): AircraftDocumentationFieldConfig[] {
+  return aircraftDocumentationFields.filter((field) => {
+    if (isExistingModel && EXISTING_MODEL_HIDDEN_KEYS.has(field.key)) {
+      return false;
+    }
+
+    if (!showInsuranceDocumentation && field.key === "seguroResponsabilidadCivil") {
+      return false;
+    }
+
+    if (!showFTSDocumentation && (field.key === "manualUsuarioFTS" || field.key === "documentoTecnicoFTS")) {
+      return false;
+    }
+
+    if (!showParachuteDocumentation && (field.key === "manualUsuarioParacaidas" || field.key === "documentoTecnicoParacaidas")) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 export default function AircraftDocumentationSection({
+  isExistingModel,
+  showInsuranceDocumentation,
+  showFTSDocumentation,
+  showParachuteDocumentation,
   activeChecks,
   selectedFiles,
   formValues,
@@ -106,6 +158,7 @@ export default function AircraftDocumentationSection({
   onFormDateChange,
 }: AircraftDocumentationSectionProps) {
   const [showOptional, setShowOptional] = useState(false);
+  const visibleFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
   return (
     <div
@@ -139,13 +192,13 @@ export default function AircraftDocumentationSection({
 
         {showOptional && (
           <div className="mt-3 animate__animated animate__fadeIn">
-            {aircraftDocumentationFields.map((field) => (
+            {visibleFields.map((field) => (
               <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                 <div className="d-flex align-items-center mb-3">
                   <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
                     {field.label}
                   </h6>
-                  <InfoBadge text={`Adjunta ${field.label.toLowerCase()} si aplica.`} />
+                  <InfoBadge text={field.infoLabel} />
                 </div>
 
                 <InsertDoc

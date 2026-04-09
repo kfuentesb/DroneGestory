@@ -5,7 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { aircraftClasses, configs, LIMITS } from "../../global-const/aircraft-const";
 import { InfoBadge } from "../commons/InfoBadge";
-import AircraftDocumentationSection, { aircraftDocumentationFields } from "../certificates/AircraftDocumentationSection";
+import AircraftDocumentationSection, {
+  aircraftDocumentationFields,
+  getVisibleAircraftDocumentationFields,
+} from "../certificates/AircraftDocumentationSection";
 import "../../styles/generic-form.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
@@ -93,6 +96,10 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   });
 
   const navigate = useNavigate();
+  const isExistingModel = Boolean(initialValues?.manufacturer && initialValues?.model);
+  const showInsuranceDocumentation = formValues.hasEnsurance?.value === "true";
+  const showFTSDocumentation = formValues.hasFTS?.value === "true";
+  const showParachuteDocumentation = formValues.hasParachute?.value === "true";
   const allowedImageTypes = ["image/jpeg", "image/png"];
   const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -167,8 +174,9 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   } => {
     const metadata: AircraftDocumentationUploadRequest[] = [];
     const files: Array<{ fileFieldKey: string; file: File }> = [];
+    const visibleDocumentationFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
-    aircraftDocumentationFields.forEach((field) => {
+    visibleDocumentationFields.forEach((field) => {
       const enabled = Boolean(documentationChecks[field.enabledKey]);
       const indefinite = Boolean(documentationChecks[field.indefiniteKey]);
       const expireDate = documentationFormValues[field.dateKey] || null;
@@ -588,7 +596,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
 
             <div className="row mb-3">
               <div className="col-12 col-md">
-                <label className="form-label d-block text-start ps-1">Accesorios</label>
+                <label className="form-label d-block text-start ps-1">Accesorios / Notas (800 caracteres)</label>
                 <textarea
                   className="form-control"
                   placeholder="Describe accesorios o notas relevantes"
@@ -604,6 +612,10 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
             {error && <p className="text-danger text-center">{error}</p>}
 
             <AircraftDocumentationSection
+              isExistingModel={isExistingModel}
+              showInsuranceDocumentation={showInsuranceDocumentation}
+              showFTSDocumentation={showFTSDocumentation}
+              showParachuteDocumentation={showParachuteDocumentation}
               activeChecks={documentationChecks}
               selectedFiles={documentationFiles}
               formValues={documentationFormValues}
