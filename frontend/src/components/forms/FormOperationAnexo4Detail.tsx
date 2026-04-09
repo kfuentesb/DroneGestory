@@ -3,9 +3,48 @@ import { apiFetch } from "../../api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/OperationsAnexo4DetailFields";
 
+/** * CONFIGURACIÓN DE TEXTOS:
+ * Modifica solo este objeto para cambiar los nombres de los puntos en el futuro.
+ */
+const SECCIONES_CONFIG = {
+  seccion4: [
+    { num: "4.1", title: "Espacio aéreo controlado y en zonas de información de vuelo (FIZ)", key: "espacioAereoControlado", level: 0 },
+    { num: "4.1.1", title: "Se cuenta con un estudio aeronáutico coordinado de seguridad específico con el ATSP.", key: "estudioAeronauticoCoordinado", level: 1 },
+    { num: "4.2", title: "Entorno aeródromos o helipuertos, civiles o militares", key: "entornoAerodromos", level: 0 },
+    { num: "4.2.1", title: "Se mantiene distancia mínima a dichas infraestructuras o se ha realizado una coordinación previa con el gestor de la infraestructura y proveedor ATS si lo hubiera.", key: "distanciaMinimaInfraestructuras", level: 1 },
+    { num: "4.3", title: "Zonas prohibidas, restringidas y asociadas a la gestión flexible del espacio aéreo", key: "zonasProhibidasFlexible", level: 0 },
+    { num: "4.3.1", title: "Se cumple con las condiciones y limitaciones o se cuenta con la autorización pertinente del gestor del área.", key: "cumpleCondiciones", level: 1 },
+    { num: "4.4", title: "Zonas de seguridad militar, de la Defensa Nacional y de la seguridad del Estado", key: "zonasSeguridad", level: 0 },
+    { num: "4.4.1", title: "Se cuenta con permiso previo y expreso del titular de la zona o del gestor responsable.", key: "permisoPrevioSeguridad", level: 1 },
+    { num: "4.5", title: "Instalaciones que prestan servicios esenciales para la comunidad", key: "serviciosEsencialesComunidad", level: 0 },
+    { num: "4.5.1", title: "Se cuenta con el permiso previo y expreso del titular de la zona o del gestor responsable.", key: "permisoPrevioServicios", level: 1 },
+    { num: "4.6", title: "Entornos urbanos", key: "entornosUrbanos", level: 0 },
+    { num: "4.6.1", title: "Se cumplen con las distancias a edificios determinadas en la declaración operacional o autorización.", key: "cumplenDistanciasEdificios", level: 1 },
+    { num: "4.6.2", title: "Se ha realizado la comunicación al Ministerio del Interior al menos con 5 días de antelación a la operación.", key: "comunicacionMinisterioInterior", level: 1 },
+    { num: "4.7", title: "Zona Restringida al Vuelo Fotográfico (ZRVF)", key: "zonaResVueloFotografico", level: 0 },
+    { num: "4.7.1", title: "Se cuenta con el permiso del CECAF para la toma de imágenes.", key: "permisoCecaf", level: 1 },
+    { num: "4.8", title: "Zonas de protección medioambiental", key: "zonasProtMedioambiental", level: 0 },
+    { num: "4.8.1", title: "Se dispone de coordinación con el gestor del espacio.", key: "disponeCoordGestor", level: 1 },
+  ],
+  seccion6: [
+    { num: "6.1", title: "CONOPS y modelo semántico", key: "conopsYModeloSemantico", level: 0 },
+    { num: "6.1.1", title: "Se aplica e identifica el modelo semántico en la zona de vuelo y este se ajusta al CONOPS autorizado.", key: "aplicaModelo", level: 1 },
+    { num: "6.1.2", title: "Se define la geografía del vuelo junto con el perfil de vuelos en función del CONOPS (alcance máximo, altura máxima, VLOS/BVLOS...) y los obstáculos y orografía.", key: "defineGeografiaVueloConops", level: 1 },
+    { num: "6.1.3", title: "Se define el volumen de contingencia.", key: "defineVolContigencia", level: 1 },
+    { num: "6.1.4", title: "Se define el margen por riesgo en tierra.", key: "defineMargenRiesgoTierra", level: 1 },
+    { num: "6.1.5", title: "Se define la zona terrestre controlada y contempla el control de accesos si fuera necesario.", key: "defineZonaTerrestreControlada", level: 1 },
+    { num: "6.1.6", title: "Se planifica la ubicación de observadores y/o asistentes.", key: "planificaUbicacionObservadores", level: 1 },
+    { num: "6.1.7", title: "Se calcula el área adyacente y se evalúa en riesgo en tierra y en aire.", key: "calculaAreaYEvaluaRiesgo", level: 1 },
+    { num: "6.2", title: "NOTAMS", key: "notams", level: 0 },
+    { num: "6.2.1", title: "Se revisa los NOTAMS activos y no existen limitaciones a la operación.", key: "revisaNotams", level: 1 },
+    { num: "6.2.2", title: "Si la operación debe realizarse en TSA o está condicionada a la publicación  previa de NOTAM, se solicita al COOP de ENAIRE su promulgación", key: "tsaOCondicionada", level: 1 },
+    { num: "6.3", title: "Otras limitaciones", key: "otrasLimitaciones", level: 0 },
+  ]
+};
+
 type FormOperationAnexo4DetailProps = {
   operationId: number;
-  operationTitle: string; // Mostrar solo
+  operationTitle: string;
   disabled?: boolean;
   onSaved?: () => void;
 };
@@ -19,7 +58,7 @@ const BOOL_OPTIONS = [
 ];
 
 function SectionTitle({ children }: { children: string }) {
-  return <h4 className="fw-bold mt-4 mb-3">{children}</h4>;
+  return <h4 className="fw-bold mt-5 mb-3 pb-2 border-bottom text-success">{children}</h4>;
 }
 
 export default function FormOperationAnexo4Detail({
@@ -33,8 +72,6 @@ export default function FormOperationAnexo4Detail({
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
 
-  const getField = (key: string) => fields.find((f) => f.key === key);
-
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
@@ -44,9 +81,7 @@ export default function FormOperationAnexo4Detail({
     fields.forEach((field) => {
       if (field.validate) {
         const isValid = field.validate(formValues[field.key]);
-        if (!isValid) {
-          nextErrors[field.key] = field.error || "Campo inválido";
-        }
+        if (!isValid) nextErrors[field.key] = field.error || "Campo inválido";
       }
     });
     setErrors(nextErrors);
@@ -55,25 +90,17 @@ export default function FormOperationAnexo4Detail({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (disabled) return;
-
-    if (!validate()) return;
+    if (disabled || !validate()) return;
 
     setSaving(true);
     try {
       const formData = new FormData();
-
-      fields.forEach((field) => {
-        const value = formValues[field.key];
-
-        if (field.type === "file") {
-          if (value instanceof File) formData.append(field.key, value);
-          return;
+      Object.entries(formValues).forEach(([key, value]) => {
+        if (value instanceof File) {
+            formData.append(key, value);
+        } else if (value !== undefined && value !== null && value !== "") {
+            formData.append(key, value);
         }
-
-        if (value === undefined || value === null || value === "") return;
-
-        formData.append(field.key, value);
       });
 
       await apiFetch(`/api/operations/${operationId}/anexo4`, {
@@ -84,102 +111,110 @@ export default function FormOperationAnexo4Detail({
       alert("Anexo 4 guardado correctamente");
       onSaved?.();
     } catch (err: any) {
-      alert(err?.message || "No se pudo guardar el anexo.");
+      alert(err?.message || "Error al guardar el anexo.");
     } finally {
       setSaving(false);
     }
   };
 
-  const renderSelect = (key: string) => {
-    const field = getField(key);
-    if (!field) return null;
-
-    const value = formValues[key] ?? "";
-    const error = errors[key];
-
+  /**
+   * Renderiza una fila basándose en el objeto de configuración.
+   * Mantiene el texto pegado a la izquierda y subniveles con sangría.
+   */
+  const renderApartadoRow = (item: any) => {
+    const value = formValues[item.key] ?? "";
+    const error = errors[item.key];
+    
     return (
-      <div className="flex-grow-1">
-        <select
-          className={`form-select ${error ? "is-invalid" : ""}`}
-          value={value}
-          onChange={(e) => handleChange(key, e.target.value)}
-          disabled={disabled || saving}
-        >
-          {BOOL_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        {error && <div className="invalid-feedback">{error}</div>}
+      <div 
+        key={item.key} 
+        className="d-flex align-items-center justify-content-between mb-1 py-2 border-bottom border-light"
+        style={{ paddingLeft: item.level === 0 ? 0 : "2rem" }}
+      >
+        <div className="d-flex align-items-baseline">
+          {item.level > 0 && <span className="me-2 text-muted small">•</span>}
+          <div className={item.level === 0 ? "fw-bold text-dark" : "text-secondary small"}>
+            {item.num}. {item.title}
+          </div>
+        </div>
+        
+        <div className="ms-3">
+          <select
+            className={`form-select form-select-sm d-inline-block w-auto ${error ? "is-invalid" : ""}`}
+            value={value}
+            onChange={(e) => handleChange(item.key, e.target.value)}
+            disabled={disabled || saving}
+            style={{ minWidth: "120px" }}
+          >
+            {BOOL_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))} 
+          </select>
+          {error && <div className="invalid-feedback d-block small">{error}</div>}
+        </div>
       </div>
     );
   };
 
   return (
     <div className="card shadow-sm border-0">
-      <div className="card-body">
-        <h3 className="fw-bold mb-1">Apéndice 4 - Lista de verificación planificación operacional</h3>
-        <p className="text-muted mb-4">
-          Operación: <strong>{operationTitle}</strong>
-        </p>
+      <div className="card-body p-4">
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL</h3>
 
         <form onSubmit={handleSubmit}>
           {/* SECCIÓN 1 */}
           <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
           <div className="mb-3">
-            <label className="form-label fw-bold">Descripción de objetivos</label>
+            <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
             <textarea
-              className="form-control"
-              rows={4}
+              className="form-control bg-white border"
+              rows={3}
               value={formValues.descripcion ?? ""}
               onChange={(e) => handleChange("descripcion", e.target.value)}
               disabled={disabled || saving}
             />
           </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Fechas y horas previstas</label>
-            <input
-              type="datetime-local"
-              className="form-control"
-              value={formValues.fechaHoraPrevista ?? ""}
-              onChange={(e) => handleChange("fechaHoraPrevista", e.target.value)}
-              disabled={disabled || saving}
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">UAS previsto</label>
-            <input type="text" className="form-control" disabled placeholder="Pendiente" />
-          </div>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Medios materiales</label>
-            <input
-              type="text"
-              className="form-control"
-              value={formValues.mediosMateriales ?? ""}
-              onChange={(e) => handleChange("mediosMateriales", e.target.value)}
-              disabled={disabled || saving}
-            />
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label fw-bold small text-uppercase text-muted">Fechas y horas previstas</label>
+              <input
+                type="datetime-local"
+                className="form-control bg-white border"
+                value={formValues.fechaHoraPrevista ?? ""}
+                onChange={(e) => handleChange("fechaHoraPrevista", e.target.value)}
+                disabled={disabled || saving}
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label fw-bold small text-uppercase text-muted">Medios materiales</label>
+              <input
+                type="text"
+                className="form-control bg-white border"
+                value={formValues.mediosMateriales ?? ""}
+                onChange={(e) => handleChange("mediosMateriales", e.target.value)}
+                disabled={disabled || saving}
+              />
+            </div>
           </div>
 
           {/* SECCIÓN 2 */}
           <SectionTitle>SECCIÓN 2: Evaluación del escenario de operaciones</SectionTitle>
           <div className="row">
             <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold">Dirección</label>
+              <label className="form-label fw-bold small text-uppercase text-muted">Dirección</label>
               <input
                 type="text"
-                className="form-control"
+                className="form-control bg-white border"
                 value={formValues.direccion ?? ""}
                 onChange={(e) => handleChange("direccion", e.target.value)}
                 disabled={disabled || saving}
               />
             </div>
             <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold">Coordenadas</label>
+              <label className="form-label fw-bold small text-uppercase text-muted">Coordenadas</label>
               <input
                 type="text"
-                className="form-control"
+                className="form-control bg-white border"
                 value={formValues.coords ?? ""}
                 onChange={(e) => handleChange("coords", e.target.value)}
                 disabled={disabled || saving}
@@ -189,8 +224,8 @@ export default function FormOperationAnexo4Detail({
 
           {/* SECCIÓN 3 */}
           <SectionTitle>SECCIÓN 3: Espacio aéreo</SectionTitle>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Imagen del espacio aéreo</label>
+          <div className="mb-3 border rounded p-3 bg-white">
+            <label className="form-label fw-bold small text-uppercase text-muted">Imagen del espacio aéreo</label>
             <input
               type="file"
               className="form-control"
@@ -201,235 +236,37 @@ export default function FormOperationAnexo4Detail({
 
           {/* SECCIÓN 4 */}
           <SectionTitle>SECCIÓN 4: Zonas geográficas de UAS</SectionTitle>
-          <div className="list-group mb-4">
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.1 Espacio aéreo controlado</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.1</span>
-                {renderSelect("espacioAereoControlado")}
-              </div>
-              <div className="ms-4 mt-2 d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.1.1</span>
-                {renderSelect("estudioAeronauticoCoordinado")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.2 Entorno de aeródromos</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.2</span>
-                {renderSelect("entornoAerodromos")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.3 Distancia mínima infraestructuras</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.3</span>
-                {renderSelect("distanciaMinimaInfraestructuras")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.4 Zonas prohibidas / flexible</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.4</span>
-                {renderSelect("zonasProhibidasFlexible")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.5 Cumple condiciones</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.5</span>
-                {renderSelect("cumpleCondiciones")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.6 Zonas de seguridad</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.6</span>
-                {renderSelect("zonasSeguridad")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.7 Permiso previo de seguridad</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.7</span>
-                {renderSelect("permisoPrevioSeguridad")}
-              </div>
-              <div className="ms-4 mt-2 d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.7.1</span>
-                {renderSelect("serviciosEsencialesComunidad")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.8 Permiso previo servicios</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.8</span>
-                {renderSelect("permisoPrevioServicios")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.9 Entornos urbanos</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.9</span>
-                {renderSelect("entornosUrbanos")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.10 Cumplen distancias edificios</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.10</span>
-                {renderSelect("cumplenDistanciasEdificios")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.11 Comunicación Ministerio Interior</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.11</span>
-                {renderSelect("comunicacionMinisterioInterior")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.12 Zona reserva vuelo fotográfico</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.12</span>
-                {renderSelect("zonaResVueloFotografico")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.13 Permiso CECAF</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.13</span>
-                {renderSelect("permisoCecaf")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.14 Zonas protegidas medioambiental</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.14</span>
-                {renderSelect("zonasProtMedioambiental")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.15 Dispone coordinador gestor</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.15</span>
-                {renderSelect("disponeCoordGestor")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.16 Conops y modelo semántico</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.16</span>
-                {renderSelect("conopsYModeloSemantico")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.17 Aplica modelo</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.17</span>
-                {renderSelect("aplicaModelo")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.18 Define geografía vuelo ConOps</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.18</span>
-                {renderSelect("defineGeografiaVueloConops")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.19 Define vol contingencia</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.19</span>
-                {renderSelect("defineVolContigencia")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.20 Define margen riesgo tierra</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.20</span>
-                {renderSelect("defineMargenRiesgoTierra")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.21 Define zona terrestre controlada</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.21</span>
-                {renderSelect("defineZonaTerrestreControlada")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.22 Planifica ubicación observadores</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.22</span>
-                {renderSelect("planificaUbicacionObservadores")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.23 Calcula área y evalúa riesgo</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.23</span>
-                {renderSelect("calculaAreaYEvaluaRiesgo")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.24 NOTAMs</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.24</span>
-                {renderSelect("notams")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.25 Revisa NOTAMs</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.25</span>
-                {renderSelect("revisaNotams")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.26 TSA o Condicionada</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.26</span>
-                {renderSelect("tsaOCondicionada")}
-              </div>
-            </div>
-
-            <div className="list-group-item">
-              <div className="fw-bold mb-2">4.27 Otras limitaciones</div>
-              <div className="d-flex align-items-center gap-3">
-                <span className="fw-bold" style={{ width: 50 }}>4.27</span>
-                {renderSelect("otrasLimitaciones")}
-              </div>
-            </div>
+          <div className="bg-white border rounded p-3 mb-4 text-start">
+             {SECCIONES_CONFIG.seccion4.map(renderApartadoRow)}
           </div>
 
-          <div className="d-flex justify-content-end mt-4">
-            <button type="submit" className="btn btn-primary" disabled={disabled || saving}>
-              {saving ? "Guardando..." : "Guardar Anexo"}
+          {/* SECCIÓN 5 */}
+          <SectionTitle>SECCIÓN 5: Zona de vuelo</SectionTitle>
+          <div className="mb-3 p-3 bg-white rounded border shadow-none">
+            <label className="form-label fw-bold text-uppercase small text-muted">Imagen zona de vuelo</label>
+            <input
+              type="file"
+              className="form-control"
+              onChange={(e) => handleChange("imagenZonaVuelo", e.target.files?.[0] ?? null)}
+              disabled={disabled || saving}
+            />
+            <div className="form-text mt-2">Adjunte el mapa detallado de la zona de operación.</div>
+          </div>
+
+          {/* SECCIÓN 6 */}
+          <SectionTitle>SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo</SectionTitle>
+          <div className="bg-white border rounded p-3 mb-4 text-start">
+             {SECCIONES_CONFIG.seccion6.map(renderApartadoRow)}
+          </div>
+
+          <div className="d-flex justify-content-end mt-5 pt-3 border-top">
+            <button type="submit" className="btn btn-success btn-lg px-5 shadow-sm" disabled={disabled || saving}>
+              {saving ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Guardando...
+                </>
+              ) : "Guardar borrador"}
             </button>
           </div>
         </form>

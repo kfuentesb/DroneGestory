@@ -269,7 +269,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
       <div className="card shadow-sm mb-4" style={{ border: "1px solid #E5E7EB" }}>
         <div className="card-body">
-          <h4 className="mb-3">Documento actual</h4>
 
           {isAnexo4 ? (
             <FormOperationAnexo4Detail
