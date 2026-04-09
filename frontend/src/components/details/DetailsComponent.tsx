@@ -957,6 +957,20 @@ export default function DetailsComponent({
                     }
                     stringValue = parsed ? "true" : "false";
                 }
+                if (field.key === "cautive") {
+                    const normalized = stringValue
+                        .normalize("NFD")
+                        .replace(/\p{M}/gu, "")
+                        .toLowerCase()
+                        .replace(/[^a-z]/g, "");
+                    if (normalized.startsWith("s") || normalized === "yes") {
+                        stringValue = "YES";
+                    } else if (normalized === "no" || normalized.startsWith("n")) {
+                        stringValue = "NO";
+                    } else if (normalized.startsWith("opc")) {
+                        stringValue = "OPTIONAL";
+                    }
+                }
 
                 const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
                 formData.append(field.key, finalValue);

@@ -1,5 +1,5 @@
 import type { FieldConfig } from "../../details/FieldConfig";
-
+import Select from "react-select";
 type Props = {
     values: any;
     setValues: (v: any) => void;
@@ -19,8 +19,19 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
         if (value === null || value === undefined || value === "") return null;
         if (typeof value === "boolean") return value;
         const normalized = normalize(String(value)).trim();
-        if (["true", "si", "yes", "activo"].includes(normalized)) return true;
-        if (["false", "no", "inactivo"].includes(normalized)) return false;
+        const letters = normalized.replace(/[^a-z]/g, "");
+        if (
+            ["true", "si", "yes", "activo"].includes(normalized) ||
+            ["true", "si", "yes", "activo"].includes(letters) ||
+            letters.startsWith("s") ||
+            letters.startsWith("act")
+        ) return true;
+        if (
+            ["false", "no", "inactivo"].includes(normalized) ||
+            ["false", "no", "inactivo"].includes(letters) ||
+            letters.startsWith("n") ||
+            letters.startsWith("ina")
+        ) return false;
         return null;
     };
 
@@ -29,8 +40,27 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
         if (parsed === null) return "";
         if (!opts || opts.length === 0) return value ? "true" : "false";
         const targetOptions = parsed ? ["si", "activo", "true", "yes"] : ["no", "inactivo", "false"];
-        const found = opts.find((opt) => targetOptions.includes(normalize(opt)));
+        const found = opts.find((opt) => {
+            const normalized = normalize(opt).replace(/[^a-z]/g, "");
+            return targetOptions.includes(normalized) || (parsed ? normalized.startsWith("s") : normalized.startsWith("n"));
+        });
         return found ?? opts[0];
+    };
+
+    const mapCautiveToOption = (opts: string[] | undefined, value: unknown) => {
+        if (!opts || opts.length === 0) return "";
+        const letters = normalize(String(value ?? "")).replace(/[^a-z]/g, "");
+        if (letters === "") return "";
+        if (letters.startsWith("s") || letters === "yes") {
+            return opts.find((opt) => normalize(opt).replace(/[^a-z]/g, "").startsWith("s")) ?? opts[0];
+        }
+        if (letters.startsWith("n")) {
+            return opts.find((opt) => normalize(opt).replace(/[^a-z]/g, "") === "no") ?? opts[0];
+        }
+        if (letters.startsWith("opc") || letters.startsWith("optional")) {
+            return opts.find((opt) => normalize(opt).replace(/[^a-z]/g, "").startsWith("opc")) ?? opts[0];
+        }
+        return "";
     };
 
     return (
@@ -100,37 +130,55 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             )}
                         </div>
                     ) : field.type === "select" ? (
-                        <select
-                            className="form-select"
-                            disabled={field.readOnly} 
-                            value={
-                                BOOLEAN_FIELD_KEYS.has(field.key)
-                                    ? mapBooleanToOption(field.options, values[field.key])
-                                    : values[field.key] || ""
-                            }
-                            onChange={(e) => {
-                                const val = e.target.value;
+                        <Select
+                            classNamePrefix="react-select"
+                            isDisabled={field.readOnly}
+                            isClearable={!field.readOnly}
+                            placeholder="Seleccionar..."
+                            value={(() => {
+                                let currentStr = "";
+                                if (BOOLEAN_FIELD_KEYS.has(field.key)) {
+                                    currentStr = mapBooleanToOption(field.options, values[field.key]);
+                                } else if (field.key === "cautive") {
+                                    currentStr = mapCautiveToOption(field.options, values[field.key]);
+                                } else {
+                                    currentStr = values[field.key] || "";
+                                }
+                                return currentStr ? { value: currentStr, label: currentStr } : null;
+                            })()}
+                            options={field.options?.map(opt => ({ value: opt, label: opt })) || []}
+                            onChange={(selected) => {
+                                if (!selected) {
+                                    setValues({ ...values, [field.key]: null });
+                                    return;
+                                }
+
+                                const val = selected.value;
                                 let finalValue: any = val;
 
                                 if (BOOLEAN_FIELD_KEYS.has(field.key)) {
-                                    if (val === "") {
-                                        finalValue = null;
-                                    } else {
-                                        const parsed = parseBooleanLike(val);
-                                        finalValue = parsed !== null ? parsed : null;
-                                    }
-                                } else if (val === "") {
-                                    finalValue = null;
+                                    const parsed = parseBooleanLike(val);
+                                    finalValue = parsed !== null ? parsed : null;
+                                } else if (field.key === "cautive") {
+                                    const normalized = normalize(val).replace(/[^a-z]/g, "");
+                                    if (normalized.startsWith("s")) finalValue = "YES";
+                                    else if (normalized.startsWith("n")) finalValue = "NO";
+                                    else if (normalized.startsWith("opc")) finalValue = "OPTIONAL";
+                                    else finalValue = null;
                                 }
 
                                 setValues({ ...values, [field.key]: finalValue });
                             }}
-                        >
-                            {!field.readOnly && <option value="">Seleccionar...</option>}
-                            {field.options?.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                        </select>
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    borderColor: errors[field.key] ? "#dc3545" : "#D1D5DB",
+                                    backgroundColor: field.readOnly ? "#f3f4f6" : "#ffffff",
+                                    borderRadius: "0.375rem",
+                                    textAlign: "left"
+                                }),
+                            }}
+                        />
                     ) : field.type === "date" ? (
                             <input
                                 type="date"

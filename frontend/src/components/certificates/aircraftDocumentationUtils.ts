@@ -17,10 +17,21 @@ export function toBooleanLike(value: BooleanLikeValue): boolean | null {
   }
 
   const normalized = normalize(String(value));
-  if (["true", "si", "yes", "activo"].includes(normalized)) {
+  const letters = normalized.replace(/[^a-z]/g, "");
+  if (
+    ["true", "si", "yes", "activo"].includes(normalized) ||
+    ["true", "si", "yes", "activo"].includes(letters) ||
+    letters.startsWith("s") ||
+    letters.startsWith("act")
+  ) {
     return true;
   }
-  if (["false", "no", "inactivo"].includes(normalized)) {
+  if (
+    ["false", "no", "inactivo"].includes(normalized) ||
+    ["false", "no", "inactivo"].includes(letters) ||
+    letters.startsWith("n") ||
+    letters.startsWith("ina")
+  ) {
     return false;
   }
 
