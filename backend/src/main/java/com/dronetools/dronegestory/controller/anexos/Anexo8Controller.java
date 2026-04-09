@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
+import com.dronetools.dronegestory.dto.operation.AnexoInfoDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
@@ -16,6 +17,15 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
                             OperationRepository operationRepository,
                             Anexo8Repository repository) {
         super(service, operationRepository, repository);
+    }
+
+    @PostMapping
+    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId,
+                                     @RequestParam(required = false) String textoPrueba) {
+        Anexo8 input = new Anexo8();
+        input.setTextoPrueba(textoPrueba);
+        Anexo8 saved = service.registrarAnexo8(operationId, input);
+        return AnexoInfoDTO.from(saved);
     }
 
     @Override

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/OperationsAnexo4DetailFields";
@@ -44,7 +44,8 @@ const SECCIONES_CONFIG = {
 
 type FormOperationAnexo4DetailProps = {
   operationId: number;
-  operationTitle: string;
+  operationTitle?: string;
+  initialValues?: Record<string, any>;
   disabled?: boolean;
   onSaved?: () => void;
 };
@@ -64,13 +65,27 @@ function SectionTitle({ children }: { children: string }) {
 export default function FormOperationAnexo4Detail({
   operationId,
   operationTitle,
+  initialValues,
   disabled,
   onSaved,
 }: FormOperationAnexo4DetailProps) {
   const fields = useMemo<FieldConfig[]>(() => operationAnexo4DetailFields, []);
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [formValues, setFormValues] = useState<Record<string, any>>(initialValues ?? {});
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (initialValues) {
+      setFormValues(
+        Object.fromEntries(
+          Object.entries(initialValues).map(([k, v]) => [
+            k,
+            v === null || v === undefined ? "" : v instanceof Boolean || typeof v === "boolean" ? String(v) : v,
+          ])
+        )
+      );
+    }
+  }, [initialValues]);
 
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
