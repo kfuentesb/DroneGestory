@@ -78,13 +78,16 @@ export default function RegisterAircraftFlow() {
   if (showForm) {
     return (
       <>
-        <div className="container py-3" style={{ maxWidth: "1000px" }}>
+        <div className="container" style={{ maxWidth: "1000px" }}>
           <button
             type="button"
-            className="btn btn-outline-secondary btn-sm"
+            className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted hover-dark"
             onClick={() => setShowForm(false)}
           >
-            Volver a selección
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            <span className="ms-2 fw-medium">Volver</span>
           </button>
         </div>
 
@@ -106,85 +109,85 @@ export default function RegisterAircraftFlow() {
 
   return (
     <div className="container py-4 position-relative">
-  {/* Static Volver Arrow */}
-  <button
-    type="button"
-    className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted hover-dark"
-    style={{ position: "absolute", top: "10px", left: "20px", zIndex: 10 }}
-    onClick={() => navigate("/aircrafts")}
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-      <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-    </svg>
-    <span className="ms-2 fw-medium">Volver</span>
-  </button>
+      {/* Static Volver Arrow */}
+      <button
+        type="button"
+        className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted hover-dark"
+        style={{ position: "absolute", top: "10px", left: "20px", zIndex: 10 }}
+        onClick={() => navigate("/aircrafts")}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        <span className="ms-2 fw-medium">Volver</span>
+      </button>
 
-  <div className="card shadow-sm mt-5" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
-    <div className="card-body py-5" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-      <h2 className="mb-2 fw-bold" style={{ color: "#1E1E1E" }}>Registrar aeronave</h2>
-      <p className="text-muted mb-4">Selecciona el método de registro para comenzar.</p>
+      <div className="card shadow-sm mt-5" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
+        <div className="card-body py-5" style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+          <h2 className="mb-2 fw-bold" style={{ color: "#1E1E1E" }}>Registrar aeronave</h2>
+          <p className="text-muted mb-4">Selecciona el método de registro para comenzar.</p>
 
-      {/* Main Selection Buttons */}
-      <div className="d-flex justify-content-center gap-3 mb-2">
-        <button
-          type="button"
-          className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
-          onClick={() => {
-            setMode("new");
-            setShowForm(true);
-          }}
-        >
-          Nuevo modelo
-        </button>
-        
-        <button
-          type="button"
-          className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
-          onClick={() => setMode("existing")}
-        >
-          Modelo existente
-        </button>
+          {/* Main Selection Buttons */}
+          <div className="d-flex justify-content-center gap-3 mb-2">
+            <button
+              type="button"
+              className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
+              onClick={() => {
+                setMode("new");
+                setShowForm(true);
+              }}
+            >
+              Nuevo modelo
+            </button>
+            
+            <button
+              type="button"
+              className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
+              onClick={() => setMode("existing")}
+            >
+              Modelo existente
+            </button>
+          </div>
+
+          {/* Existing Model Selection View */}
+          {mode === "existing" && (
+            <div className="mt-4 text-start animate__animated animate__fadeInUp">
+              <hr className="mb-4" style={{ opacity: 0.1 }} />
+              <label className="form-label fw-medium ps-1">Buscar fabricante y modelo</label>
+              <Select
+                options={modelOptions}
+                value={selectedOption}
+                onChange={(value) => setSelectedOption(value as AircraftModelOption)}
+                placeholder="Escribe para buscar..."
+                isClearable
+              />
+              
+              <button
+                type="button"
+                className="btn btn-success w-100 mt-3 py-2 fw-bold"
+                disabled={!selectedOption}
+                onClick={() => setShowForm(true)}
+              >
+                Continuar
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Existing Model Selection View */}
-      {mode === "existing" && (
-        <div className="mt-4 text-start animate__animated animate__fadeInUp">
-          <hr className="mb-4" style={{ opacity: 0.1 }} />
-          <label className="form-label fw-medium ps-1">Buscar fabricante y modelo</label>
-          <Select
-            options={modelOptions}
-            value={selectedOption}
-            onChange={(value) => setSelectedOption(value as AircraftModelOption)}
-            placeholder="Escribe para buscar..."
-            isClearable
-          />
-          
-          <button
-            type="button"
-            className="btn btn-success w-100 mt-3 py-2 fw-bold"
-            disabled={!selectedOption}
-            onClick={() => setShowForm(true)}
-          >
-            Continuar
-          </button>
-        </div>
-      )}
+      {/* CSS for the Hover Transition */}
+      <style>{`
+        .transition-btn {
+          transition: all 0.3s ease !important;
+          border-width: 2px !important;
+        }
+        .transition-btn:hover {
+          color: white !important;
+          background-color: #198754 !important; /* Bootstrap Success Green */
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+      `}</style>
     </div>
-  </div>
-
-  {/* CSS for the Hover Transition */}
-  <style>{`
-    .transition-btn {
-      transition: all 0.3s ease !important;
-      border-width: 2px !important;
-    }
-    .transition-btn:hover {
-      color: white !important;
-      background-color: #198754 !important; /* Bootstrap Success Green */
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-  `}</style>
-</div>
   );
 }

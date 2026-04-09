@@ -1,11 +1,11 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.aircraft.AircraftRequestDTO;
+import com.dronetools.dronegestory.dto.aircraft.AircraftResponseDTO;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.service.AircraftService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -13,7 +13,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.beans.PropertyEditorSupport;
@@ -23,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/aircraft")
@@ -31,43 +41,40 @@ public class AircraftController {
 
     private final AircraftService aircraftService;
 
-    // Obtener todos los aircrafts
     @GetMapping
-    public List<Aircraft> getAll() {
-        return aircraftService.getAllAircrafts();
+    public List<AircraftResponseDTO> getAll() {
+        return aircraftService.getAllAircrafts()
+                .stream()
+                .map(AircraftResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    // Obtener un aircraft por id
     @GetMapping("/{id}")
-    public ResponseEntity<Aircraft> getById(@PathVariable int id) {
+    public ResponseEntity<AircraftResponseDTO> getById(@PathVariable int id) {
         return aircraftService.getAircraftById(id)
+                .map(AircraftResponseDTO::fromEntity)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Aircraft> createAircraftWithFile(
-            @ModelAttribute Aircraft aircraft, // Spring vincula los campos de texto aquí
+    public ResponseEntity<AircraftResponseDTO> createAircraftWithFile(
+            @ModelAttribute AircraftRequestDTO dto,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
-        // Si quieres depurar, añade estos logs:
-        System.out.println("Modelo recibido: " + aircraft.getModel());
-        if (imageFile != null) {
-            System.out.println("Archivo: " + imageFile.getOriginalFilename());
-        }
-        
-        Aircraft createdAircraft = aircraftService.createWithFile(aircraft, imageFile);
-        return ResponseEntity.ok(createdAircraft);
+        Aircraft createdAircraft = aircraftService.createWithFile(dto.toEntity(), imageFile);
+        return ResponseEntity.ok(AircraftResponseDTO.fromEntity(createdAircraft));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Aircraft> updateAircraftAWithFile(
+    public ResponseEntity<AircraftResponseDTO> updateAircraftAWithFile(
             @PathVariable Integer id,
-            @ModelAttribute Aircraft aircraft,
+            @ModelAttribute AircraftRequestDTO dto,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
+        Aircraft aircraft = dto.toEntity();
 
         boolean mtomPresent = request.getParameterMap().containsKey("mtom");
         boolean wingspanPresent = request.getParameterMap().containsKey("wingspan");
@@ -75,20 +82,19 @@ public class AircraftController {
         boolean impactEnergyPresent = request.getParameterMap().containsKey("impactEnergy");
 
         Aircraft updatedAircraft = aircraftService.updateWithFile(
-            id, 
-            aircraft, 
-            imageFile, 
-            removeImage,
-            mtomPresent, 
-            wingspanPresent, 
-            maxSpeedPresent, 
-            impactEnergyPresent
+                id,
+                aircraft,
+                imageFile,
+                removeImage,
+                mtomPresent,
+                wingspanPresent,
+                maxSpeedPresent,
+                impactEnergyPresent
         );
 
-        return ResponseEntity.ok(updatedAircraft);
+        return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));
     }
 
-    // Eliminar un aircraft por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         try {
@@ -121,14 +127,14 @@ public class AircraftController {
         }
 
         Resource resource = new UrlResource(file.toUri());
-
         if (!resource.exists() || !resource.isReadable()) {
             return ResponseEntity.notFound().build();
         }
 
-        // Detect content type
         String contentType = Files.probeContentType(file);
-        if (contentType == null) contentType = "application/octet-stream";
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
@@ -138,14 +144,13 @@ public class AircraftController {
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-        
         binder.registerCustomEditor(BigDecimal.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
                 if (text == null || text.trim().isEmpty()) {
                     setValue(null);
                 } else {
-                    setValue(new BigDecimal(text.replace(',', '.'))); // Soporta comas y puntos
+                    setValue(new BigDecimal(text.replace(',', '.')));
                 }
             }
         });

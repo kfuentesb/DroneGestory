@@ -66,59 +66,26 @@ public class Aircraft {
     @Column(name = "image_path")
     private String imagePath;
 
-    // ============ ============ ============
+    // campos añadidos en la segunda tanda de aircraft
 
-    // ---------- CAMPOS OPCIONALES ------------------
-    // @Column(name = "applicant_type")
-    // @Enumerated(EnumType.STRING)
-    // private ApplicantType applicantType;
+    @Column(name = "privately_built")
+    private Boolean privatelyBuilt;
 
-    // @Column(name = "applicant_name", length = 100)
-    // private String applicantName;
+    @Column(name = "has_parachute")
+    private Boolean hasParachute;
 
-    // // Si ApplicantType = Operator ||To_the_manufacturer
-    // @Column(name = "operador_name", length = 100)
-    // private String operadorName;
+    @Column(name = "has_ensurance")
+    private Boolean hasEnsurance;
 
-    // // Si ApplicantType = Operator
-    // @Column(name = "operator_number")
-    // private Integer operatorNumber;
+    @Column(name = "has_fts")
+    private Boolean hasFTS;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cautive", length = 20)
+    private SelectionStatus cautive;
 
-    // @Column(name= "privately_built")
-    // private Boolean privatelyBuilt;
-
-    // @Min(0)
-    // @Max(10000)
-    // @Column(name = "max_autonomy")
-    // private Integer maxAutonomy;
-
-    // @Column(name="tether")
-    // private Boolean tether;
-
-    // @Column(name="cable_lenght", precision = 9, scale = 3)
-    // private BigDecimal cableLenght;
-
-    // @Column(name="power_source")
-    // @Enumerated(EnumType.STRING)
-    // private PowerSource powerSource;
-
-    // @Column(name="power_source_type")
-    // @Enumerated(EnumType.STRING)
-    // private PowerSourceType powerSourceType;
-
-    // @Column(name = "accessories")
-    // private String accessories;
-
-    // @Column(name = "observations")
-    // private String observations;
-
-    // @Column(name = "purchase_date")
-    // private LocalDate purchaseDate;
-
-    // ------------------------------------
-
-//    @OneToMany(mappedBy = "aircraft")
-//    private List<Operation> operations;
+    @Column(name = "accessories", length = 800)
+    private String accessories;
 
 }
 
