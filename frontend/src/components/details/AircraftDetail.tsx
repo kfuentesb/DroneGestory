@@ -48,6 +48,7 @@ export default function AircraftDetail() {
             endpoint={`${API_BASE_URL}/api/aircraft`}
             imageEndpoint={`${API_BASE_URL}/api/aircraft/images`}
             defaultImage="drone"
+            entityType="aircraft"
             fields={aircraftFields}
 
             allowEdit={canManage}
@@ -57,7 +58,7 @@ export default function AircraftDetail() {
             onBack={() => navigate("/aircrafts")}
 
             validateForm={validateForm}
-
+            certificateSectionType="aircraft"
         />
     )
 }

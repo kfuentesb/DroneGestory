@@ -155,13 +155,14 @@ export default function UserDetail() {
             id={id}
             endpoint={`/api/users`}
             imageEndpoint={`/api/users/images`}
+            entityType="user"
             fields={userFields}
             allowEdit
             allowDelete
             onDelete={handleDelete}
             onBack={() => navigate("/users")}
             validateForm={validateForm}
-            showCertificates
+            certificateSectionType="user"
             />
         </>
     );

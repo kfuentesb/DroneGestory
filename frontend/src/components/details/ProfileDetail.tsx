@@ -70,12 +70,13 @@ export default function ProfileDetail() {
             initialData={meData}
             endpoint={`/api/users`}
             imageEndpoint={`/api/users/images`}
+            entityType="user"
             fields={processedFields}
             allowEdit={true}
             allowDelete={false}
             onBack={() => navigate("/home")}
             validateForm={validateForm}
-            showCertificates
+            certificateSectionType="user"
         />
     );
 }

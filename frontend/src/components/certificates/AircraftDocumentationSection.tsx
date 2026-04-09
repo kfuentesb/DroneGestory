@@ -12,6 +12,15 @@ export type AircraftDocumentationFieldConfig = {
   infoLabel: string;
 };
 
+export type AircraftSummaryItem = {
+  key: string;
+  certificateType: string;
+  expireDate?: string;
+  dateIndefinite?: boolean;
+  hasFile?: boolean;
+  onOpen?: () => void;
+};
+
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
   {
     key: "caracterizacion",
@@ -104,6 +113,7 @@ type AircraftDocumentationSectionProps = {
   activeChecks: Record<string, boolean>;
   selectedFiles: Record<string, File | null>;
   formValues: Record<string, string>;
+  existingFileNames?: Record<string, string>;
   onToggleCheck: (id: string) => void;
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string) => void;
   onClearFile: (id: string, inputId: string) => void;
@@ -152,6 +162,7 @@ export default function AircraftDocumentationSection({
   activeChecks,
   selectedFiles,
   formValues,
+  existingFileNames = {},
   onToggleCheck,
   onFileChange,
   onClearFile,
@@ -208,6 +219,7 @@ export default function AircraftDocumentationSection({
                   onToggleCheck={() => onToggleCheck(field.enabledKey)}
                   fileInputId={`file-upload-aircraft-${field.fileKey}`}
                   selectedFile={selectedFiles[field.fileKey] ?? null}
+                  existingFileName={existingFileNames[field.fileKey]}
                   onFileChange={(e) => onFileChange(e, field.fileKey)}
                   onClearFile={() => onClearFile(field.fileKey, `file-upload-aircraft-${field.fileKey}`)}
                   expirationDate={formValues[field.dateKey] || ""}
@@ -221,6 +233,59 @@ export default function AircraftDocumentationSection({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+export function AircraftDocumentationSummarySection({ items }: { items: AircraftSummaryItem[] }) {
+  return (
+    <div className="mt-4 border-top pt-3">
+      <h5 className="fw-bold mb-3" style={{ color: "#1E1E1E" }}>Documentaciones</h5>
+
+      {items.length === 0 ? (
+        <div className="p-3 bg-light rounded text-center border">
+            <p className="text-muted mb-0">Sin documentaciones registradas.</p>
+        </div>
+      ) : (
+        <div className="table-responsive">
+          <table className="table table-hover align-middle mb-0">
+            <thead className="table-light">
+              <tr>
+                <th scope="col" style={{ width: "60%" }}>Documentación</th>
+                <th scope="col" style={{ width: "40%" }}>Fecha de expiración</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.key}>
+                  <td>
+                    {item.hasFile && item.onOpen ? (
+                      <button 
+                        type="button" 
+                        className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none" 
+                        onClick={item.onOpen} 
+                        title="Abrir certificado"
+                      >
+                        <i className="bi bi-file-earmark-arrow-down me-2"></i>
+                        {item.certificateType}
+                      </button>
+                    ) : (
+                      <span className="text-dark">{item.certificateType}</span>
+                    )}
+                  </td>
+                  <td>
+                    {item.dateIndefinite ? (
+                      <span className="badge bg-info text-dark">Indefinida</span>
+                    ) : (
+                      <span className="text-secondary">{item.expireDate || "No especificada"}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
