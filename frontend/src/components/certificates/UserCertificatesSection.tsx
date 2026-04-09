@@ -466,39 +466,52 @@ export default function UserCertificatesSection({
 
 export function UserCertificatesSummarySection({ items }: { items: CertificateSummaryItem[] }) {
     return (
-        <div className="mt-3">
-            <h5 className="fw-bold mb-3">Certificados</h5>
+        <div className="mt-4 border-top pt-3">
+        <h5 className="fw-bold mb-3" style={{ color: "#1E1E1E" }}>Certificados de Usuario</h5>
 
-            {items.length === 0 && <p className="text-muted mb-0">Sin certificados registrados.</p>}
-
-            {items.length > 0 && (
-                <div className="table-responsive">
-                    <table className="table table-sm align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Certificado</th>
-                                <th scope="col">Fecha de expiracion</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items.map((item) => (
-                                <tr key={item.id}>
-                                    <td>
-                                        {item.hasFile && item.onOpen ? (
-                                            <button type="button" className="btn btn-link p-0 text-start" onClick={item.onOpen} title="Abrir certificado">
-                                                {item.certificateType}
-                                            </button>
-                                        ) : (
-                                            <span>{item.certificateType}</span>
-                                        )}
-                                    </td>
-                                    <td>{item.dateIndefinite ? "Indefinida" : item.expireDate || "-"}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+        {items.length === 0 ? (
+            <div className="p-3 bg-light rounded text-center border">
+            <p className="text-muted mb-0">Sin certificados registrados.</p>
+            </div>
+        ) : (
+            <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+                <thead className="table-light">
+                <tr>
+                    <th scope="col" style={{ width: "60%" }}>Certificado</th>
+                    <th scope="col" style={{ width: "40%" }}>Fecha de expiración</th>
+                </tr>
+                </thead>
+                <tbody>
+                {items.map((item) => (
+                    <tr key={item.id}>
+                    <td>
+                        {item.hasFile && item.onOpen ? (
+                        <button 
+                            type="button" 
+                            className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none shadow-none" 
+                            onClick={item.onOpen} 
+                        >
+                            <i className="bi bi-file-earmark-arrow-down me-2"></i>
+                            {item.certificateType}
+                        </button>
+                        ) : (
+                        <span className="text-dark">{item.certificateType}</span>
+                        )}
+                    </td>
+                    <td>
+                        {item.dateIndefinite ? (
+                        <span className="badge bg-info text-dark fw-normal">Indefinida</span>
+                        ) : (
+                        <span className="text-secondary">{item.expireDate || "No especificada"}</span>
+                        )}
+                    </td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+            </div>
+        )}
         </div>
     );
 }

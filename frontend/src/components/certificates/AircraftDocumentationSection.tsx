@@ -240,11 +240,11 @@ export default function AircraftDocumentationSection({
 export function AircraftDocumentationSummarySection({ items }: { items: AircraftSummaryItem[] }) {
   return (
     <div className="mt-4 border-top pt-3">
-      <h5 className="fw-bold mb-3" style={{ color: "#1E1E1E" }}>Documentaciones</h5>
+      <h5 className="fw-bold mb-3" style={{ color: "#1E1E1E" }}>Documentación de Aeronave</h5>
 
       {items.length === 0 ? (
         <div className="p-3 bg-light rounded text-center border">
-            <p className="text-muted mb-0">Sin documentaciones registradas.</p>
+          <p className="text-muted mb-0">Sin documentaciones registradas.</p>
         </div>
       ) : (
         <div className="table-responsive">
@@ -262,9 +262,8 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
                     {item.hasFile && item.onOpen ? (
                       <button 
                         type="button" 
-                        className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none" 
+                        className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none shadow-none" 
                         onClick={item.onOpen} 
-                        title="Abrir certificado"
                       >
                         <i className="bi bi-file-earmark-arrow-down me-2"></i>
                         {item.certificateType}
@@ -275,7 +274,7 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
                   </td>
                   <td>
                     {item.dateIndefinite ? (
-                      <span className="badge bg-info text-dark">Indefinida</span>
+                      <span className="badge bg-info text-dark fw-normal">Indefinida</span>
                     ) : (
                       <span className="text-secondary">{item.expireDate || "No especificada"}</span>
                     )}
