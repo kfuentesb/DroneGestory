@@ -129,7 +129,7 @@ export default function OperationDetail() {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
         <div>
-          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(-1)}>
+          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(`/operations/details/mine`)}>
             Volver
           </button>
           <h2 className="mb-2">{operation.nombreOperacion}</h2>

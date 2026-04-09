@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom"
 import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
-import { userFields } from "./UserFields"
+import { userFields } from "../commons/fields/UserFields"
 
 
 // esta es la vista que ve un admin cuando selecciona un usario de la lista de usuarios

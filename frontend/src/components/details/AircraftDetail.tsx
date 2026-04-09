@@ -3,7 +3,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.
 import DetailsComponent from "./DetailsComponent"
 import { apiFetch } from "../../api"
 
-import { aircraftFields } from "./AircraftFields"
+import { aircraftFields } from "../commons/fields/AircraftFields"
 import { useAuth } from "../commons/hooks/useAuth";
 
 

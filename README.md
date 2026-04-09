@@ -108,7 +108,6 @@ VISUAL<br>
 -Hacer que el campo accesorios sea un AreaText cuando se edite<br>
 -Añadir certificaciones de drones<br>
 
-
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
