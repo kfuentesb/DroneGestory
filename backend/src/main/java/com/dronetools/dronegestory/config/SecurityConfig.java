@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/logout", "/api/logout/").permitAll()
     
                         .requestMatchers("/api/user-certificates/**").authenticated()
+                        .requestMatchers("/api/aircraft-documentation/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
