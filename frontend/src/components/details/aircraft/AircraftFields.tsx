@@ -1,5 +1,5 @@
-import type { FieldConfig } from "./FieldConfig";
-import { LIMITS, aircraftClasses, configs } from "../../global-const/aircraft-const";
+import type { FieldConfig } from "../FieldConfig";
+import { LIMITS, aircraftClasses, configs } from "../../../global-const/aircraft-const";
 
 export const aircraftFields: FieldConfig[] = [
   {

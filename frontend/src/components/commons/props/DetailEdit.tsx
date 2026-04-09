@@ -13,10 +13,23 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
     const normalize = (v: string) =>
         v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
-    const mapBooleanToOption = (opts: string[] | undefined, value: boolean) => {
+    const BOOLEAN_FIELD_KEYS = new Set(["state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS"]);
+
+    const parseBooleanLike = (value: unknown): boolean | null => {
+        if (value === null || value === undefined || value === "") return null;
+        if (typeof value === "boolean") return value;
+        const normalized = normalize(String(value)).trim();
+        if (["true", "si", "yes", "activo"].includes(normalized)) return true;
+        if (["false", "no", "inactivo"].includes(normalized)) return false;
+        return null;
+    };
+
+    const mapBooleanToOption = (opts: string[] | undefined, value: unknown) => {
+        const parsed = parseBooleanLike(value);
+        if (parsed === null) return "";
         if (!opts || opts.length === 0) return value ? "true" : "false";
-        const target = value ? "si" : "no";
-        const found = opts.find((opt) => normalize(opt) === target);
+        const targetOptions = parsed ? ["si", "activo", "true", "yes"] : ["no", "inactivo", "false"];
+        const found = opts.find((opt) => targetOptions.includes(normalize(opt)));
         return found ?? opts[0];
     };
 
@@ -32,7 +45,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                         <div
                             className="d-flex align-items-center rounded"
                             style={{
-                                backgroundColor: field.readOnly ? "#f3f4f6" : "#ffffff", // Color gris si está bloqueado
+                                backgroundColor: field.readOnly ? "#f3f4f6" : "#ffffff",
                                 border: "1px solid #D1D5DB",
                                 paddingLeft: "10px"
                             }}
@@ -59,7 +72,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             />
 
                             <label
-                                htmlFor={!field.readOnly ? `file-${field.key}` : undefined} // Evita click si está bloqueado
+                                htmlFor={!field.readOnly ? `file-${field.key}` : undefined}
                                 className={`btn ${field.readOnly ? 'btn-secondary' : 'btn-success'} ms-auto`}
                                 style={{ 
                                     cursor: field.readOnly ? "not-allowed" : "pointer",
@@ -89,20 +102,31 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : field.type === "select" ? (
                         <select
                             className="form-select"
-                            disabled={field.readOnly} // <-- BLOQUEO AQUÍ
+                            disabled={field.readOnly} 
                             value={
-                                field.key === "state" 
-                                    ? (values[field.key] ? "Activo" : "Inactivo")
-                                    : (typeof values[field.key] === "boolean"
-                                        ? mapBooleanToOption(field.options, values[field.key])
-                                        : values[field.key] || "")
+                                BOOLEAN_FIELD_KEYS.has(field.key)
+                                    ? mapBooleanToOption(field.options, values[field.key])
+                                    : values[field.key] || ""
                             }
                             onChange={(e) => {
                                 const val = e.target.value;
-                                const finalValue = field.key === "state" ? (val === "Activo") : val;
+                                let finalValue: any = val;
+
+                                if (BOOLEAN_FIELD_KEYS.has(field.key)) {
+                                    if (val === "") {
+                                        finalValue = null;
+                                    } else {
+                                        const parsed = parseBooleanLike(val);
+                                        finalValue = parsed !== null ? parsed : null;
+                                    }
+                                } else if (val === "") {
+                                    finalValue = null;
+                                }
+
                                 setValues({ ...values, [field.key]: finalValue });
                             }}
                         >
+                            {!field.readOnly && <option value="">Seleccionar...</option>}
                             {field.options?.map((opt) => (
                                 <option key={opt} value={opt}>{opt}</option>
                             ))}
@@ -110,7 +134,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : field.type === "date" ? (
                             <input
                                 type="date"
-                                disabled={field.readOnly} // <-- BLOQUEO AQUÍ
+                                disabled={field.readOnly}
                                 className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
                                 value={values[field.key] ? values[field.key].toString().split(/[T ]/)[0] : ""}
                                 onChange={(e) => {
@@ -121,7 +145,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : (
                         <input
                             type={field.type || "text"}
-                            disabled={field.readOnly} // <-- BLOQUEO AQUÍ
+                            disabled={field.readOnly}
                             className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
                             value={values[field.key] || ""}
                             onChange={(e) =>

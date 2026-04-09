@@ -1,4 +1,4 @@
-import type { FieldConfig } from "./FieldConfig";
+import type { FieldConfig } from "../FieldConfig";
 
 export const USER_PASSWORD_ERROR = "La contrasena debe tener 8 o mas caracteres y al menos 1 numero";
 export const validateUserPassword = (value: string) => /^(?=.*\d).{8,}$/.test(value);

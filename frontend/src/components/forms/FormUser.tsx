@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { staticUserCertificateFields as staticUserCertificateConfig } from '../certificates/staticUserCertificateFields';
 import UserCertificatesSection from '../certificates/UserCertificatesSection';
 import { CONOPS_CATEGORIES } from '../certificates/conopsCategories';
-import { userFields, validateUserPassword, USER_PASSWORD_ERROR } from '../details/UserFields';
+import { userFields, validateUserPassword, USER_PASSWORD_ERROR } from '../details/user&profile/UserFields';
 
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';

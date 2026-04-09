@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom"
-import DetailsComponent from "./DetailsComponent"
-import { apiFetch } from "../../api"
+import DetailsComponent from "../DetailsComponent"
+import { apiFetch } from "../../../api"
 import { userFields } from "./UserFields"
 
 

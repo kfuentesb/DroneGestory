@@ -4,15 +4,15 @@ import { ProtectedRoute } from "./ProtectedRoute";
 
 import LogIn from "../components/main-elements-views/LogIn";
 import UserList from "../components/lists/UserList";
-import UserDetail from "../components/details/UserDetail";
+import UserDetail from "../components/details/user&profile/UserDetail";
 import Home from "../components/main-elements-views/Home";
 import FormUser from "../components/forms/FormUser";
 import Dashboard from "../components/dashboard/Dashboard";
 import Forbidden from "../components/main-elements-views/Forbidden";
 import NotFound from "../components/main-elements-views/NotFound";
 import AircraftList from "../components/lists/AircraftList";
-import ProfileDetail from "../components/details/ProfileDetail";
-import AircraftDetail from "../components/details/AircraftDetail";
+import ProfileDetail from "../components/details/user&profile/ProfileDetail";
+import AircraftDetail from "../components/details/aircraft/AircraftDetail";
 import OperationList from "../components/lists/OperationList";
 import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";

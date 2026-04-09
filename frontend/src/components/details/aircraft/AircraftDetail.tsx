@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom"
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
-import DetailsComponent from "./DetailsComponent"
-import { apiFetch } from "../../api"
+import DetailsComponent from "../DetailsComponent"
+import { apiFetch } from "../../../api"
 
 import { aircraftFields } from "./AircraftFields"
-import { useAuth } from "../commons/hooks/useAuth";
+import { useAuth } from "../../commons/hooks/useAuth";
 
 
 // esta es la vista que ve un admin cuando selecciona un dron de la lista de drones

@@ -1,5 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+import { useEffect, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
 import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
@@ -14,6 +13,7 @@ import AircraftDocumentationSection, {
     aircraftDocumentationFields,
     getVisibleAircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
+import { getAircraftDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
 
 import editIcon from '../../assets/commons/edit_white.svg';
 import deleteIcon from '../../assets/commons/delete_white.svg';
@@ -78,66 +78,23 @@ interface LoadingState {
     image: boolean;
 }
 
-const defaultSelectedFiles: Record<string, File | null> = {
-    fileA1A3: null,
-    fileA2: null,
-    fileSTS: null,
-    fileFTG: null,
-    fileFPG: null,
-    fileCT: null,
-    fileCP: null,
-    fileCMC2: null,
-    fileCMCLAPL: null,
-};
+// this sets all keys in the array to the same value, used for initializing state objects for certificates and documentation
+const buildRecord = <T,>(keys: string[], value: T): Record<string, T> =>
+    Object.fromEntries(keys.map((key) => [key, value])) as Record<string, T>;
 
-const defaultCertFormValues: Record<string, string> = {
-    dateA1A3: "",
-    dateA2: "",
-    dateSTS: "",
-    dateFTG: "",
-    dateFPG: "",
-    dateCT: "",
-    dateCP: "",
-    dateCMC2: "",
-    dateCMCLAPL: "",
-};
+const buildDocStateDefaults = (
+    config: Array<{ fileKey: string; dateKey: string; enabledKey: string; indefiniteKey: string }>
+) => ({
+    files: buildRecord(config.map((field) => field.fileKey), null as File | null),
+    dates: buildRecord(config.map((field) => field.dateKey), ""),
+    checks: buildRecord(
+        config.flatMap((field) => [field.enabledKey, field.indefiniteKey]),
+        false
+    ),
+});
 
-const defaultActiveChecks: Record<string, boolean> = {
-    chkA1A3: false,
-    chkA2: false,
-    chkSTS01: false,
-    chkSTS02: false,
-    chkFormcnTeoricaGen: false,
-    chkFormcnPracticaGen: false,
-    chkFormCertTeor: false,
-    chkFormCertPract: false,
-    chkFormCMClase2: false,
-    chkFormCMClaseLAPL: false,
-    indefiniteA1A3: false,
-    indefiniteA2: false,
-    indefiniteSTS: false,
-    indefiniteFTG: false,
-    indefiniteFPG: false,
-    indefiniteCT: false,
-    indefiniteCP: false,
-    indefiniteCMC2: false,
-    indefiniteCMCLAPL: false,
-};
-
-const defaultAircraftSelectedFiles: Record<string, File | null> = Object.fromEntries(
-    aircraftDocumentationFields.map((field) => [field.fileKey, null])
-) as Record<string, File | null>;
-
-const defaultAircraftFormValues: Record<string, string> = Object.fromEntries(
-    aircraftDocumentationFields.map((field) => [field.dateKey, ""])
-) as Record<string, string>;
-
-const defaultAircraftChecks: Record<string, boolean> = Object.fromEntries(
-    aircraftDocumentationFields.flatMap((field) => [
-        [field.enabledKey, false],
-        [field.indefiniteKey, false],
-    ])
-) as Record<string, boolean>;
+const USER_CERTIFICATE_DEFAULTS = buildDocStateDefaults(staticUserCertificateConfig);
+const AIRCRAFT_DOCUMENTATION_DEFAULTS = buildDocStateDefaults(aircraftDocumentationFields);
 
 export default function DetailsComponent({
     id,
@@ -158,7 +115,7 @@ export default function DetailsComponent({
     const { token } = useAuth();
     const resolvedCertificateSectionType = certificateSectionType ?? (showCertificates ? "user" : undefined);
     const showUserCertificates = resolvedCertificateSectionType === "user";
-    const showAircraftCertificates = resolvedCertificateSectionType === "aircraft";
+    const showAircraftDocumentation = resolvedCertificateSectionType === "aircraft";
 
     const [data, setData] = useState<any>(initialData || null);
     const [status, setStatus] = useState<number>(200);
@@ -177,12 +134,12 @@ export default function DetailsComponent({
     const [removeImage, setRemoveImage] = useState(false);
     const [certificates, setCertificates] = useState<UserCertificate[]>([]);
     const [aircraftDocumentations, setAircraftDocumentations] = useState<AircraftDocumentation[]>([]);
-    const [certificateSelectedFiles, setCertificateSelectedFiles] = useState<Record<string, File | null>>(defaultSelectedFiles);
-    const [certificateFormValues, setCertificateFormValues] = useState<Record<string, string>>(defaultCertFormValues);
-    const [certificateActiveChecks, setCertificateActiveChecks] = useState<Record<string, boolean>>(defaultActiveChecks);
-    const [aircraftDocumentationFiles, setAircraftDocumentationFiles] = useState<Record<string, File | null>>(defaultAircraftSelectedFiles);
-    const [aircraftDocumentationFormValues, setAircraftDocumentationFormValues] = useState<Record<string, string>>(defaultAircraftFormValues);
-    const [aircraftDocumentationChecks, setAircraftDocumentationChecks] = useState<Record<string, boolean>>(defaultAircraftChecks);
+    const [certificateSelectedFiles, setCertificateSelectedFiles] = useState<Record<string, File | null>>(USER_CERTIFICATE_DEFAULTS.files);
+    const [certificateFormValues, setCertificateFormValues] = useState<Record<string, string>>(USER_CERTIFICATE_DEFAULTS.dates);
+    const [certificateActiveChecks, setCertificateActiveChecks] = useState<Record<string, boolean>>(USER_CERTIFICATE_DEFAULTS.checks);
+    const [aircraftDocumentationFiles, setAircraftDocumentationFiles] = useState<Record<string, File | null>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.files);
+    const [aircraftDocumentationFormValues, setAircraftDocumentationFormValues] = useState<Record<string, string>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.dates);
+    const [aircraftDocumentationChecks, setAircraftDocumentationChecks] = useState<Record<string, boolean>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.checks);
     const [existingAircraftDocumentationFileNames, setExistingAircraftDocumentationFileNames] = useState<Record<string, string>>({});
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [currentSelection, setCurrentSelection] = useState<string>("");
@@ -260,6 +217,7 @@ export default function DetailsComponent({
         };
     }, [data?.imagePath, token, imageEndpoint]);
 
+    // Cargar certificados si corresponde
     useEffect(() => {
         if (!showUserCertificates || !id) {
             return;
@@ -290,13 +248,14 @@ export default function DetailsComponent({
         loadCertificates();
     }, [id, showUserCertificates, token]);
 
+    // Sincronizar estado de certificados con los datos cargados
     useEffect(() => {
         if (!showUserCertificates) {
             return;
         }
 
-        const nextChecks = { ...defaultActiveChecks };
-        const nextForm = { ...defaultCertFormValues };
+        const nextChecks = { ...USER_CERTIFICATE_DEFAULTS.checks };
+        const nextForm = { ...USER_CERTIFICATE_DEFAULTS.dates };
         const nextCategories: string[] = [];
         const nextConopsDocs: Record<string, CertificateFieldPayload> = {};
         const nextStaticNames: Record<string, string> = {};
@@ -348,7 +307,7 @@ export default function DetailsComponent({
             }
         });
 
-        setCertificateSelectedFiles({ ...defaultSelectedFiles });
+        setCertificateSelectedFiles({ ...USER_CERTIFICATE_DEFAULTS.files });
         setCertificateActiveChecks(nextChecks);
         setCertificateFormValues(nextForm);
         setSelectedCategories(nextCategories);
@@ -360,8 +319,9 @@ export default function DetailsComponent({
         setCurrentSelection("");
     }, [certificates, showUserCertificates]);
 
+    // Cargar documentación de aeronave si corresponde
     useEffect(() => {
-        if (!showAircraftCertificates || !id) {
+        if (!showAircraftDocumentation || !id) {
             return;
         }
 
@@ -388,15 +348,16 @@ export default function DetailsComponent({
         };
 
         loadAircraftDocumentations();
-    }, [id, showAircraftCertificates, token]);
+    }, [id, showAircraftDocumentation, token]);
 
+    // Sincronizar estado de documentación de aeronave con los datos cargados
     useEffect(() => {
-        if (!showAircraftCertificates) {
+        if (!showAircraftDocumentation) {
             return;
         }
 
-        const nextChecks = { ...defaultAircraftChecks };
-        const nextForm = { ...defaultAircraftFormValues };
+        const nextChecks = { ...AIRCRAFT_DOCUMENTATION_DEFAULTS.checks };
+        const nextForm = { ...AIRCRAFT_DOCUMENTATION_DEFAULTS.dates };
         const nextNames: Record<string, string> = {};
 
         aircraftDocumentations.forEach((documentation) => {
@@ -415,11 +376,11 @@ export default function DetailsComponent({
             }
         });
 
-        setAircraftDocumentationFiles({ ...defaultAircraftSelectedFiles });
+        setAircraftDocumentationFiles({ ...AIRCRAFT_DOCUMENTATION_DEFAULTS.files });
         setAircraftDocumentationChecks(nextChecks);
         setAircraftDocumentationFormValues(nextForm);
         setExistingAircraftDocumentationFileNames(nextNames);
-    }, [aircraftDocumentations, showAircraftCertificates]);
+    }, [aircraftDocumentations, showAircraftDocumentation]);
 
     const handleConfirmClick = () => {
         if (validateForm) {
@@ -487,8 +448,11 @@ export default function DetailsComponent({
         return new Date(certificate.expireDate).toLocaleDateString("es-ES");
     };
 
-    const handleCertificateCheckChange = (key: string) => {
-        setCertificateActiveChecks((prev) => ({ ...prev, [key]: !prev[key] }));
+    const toggleBooleanMapValue = (
+        setter: Dispatch<SetStateAction<Record<string, boolean>>>,
+        key: string
+    ) => {
+        setter((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
     const validateCertificateFile = (file: File): string | null => {
@@ -502,10 +466,14 @@ export default function DetailsComponent({
         return null;
     };
 
-    const handleCertificateFileChange = (event: ChangeEvent<HTMLInputElement>, key: string) => {
+    const handleFileMapChange = (
+        event: ChangeEvent<HTMLInputElement>,
+        key: string,
+        setter: Dispatch<SetStateAction<Record<string, File | null>>>
+    ) => {
         const file = event.target.files?.[0] ?? null;
         if (!file) {
-            setCertificateSelectedFiles((prev) => ({ ...prev, [key]: null }));
+            setter((prev) => ({ ...prev, [key]: null }));
             return;
         }
 
@@ -514,39 +482,41 @@ export default function DetailsComponent({
             alert(fileError);
             return;
         }
-        setCertificateSelectedFiles((prev) => ({ ...prev, [key]: file }));
+        setter((prev) => ({ ...prev, [key]: file }));
     };
 
-    const handleCertificateClearFile = (key: string, inputId: string) => {
-        setCertificateSelectedFiles((prev) => ({ ...prev, [key]: null }));
+    const clearFileMapValue = (
+        key: string,
+        inputId: string,
+        setter: Dispatch<SetStateAction<Record<string, File | null>>>
+    ) => {
+        setter((prev) => ({ ...prev, [key]: null }));
         const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
         if (fileInput) fileInput.value = "";
     };
 
     const handleAircraftDocumentationCheckChange = (key: string) => {
-        setAircraftDocumentationChecks((prev) => ({ ...prev, [key]: !prev[key] }));
+        toggleBooleanMapValue(setAircraftDocumentationChecks, key);
+    };
+
+    const handleCertificateCheckChange = (key: string) => {
+        toggleBooleanMapValue(setCertificateActiveChecks, key);
     };
 
     const handleAircraftDocumentationFileChange = (event: ChangeEvent<HTMLInputElement>, key: string) => {
-        const file = event.target.files?.[0] ?? null;
-        if (!file) {
-            setAircraftDocumentationFiles((prev) => ({ ...prev, [key]: null }));
-            return;
-        }
+        handleFileMapChange(event, key, setAircraftDocumentationFiles);
+    };
 
-        const fileError = validateCertificateFile(file);
-        if (fileError) {
-            alert(fileError);
-            return;
-        }
-
-        setAircraftDocumentationFiles((prev) => ({ ...prev, [key]: file }));
+    const handleCertificateFileChange = (event: ChangeEvent<HTMLInputElement>, key: string) => {
+        handleFileMapChange(event, key, setCertificateSelectedFiles);
     };
 
     const handleAircraftDocumentationClearFile = (key: string, inputId: string) => {
-        setAircraftDocumentationFiles((prev) => ({ ...prev, [key]: null }));
-        const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
-        if (fileInput) fileInput.value = "";
+        clearFileMapValue(key, inputId, setAircraftDocumentationFiles);
+    };
+
+    const handleCertificateClearFile = (key: string, inputId: string) => {
+        clearFileMapValue(key, inputId, setCertificateSelectedFiles);
     };
 
     const addCategory = () => {
@@ -829,14 +799,10 @@ export default function DetailsComponent({
     };
 
     const syncAircraftDocumentation = async () => {
-        if (!showAircraftCertificates || !id) return;
+        if (!showAircraftDocumentation || !id) return;
 
-        const isTruthy = (value: unknown) =>
-            value === true || value === "true" || value === "YES" || value === "Si" || value === "S\u00ed";
-
-        const showInsuranceDocumentation = isTruthy(formValues.hasEnsurance);
-        const showFTSDocumentation = isTruthy(formValues.hasFTS);
-        const showParachuteDocumentation = isTruthy(formValues.hasParachute);
+        const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } =
+            getAircraftDocumentationFlags(formValues);
         const visibleFields = getVisibleAircraftDocumentationFields(
             false,
             showInsuranceDocumentation,
@@ -981,8 +947,17 @@ export default function DetailsComponent({
                 if (field.readOnly) return;
                 const value = formValues[field.key];
                 if (value === null || value === undefined || value.toString().trim() === "") return;
-                const stringValue = value.toString().trim();
+                let stringValue = value.toString().trim();
                 const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(field.key);
+                const isBooleanField = ["state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS"].includes(field.key);
+                if (isBooleanField) {
+                    const parsed = toBooleanLike(value);
+                    if (parsed === null) {
+                        return;
+                    }
+                    stringValue = parsed ? "true" : "false";
+                }
+
                 const finalValue = isNumericField ? stringValue.replace(",", ".") : stringValue;
                 formData.append(field.key, finalValue);
             });
@@ -1009,7 +984,7 @@ export default function DetailsComponent({
                 }
             }
 
-            if (showAircraftCertificates) {
+            if (showAircraftDocumentation) {
                 try {
                     await syncAircraftDocumentation();
                 } catch (documentationError: any) {
@@ -1072,6 +1047,7 @@ export default function DetailsComponent({
     const aircraftClassLabel = entityType === "aircraft" ? data.aircraftClass : undefined;
     const userTypeLabel = entityType === "user" ? data.type : undefined;
     const userStateLabel = entityType === "user" ? (data.state ? "Activo" : "Inactivo") : undefined;
+    const aircraftDocumentationFlags = getAircraftDocumentationFlags(formValues);
 
     return (
         <div className="container-fluid py-4">
@@ -1213,7 +1189,7 @@ export default function DetailsComponent({
                                             />
                                         )}
 
-                                        {showAircraftCertificates && (
+                                        {showAircraftDocumentation && (
                                             <AircraftDocumentationSummarySection
                                                 items={aircraftDocumentations.map((documentation) => {
                                                     const config = aircraftDocumentationFields.find(
@@ -1271,18 +1247,12 @@ export default function DetailsComponent({
                                     />
                                 )}
 
-                                {showAircraftCertificates && (
+                                {showAircraftDocumentation && (
                                     <AircraftDocumentationSection
                                         isExistingModel={false}
-                                        showInsuranceDocumentation={
-                                            formValues.hasEnsurance === true || formValues.hasEnsurance === "true"
-                                        }
-                                        showFTSDocumentation={
-                                            formValues.hasFTS === true || formValues.hasFTS === "true"
-                                        }
-                                        showParachuteDocumentation={
-                                            formValues.hasParachute === true || formValues.hasParachute === "true"
-                                        }
+                                        showInsuranceDocumentation={aircraftDocumentationFlags.showInsuranceDocumentation}
+                                        showFTSDocumentation={aircraftDocumentationFlags.showFTSDocumentation}
+                                        showParachuteDocumentation={aircraftDocumentationFlags.showParachuteDocumentation}
                                         activeChecks={aircraftDocumentationChecks}
                                         selectedFiles={aircraftDocumentationFiles}
                                         formValues={aircraftDocumentationFormValues}

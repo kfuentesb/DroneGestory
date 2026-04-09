@@ -9,6 +9,7 @@ import AircraftDocumentationSection, {
   aircraftDocumentationFields,
   getVisibleAircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
+import { getAircraftDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 import "../../styles/generic-form.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
@@ -97,9 +98,11 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
 
   const navigate = useNavigate();
   const isExistingModel = Boolean(initialValues?.manufacturer && initialValues?.model);
-  const showInsuranceDocumentation = formValues.hasEnsurance?.value === "true";
-  const showFTSDocumentation = formValues.hasFTS?.value === "true";
-  const showParachuteDocumentation = formValues.hasParachute?.value === "true";
+  const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } = getAircraftDocumentationFlags({
+    hasEnsurance: formValues.hasEnsurance,
+    hasFTS: formValues.hasFTS,
+    hasParachute: formValues.hasParachute,
+  });
   const allowedImageTypes = ["image/jpeg", "image/png"];
   const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
