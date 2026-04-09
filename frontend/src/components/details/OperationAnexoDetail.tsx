@@ -8,6 +8,7 @@ import {
   remakeAnexo,
   saveAnexo,
   signAnexo,
+  fetchAnexo4Data
 } from "../operations/operation.api";
 import type {
   OperationAnexoDetailDTO,
@@ -61,6 +62,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
 
+  const [anexo4Data, setAnexo4Data] = useState<Record<string, any> | null>(null);
+  const [loadingAnexo4Data, setLoadingAnexo4Data] = useState(false);
+
   const isAnexo4 = tipoAnexo === 4;
 
   const loadOperation = async () => {
@@ -82,9 +86,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
       setOperation(data);
       const anexo = data.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null;
-      if (!isAnexo4) {
-        setDraftValue(buildDraft(anexo));
-      }
+      if (isAnexo4) {
+        await loadAnexo4Data(data.idOperacion);
+        } else {
+          setDraftValue(buildDraft(anexo));
+        }
     } catch (err) {
       console.error("Error cargando anexo:", err);
       setError("No se pudo cargar el anexo.");
@@ -92,6 +98,35 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       setLoading(false);
     }
   };
+
+  const loadAnexo4Data = async (operationId: number) => {
+  setLoadingAnexo4Data(true);
+  try {
+    const data = await fetchAnexo4Data(operationId);
+    setAnexo4Data(data);
+  } catch (err) {
+    console.error("Error cargando datos del Anexo 4:", err);
+    setAnexo4Data(null);
+  } finally {
+    setLoadingAnexo4Data(false);
+  }
+  };
+
+  const loadAnexo4DataIfExists = async (operationId: number, anexo4Id: number | null) => {
+  // Primera vez: no hay anexo aún -> NO precargamos nada
+  if (!anexo4Id) {
+    setAnexo4Data(null);
+    return;
+  }
+
+  try {
+    const data = await fetchAnexo4Data(operationId);
+    setAnexo4Data(data);
+  } catch (err) {
+    console.error("Error cargando datos del Anexo 4:", err);
+    setAnexo4Data(null);
+  }
+  };  
 
   useEffect(() => {
     void loadOperation();
@@ -275,7 +310,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             <FormOperationAnexo4Detail
               operationId={operation.idOperacion}
               disabled={!canEditDraft}
-              onSaved={() => void loadOperation()}
+              onSaved={async () => {
+                await loadOperation(); // refresca estado/firmado/version
+                await loadAnexo4Data(operation.idOperacion); // refresca campos del form
+              }}
             />
           ) : (
             <>

@@ -75,16 +75,35 @@ export default function FormOperationAnexo4Detail({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (initialValues) {
-      setFormValues(
-        Object.fromEntries(
-          Object.entries(initialValues).map(([k, v]) => [
-            k,
-            v === null || v === undefined ? "" : v instanceof Boolean || typeof v === "boolean" ? String(v) : v,
-          ])
-        )
-      );
-    }
+  if (!initialValues) return;
+
+  const normalizeDateTimeLocal = (value: any) => {
+    if (!value) return "";
+    if (typeof value !== "string") return value;
+
+    // Si viene como "2026-04-09T10:30:00" -> "2026-04-09T10:30"
+    // Si viene como "2026-04-09T10:30" lo deja igual.
+    const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+    return match ? match[1] : value;
+  };
+
+  const normalized = Object.fromEntries(
+      Object.entries(initialValues).map(([k, v]) => {
+        if (k === "fechaHoraPrevista") {
+          return [k, normalizeDateTimeLocal(v)];
+        }
+        return [
+          k,
+          v === null || v === undefined
+            ? ""
+            : v instanceof Boolean || typeof v === "boolean"
+              ? String(v)
+              : v,
+        ];
+      })
+    );
+
+    setFormValues(normalized);
   }, [initialValues]);
 
   const handleChange = (key: string, value: any) => {
