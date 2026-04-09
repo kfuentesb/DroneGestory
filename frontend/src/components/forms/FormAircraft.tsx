@@ -348,6 +348,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   }}
                   disabled={!!initialValues?.manufacturer}
                 />
+                {errors.manufacturer && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label d-block text-start ps-1">Modelo</label>
@@ -364,6 +365,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   }}
                   disabled={!!initialValues?.model}
                 />
+                {errors.model && <div className="text-danger small">Campo requerido</div>}
               </div>
               <div className="col-12 col-md">
                 <label className="form-label d-block text-start ps-1">Nº Serie</label>
@@ -375,6 +377,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   onChange={(e) => setFormValues({ ...formValues, serialNumber: e.target.value })}
                   style={{ ...backgroundBorderInputs, border: errors.serialNumber ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
+                {errors.serialNumber && <div className="text-danger small">Campo requerido</div>}
               </div>
             </div>
 
