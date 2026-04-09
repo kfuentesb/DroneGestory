@@ -99,16 +99,14 @@ VISUAL<br>
 -Arreglar la toma de IP en local y en servidor<br>
 
 -USUARIO<br>
--Un usuario no admin no puede ver su propio perfil
+-Un usuario no admin no puede ver su propio perfil<br>
 
 -DRONES<br>
 -Cambiar lógica de modelo y fabricante, siendo estos sus propias tablas<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
--Problema cuando se selecciona legacy en clase<br>
 -Hacer que el campo accesorios sea un AreaText cuando se edite<br>
--Añadir certificaciones de drones<br>
-
+-Cambiar de km/h a m/s<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
