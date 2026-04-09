@@ -100,6 +100,12 @@ public class AircraftController {
         boolean wingspanPresent = request.getParameterMap().containsKey("wingspan");
         boolean maxSpeedPresent = request.getParameterMap().containsKey("maxSpeed");
         boolean impactEnergyPresent = request.getParameterMap().containsKey("impactEnergy");
+        boolean privatelyBuiltPresent = request.getParameterMap().containsKey("privatelyBuilt");
+        boolean hasParachutePresent = request.getParameterMap().containsKey("hasParachute");
+        boolean hasEnsurancePresent = request.getParameterMap().containsKey("hasEnsurance");
+        boolean hasFTSPresent = request.getParameterMap().containsKey("hasFTS");
+        boolean cautivePresent = request.getParameterMap().containsKey("cautive");
+        boolean accessoriesPresent = request.getParameterMap().containsKey("accessories");
 
         Aircraft updatedAircraft = aircraftService.updateWithFile(
                 id,
@@ -109,7 +115,13 @@ public class AircraftController {
                 mtomPresent,
                 wingspanPresent,
                 maxSpeedPresent,
-                impactEnergyPresent
+                impactEnergyPresent,
+                privatelyBuiltPresent,
+                hasParachutePresent,
+                hasEnsurancePresent,
+                hasFTSPresent,
+                cautivePresent,
+                accessoriesPresent
         );
 
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));

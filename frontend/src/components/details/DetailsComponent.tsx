@@ -512,7 +512,39 @@ export default function DetailsComponent({
     };
 
     const handleAircraftDocumentationClearFile = (key: string, inputId: string) => {
+        const hasSelectedFile = Boolean(aircraftDocumentationFiles[key]);
+        const hasExistingFile = Boolean(existingAircraftDocumentationFileNames[key]);
+        const shouldDelete = hasSelectedFile || hasExistingFile
+            ? window.confirm("Se eliminará esta documentación al guardar los cambios. ¿Continuar?")
+            : true;
+
+        if (!shouldDelete) {
+            return;
+        }
+
         clearFileMapValue(key, inputId, setAircraftDocumentationFiles);
+
+        setExistingAircraftDocumentationFileNames((prev) => {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+
+        const fieldConfig = aircraftDocumentationFields.find((field) => field.fileKey === key);
+        if (!fieldConfig) {
+            return;
+        }
+
+        setAircraftDocumentationChecks((prev) => ({
+            ...prev,
+            [fieldConfig.enabledKey]: false,
+            [fieldConfig.indefiniteKey]: false,
+        }));
+
+        setAircraftDocumentationFormValues((prev) => ({
+            ...prev,
+            [fieldConfig.dateKey]: "",
+        }));
     };
 
     const handleCertificateClearFile = (key: string, inputId: string) => {
@@ -946,7 +978,21 @@ export default function DetailsComponent({
                 if (field.type === 'file') return;
                 if (field.readOnly) return;
                 const value = formValues[field.key];
-                if (value === null || value === undefined || value.toString().trim() === "") return;
+                const isCleared = value === null || value === undefined || value.toString().trim() === "";
+                const isAircraftClearableField = entityType === "aircraft" && [
+                    "privatelyBuilt",
+                    "hasParachute",
+                    "hasEnsurance",
+                    "hasFTS",
+                    "cautive",
+                    "accessories",
+                ].includes(field.key);
+                if (isCleared) {
+                    if (isAircraftClearableField) {
+                        formData.append(field.key, "");
+                    }
+                    return;
+                }
                 let stringValue = value.toString().trim();
                 const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(field.key);
                 const isBooleanField = ["state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS"].includes(field.key);

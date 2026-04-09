@@ -80,7 +80,13 @@ public class AircraftService {
         boolean mtomPresent, 
         boolean wingspanPresent,
         boolean maxSpeedPresent,
-        boolean impactEnergyPresent
+        boolean impactEnergyPresent,
+        boolean privatelyBuiltPresent,
+        boolean hasParachutePresent,
+        boolean hasEnsurancePresent,
+        boolean hasFTSPresent,
+        boolean cautivePresent,
+        boolean accessoriesPresent
     ) throws IOException {
         
         Aircraft aircraft = aircraftRepository.findById(id)
@@ -121,6 +127,48 @@ public class AircraftService {
             aircraft.setImpactEnergy(updatedAircraft.getImpactEnergy());
         } else if (impactEnergyPresent) {
             aircraft.setImpactEnergy(null);
+        }
+
+        // Privately built
+        if (updatedAircraft.getPrivatelyBuilt() != null) {
+            aircraft.setPrivatelyBuilt(updatedAircraft.getPrivatelyBuilt());
+        } else if (privatelyBuiltPresent) {
+            aircraft.setPrivatelyBuilt(null);
+        }
+
+        // Has parachute
+        if (updatedAircraft.getHasParachute() != null) {
+            aircraft.setHasParachute(updatedAircraft.getHasParachute());
+        } else if (hasParachutePresent) {
+            aircraft.setHasParachute(null);
+        }
+
+        // Has insurance (ensurance in current model)
+        if (updatedAircraft.getHasEnsurance() != null) {
+            aircraft.setHasEnsurance(updatedAircraft.getHasEnsurance());
+        } else if (hasEnsurancePresent) {
+            aircraft.setHasEnsurance(null);
+        }
+
+        // Has FTS
+        if (updatedAircraft.getHasFTS() != null) {
+            aircraft.setHasFTS(updatedAircraft.getHasFTS());
+        } else if (hasFTSPresent) {
+            aircraft.setHasFTS(null);
+        }
+
+        // Cautive selection status
+        if (updatedAircraft.getCautive() != null) {
+            aircraft.setCautive(updatedAircraft.getCautive());
+        } else if (cautivePresent) {
+            aircraft.setCautive(null);
+        }
+
+        // Accessories text
+        if (updatedAircraft.getAccessories() != null) {
+            aircraft.setAccessories(updatedAircraft.getAccessories());
+        } else if (accessoriesPresent) {
+            aircraft.setAccessories(null);
         }
 
         // --- Lógica de Imagen ---
