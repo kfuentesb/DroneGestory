@@ -349,6 +349,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="Seleccione clase"
                   value={formValues.aircraftClass}
                   onChange={val => setFormValues({ ...formValues, aircraftClass: val })}
+                  isClearable
                 />
                 {errors.aircraftClass && <div className="text-danger small">Campo requerido</div>}
               </div>
@@ -409,6 +410,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="Seleccione configuración"
                   value={formValues.config}
                   onChange={val => setFormValues({ ...formValues, config: val })}
+                  isClearable
                 />
                 {errors.config && <div className="text-danger small">Campo requerido</div>}
               </div>
@@ -439,6 +441,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="¿Tiene cámara?"
                   value={formValues.hasCamera}
                   onChange={val => setFormValues({ ...formValues, hasCamera: val })}
+                  isClearable
                 />
                 {errors.hasCamera && <div className="text-danger small">Campo requerido</div>}
               </div>
@@ -505,6 +508,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="¿Es de construcción privada?"
                   value={formValues.privatelyBuilt}
                   onChange={val => setFormValues({ ...formValues, privatelyBuilt: val })}
+                  isClearable
                 />
                 {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
               </div>
@@ -516,6 +520,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="¿Tiene paracaídas?"
                   value={formValues.parachute}
                   onChange={val => setFormValues({ ...formValues, parachute: val })}
+                  isClearable
                 />
                 {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
               </div>
@@ -531,6 +536,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   styles={backgroundBorderInputsSelect}
                   placeholder="¿Tiene seguro?"
                   value={formValues.hasInsurance || null}
+                  isClearable
                   onChange={(val) =>
                     setFormValues((prev) => {
                       if (val?.value !== "true") {
@@ -585,6 +591,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="¿Tiene FTS?"
                   value={formValues.hasFts}
                   onChange={val => setFormValues({ ...formValues, hasFts: val })}
+                  isClearable
                 />
                 {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
               </div>
@@ -596,6 +603,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   placeholder="¿Es cautivo?"
                   value={formValues.tether}
                   onChange={val => setFormValues({ ...formValues, tether: val })}
+                  isClearable
                 />
                 {/* {errors.hasCamera && <div className="text-danger small">Campo requerido</div>} */}
               </div>
