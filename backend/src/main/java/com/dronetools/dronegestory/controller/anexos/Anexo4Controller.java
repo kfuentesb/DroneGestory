@@ -61,13 +61,6 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
     }
 
-    @GetMapping("/version/{idAnexo}")
-    public Anexo4ResponseDTO getVersion(@PathVariable Long operationId, @PathVariable Long idAnexo) {
-        Anexo4 anexo = anexo4Repository.findById(idAnexo)
-                .orElseThrow(() -> new RuntimeException("No existe esa versión de anexo"));
-        return Anexo4ResponseDTO.fromEntity(anexo);
-    }
-
     @Override
     protected Anexo4 registrar(Long operationId, Anexo4 input) {
         return service.registrarAnexo4(operationId, input);

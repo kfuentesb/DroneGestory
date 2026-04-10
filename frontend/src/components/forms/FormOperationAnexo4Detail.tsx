@@ -331,7 +331,12 @@ export default function FormOperationAnexo4Detail({
         </div>
         {disabled && (
           <div className="alert alert-secondary mt-4">
+            {readOnlyMessage ? readOnlyMessage : null}
+            {!readOnlyMessage && (
+              <>
             El anexo está firmado. No se puede editar. Pulsa <strong>Rehacer versión</strong> para poder modificar.
+              </>
+            )}
           </div>
         )}
       </div>

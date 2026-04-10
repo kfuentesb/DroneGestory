@@ -5,7 +5,6 @@ import ButtonProp from "../commons/props/ButtonProp";
 import { completeOperation, fetchOperationDetail } from "../operations/operation.api";
 import type { OperationDetailDTO } from "../operations/operation.types";
 import {
-  formatDate,
   formatDateTime,
   getAnexoColorStyle,
   getAnexoLabel,
@@ -220,7 +219,8 @@ export default function OperationDetail() {
                             <th>Estado</th>
                             <th>Firmado por</th>
                             <th>Fecha firma</th>
-                            <th>Texto</th>
+                            <th>Descripción</th>
+                            <th>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -231,8 +231,26 @@ export default function OperationDetail() {
                                 <Badge label={version.estado} style={getAnexoColorStyle(version.color)} />
                               </td>
                               <td>{version.firmadoPor ?? "-"}</td>
-                              <td>{formatDate(version.fechaFirma)}</td>
-                              <td style={{ minWidth: "280px" }}>{version.textoPrueba ?? "-"}</td>
+                              <td>{formatDateTime(version.fechaFirma)}</td>
+                              <td
+                                className="text-truncate"
+                                style={{ minWidth: "280px", maxWidth: "450px", overflow: "hidden" }}
+                              >
+                                {version.textoPrueba ?? "-"}
+                              </td>
+                              <td className="text-end">
+                                {version.estado === "FIRMADO" ? (
+                                  <ButtonProp
+                                  onClick={() =>
+                                    navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}/version/${version.id}`)
+                                  }
+                                >
+                                  Ver versión
+                                  </ButtonProp>
+                                ) : (
+                                  <span className="text-muted">No disponible</span>
+                                )}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
