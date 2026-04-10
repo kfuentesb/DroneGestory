@@ -1,4 +1,4 @@
-import type { FieldConfig } from "../fields/FieldConfig";
+import type { FieldConfig } from "../../details/FieldConfig";
 
 type Props = {
     values: any;

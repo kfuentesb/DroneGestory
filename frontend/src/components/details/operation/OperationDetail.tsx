@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ConfirmModal from "../commons/ConfirmModal";
-import ButtonProp from "../commons/props/ButtonProp";
-import { completeOperation, fetchOperationDetail } from "../operations/operation.api";
-import type { OperationDetailDTO } from "../operations/operation.types";
+import ConfirmModal from "../../commons/ConfirmModal";
+import ButtonProp from "../../commons/props/ButtonProp";
+import { completeOperation, fetchOperationDetail } from "../../operations/operation.api";
+import type { OperationDetailDTO } from "../../operations/operation.types";
 import {
   formatDateTime,
   getAnexoColorStyle,
   getAnexoLabel,
   getOperationStatusStyle,
   OPERATION_ANEXOS,
-} from "../operations/operation.utils";
+} from "../../operations/operation.utils";
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (

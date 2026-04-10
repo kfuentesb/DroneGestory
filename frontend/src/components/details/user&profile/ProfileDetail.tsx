@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import { useParams, useNavigate } from "react-router-dom";
-import DetailsComponent from "./DetailsComponent";
-import { apiFetch } from "../../api";
-import { userFields } from "../commons/fields/UserFields";
-import { useAuth } from "../commons/hooks/useAuth";
-import Forbidden from "../main-elements-views/Forbidden";
+import DetailsComponent from "../DetailsComponent";
+import { apiFetch } from "../../../api";
+import { userFields } from "./UserFields";
+import { useAuth } from "../../commons/hooks/useAuth";
+import Forbidden from "../../main-elements-views/Forbidden";
 
 export default function ProfileDetail() {
 

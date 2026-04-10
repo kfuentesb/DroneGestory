@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ConfirmModal from "../commons/ConfirmModal";
-import ButtonProp from "../commons/props/ButtonProp";
-import { useAuth } from "../commons/hooks/useAuth";
+import ConfirmModal from "../../commons/ConfirmModal";
+import ButtonProp from "../../commons/props/ButtonProp";
+import { useAuth } from "../../commons/hooks/useAuth";
 import {
   fetchAnexo4Data,
   fetchAnexo4VersionData,
@@ -12,19 +12,19 @@ import {
   saveAnexo,
   signAnexo4Data,
   signAnexo,
-} from "../operations/operation.api";
+} from "../../operations/operation.api";
 import type {
   AnexoHistoricoDTO,
   OperationAnexoDetailDTO,
   OperationDetailDTO,
-} from "../operations/operation.types";
+} from "../../operations/operation.types";
 import {
   formatDateTime,
   getAnexoColorStyle,
   getAnexoLabel,
   getOperationStatusStyle,
-} from "../operations/operation.utils";
-import FormOperationAnexo4Detail from "../forms/FormOperationAnexo4Detail";
+} from "../../operations/operation.utils";
+import FormOperationAnexo4Detail from "../../forms/FormOperationAnexo4Detail";
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;

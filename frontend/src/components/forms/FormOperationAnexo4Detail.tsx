@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
-import type { FieldConfig } from "../commons/fields/FieldConfig";
-import { operationAnexo4DetailFields } from "../commons/fields/OperationsAnexo4DetailFields";
+import type { FieldConfig } from "../details/FieldConfig";
+import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 
 /** * CONFIGURACIÓN DE TEXTOS:
  * Modifica solo este objeto para cambiar los nombres de los puntos en el futuro.
