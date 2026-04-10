@@ -121,11 +121,14 @@ VISUAL<br>
 
 COSAS DE MIGRACION DE LA BASE DE DATOS<br>
 
+-- 1. Backup and Move Data
 CREATE TABLE aircraft_backup AS SELECT * FROM aircraft;
 
+-- 2. Populate the new Model table
 INSERT INTO aircraft_model (manufacturer, model)
 SELECT DISTINCT manufacturer, model FROM aircraft_backup;
 
+-- 3. Link Aircraft to the new Models
 ALTER TABLE aircraft ADD COLUMN aircraft_model_id INTEGER;
 
 UPDATE aircraft a
@@ -134,21 +137,30 @@ FROM aircraft_model m
 WHERE a.manufacturer = m.manufacturer 
   AND a.model = m.model;
 
+-- 4. Clean up old columns and constraints
 ALTER TABLE aircraft DROP COLUMN manufacturer;
 ALTER TABLE aircraft DROP COLUMN model;
 
-ALTER TABLE aircraft 
-ADD CONSTRAINT FK_aircraft_model 
-FOREIGN KEY (aircraft_model_id) REFERENCES aircraft_model(id);
+-- 5. Wipe documentation (as requested) to avoid "Orphan" errors
+DROP TABLE IF EXISTS aircraft_documentation CASCADE;
+DROP TABLE IF EXISTS aircraft_model_documentation CASCADE;
 
--- Change Primary Keys
+-- 6. Upgrade IDs to BIGINT for the remaining tables
 ALTER TABLE aircraft ALTER COLUMN aircraft_id TYPE BIGINT;
-ALTER TABLE aircraft_model ALTER COLUMN aircraft_model_id TYPE BIGINT;
-ALTER TABLE aircraft_documentation ALTER COLUMN aircraft_documentation_id TYPE BIGINT;
-
--- Change Foreign Keys (Crucial!)
+ALTER TABLE aircraft_model ALTER COLUMN id TYPE BIGINT; -- Note: check if col name is 'id' or 'aircraft_model_id'
 ALTER TABLE aircraft ALTER COLUMN aircraft_model_id TYPE BIGINT;
-ALTER TABLE aircraft_documentation ALTER COLUMN aircraft_id TYPE BIGINT;
 
-DELETE FROM aircraft_documentation 
-WHERE aircraft_id NOT IN (SELECT aircraft_id FROM aircraft);
+-- 7. Sync the Sequences (CRITICAL)
+-- This prevents "Duplicate Key" errors when users try to create new drones
+SELECT setval(pg_get_serial_sequence('aircraft', 'aircraft_id'), (SELECT MAX(aircraft_id) FROM aircraft));
+SELECT setval(pg_get_serial_sequence('aircraft_model', 'id'), (SELECT MAX(id) FROM aircraft_model));
+
+ALTER TABLE aircraft_model 
+  DROP COLUMN max_speed, 
+  DROP COLUMN model_name, 
+  DROP COLUMN mtom, 
+  DROP COLUMN wingspan,
+  DROP COLUMN aircraft_class,
+  DROP COLUMN config,
+  DROP COLUMN impact_energy,
+  DROP COLUMN aircraft_model_id;
