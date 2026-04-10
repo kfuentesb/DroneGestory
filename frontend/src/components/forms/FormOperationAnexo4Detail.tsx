@@ -48,7 +48,7 @@ type FormOperationAnexo4DetailProps = {
   initialValues?: Record<string, any>;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
-  onSaved?: () => void;
+  onSaved?: () => void | Promise<void>;
 };
 
 type ErrorsMap = Record<string, string | null>;
@@ -145,7 +145,7 @@ export default function FormOperationAnexo4Detail({
       });
 
       alert("Anexo 4 guardado correctamente");
-      onSaved?.();
+      await onSaved?.();
       // window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       alert(err?.message || "Error al guardar el anexo.");

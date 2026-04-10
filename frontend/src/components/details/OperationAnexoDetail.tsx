@@ -103,6 +103,23 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     !!anexo?.actual.id &&
     anexo?.actual.estado === "BORRADOR";
 
+  const refreshCurrentAnexo4Data = async (operationId: number) => {
+    if (!isAnexo4) {
+      return;
+    }
+
+    try {
+      setLoadingVersionData(true);
+      const data = await fetchAnexo4Data(operationId);
+      setAnexo4Data(data);
+    } catch (err) {
+      console.error("Error cargando datos actuales del Anexo 4:", err);
+      setAnexo4Data(null);
+    } finally {
+      setLoadingVersionData(false);
+    }
+  };
+
   const loadOperation = async () => {
     if (!id) {
       setError("No se ha indicado la operación.");
@@ -171,6 +188,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       await saveAnexo(operation.idOperacion, tipoAnexo, draftValue.trim());
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
+      await refreshCurrentAnexo4Data(operation.idOperacion);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(`Error guardando ${getAnexoLabel(tipoAnexo)}:`, err);
@@ -191,6 +209,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       setShowSignConfirm(false);
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
+      await refreshCurrentAnexo4Data(operation.idOperacion);
     } catch (err) {
       console.error(`Error firmando ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`);
@@ -210,6 +229,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       setShowRemakeConfirm(false);
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
+      await refreshCurrentAnexo4Data(operation.idOperacion);
     } catch (err) {
       console.error(`Error rehaciendo ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo rehacer ${getAnexoLabel(tipoAnexo)}.`);
@@ -355,6 +375,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               <div className="text-center py-4">Cargando versión...</div>
             ) : (
               <FormOperationAnexo4Detail
+                key={selectedVersionId ?? anexo.actual.id ?? "current"}
                 operationId={operation.idOperacion}
                 initialValues={anexo4Data ?? {}}
                 disabled={isViewingHistoricalVersion || !canEditDraft}
@@ -366,6 +387,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                 onSaved={async () => {
                   navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
                   await loadOperation();
+                  await refreshCurrentAnexo4Data(operation.idOperacion);
                 }}
               />
             )
