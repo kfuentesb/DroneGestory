@@ -32,12 +32,12 @@ public class AircraftDocumentationService {
         this.aircraftRepository = aircraftRepository;
     }
 
-    public List<AircraftDocumentationDTO> findByAircraftId(Integer aircraftId) {
+    public List<AircraftDocumentationDTO> findByAircraftId(Long aircraftId) {
         return aircraftDocumentationRepository.findByAircraftId(aircraftId).stream().map(this::toDto).toList();
     }
 
     public Optional<AircraftDocumentationDTO> updateWithFile(
-            Integer id,
+            Long id,
             String documentationType,
             String expireDateRaw,
             Boolean dateIndefinite,
@@ -51,7 +51,7 @@ public class AircraftDocumentationService {
     }
 
     public AircraftDocumentationDTO createWithFile(
-            Integer aircraftId,
+            Long aircraftId,
             String documentationType,
             String expireDateRaw,
             Boolean dateIndefinite,
@@ -123,14 +123,14 @@ public class AircraftDocumentationService {
         }
     }
 
-    public void deleteById(Integer id) {
+    public void deleteById(Long id) {
         AircraftDocumentation documentation = aircraftDocumentationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aircraft documentation not found with id: " + id));
         deleteStoredFile(documentation.getDocumentationName());
         aircraftDocumentationRepository.delete(documentation);
     }
 
-    public void deleteByAircraftId(Integer aircraftId) {
+    public void deleteByAircraftId(Long aircraftId) {
         List<AircraftDocumentation> docs = aircraftDocumentationRepository.findByAircraftId(aircraftId);
         for (AircraftDocumentation doc : docs) {
             deleteStoredFile(doc.getDocumentationName());
@@ -162,7 +162,7 @@ public class AircraftDocumentationService {
         }
     }
 
-    private String storeDocumentationFile(Integer aircraftId, String documentationType, MultipartFile file) {
+    private String storeDocumentationFile(Long aircraftId, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
             String safeTypeDir = (documentationType == null || documentationType.isBlank())

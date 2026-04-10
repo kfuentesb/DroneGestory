@@ -19,22 +19,18 @@ public class Aircraft {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "aircraft_id")
-    private Integer id;
-
-//    @ManyToOne
-//    @JoinColumn(name = "operator_id", nullable = false)
-//    private Operator operator;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "insurance_company_id", nullable = false)
-//    private InsuranceCompany insuranceCompany;
+    private Long id;
 
     // ============ CAMPOS OBLIGATORIOS para el cliente ============
-    @Column(name = "manufacturer", length = 100, nullable = false)
-    private String manufacturer;
+    // @Column(name = "manufacturer", length = 100, nullable = false)
+    // private String manufacturer;
 
-    @Column(name = "model", length = 100, nullable = false)
-    private String model;
+    // @Column(name = "model", length = 100, nullable = false)
+    // private String model;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "aircraft_model_id", nullable = false)
+    private AircraftModel aircraftModel;
 
     @Column(name = "serial_number", nullable = false)
     @Pattern(regexp = "^[a-zA-Z0-9]{2,25}$", message = "El número de serie debe ser alfanumérico (2-25 caracteres)")
