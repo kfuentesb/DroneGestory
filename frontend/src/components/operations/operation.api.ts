@@ -66,6 +66,46 @@ export async function fetchAnexo4VersionData(
   return (await response.json()) as Anexo4Data;
 }
 
+export async function saveAnexo4Data(
+  operationId: number,
+  formData: FormData,
+): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
+export async function signAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/firmar/datos`, {
+    method: "PUT",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
+export async function remakeAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/rehacer/datos`, {
+    method: "POST",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
 export async function saveAnexo(operationId: number, tipoAnexo: number, textoPrueba: string) {
   const formData = new FormData();
   formData.append("textoPrueba", textoPrueba);

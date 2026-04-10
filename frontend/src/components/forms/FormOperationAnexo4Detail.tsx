@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "../../api";
+import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
 import type { FieldConfig } from "../commons/fields/FieldConfig";
 import { operationAnexo4DetailFields } from "../commons/fields/OperationsAnexo4DetailFields";
 
@@ -48,7 +48,7 @@ type FormOperationAnexo4DetailProps = {
   initialValues?: Record<string, any>;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
-  onSaved?: () => void | Promise<void>;
+  onSaved?: (savedData: Anexo4Data | null) => void | Promise<void>;
 };
 
 type ErrorsMap = Record<string, string | null>;
@@ -139,13 +139,10 @@ export default function FormOperationAnexo4Detail({
         }
       });
 
-      await apiFetch(`/api/operations/${operationId}/anexo4`, {
-        method: "POST",
-        body: formData,
-      });
+      const savedData = await saveAnexo4Data(operationId, formData);
 
       alert("Anexo 4 guardado correctamente");
-      await onSaved?.();
+      await onSaved?.(savedData);
       // window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       alert(err?.message || "Error al guardar el anexo.");

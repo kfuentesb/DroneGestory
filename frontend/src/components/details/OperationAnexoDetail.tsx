@@ -7,8 +7,10 @@ import {
   fetchAnexo4Data,
   fetchAnexo4VersionData,
   fetchOperationDetail,
+  remakeAnexo4Data,
   remakeAnexo,
   saveAnexo,
+  signAnexo4Data,
   signAnexo,
 } from "../operations/operation.api";
 import type {
@@ -103,23 +105,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     !!anexo?.actual.id &&
     anexo?.actual.estado === "BORRADOR";
 
-  const refreshCurrentAnexo4Data = async (operationId: number) => {
-    if (!isAnexo4) {
-      return;
-    }
-
-    try {
-      setLoadingVersionData(true);
-      const data = await fetchAnexo4Data(operationId);
-      setAnexo4Data(data);
-    } catch (err) {
-      console.error("Error cargando datos actuales del Anexo 4:", err);
-      setAnexo4Data(null);
-    } finally {
-      setLoadingVersionData(false);
-    }
-  };
-
   const loadOperation = async () => {
     if (!id) {
       setError("No se ha indicado la operación.");
@@ -188,7 +173,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       await saveAnexo(operation.idOperacion, tipoAnexo, draftValue.trim());
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
-      await refreshCurrentAnexo4Data(operation.idOperacion);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(`Error guardando ${getAnexoLabel(tipoAnexo)}:`, err);
@@ -205,11 +189,15 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     try {
       setSigning(true);
-      await signAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      if (isAnexo4) {
+        const signedData = await signAnexo4Data(operation.idOperacion, anexo.actual.id);
+        setAnexo4Data(signedData);
+      } else {
+        await signAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      }
       setShowSignConfirm(false);
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
-      await refreshCurrentAnexo4Data(operation.idOperacion);
     } catch (err) {
       console.error(`Error firmando ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`);
@@ -225,11 +213,15 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     try {
       setRemaking(true);
-      await remakeAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      if (isAnexo4) {
+        const remadeData = await remakeAnexo4Data(operation.idOperacion, anexo.actual.id);
+        setAnexo4Data(remadeData);
+      } else {
+        await remakeAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      }
       setShowRemakeConfirm(false);
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
-      await refreshCurrentAnexo4Data(operation.idOperacion);
     } catch (err) {
       console.error(`Error rehaciendo ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo rehacer ${getAnexoLabel(tipoAnexo)}.`);
@@ -384,10 +376,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                     ? "Estás consultando una versión histórica. Esta vista es solo lectura."
                     : undefined
                 }
-                onSaved={async () => {
+                onSaved={async (savedData) => {
+                  setAnexo4Data(savedData);
                   navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
                   await loadOperation();
-                  await refreshCurrentAnexo4Data(operation.idOperacion);
                 }}
               />
             )
