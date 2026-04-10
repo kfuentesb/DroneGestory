@@ -150,3 +150,5 @@ ALTER TABLE aircraft_documentation ALTER COLUMN aircraft_documentation_id TYPE B
 ALTER TABLE aircraft ALTER COLUMN aircraft_model_id TYPE BIGINT;
 ALTER TABLE aircraft_documentation ALTER COLUMN aircraft_id TYPE BIGINT;
 
+DELETE FROM aircraft_documentation 
+WHERE aircraft_id NOT IN (SELECT aircraft_id FROM aircraft);
