@@ -116,3 +116,37 @@ VISUAL<br>
 -DOCUMENTACIONES<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
+
+
+
+COSAS DE MIGRACION DE LA BASE DE DATOS<br>
+
+CREATE TABLE aircraft_backup AS SELECT * FROM aircraft;
+
+INSERT INTO aircraft_model (manufacturer, model)
+SELECT DISTINCT manufacturer, model FROM aircraft_backup;
+
+ALTER TABLE aircraft ADD COLUMN aircraft_model_id INTEGER;
+
+UPDATE aircraft a
+SET aircraft_model_id = m.id
+FROM aircraft_model m
+WHERE a.manufacturer = m.manufacturer 
+  AND a.model = m.model;
+
+ALTER TABLE aircraft DROP COLUMN manufacturer;
+ALTER TABLE aircraft DROP COLUMN model;
+
+ALTER TABLE aircraft 
+ADD CONSTRAINT FK_aircraft_model 
+FOREIGN KEY (aircraft_model_id) REFERENCES aircraft_model(id);
+
+-- Change Primary Keys
+ALTER TABLE aircraft ALTER COLUMN aircraft_id TYPE BIGINT;
+ALTER TABLE aircraft_model ALTER COLUMN aircraft_model_id TYPE BIGINT;
+ALTER TABLE aircraft_documentation ALTER COLUMN aircraft_documentation_id TYPE BIGINT;
+
+-- Change Foreign Keys (Crucial!)
+ALTER TABLE aircraft ALTER COLUMN aircraft_model_id TYPE BIGINT;
+ALTER TABLE aircraft_documentation ALTER COLUMN aircraft_id TYPE BIGINT;
+
