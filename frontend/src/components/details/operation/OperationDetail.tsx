@@ -204,7 +204,7 @@ export default function OperationDetail() {
                     </div>
 
                         <ButtonProp onClick={() => navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
-                      Ver anexo
+                      Ver borrador
                     </ButtonProp>
                   </div>
 
