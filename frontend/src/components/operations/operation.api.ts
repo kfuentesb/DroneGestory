@@ -1,5 +1,6 @@
 import { apiFetch } from "../../api";
 import type { OperationDetailDTO, OperationListDTO } from "./operation.types";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 export type Anexo4Data = Record<string, any>;
 
@@ -16,7 +17,7 @@ export async function fetchOperations(path: string) {
 }
 
 export async function fetchOperationDetail(id: string | number) {
-  const response = await apiFetch(`/api/operations/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${id}`, {
     headers: { "Content-Type": "application/json" },
   });
 
@@ -31,7 +32,7 @@ export async function createOperation(nombreOperacion: string) {
   const formData = new FormData();
   formData.append("nombreOperacion", nombreOperacion);
 
-  const response = await apiFetch("/api/operations", {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations`, {
     method: "POST",
     body: formData,
   });
@@ -44,7 +45,7 @@ export async function createOperation(nombreOperacion: string) {
 }
 
 export async function fetchAnexo4Data(operationId: number): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`/api/operations/${operationId}/anexo4/datos`);
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4/datos`);
 
   if (!response || response.status === 204) {
     return null;
@@ -57,7 +58,7 @@ export async function fetchAnexo4VersionData(
   operationId: number,
   anexoId: number,
 ): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/datos`);
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4/${anexoId}/datos`);
 
   if (!response || response.status === 204) {
     return null;
@@ -70,7 +71,7 @@ export async function saveAnexo4Data(
   operationId: number,
   formData: FormData,
 ): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`/api/operations/${operationId}/anexo4`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4`, {
     method: "POST",
     body: formData,
   });
@@ -83,7 +84,7 @@ export async function saveAnexo4Data(
 }
 
 export async function signAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/firmar/datos`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4/${anexoId}/firmar/datos`, {
     method: "PUT",
   });
 
@@ -95,7 +96,7 @@ export async function signAnexo4Data(operationId: number, anexoId: number): Prom
 }
 
 export async function remakeAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/rehacer/datos`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4/${anexoId}/rehacer/datos`, {
     method: "POST",
   });
 
@@ -110,7 +111,7 @@ export async function saveAnexo(operationId: number, tipoAnexo: number, textoPru
   const formData = new FormData();
   formData.append("textoPrueba", textoPrueba);
 
-  const response = await apiFetch(`/api/operations/${operationId}/anexo${tipoAnexo}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo${tipoAnexo}`, {
     method: "POST",
     body: formData,
   });
@@ -123,7 +124,7 @@ export async function saveAnexo(operationId: number, tipoAnexo: number, textoPru
 
 export async function signAnexo(operationId: number, tipoAnexo: number, anexoId: number) {
   const response = await apiFetch(
-    `/api/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/firmar`,
+    `${API_BASE_URL}/api/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/firmar`,
     {
       method: "PUT",
     },
@@ -137,7 +138,7 @@ export async function signAnexo(operationId: number, tipoAnexo: number, anexoId:
 
 export async function remakeAnexo(operationId: number, tipoAnexo: number, anexoId: number) {
   const response = await apiFetch(
-    `/api/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/rehacer`,
+    `${API_BASE_URL}/api/operations/${operationId}/anexo${tipoAnexo}/${anexoId}/rehacer`,
     {
       method: "POST",
     },
@@ -150,7 +151,7 @@ export async function remakeAnexo(operationId: number, tipoAnexo: number, anexoI
 }
 
 export async function completeOperation(operationId: number) {
-  const response = await apiFetch(`/api/operations/${operationId}/completar`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/completar`, {
     method: "PUT",
   });
 
