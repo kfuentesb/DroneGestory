@@ -47,6 +47,7 @@ type FormOperationAnexo4DetailProps = {
   operationTitle?: string;
   initialValues?: Record<string, any>;
   disabled?: boolean;
+  readOnlyMessage?: React.ReactNode;
   onSaved?: () => void;
 };
 
@@ -67,6 +68,7 @@ export default function FormOperationAnexo4Detail({
   //operationTitle,
   initialValues,
   disabled,
+  readOnlyMessage,
   onSaved,
 }: FormOperationAnexo4DetailProps) {
   const fields = useMemo<FieldConfig[]>(() => operationAnexo4DetailFields, []);

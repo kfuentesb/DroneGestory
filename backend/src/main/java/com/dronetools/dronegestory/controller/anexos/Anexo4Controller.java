@@ -43,6 +43,31 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
     }
 
+    @GetMapping("/{idAnexo}/datos")
+    public ResponseEntity<Anexo4ResponseDTO> getDatosVersion(
+            @PathVariable Long operationId,
+            @PathVariable Long idAnexo
+    ) {
+        operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+
+        Anexo4 anexo4 = repository.findById(idAnexo)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+
+        if (anexo4.getOperation() == null || !anexo4.getOperation().getIdOperacion().equals(operationId)) {
+            throw new RuntimeException("El anexo no pertenece a la operación indicada");
+        }
+
+        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
+    }
+
+    @GetMapping("/version/{idAnexo}")
+    public Anexo4ResponseDTO getVersion(@PathVariable Long operationId, @PathVariable Long idAnexo) {
+        Anexo4 anexo = anexo4Repository.findById(idAnexo)
+                .orElseThrow(() -> new RuntimeException("No existe esa versión de anexo"));
+        return Anexo4ResponseDTO.fromEntity(anexo);
+    }
+
     @Override
     protected Anexo4 registrar(Long operationId, Anexo4 input) {
         return service.registrarAnexo4(operationId, input);

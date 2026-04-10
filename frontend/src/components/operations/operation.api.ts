@@ -53,6 +53,19 @@ export async function fetchAnexo4Data(operationId: number): Promise<Anexo4Data |
   return (await response.json()) as Anexo4Data;
 }
 
+export async function fetchAnexo4VersionData(
+  operationId: number,
+  anexoId: number,
+): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/datos`);
+
+  if (!response || response.status === 204) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
 export async function saveAnexo(operationId: number, tipoAnexo: number, textoPrueba: string) {
   const formData = new FormData();
   formData.append("textoPrueba", textoPrueba);
