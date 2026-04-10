@@ -80,7 +80,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
     return (
         <div className="row">
             {fields.map((field) => (
-                <div key={field.key} className="col-md-6 col-12 mb-3">
+                <div key={field.key} className={`${field.type === "textarea" ? "col-12" : "col-md-6"} col-12 mb-3`}>
                     <label className="text-muted d-block text-start ps-3">
                         {field.label}
                     </label>
@@ -204,6 +204,20 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                     setValues({ ...values, [field.key]: newValue });
                                 }}
                             />
+                    ) : field.type === "textarea" ? (
+                        <textarea
+                            disabled={field.readOnly}
+                            className={`form-control ${errors[field.key] ? "is-invalid" : ""}`}
+                            rows={4}
+                            value={values[field.key] || ""}
+                            onChange={(e) =>
+                                setValues({ ...values, [field.key]: e.target.value })
+                            }
+                            style={{ 
+                                cursor: field.readOnly ? "not-allowed" : "text",
+                                resize: field.readOnly ? "none" : "vertical" 
+                            }}
+                        />
                     ) : (
                         <input
                             type={field.type || "text"}

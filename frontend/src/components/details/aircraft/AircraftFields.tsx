@@ -54,7 +54,7 @@ export const aircraftFields: FieldConfig[] = [
   },
   {
     key: "maxSpeed",
-    label: "Velocidad máx (km/h)",
+    label: "Velocidad máx (m/s)",
     type: "number",
     validate: (val: any) => {
       const num = Number(val);
@@ -151,7 +151,7 @@ export const aircraftFields: FieldConfig[] = [
   {
     label: "Accesorios",
     key: "accessories",
-    type: "text",
+    type: "textarea",
     validate: (v: any) => v == null || String(v).length <= 800,
     error: "Máximo 800 caracteres",
   },

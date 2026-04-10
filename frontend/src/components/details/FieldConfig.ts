@@ -1,7 +1,7 @@
 export type FieldConfig = {
     label: string;
     key: string;
-    type?: "text" | "email" | "number" |"boolean" | "select" | "file" | "date";
+    type?: "text" | "email" | "number" |"boolean" | "select" | "file" | "date" | "textarea";
     options?: string[];
     validate?: (v: any) => boolean; // Validación del campo
     error?: string;

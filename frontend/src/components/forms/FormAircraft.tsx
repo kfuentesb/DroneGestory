@@ -435,7 +435,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
 
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label d-block text-start ps-1">Velocidad máx. (km/h)</label>
+                <label className="form-label d-block text-start ps-1">Velocidad máx. (m/s)</label>
                 <input
                   type="number"
                   className="form-control"

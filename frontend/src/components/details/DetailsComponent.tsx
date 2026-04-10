@@ -1217,19 +1217,19 @@ export default function DetailsComponent({
                     </div>
                     
                     <div className="row">
-                        <div className="col-md-8 col-12">
+                        <div className="col-12"> 
                             {!editing ? (
-                            <DetailView data={data} fields={fields} />
-                        ) : (
-                            <DetailEdit
-                                values={formValues}
-                                setValues={setFormValues}
-                                fields={fields}
-                                errors={errors}
-                                removeImage={removeImage}
-                                setRemoveImage={setRemoveImage}
-                            />
-                        )}
+                                <DetailView data={data} fields={fields} />
+                            ) : (
+                                <DetailEdit
+                                    values={formValues}
+                                    setValues={setFormValues}
+                                    fields={fields}
+                                    errors={errors}
+                                    removeImage={removeImage}
+                                    setRemoveImage={setRemoveImage}
+                                />
+                            )}
 
                         {resolvedCertificateSectionType && !editing && (
                             <>
@@ -1341,12 +1341,6 @@ export default function DetailsComponent({
                                     <span className="d-none d-sm-block">Borrar</span>
                                 </button>
                             )}
-                            {/* {!editing && onBack && (
-                                <button className="btn btn-secondary" onClick={onBack}>
-                                    <img src={arroBackIcon} alt="Back" className="arrow-back-icon d-inline d-sm-none ms-2" />
-                                    <span className="d-none d-sm-block">Volver</span>
-                                </button>
-                            )} */}
                             {editing && (
                                 <>
                                     <button className="btn btn-success" onClick={handleConfirmClick}>
