@@ -203,7 +203,7 @@ export default function OperationDetail() {
                       </div>
                     </div>
 
-                        <ButtonProp onClick={() => navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
+                        <ButtonProp style={{ backgroundColor: "rgb(254, 243, 199)", color: "rgb(146, 64, 14)", border: "1px solid", padding: "0.45rem 0.6rem" }} onClick={() => navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
                       Ver borrador
                     </ButtonProp>
                   </div>
