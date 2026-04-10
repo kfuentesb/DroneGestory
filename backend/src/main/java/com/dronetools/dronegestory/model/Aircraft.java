@@ -19,7 +19,7 @@ public class Aircraft {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "aircraft_id")
-    private Long id;
+    private Long aircraftId;
 
     // ============ CAMPOS OBLIGATORIOS para el cliente ============
     // @Column(name = "manufacturer", length = 100, nullable = false)
@@ -28,7 +28,7 @@ public class Aircraft {
     // @Column(name = "model", length = 100, nullable = false)
     // private String model;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "aircraft_model_id", nullable = false)
     private AircraftModel aircraftModel;
 

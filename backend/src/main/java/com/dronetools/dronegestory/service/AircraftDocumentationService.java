@@ -33,7 +33,7 @@ public class AircraftDocumentationService {
     }
 
     public List<AircraftDocumentationDTO> findByAircraftId(Long aircraftId) {
-        return aircraftDocumentationRepository.findByAircraftId(aircraftId).stream().map(this::toDto).toList();
+        return aircraftDocumentationRepository.findByAircraft_AircraftId(aircraftId).stream().map(this::toDto).toList();
     }
 
     public Optional<AircraftDocumentationDTO> updateWithFile(
@@ -101,7 +101,7 @@ public class AircraftDocumentationService {
 
             String storedDocumentationPath = null;
             if (documentationFile != null && !documentationFile.isEmpty()) {
-                storedDocumentationPath = storeDocumentationFile(aircraft.getId(), documentationType, documentationFile);
+                storedDocumentationPath = storeDocumentationFile(aircraft.getAircraftId(), documentationType, documentationFile);
             }
 
             boolean emptyDocumentation =
@@ -131,11 +131,11 @@ public class AircraftDocumentationService {
     }
 
     public void deleteByAircraftId(Long aircraftId) {
-        List<AircraftDocumentation> docs = aircraftDocumentationRepository.findByAircraftId(aircraftId);
+        List<AircraftDocumentation> docs = aircraftDocumentationRepository.findByAircraft_AircraftId(aircraftId);
         for (AircraftDocumentation doc : docs) {
             deleteStoredFile(doc.getDocumentationName());
         }
-        aircraftDocumentationRepository.deleteByAircraftId(aircraftId);
+        aircraftDocumentationRepository.deleteByAircraft_AircraftId(aircraftId);
     }
 
     private void applyMetadataAndFile(
@@ -156,7 +156,7 @@ public class AircraftDocumentationService {
 
         if (file != null && !file.isEmpty()) {
             String oldPath = documentation.getDocumentationName();
-            String storedPath = storeDocumentationFile(documentation.getAircraft().getId(), documentationType, file);
+            String storedPath = storeDocumentationFile(documentation.getAircraft().getAircraftId(), documentationType, file);
             documentation.setDocumentationName(storedPath);
             deleteStoredFile(oldPath);
         }
@@ -233,7 +233,7 @@ public class AircraftDocumentationService {
     private AircraftDocumentationDTO toDto(AircraftDocumentation documentation) {
         return new AircraftDocumentationDTO(
                 documentation.getId(),
-                documentation.getAircraft().getId(),
+                documentation.getAircraft().getAircraftId(),
                 documentation.getDocumentationType(),
                 documentation.getDocumentationName(),
                 documentation.getExpireDate(),

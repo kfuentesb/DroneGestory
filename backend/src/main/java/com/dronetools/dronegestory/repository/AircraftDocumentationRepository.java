@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface AircraftDocumentationRepository extends JpaRepository<AircraftDocumentation, Long> {
-    List<AircraftDocumentation> findByAircraftId(Long aircraftId);
-    void deleteByAircraftId(Long aircraftId);
+    // Spring will now look for aircraft.aircraftId
+    void deleteByAircraft_AircraftId(Long aircraftId);
+    List<AircraftDocumentation> findByAircraft_AircraftId(Long aircraftId);
 }

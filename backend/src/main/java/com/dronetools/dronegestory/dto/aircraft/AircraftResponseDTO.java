@@ -36,7 +36,7 @@ public class AircraftResponseDTO {
 
     public static AircraftResponseDTO fromEntity(Aircraft aircraft) {
         AircraftResponseDTO dto = new AircraftResponseDTO();
-        dto.setId(aircraft.getId());
+        dto.setId(aircraft.getAircraftId());
         
         // Extract data from the nested Model entity
         if (aircraft.getAircraftModel() != null) {

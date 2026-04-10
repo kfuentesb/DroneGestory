@@ -12,10 +12,11 @@ import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 import LoadingSpinner from "../commons/Loading";
 
 type Aircraft = {
-  id: number;
-  // Obligatorios
-  manufacturer?: string;     // Sólo si ApplicantType es Manufacturer o To_the_Manufacturer
-  model: string;
+  aircraftId: number;
+  aircraftModel?: {
+    manufacturer: string;
+    model: string;
+  };
   serialNumber?: string;
   aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "Legacy";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
@@ -73,8 +74,8 @@ export default function AircraftList() {
   }, []);
 
   const filteredAircrafts = useSearchFilter(aircrafts, search, (a) => [
-    a.manufacturer ?? "",
-    a.model,
+    a.aircraftModel?.manufacturer ?? "",
+    a.aircraftModel?.model ?? "",
     a.serialNumber ?? "",
     a.aircraftClass,
     a.config,
@@ -130,8 +131,8 @@ export default function AircraftList() {
             rows={paginatedAircrafts}
             renderRow={(a) => (
               <>
-                <td>{a.manufacturer}</td>
-                <td>{a.model}</td>
+                <td>{a.aircraftModel?.manufacturer || "N/A"}</td>
+                <td>{a.aircraftModel?.model || "N/A"}</td>
                 <td>{a.serialNumber ?? "-"}</td>
                 <td>{a.aircraftClass}</td>
                 <td>
@@ -148,7 +149,7 @@ export default function AircraftList() {
                 </td>
               </>
             )}
-                        onRowClick={(a) => navigate(`/aircrafts/${a.id}`)}
+                        onRowClick={(a) => navigate(`/aircrafts/${a.aircraftId}`)}
             emptyText="No hay aeronaves registradas."
           />
 
