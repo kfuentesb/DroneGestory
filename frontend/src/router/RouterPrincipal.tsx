@@ -16,13 +16,11 @@ import AircraftDetail from "../components/details/aircraft/AircraftDetail";
 import OperationList from "../components/lists/OperationList";
 import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
-import OperationDetail from "../components/details/OperationDetail";
-import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
+import OperationDetail from "../components/details/operation/OperationDetail";
+import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
 import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
-
-import FormAnexo4 from "../components/forms/FormAnexo4";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -90,12 +88,16 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/operations/details/mine" element={<MyOperationList />} />
         <Route path="/operations/:id" element={<OperationDetail />} />
         <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
+        <Route path="/operations/:id/anexo4/version/:versionId" element={<OperationAnexoDetail tipoAnexo={4} />} />
         <Route path="/operations/:id/anexo5" element={<OperationAnexoDetail tipoAnexo={5} />} />
+        <Route path="/operations/:id/anexo5/version/:versionId" element={<OperationAnexoDetail tipoAnexo={5} />} />
         <Route path="/operations/:id/anexo6" element={<OperationAnexoDetail tipoAnexo={6} />} />
+        <Route path="/operations/:id/anexo6/version/:versionId" element={<OperationAnexoDetail tipoAnexo={6} />} />
         <Route path="/operations/:id/anexo7" element={<OperationAnexoDetail tipoAnexo={7} />} />
+        <Route path="/operations/:id/anexo7/version/:versionId" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
+        <Route path="/operations/:id/anexo8/version/:versionId" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/register-operation" element={<MultiStepsForm />} />
-        <Route path="/operations/:id/anexo4" element={<FormAnexo4 />} />
 
         <Route 
           path="/docs" 

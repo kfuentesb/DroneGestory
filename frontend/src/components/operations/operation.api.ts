@@ -1,6 +1,8 @@
 import { apiFetch } from "../../api";
 import type { OperationDetailDTO, OperationListDTO } from "./operation.types";
 
+export type Anexo4Data = Record<string, any>;
+
 export async function fetchOperations(path: string) {
   const response = await apiFetch(path, {
     headers: { "Content-Type": "application/json" },
@@ -39,6 +41,69 @@ export async function createOperation(nombreOperacion: string) {
   }
 
   return (await response.json()) as OperationDetailDTO;
+}
+
+export async function fetchAnexo4Data(operationId: number): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/datos`);
+
+  if (!response || response.status === 204) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
+export async function fetchAnexo4VersionData(
+  operationId: number,
+  anexoId: number,
+): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/datos`);
+
+  if (!response || response.status === 204) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
+export async function saveAnexo4Data(
+  operationId: number,
+  formData: FormData,
+): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
+export async function signAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/firmar/datos`, {
+    method: "PUT",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
+}
+
+export async function remakeAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
+  const response = await apiFetch(`/api/operations/${operationId}/anexo4/${anexoId}/rehacer/datos`, {
+    method: "POST",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo4Data;
 }
 
 export async function saveAnexo(operationId: number, tipoAnexo: number, textoPrueba: string) {

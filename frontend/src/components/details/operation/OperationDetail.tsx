@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ConfirmModal from "../commons/ConfirmModal";
-import ButtonProp from "../commons/props/ButtonProp";
-import { completeOperation, fetchOperationDetail } from "../operations/operation.api";
-import type { OperationDetailDTO } from "../operations/operation.types";
+import ConfirmModal from "../../commons/ConfirmModal";
+import ButtonProp from "../../commons/props/ButtonProp";
+import { completeOperation, fetchOperationDetail } from "../../operations/operation.api";
+import type { OperationDetailDTO } from "../../operations/operation.types";
 import {
-  formatDate,
   formatDateTime,
   getAnexoColorStyle,
   getAnexoLabel,
   getOperationStatusStyle,
   OPERATION_ANEXOS,
-} from "../operations/operation.utils";
+} from "../../operations/operation.utils";
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -129,7 +128,7 @@ export default function OperationDetail() {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
         <div>
-          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(-1)}>
+          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(`/operations/details/mine`)}>
             Volver
           </button>
           <h2 className="mb-2">{operation.nombreOperacion}</h2>
@@ -220,7 +219,8 @@ export default function OperationDetail() {
                             <th>Estado</th>
                             <th>Firmado por</th>
                             <th>Fecha firma</th>
-                            <th>Texto</th>
+                            <th>Descripción</th>
+                            <th>Acción</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -231,8 +231,26 @@ export default function OperationDetail() {
                                 <Badge label={version.estado} style={getAnexoColorStyle(version.color)} />
                               </td>
                               <td>{version.firmadoPor ?? "-"}</td>
-                              <td>{formatDate(version.fechaFirma)}</td>
-                              <td style={{ minWidth: "280px" }}>{version.textoPrueba ?? "-"}</td>
+                              <td>{formatDateTime(version.fechaFirma)}</td>
+                              <td
+                                className="text-truncate"
+                                style={{ minWidth: "280px", maxWidth: "450px", overflow: "hidden" }}
+                              >
+                                {version.textoPrueba ?? "-"}
+                              </td>
+                              <td className="text-end">
+                                {version.estado === "FIRMADO" ? (
+                                  <ButtonProp
+                                  onClick={() =>
+                                    navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}/version/${version.id}`)
+                                  }
+                                >
+                                  Ver versión
+                                  </ButtonProp>
+                                ) : (
+                                  <span className="text-muted">No disponible</span>
+                                )}
+                              </td>
                             </tr>
                           ))}
                         </tbody>

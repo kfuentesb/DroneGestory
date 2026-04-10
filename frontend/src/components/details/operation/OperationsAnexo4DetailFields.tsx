@@ -1,4 +1,4 @@
-import type { FieldConfig } from "./FieldConfig";
+import type { FieldConfig } from "../FieldConfig";
 
 const initialFields = {
   descripcion: "",

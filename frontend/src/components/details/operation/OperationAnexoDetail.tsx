@@ -1,26 +1,30 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ConfirmModal from "../commons/ConfirmModal";
-import ButtonProp from "../commons/props/ButtonProp";
-import { useAuth } from "../commons/hooks/useAuth";
+import ConfirmModal from "../../commons/ConfirmModal";
+import ButtonProp from "../../commons/props/ButtonProp";
+import { useAuth } from "../../commons/hooks/useAuth";
 import {
+  fetchAnexo4Data,
+  fetchAnexo4VersionData,
   fetchOperationDetail,
+  remakeAnexo4Data,
   remakeAnexo,
   saveAnexo,
+  signAnexo4Data,
   signAnexo,
-} from "../operations/operation.api";
+} from "../../operations/operation.api";
 import type {
+  AnexoHistoricoDTO,
   OperationAnexoDetailDTO,
   OperationDetailDTO,
-} from "../operations/operation.types";
+} from "../../operations/operation.types";
 import {
-  formatDate,
   formatDateTime,
   getAnexoColorStyle,
   getAnexoLabel,
   getOperationStatusStyle,
-} from "../operations/operation.utils";
-import FormOperationAnexo4Detail from "../forms/FormOperationAnexo4Detail";
+} from "../../operations/operation.utils";
+import FormOperationAnexo4Detail from "../../forms/FormOperationAnexo4Detail";
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
@@ -42,18 +46,19 @@ function Badge({ label, style }: { label: string; style: CSSProperties }) {
 }
 
 function buildDraft(anexo: OperationAnexoDetailDTO | null) {
-  const latest = anexo?.versiones[0];
-  return latest?.textoPrueba ?? "";
+  return anexo?.versiones[0]?.textoPrueba ?? "";
 }
 
 export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetailProps) {
-  const { id } = useParams();
+  const { id, versionId } = useParams();
   const navigate = useNavigate();
   const { role } = useAuth();
 
   const [operation, setOperation] = useState<OperationDetailDTO | null>(null);
   const [draftValue, setDraftValue] = useState("");
+  const [anexo4Data, setAnexo4Data] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingVersionData, setLoadingVersionData] = useState(false);
   const [saving, setSaving] = useState(false);
   const [signing, setSigning] = useState(false);
   const [remaking, setRemaking] = useState(false);
@@ -62,6 +67,43 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
 
   const isAnexo4 = tipoAnexo === 4;
+
+  const anexo = useMemo(
+    () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
+    [operation, tipoAnexo],
+  );
+
+  const selectedVersionId = useMemo(() => {
+    if (!versionId) {
+      return null;
+    }
+
+    const parsedVersionId = Number(versionId);
+    return Number.isNaN(parsedVersionId) ? null : parsedVersionId;
+  }, [versionId]);
+
+  const selectedVersion = useMemo<AnexoHistoricoDTO | null>(() => {
+    if (!selectedVersionId || !anexo) {
+      return null;
+    }
+
+    return anexo.versiones.find((version) => version.id === selectedVersionId) ?? null;
+  }, [anexo, selectedVersionId]);
+
+  const isViewingHistoricalVersion = selectedVersion !== null;
+  const actualIsSigned = anexo?.actual.estado === "FIRMADO";
+  const canManageCompletedOperation = role === "ADMIN";
+  const canCreate = !operation?.completada || canManageCompletedOperation;
+  const canEditDraft =
+    !isViewingHistoricalVersion &&
+    canCreate &&
+    (!actualIsSigned || (anexo?.actual.numeroVersion ?? 0) === 0);
+  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned && !!anexo?.actual.id;
+  const canSign =
+    !isViewingHistoricalVersion &&
+    canCreate &&
+    !!anexo?.actual.id &&
+    anexo?.actual.estado === "BORRADOR";
 
   const loadOperation = async () => {
     if (!id) {
@@ -77,13 +119,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       const data = await fetchOperationDetail(id);
 
       if (!data) {
+        setError("No se pudo cargar la operación.");
         return;
       }
 
       setOperation(data);
-      const anexo = data.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null;
+      const anexoData = data.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null;
       if (!isAnexo4) {
-        setDraftValue(buildDraft(anexo));
+        setDraftValue(buildDraft(anexoData));
       }
     } catch (err) {
       console.error("Error cargando anexo:", err);
@@ -95,19 +138,30 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
   useEffect(() => {
     void loadOperation();
-  }, [id, tipoAnexo]);
+  }, [id, tipoAnexo, versionId]);
 
-  const anexo = useMemo(
-    () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
-    [operation, tipoAnexo],
-  );
+  useEffect(() => {
+    if (!isAnexo4 || !operation) {
+      return;
+    }
 
-  const actualIsSigned = anexo?.actual.estado === "FIRMADO";
-  const canManageCompletedOperation = role === "ADMIN";
-  const canCreate = !operation?.completada || canManageCompletedOperation;
-  const canEditDraft = canCreate && (!actualIsSigned || (anexo?.actual.numeroVersion ?? 0) === 0);
-  const canRemake = canCreate && actualIsSigned && !!anexo?.actual.id;
-  const canSign = canCreate && !!anexo?.actual.id && anexo?.actual.estado === "BORRADOR";
+    const loadSelectedAnexo4Data = async () => {
+      setLoadingVersionData(true);
+      try {
+        const data = selectedVersionId
+          ? await fetchAnexo4VersionData(operation.idOperacion, selectedVersionId)
+          : await fetchAnexo4Data(operation.idOperacion);
+        setAnexo4Data(data);
+      } catch (err) {
+        console.error("Error cargando datos del Anexo 4:", err);
+        setAnexo4Data(null);
+      } finally {
+        setLoadingVersionData(false);
+      }
+    };
+
+    void loadSelectedAnexo4Data();
+  }, [isAnexo4, operation, selectedVersionId]);
 
   const handleSave = async () => {
     if (!operation || !draftValue.trim()) {
@@ -117,7 +171,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     try {
       setSaving(true);
       await saveAnexo(operation.idOperacion, tipoAnexo, draftValue.trim());
+      navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(`Error guardando ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo guardar ${getAnexoLabel(tipoAnexo)}.`);
@@ -133,8 +189,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     try {
       setSigning(true);
-      await signAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      if (isAnexo4) {
+        const signedData = await signAnexo4Data(operation.idOperacion, anexo.actual.id);
+        setAnexo4Data(signedData);
+      } else {
+        await signAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      }
       setShowSignConfirm(false);
+      navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
     } catch (err) {
       console.error(`Error firmando ${getAnexoLabel(tipoAnexo)}:`, err);
@@ -151,8 +213,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     try {
       setRemaking(true);
-      await remakeAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      if (isAnexo4) {
+        const remadeData = await remakeAnexo4Data(operation.idOperacion, anexo.actual.id);
+        setAnexo4Data(remadeData);
+      } else {
+        await remakeAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      }
       setShowRemakeConfirm(false);
+      navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
       await loadOperation();
     } catch (err) {
       console.error(`Error rehaciendo ${getAnexoLabel(tipoAnexo)}:`, err);
@@ -203,6 +271,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               label={anexo.actual.estado ?? "SIN DATOS"}
               style={getAnexoColorStyle(anexo.actual.color)}
             />
+            {isViewingHistoricalVersion && selectedVersion && (
+              <Badge
+                label={`Consultando v${selectedVersion.numeroVersion}`}
+                style={getAnexoColorStyle(selectedVersion.color)}
+              />
+            )}
           </div>
         </div>
 
@@ -261,82 +335,80 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
       )}
 
-      {actualIsSigned && (
+      {actualIsSigned && !isViewingHistoricalVersion && (
         <div className="alert alert-info">
           La versión actual está firmada. Para editar, crea antes una nueva versión con "Rehacer versión".
         </div>
       )}
 
+      {isViewingHistoricalVersion && selectedVersion && (
+        <div className="alert alert-secondary">
+          Estás consultando la versión histórica v{selectedVersion.numeroVersion}. Esta vista es solo lectura.
+        </div>
+      )}
+
       <div className="card shadow-sm mb-4" style={{ border: "1px solid #E5E7EB" }}>
         <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+            <h4 className="mb-0">
+              {isViewingHistoricalVersion && selectedVersion
+                ? `Detalle versión v${selectedVersion.numeroVersion}`
+                : "Detalle versión actual"}
+            </h4>
+            {isViewingHistoricalVersion && (
+              <ButtonProp onClick={() => navigate(`/operations/${operation.idOperacion}`)}>
+                Volver a la operación
+              </ButtonProp>
+            )}
+          </div>
 
           {isAnexo4 ? (
-            <FormOperationAnexo4Detail
-              operationId={operation.idOperacion}
-              disabled={!canEditDraft}
-              onSaved={() => void loadOperation()}
-            />
+            loadingVersionData ? (
+              <div className="text-center py-4">Cargando versión...</div>
+            ) : (
+              <FormOperationAnexo4Detail
+                key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                operationId={operation.idOperacion}
+                initialValues={anexo4Data ?? {}}
+                disabled={isViewingHistoricalVersion || !canEditDraft}
+                readOnlyMessage={
+                  isViewingHistoricalVersion
+                    ? "Estás consultando una versión histórica. Esta vista es solo lectura."
+                    : undefined
+                }
+                onSaved={async (savedData) => {
+                  setAnexo4Data(savedData);
+                  navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
+                  await loadOperation();
+                }}
+              />
+            )
           ) : (
             <>
               <label className="form-label fw-bold" htmlFor={`draft-anexo-${tipoAnexo}`}>
-                Texto de prueba
+                Texto
               </label>
               <textarea
                 id={`draft-anexo-${tipoAnexo}`}
                 className="form-control"
-                rows={8}
-                value={draftValue}
-                disabled={!canEditDraft || saving}
+                rows={10}
+                value={isViewingHistoricalVersion ? selectedVersion?.textoPrueba ?? "" : draftValue}
+                disabled={isViewingHistoricalVersion || saving || !canEditDraft}
                 onChange={(event) => setDraftValue(event.target.value)}
                 placeholder={`Contenido de ${getAnexoLabel(tipoAnexo)}`}
               />
 
-              <div className="d-flex gap-2 flex-wrap mt-3">
-                <ButtonProp
-                  onClick={() => void handleSave()}
-                  disabled={!canEditDraft || saving || !draftValue.trim()}
-                >
-                  {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
-                </ButtonProp>
-              </div>
+              {!isViewingHistoricalVersion && (
+                <div className="d-flex gap-2 flex-wrap mt-3">
+                  <ButtonProp
+                    onClick={() => void handleSave()}
+                    disabled={!canEditDraft || saving || !draftValue.trim()}
+                  >
+                    {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
+                  </ButtonProp>
+                </div>
+              )}
             </>
-          )}
-        </div>
-      </div>
-
-      <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB" }}>
-        <div className="card-body">
-          <h4 className="mb-3">Versiones registradas</h4>
-
-          {anexo.versiones.length === 0 ? (
-            <p className="text-muted mb-0">Todavía no existe ninguna versión para este anexo.</p>
-          ) : (
-            <div className="table-responsive">
-              <table className="table align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>Versión</th>
-                    <th>Estado</th>
-                    <th>Firmado por</th>
-                    <th>Fecha firma</th>
-                    <th>Texto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {anexo.versiones.map((version) => (
-                    <tr key={version.id}>
-                      <td>{`v${version.numeroVersion}`}</td>
-                      <td>
-                        <Badge label={version.estado} style={getAnexoColorStyle(version.color)} />
-                      </td>
-                      <td>{version.firmadoPor ?? "-"}</td>
-                      <td>{formatDate(version.fechaFirma)}</td>
-                      <td style={{ minWidth: "280px" }}>{version.textoPrueba ?? "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           )}
         </div>
       </div>

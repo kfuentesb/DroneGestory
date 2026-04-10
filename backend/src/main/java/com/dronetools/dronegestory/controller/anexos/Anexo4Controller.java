@@ -2,17 +2,17 @@ package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
 import com.dronetools.dronegestory.dto.operation.Anexo4RequestDTO;
+import com.dronetools.dronegestory.dto.operation.Anexo4ResponseDTO;
 import com.dronetools.dronegestory.dto.operation.AnexoInfoDTO;
-import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
@@ -28,10 +28,52 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     }
 
     @PostMapping
-    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute Anexo4RequestDTO dto) {
+    public Anexo4ResponseDTO saveOrUpdate(@PathVariable Long operationId, @ModelAttribute Anexo4RequestDTO dto) {
         Anexo4 anexo = convertDtoToEntity(dto); // O tu mapping preferido (manual, mapstruct...)
         Anexo4 saved = service.registrarAnexo4(operationId, anexo);
-        return AnexoInfoDTO.from(saved);
+        return Anexo4ResponseDTO.fromEntity(saved);
+    }
+
+    @PutMapping("/{idAnexo}/firmar/datos")
+    public Anexo4ResponseDTO firmarConDatos(@PathVariable Long idAnexo, Principal principal) {
+        String username = (principal != null) ? principal.getName() : "Sistema";
+        Anexo4 anexo = service.firmarAnexo(idAnexo, username);
+        return Anexo4ResponseDTO.fromEntity(anexo);
+    }
+
+    @PostMapping("/{idAnexo}/rehacer/datos")
+    public Anexo4ResponseDTO rehacerConDatos(@PathVariable Long idAnexo) {
+        Anexo4 anexoRehecho = service.rehacerAnexo4(idAnexo);
+        return Anexo4ResponseDTO.fromEntity(anexoRehecho);
+    }
+
+    @GetMapping("/datos")
+    public ResponseEntity<Anexo4ResponseDTO> getDatos(@PathVariable Long operationId) {
+        Operation op = operationRepository.findByIdWithAnexos(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        Anexo4 anexo4 = op.getAnexo4Actual();
+        if (anexo4 == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
+    }
+
+    @GetMapping("/{idAnexo}/datos")
+    public ResponseEntity<Anexo4ResponseDTO> getDatosVersion(
+            @PathVariable Long operationId,
+            @PathVariable Long idAnexo
+    ) {
+        operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+
+        Anexo4 anexo4 = repository.findById(idAnexo)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+
+        if (anexo4.getOperation() == null || !anexo4.getOperation().getIdOperacion().equals(operationId)) {
+            throw new RuntimeException("El anexo no pertenece a la operación indicada");
+        }
+
+        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
     }
 
     @Override
