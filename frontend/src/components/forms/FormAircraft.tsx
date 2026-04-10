@@ -38,9 +38,9 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   ];
 
   const cautiveOptions: SelectOption[] = [
-    { value: "Sí", label: "Sí" },
-    { value: "No", label: "No" },
-    { value: "Opcional", label: "Opcional" },
+    { value: "YES", label: "Sí" },
+    { value: "NO", label: "No" },
+    { value: "OPTIONAL", label: "Opcional" },
   ];
 
   const [error, setError] = useState<string | null>(null);

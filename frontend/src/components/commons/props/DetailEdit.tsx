@@ -49,17 +49,31 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
 
     const mapCautiveToOption = (opts: string[] | undefined, value: unknown) => {
         if (!opts || opts.length === 0) return "";
-        const letters = normalize(String(value ?? "")).replace(/[^a-z]/g, "");
+        if (value === null || value === undefined || value === "") return "";
+        const rawValue = String(value).toLowerCase();
+        const letters = normalize(rawValue).replace(/[^a-z]/g, "");
+
         if (letters === "") return "";
+
         if (letters.startsWith("s") || letters === "yes") {
-            return opts.find((opt) => normalize(opt).replace(/[^a-z]/g, "").startsWith("s")) ?? opts[0];
+            return opts.find((opt) => {
+                const n = normalize(opt).toLowerCase().replace(/[^a-z]/g, "");
+                return n.startsWith("s") || n === "yes";
+            }) ?? opts[0];
         }
-        if (letters.startsWith("n")) {
-            return opts.find((opt) => normalize(opt).replace(/[^a-z]/g, "") === "no") ?? opts[0];
+        if (letters === "no") {
+            return opts.find((opt) => {
+                const n = normalize(opt).toLowerCase().replace(/[^a-z]/g, "");
+                return n === "no";
+            }) ?? opts[0];
         }
-        if (letters.startsWith("opc") || letters.startsWith("optional")) {
-            return opts.find((opt) => normalize(opt).replace(/[^a-z]/g, "").startsWith("opc")) ?? opts[0];
+        if (letters.startsWith("opc") || letters.startsWith("opt")) {
+            return opts.find((opt) => {
+                const n = normalize(opt).toLowerCase().replace(/[^a-z]/g, "");
+                return n.startsWith("opc") || n.startsWith("opt");
+            }) ?? opts[0];
         }
+
         return "";
     };
 
