@@ -85,8 +85,33 @@ export const operationAnexo4DetailFields: FieldConfig[] = [
   { label: "Dirección", key: "direccion", type: "text" },
   { label: "Coordenadas", key: "coords", type: "text" },
   { label: "Personal", key: "personal", type: "text" },
-  { label: "Imagen Espacio Aéreo", key: "imagenEspacioAereo", type: "file" },
-  { label: "Imagen Zona Vuelo", key: "imagenZonaVuelo", type: "file" },
+  { label: "Imagen Espacio Aéreo", 
+    key: "imagenEspacioAereo", 
+    type: "file",
+    validate: (file: File | null) => {
+        if (!file) return true;
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+        return file.size <= maxSize && allowedTypes.includes(file.type);
+    },
+    error: "La imagen debe ser JPG o PNG y pesar menos de 5MB",
+  },
+  { label: 
+    "Imagen Zona Vuelo", 
+    key: "imagenZonaVuelo", 
+    type: "file",
+    validate: (file: File | null) => {
+        if (!file) return true;
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+        return file.size <= maxSize && allowedTypes.includes(file.type);
+    },
+    error: "La imagen debe ser JPG o PNG y pesar menos de 5MB",
+  },
 
   // Booleanos
   { label: "espacioAereoControlado", key: "espacioAereoControlado", type: "boolean" },
