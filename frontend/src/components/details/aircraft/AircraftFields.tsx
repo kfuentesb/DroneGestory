@@ -140,11 +140,13 @@ export const aircraftFields: FieldConfig[] = [
     type: "select",
     options: ["Sí", "No", "Opcional"],
     format: (v: any) => {
-      if (v === "Sí") return "Sí";
-      if (v === "No") return "No";
-      if (v === "Opcional") return "Opcional";
-      return "No especificado";
-    },
+        if (v === null || v === undefined || v === "") return "No especificado";
+        const val = String(v).toUpperCase();
+        if (val === "YES" || val === "SI" || val === "SÍ") return "Sí";
+        if (val === "NO") return "No";
+        if (val === "OPTIONAL" || val === "OPCIONAL") return "Opcional";
+        return String(v);
+      },
   },
   {
     label: "Accesorios",
