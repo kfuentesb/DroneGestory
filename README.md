@@ -103,9 +103,7 @@ VISUAL<br>
 
 -DRONES<br>
 -Cambiar lógica de modelo y fabricante, siendo estos sus propias tablas<br>
--Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
--Hacer que el campo accesorios sea un AreaText cuando se edite<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
