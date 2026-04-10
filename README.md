@@ -106,8 +106,6 @@ VISUAL<br>
 -Cambiar layout de mostrar un dron (imagen grande a la derecha)<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
 -Hacer que el campo accesorios sea un AreaText cuando se edite<br>
--Cambiar de km/h a m/s<br>
--Campo cautivo da error en la base de datos<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
