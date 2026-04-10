@@ -55,7 +55,7 @@ public class AircraftController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AircraftResponseDTO> getById(@PathVariable int id) {
+    public ResponseEntity<AircraftResponseDTO> getById(@PathVariable Long id) {
         return aircraftService.getAircraftById(id)
                 .map(AircraftResponseDTO::fromEntity)
                 .map(ResponseEntity::ok)
@@ -95,7 +95,7 @@ public class AircraftController {
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AircraftResponseDTO> updateAircraftWithFile(
-            @PathVariable Integer id,
+            @PathVariable Long id,
             @ModelAttribute AircraftRequestDTO dto,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
@@ -136,7 +136,7 @@ public class AircraftController {
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             aircraftService.deleteAircraft(id);
             return ResponseEntity.noContent().build();

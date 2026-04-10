@@ -35,7 +35,7 @@ public class AircraftService {
         return aircraftRepository.findAll();
     }
 
-    public Optional<Aircraft> getAircraftById(int id) {
+    public Optional<Aircraft> getAircraftById(Long id) {
         return aircraftRepository.findById(id);
     }
 
@@ -56,7 +56,7 @@ public class AircraftService {
 
     @Transactional
     public Aircraft updateWithFile(
-            Integer id, 
+            Long id, 
             Aircraft updatedData, 
             String manufacturer, 
             String modelName,
@@ -145,14 +145,14 @@ public class AircraftService {
         }
     }
 
-    private String buildProfileFilename(Integer aircraftId, String originalFilename) {
+    private String buildProfileFilename(Long aircraftId, String originalFilename) {
         String safeName = (originalFilename == null || originalFilename.isBlank()) ? "upload" : Paths.get(originalFilename).getFileName().toString();
         int dot = safeName.lastIndexOf('.');
         String extension = dot >= 0 ? safeName.substring(dot) : "";
         return "aircraft_" + aircraftId + "_profile" + extension;
     }
 
-    public void deleteAircraft(int id) {
+    public void deleteAircraft(Long id) {
         if (!aircraftRepository.existsById(id)) {
             throw new RuntimeException("Aircraft not found with id: " + id);
         }
@@ -172,6 +172,7 @@ public class AircraftService {
         
         Aircraft savedAircraft = createWithFile(aircraft, manufacturer, modelName, imageFile);
         
+        // 2. Save the associated documentation linked to this specific aircraft
         if (documentations != null && !documentations.isEmpty()) {
             aircraftDocumentationService.saveFromUploadRequests(savedAircraft, documentations, multipartRequest);
         }
