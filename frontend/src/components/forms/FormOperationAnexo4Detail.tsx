@@ -119,8 +119,23 @@ export default function FormOperationAnexo4Detail({
         if (prev[key]) URL.revokeObjectURL(prev[key]!);
         return { ...prev, [key]: url };
       });
+    } else if (value == null) {
+      setPreviewUrls((prev) => {
+        if (prev[key]) URL.revokeObjectURL(prev[key]!);
+        return { ...prev, [key]: null };
+      });
     }
   };
+
+  // Revoke all object URLs when the component unmounts to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      Object.values(previewUrls).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const validate = () => {
     const nextErrors: ErrorsMap = {};

@@ -210,7 +210,6 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         String contentType = file.getContentType();
         if (contentType == null ||
                 (!contentType.equals("image/jpeg") &&
-                 !contentType.equals("image/jpg") &&
                  !contentType.equals("image/png"))) {
             throw new IllegalArgumentException("Solo se permiten imágenes JPG o PNG");
         }

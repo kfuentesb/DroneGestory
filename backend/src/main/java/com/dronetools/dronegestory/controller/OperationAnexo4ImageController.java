@@ -43,6 +43,11 @@ public class OperationAnexo4ImageController {
             return ResponseEntity.badRequest().build();
         }
 
+        // Restrict to only Anexo4 paths (operations/{id}/anexo4/{file})
+        if (!filename.matches("operations/\\d+/anexo4/[^/]+")) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadsDir.resolve(filename).normalize();
 
