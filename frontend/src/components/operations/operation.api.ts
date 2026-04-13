@@ -165,7 +165,7 @@ export async function completeOperation(operationId: number) {
 export async function deleteOperation(operationId: number) {
   // Llama al endpoint backend vía apiFetch, que ya añade tokens y base URL
   // Devuelve true si todo va bien, lanza error si hay problema
-  const res = await apiFetch(`/api/operations/${operationId}`, {
+  const res = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}`, {
     method: "DELETE",
   });
 
