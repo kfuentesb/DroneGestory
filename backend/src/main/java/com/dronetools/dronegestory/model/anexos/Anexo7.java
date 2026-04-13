@@ -77,7 +77,7 @@ public class Anexo7 extends Anexo {
 
     private Boolean otrosRecogidaCorrecto;
     private String otrosRecogidaObservaciones;
-    
+
     public Anexo7() {
         super();
         this.setTipoAnexo(7);
