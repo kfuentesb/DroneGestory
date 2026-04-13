@@ -3,6 +3,8 @@ import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+
 /** * CONFIGURACIÓN DE TEXTOS:
  * Modifica solo este objeto para cambiar los nombres de los puntos en el futuro.
  */
@@ -75,6 +77,7 @@ export default function FormOperationAnexo4Detail({
   const [formValues, setFormValues] = useState<Record<string, any>>(initialValues ?? {});
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
   if (!initialValues) return;
@@ -110,6 +113,13 @@ export default function FormOperationAnexo4Detail({
 
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+    if (value instanceof File) {
+      const url = URL.createObjectURL(value);
+      setPreviewUrls((prev) => {
+        if (prev[key]) URL.revokeObjectURL(prev[key]!);
+        return { ...prev, [key]: url };
+      });
+    }
   };
 
   const validate = () => {
@@ -283,10 +293,37 @@ export default function FormOperationAnexo4Detail({
               <label className="form-label fw-bold small text-uppercase text-muted">Imagen del espacio aéreo</label>
               <input
                 type="file"
+                accept="image/jpeg,image/jpg,image/png"
                 className="form-control"
-                onChange={(e) => handleChange("imagenEspacioAereo", e.target.files?.[0] ?? null)}
+                onChange={(e) => handleChange("imagenEspacioAereoFile", e.target.files?.[0] ?? null)}
                 disabled={disabled || saving}
               />
+              {errors.imagenEspacioAereoFile && (
+                <div className="text-danger small mt-1">{errors.imagenEspacioAereoFile}</div>
+              )}
+              {/* Preview: newly selected file */}
+              {previewUrls.imagenEspacioAereoFile && (
+                <div className="mt-2">
+                  <img
+                    src={previewUrls.imagenEspacioAereoFile}
+                    alt="Vista previa espacio aéreo"
+                    className="img-fluid rounded border"
+                    style={{ maxHeight: "220px", objectFit: "contain" }}
+                  />
+                </div>
+              )}
+              {/* Preview: existing saved image */}
+              {!previewUrls.imagenEspacioAereoFile && formValues.imagenEspacioAereo && (
+                <div className="mt-2">
+                  <p className="small text-muted mb-1">Imagen guardada:</p>
+                  <img
+                    src={`${API_BASE_URL}/api/operations/anexo4/images/${formValues.imagenEspacioAereo}`}
+                    alt="Espacio aéreo guardado"
+                    className="img-fluid rounded border"
+                    style={{ maxHeight: "220px", objectFit: "contain" }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* SECCIÓN 4 */}
@@ -301,11 +338,38 @@ export default function FormOperationAnexo4Detail({
               <label className="form-label fw-bold text-uppercase small text-muted">Imagen zona de vuelo</label>
               <input
                 type="file"
+                accept="image/jpeg,image/jpg,image/png"
                 className="form-control"
-                onChange={(e) => handleChange("imagenZonaVuelo", e.target.files?.[0] ?? null)}
+                onChange={(e) => handleChange("imagenZonaVueloFile", e.target.files?.[0] ?? null)}
                 disabled={disabled || saving}
               />
+              {errors.imagenZonaVueloFile && (
+                <div className="text-danger small mt-1">{errors.imagenZonaVueloFile}</div>
+              )}
               <div className="form-text mt-2">Adjunte el mapa detallado de la zona de operación.</div>
+              {/* Preview: newly selected file */}
+              {previewUrls.imagenZonaVueloFile && (
+                <div className="mt-2">
+                  <img
+                    src={previewUrls.imagenZonaVueloFile}
+                    alt="Vista previa zona de vuelo"
+                    className="img-fluid rounded border"
+                    style={{ maxHeight: "220px", objectFit: "contain" }}
+                  />
+                </div>
+              )}
+              {/* Preview: existing saved image */}
+              {!previewUrls.imagenZonaVueloFile && formValues.imagenZonaVuelo && (
+                <div className="mt-2">
+                  <p className="small text-muted mb-1">Imagen guardada:</p>
+                  <img
+                    src={`${API_BASE_URL}/api/operations/anexo4/images/${formValues.imagenZonaVuelo}`}
+                    alt="Zona de vuelo guardada"
+                    className="img-fluid rounded border"
+                    style={{ maxHeight: "220px", objectFit: "contain" }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* SECCIÓN 6 */}
