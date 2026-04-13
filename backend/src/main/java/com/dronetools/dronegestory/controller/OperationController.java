@@ -7,10 +7,12 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.OperationService;
 import com.dronetools.dronegestory.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -59,8 +61,11 @@ public class OperationController {
         return operationService.findByIdDto(operationId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{operationId}")
-    public void delete(@PathVariable Long operationId) {
-        operationService.deleteOperation(operationId);
+    public ResponseEntity<Void> deleteOperation(@PathVariable Long operationId) {
+        operationService.deleteOperationWithAnexos(operationId);
+        return ResponseEntity.noContent().build();
     }
+
 }

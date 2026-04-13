@@ -1,13 +1,17 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import React, { useEffect, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../commons/hooks/useAuth";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
+import DeleteIcon from "../../assets/commons/delete_white.svg";
 import { fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
+import { deleteOperation } from "../operations/operation.api";
+
 import {
   formatDateTime,
   getAnexoColorStyle,
@@ -36,13 +40,14 @@ function StatusBadge({ label, style }: { label: string; style: CSSProperties }) 
   );
 }
 
-function AnexoBadge({ version, color }: { version: string; color: OperationListDTO["anexo4Color"] }) {
-  return (
-    <StatusBadge
-      label={version}
-      style={getAnexoColorStyle(color)}
-    />
-  );
+function AnexoBadge({
+  version,
+  color,
+}: {
+  version: string;
+  color: OperationListDTO["anexo4Color"];
+}) {
+  return <StatusBadge label={version} style={getAnexoColorStyle(color)} />;
 }
 
 export default function OperationsTableView({
@@ -51,6 +56,8 @@ export default function OperationsTableView({
   emptyText,
 }: OperationsTableViewProps) {
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const isAdmin = role === "ADMIN";
 
   const [operations, setOperations] = useState<OperationListDTO[]>([]);
   const [search, setSearch] = useState("");
@@ -97,6 +104,38 @@ export default function OperationsTableView({
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Manejar el borrado
+  const handleDelete = async (operationId: number) => {
+  if (
+    window.confirm(
+      "¿Estás seguro que quieres borrar esta operación y todos sus anexos? Esta acción no se puede deshacer."
+    )
+  ) {
+    try {
+      await deleteOperation(operationId);
+      setOperations((ops) =>
+        ops.filter((op) => op.idOperacion !== operationId)
+      );
+    } catch (err: any) {
+      alert(err.message || "Error inesperado");
+    }
+  }
+};
+
+  // Encabezados, añade la columna del botón borrar solo si eres admin
+  const opHeaders: TableHeader[] = [
+    { label: "Nombre", key: "nombreOperacion", sortable: true },
+    { label: "Creador", key: "nombreCreador", sortable: true },
+    { label: "Creación", key: "fechaCreacion", sortable: true },
+    { label: "Anexo 4", key: "anexo4Version", sortable: false },
+    { label: "Anexo 5", key: "anexo5Version", sortable: false },
+    { label: "Anexo 6", key: "anexo6Version", sortable: false },
+    { label: "Anexo 7", key: "anexo7Version", sortable: false },
+    { label: "Anexo 8", key: "anexo8Version", sortable: false },
+    { label: "Estado", key: "estado", sortable: true },
+    ...(isAdmin ? [{ label: "", key: "borrar", sortable: false }] : []),
+  ];
+
   if (isLoading) {
     return <LoadingSpinner message="Cargando operaciones..." />;
   }
@@ -114,35 +153,21 @@ export default function OperationsTableView({
     );
   }
 
-  const opHeaders: TableHeader[] = [
-    { label: "Nombre", key: "nombreOperacion", sortable: true },
-    { label: "Creador", key: "nombreCreador", sortable: true },
-    { label: "Creación", key: "fechaCreacion", sortable: true },
-    { label: "Anexo 4", key: "anexo4Version", sortable: false },
-    { label: "Anexo 5", key: "anexo5Version", sortable: false },
-    { label: "Anexo 6", key: "anexo6Version", sortable: false },
-    { label: "Anexo 7", key: "anexo7Version", sortable: false },
-    { label: "Anexo 8", key: "anexo8Version", sortable: false },
-    { label: "Estado", key: "estado", sortable: true },
-  ];
-
   return (
     <div className="container py-4">
       <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
         <div className="card-body">
           <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>{title}</h2>
-
           <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
             <SearchBar
               value={search}
               placeholder="Buscar por nombre, creador o estado..."
               onChange={setSearch}
             />
-                <ButtonProp onClick={() => navigate("/register-operation")}>
+            <ButtonProp onClick={() => navigate("/register-operation")}>
               <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
             </ButtonProp>
           </div>
-
           <ReusableTable
             headers={opHeaders}
             rows={paginatedOperations}
@@ -163,17 +188,43 @@ export default function OperationsTableView({
                     <StatusBadge label={operation.estado} style={getOperationStatusStyle(operation.estado)} />
                   )}
                 </td>
+                {isAdmin && (
+                  <td className="text-center">
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDelete(operation.idOperacion);
+                      }}
+                      title="Borrar operación"
+                      style={{
+                        background: "#DC2626",
+                        border: "none",
+                        padding: 6,
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        margin: "0 auto",
+                        boxShadow: "0 1px 4px #db464633",
+                      }}
+                    >
+                      <img src={DeleteIcon} alt="Borrar" style={{ width: 20, height: 20 }} />
+                    </button>
+                  </td>
+                )}
               </>
             )}
-                    onRowClick={(operation) => navigate(`/operations/${operation.idOperacion}`)}
+            onRowClick={operation =>
+              navigate(`/operations/${operation.idOperacion}`)
+            }
             emptyText={emptyText}
           />
-
           <Pagination
-              totalItems={filteredOperations.length}
-              currentPage={currentPage}
-              itemsPerPage={ITEMS_PER_PAGE}
-              onPageChange={setCurrentPage}
+            totalItems={filteredOperations.length}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
           />
         </div>
       </div>

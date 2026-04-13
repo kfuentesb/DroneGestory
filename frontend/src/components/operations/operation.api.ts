@@ -161,3 +161,17 @@ export async function completeOperation(operationId: number) {
 
   return (await response.json()) as OperationDetailDTO;
 }
+
+export async function deleteOperation(operationId: number) {
+  // Llama al endpoint backend vía apiFetch, que ya añade tokens y base URL
+  // Devuelve true si todo va bien, lanza error si hay problema
+  const res = await apiFetch(`/api/operations/${operationId}`, {
+    method: "DELETE",
+  });
+
+  // (Opcional) chequea el status HTTP
+  if (!res?.ok) {
+    throw new Error("Error al borrar la operación");
+  }
+  return true;
+}

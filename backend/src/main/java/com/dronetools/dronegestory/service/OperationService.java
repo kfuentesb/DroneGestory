@@ -3,6 +3,7 @@ package com.dronetools.dronegestory.service;
 import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
 import com.dronetools.dronegestory.dto.operation.OperationListDTO;
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.security.core.Authentication;
@@ -10,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -52,10 +54,10 @@ public class OperationService {
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
     }
 
-    @Transactional
-    public void deleteOperation(Long operationId) {
-        operationRepository.deleteById(operationId);
-    }
+//    @Transactional
+//    public void deleteOperation(Long operationId) {
+//        operationRepository.deleteById(operationId);
+//    }
 
     @Transactional
     public Operation updateOperationBasicData(Long operationId, String nuevoNombre) {
@@ -127,4 +129,32 @@ public class OperationService {
         operationRepository.save(op);
         return new OperationDetailDTO(op); // El mapping ocurre aquí, en sesión
     }
+
+    @Transactional
+    public void deleteOperationWithAnexos(Long idOperacion) {
+        Operation op = operationRepository.findById(idOperacion)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada: " + idOperacion));
+
+        // Aquí podrías borrar archivos físicos si los anexos incluyen rutas de ficheros
+        if (op.getAnexos4() != null) {
+            op.getAnexos4().forEach(a4 -> {
+                borrarArchivo(a4.getImagenEspacioAereo());
+                borrarArchivo(a4.getImagenZonaVuelo());
+                // Si tienes más campos con rutas de archivo, borralos aquí
+            });
+        }
+
+        operationRepository.delete(op);
+    }
+
+    // HELPER
+    private void borrarArchivo(String filePath) {
+        if (filePath == null) return;
+        try {
+            java.nio.file.Files.deleteIfExists(java.nio.file.Paths.get(filePath));
+        } catch (IOException e) {
+            // log y/o manejar error según necesidad
+        }
+    }
+
 }
