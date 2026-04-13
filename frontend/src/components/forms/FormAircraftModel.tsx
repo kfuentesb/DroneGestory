@@ -462,42 +462,43 @@ export default function FormAircraftModel() {
                     />
                   </div>
                 </div>
+
+                <div className="row mb-3">
+                  <div className="col-12 col-md">
+                    <label className="form-label d-block text-start ps-1">Imagen por defecto del modelo</label>
+                    <div
+                      className="d-flex align-items-center rounded"
+                      style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
+                    >
+                      <span className="text-truncate" style={{ maxWidth: "200px" }}>
+                        {selectedFile ? selectedFile.name : "No hay archivo"}
+                      </span>
+                      <input
+                        id="model-file-upload"
+                        type="file"
+                        accept=".jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                      <label htmlFor="model-file-upload" className="btn btn-success ms-auto" style={{ cursor: "pointer" }}>
+                        Seleccionar archivo
+                      </label>
+                      {selectedFile && (
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          onClick={() => setSelectedFile(null)}
+                          title="Eliminar archivo seleccionado"
+                        >
+                          X
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
               </>
             )}
-
-            <div className="row mb-3">
-              <div className="col-12 col-md">
-                <label className="form-label d-block text-start ps-1">Imagen por defecto del modelo</label>
-                <div
-                  className="d-flex align-items-center rounded"
-                  style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
-                >
-                  <span className="text-truncate" style={{ maxWidth: "200px" }}>
-                    {selectedFile ? selectedFile.name : "No hay archivo"}
-                  </span>
-                  <input
-                    id="model-file-upload"
-                    type="file"
-                    accept=".jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
-                  <label htmlFor="model-file-upload" className="btn btn-success ms-auto" style={{ cursor: "pointer" }}>
-                    Seleccionar archivo
-                  </label>
-                  {selectedFile && (
-                    <button
-                      type="button"
-                      className="btn btn-danger"
-                      onClick={() => setSelectedFile(null)}
-                      title="Eliminar archivo seleccionado"
-                    >
-                      X
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
 
             <AircraftDocumentationSection
               isExistingModel={false}
