@@ -28,6 +28,19 @@ interface FormAircraftProps {
   initialValues?: {
     manufacturer?: string;
     model?: string;
+    aircraftClassDefault?: string;
+    mtomDefault?: number;
+    wingspanDefault?: number;
+    maxSpeedDefault?: number;
+    configDefault?: string;
+    impactEnergyDefault?: number;
+    hasCameraDefault?: boolean;
+    privatelyBuiltDefault?: boolean;
+    hasParachuteDefault?: boolean;
+    hasEnsuranceDefault?: boolean;
+    hasFTSDefault?: boolean;
+    cautiveDefault?: string;
+    accessoriesDefault?: string;
   };
 }
 
@@ -46,6 +59,10 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const getOptionByValue = (options: SelectOption[], value?: string | null) =>
+    value ? options.find((option) => option.value === value) ?? null : null;
+  const getYesNoOption = (value?: boolean | null) =>
+    value === null || value === undefined ? null : yesNoOptions.find((option) => option.value === String(value)) ?? null;
 
   const [documentationFiles, setDocumentationFiles] = useState<Record<string, File | null>>(
     Object.fromEntries(aircraftDocumentationFields.map((f) => [f.fileKey, null]))
@@ -66,19 +83,19 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
     manufacturer: initialValues?.manufacturer ?? "",
     model: initialValues?.model ?? "",
     serialNumber: "",
-    aircraftClass: null as SelectOption | null,
-    mtom: 0,
-    wingspan: 0,
-    maxSpeed: 0,
-    config: null as SelectOption | null,
-    impactEnergy: 0,
-    hasCamera: null as SelectOption | null,
-    privatelyBuilt: null as SelectOption | null,
-    hasParachute: null as SelectOption | null,
-    hasEnsurance: null as SelectOption | null,
-    hasFTS: null as SelectOption | null,
-    cautive: null as SelectOption | null,
-    accessories: "",
+    aircraftClass: getOptionByValue(aircraftClasses, initialValues?.aircraftClassDefault) as SelectOption | null,
+    mtom: initialValues?.mtomDefault ?? 0,
+    wingspan: initialValues?.wingspanDefault ?? 0,
+    maxSpeed: initialValues?.maxSpeedDefault ?? 0,
+    config: getOptionByValue(configs, initialValues?.configDefault) as SelectOption | null,
+    impactEnergy: initialValues?.impactEnergyDefault ?? 0,
+    hasCamera: getYesNoOption(initialValues?.hasCameraDefault) as SelectOption | null,
+    privatelyBuilt: getYesNoOption(initialValues?.privatelyBuiltDefault) as SelectOption | null,
+    hasParachute: getYesNoOption(initialValues?.hasParachuteDefault) as SelectOption | null,
+    hasEnsurance: getYesNoOption(initialValues?.hasEnsuranceDefault) as SelectOption | null,
+    hasFTS: getYesNoOption(initialValues?.hasFTSDefault) as SelectOption | null,
+    cautive: getOptionByValue(cautiveOptions, initialValues?.cautiveDefault) as SelectOption | null,
+    accessories: initialValues?.accessoriesDefault ?? "",
     image: null as File | null,
   });
 

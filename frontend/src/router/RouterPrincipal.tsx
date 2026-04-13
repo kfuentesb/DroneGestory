@@ -13,6 +13,7 @@ import NotFound from "../components/main-elements-views/NotFound";
 import AircraftList from "../components/lists/AircraftList";
 import ProfileDetail from "../components/details/user&profile/ProfileDetail";
 import AircraftDetail from "../components/details/aircraft/AircraftDetail";
+import AircraftModelDetail from "../components/details/aircraft/AircraftModelDetail";
 import OperationList from "../components/lists/OperationList";
 import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
@@ -77,6 +78,7 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/aircrafts" element={<AircraftList />} />
         <Route path="/aircrafts/:id" element={<AircraftDetail />} />
         <Route path="/aircraft-models" element={<AircraftModelList />} />
+        <Route path="/aircraft-models/:id" element={<AircraftModelDetail />} />
         
         {/* Registrar aeronave está restringido */}
         <Route 

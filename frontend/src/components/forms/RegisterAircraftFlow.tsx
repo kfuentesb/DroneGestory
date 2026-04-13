@@ -12,6 +12,19 @@ type AircraftModelApiItem = {
   id?: number;
   manufacturer?: string;
   model?: string;
+  aircraftClassDefault?: string;
+  mtomDefault?: number;
+  wingspanDefault?: number;
+  maxSpeedDefault?: number;
+  configDefault?: string;
+  impactEnergyDefault?: number;
+  hasCameraDefault?: boolean;
+  privatelyBuiltDefault?: boolean;
+  hasParachuteDefault?: boolean;
+  hasEnsuranceDefault?: boolean;
+  hasFTSDefault?: boolean;
+  cautiveDefault?: string;
+  accessoriesDefault?: string;
 };
 
 type AircraftModelOption = {
@@ -19,6 +32,19 @@ type AircraftModelOption = {
   label: string;
   manufacturer: string;
   model: string;
+  aircraftClassDefault?: string;
+  mtomDefault?: number;
+  wingspanDefault?: number;
+  maxSpeedDefault?: number;
+  configDefault?: string;
+  impactEnergyDefault?: number;
+  hasCameraDefault?: boolean;
+  privatelyBuiltDefault?: boolean;
+  hasParachuteDefault?: boolean;
+  hasEnsuranceDefault?: boolean;
+  hasFTSDefault?: boolean;
+  cautiveDefault?: string;
+  accessoriesDefault?: string;
 };
 
 export default function RegisterAircraftFlow() {
@@ -55,6 +81,19 @@ export default function RegisterAircraftFlow() {
               label: `${manufacturer} - ${model}`,
               manufacturer,
               model,
+              aircraftClassDefault: modelItem.aircraftClassDefault,
+              mtomDefault: modelItem.mtomDefault,
+              wingspanDefault: modelItem.wingspanDefault,
+              maxSpeedDefault: modelItem.maxSpeedDefault,
+              configDefault: modelItem.configDefault,
+              impactEnergyDefault: modelItem.impactEnergyDefault,
+              hasCameraDefault: modelItem.hasCameraDefault,
+              privatelyBuiltDefault: modelItem.privatelyBuiltDefault,
+              hasParachuteDefault: modelItem.hasParachuteDefault,
+              hasEnsuranceDefault: modelItem.hasEnsuranceDefault,
+              hasFTSDefault: modelItem.hasFTSDefault,
+              cautiveDefault: modelItem.cautiveDefault,
+              accessoriesDefault: modelItem.accessoriesDefault,
             });
           }
         });
@@ -96,7 +135,23 @@ export default function RegisterAircraftFlow() {
           key={mode === "existing" && selectedOption ? selectedOption.value : "new-aircraft"}
           initialValues={
             mode === "existing" && selectedOption
-              ? { manufacturer: selectedOption.manufacturer, model: selectedOption.model }
+              ? {
+                  manufacturer: selectedOption.manufacturer,
+                  model: selectedOption.model,
+                  aircraftClassDefault: selectedOption.aircraftClassDefault,
+                  mtomDefault: selectedOption.mtomDefault,
+                  wingspanDefault: selectedOption.wingspanDefault,
+                  maxSpeedDefault: selectedOption.maxSpeedDefault,
+                  configDefault: selectedOption.configDefault,
+                  impactEnergyDefault: selectedOption.impactEnergyDefault,
+                  hasCameraDefault: selectedOption.hasCameraDefault,
+                  privatelyBuiltDefault: selectedOption.privatelyBuiltDefault,
+                  hasParachuteDefault: selectedOption.hasParachuteDefault,
+                  hasEnsuranceDefault: selectedOption.hasEnsuranceDefault,
+                  hasFTSDefault: selectedOption.hasFTSDefault,
+                  cautiveDefault: selectedOption.cautiveDefault,
+                  accessoriesDefault: selectedOption.accessoriesDefault,
+                }
               : undefined
           }
         />
@@ -166,6 +221,10 @@ export default function RegisterAircraftFlow() {
                 onChange={(value) => setSelectedOption(value as AircraftModelOption)}
                 placeholder="Escribe para buscar..."
                 isClearable
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: base => ({ ...base, zIndex: 9999 })
+                }}
               />
               
               <button

@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/aircraft-models/**").hasAnyRole("ADMIN", "MANAGER")
 
                         .anyRequest().authenticated()
                 )
