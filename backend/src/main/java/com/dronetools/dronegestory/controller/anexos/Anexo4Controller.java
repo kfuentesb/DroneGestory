@@ -8,19 +8,12 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
-import org.springframework.core.io.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
 
 @RestController
@@ -37,14 +30,14 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Anexo4> createAnexo4WithImagen(
+    public ResponseEntity<Anexo4ResponseDTO> createAnexo4WithImagen(
             @PathVariable Long operationId,
             @ModelAttribute Anexo4 anexo4,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
             @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile
     ) throws IOException {
         Anexo4 saved = service.createWithFile(operationId, anexo4, imagenEspacioAereoFile, imagenZonaVueloFile);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(saved));
     }
 
     @PutMapping("/{idAnexo}/firmar/datos")
@@ -163,36 +156,4 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         return anexo;
     }
 
-    @GetMapping("/images/**")
-    public ResponseEntity<Resource> getOperationImage(HttpServletRequest request) throws IOException {
-        String requestUri = request.getRequestURI();
-        String marker = "/api/operations/anexo4/images/";
-        int markerIndex = requestUri.indexOf(marker);
-        if (markerIndex < 0) {
-            return ResponseEntity.badRequest().build();
-        }
-        String filename = requestUri.substring(markerIndex + marker.length());
-        if (filename.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-        Path file = uploadsDir.resolve(filename).normalize();
-
-        if (!file.startsWith(uploadsDir)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Resource resource = new UrlResource(file.toUri());
-        if (!resource.exists() || !resource.isReadable()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // Detect content type
-        String contentType = Files.probeContentType(file);
-        if (contentType == null) contentType = "application/octet-stream";
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, contentType)
-                .body(resource);
-    }
 }
