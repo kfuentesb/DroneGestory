@@ -24,15 +24,18 @@ public class AircraftModelService {
     private final AircraftModelRepository repository;
     private final AircraftRepository aircraftRepository;
     private final AircraftDocumentationService aircraftDocumentationService;
+    private final AircraftModelDocumentationService aircraftModelDocumentationService;
 
     public AircraftModelService(
             AircraftModelRepository repository,
             AircraftRepository aircraftRepository,
-            AircraftDocumentationService aircraftDocumentationService
+            AircraftDocumentationService aircraftDocumentationService,
+            AircraftModelDocumentationService aircraftModelDocumentationService
     ) {
         this.repository = repository;
         this.aircraftRepository = aircraftRepository;
         this.aircraftDocumentationService = aircraftDocumentationService;
+        this.aircraftModelDocumentationService = aircraftModelDocumentationService;
     }
 
     public List<AircraftModel> getAll() {
@@ -148,6 +151,7 @@ public class AircraftModelService {
         }
         aircraftRepository.deleteAll(aircrafts);
 
+        aircraftModelDocumentationService.deleteByModelId(id);
         deleteExistingFile(model.getImagePath());
         repository.delete(model);
     }

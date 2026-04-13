@@ -22,6 +22,16 @@ type AircraftDocumentationUploadRequest = {
   fileFieldKey: string | null;
   expireDate: string | null;
   dateIndefinite: boolean | null;
+  removeDefault: boolean | null;
+};
+
+type InitialDocumentationItem = {
+  id: number;
+  aircraftModelId: number;
+  documentationType: string;
+  documentationName: string | null;
+  expireDate: string | null;
+  dateIndefinite: boolean | null;
 };
 
 interface FormAircraftProps {
@@ -42,9 +52,10 @@ interface FormAircraftProps {
     cautiveDefault?: string;
     accessoriesDefault?: string;
   };
+  initialDocumentation?: InitialDocumentationItem[];
 }
 
-export default function FormAircraft({ initialValues }: FormAircraftProps) {
+export default function FormAircraft({ initialValues, initialDocumentation = [] }: FormAircraftProps) {
   const yesNoOptions: SelectOption[] = [
     { value: "true", label: "Sí" },
     { value: "false", label: "No" },
@@ -64,18 +75,35 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   const getYesNoOption = (value?: boolean | null) =>
     value === null || value === undefined ? null : yesNoOptions.find((option) => option.value === String(value)) ?? null;
 
+  const documentationByType = Object.fromEntries(
+    initialDocumentation.map((doc) => [doc.documentationType, doc] as const)
+  ) as Record<string, InitialDocumentationItem>;
   const [documentationFiles, setDocumentationFiles] = useState<Record<string, File | null>>(
     Object.fromEntries(aircraftDocumentationFields.map((f) => [f.fileKey, null]))
   );
   const [documentationFormValues, setDocumentationFormValues] = useState<Record<string, string>>(
-    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.dateKey, ""]))
+    Object.fromEntries(
+      aircraftDocumentationFields.map((f) => [
+        f.dateKey,
+        documentationByType[f.key]?.dateIndefinite ? "" : (documentationByType[f.key]?.expireDate ?? ""),
+      ])
+    )
   );
   const [documentationChecks, setDocumentationChecks] = useState<Record<string, boolean>>(
     Object.fromEntries(
       aircraftDocumentationFields.flatMap((f) => [
-        [f.enabledKey, false],
-        [f.indefiniteKey, false],
+        [f.enabledKey, Boolean(documentationByType[f.key])],
+        [f.indefiniteKey, Boolean(documentationByType[f.key]?.dateIndefinite)],
       ])
+    )
+  );
+  const [existingDocumentationFileNames] = useState<Record<string, string>>(
+    Object.fromEntries(
+      aircraftDocumentationFields.map((f) => {
+        const fullPath = documentationByType[f.key]?.documentationName ?? "";
+        const fileName = fullPath ? fullPath.split("/").pop() ?? "" : "";
+        return [f.fileKey, fileName];
+      })
     )
   );
 
@@ -197,11 +225,35 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
     const visibleDocumentationFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
     visibleDocumentationFields.forEach((field) => {
+      const baselineDoc = documentationByType[field.key];
       const enabled = Boolean(documentationChecks[field.enabledKey]);
       const indefinite = Boolean(documentationChecks[field.indefiniteKey]);
       const expireDate = documentationFormValues[field.dateKey] || null;
       const file = documentationFiles[field.fileKey];
       const fileFieldKey = file ? `documentation_${field.key}` : null;
+
+      if (baselineDoc) {
+        if (!enabled) {
+          metadata.push({
+            documentationType: field.key,
+            documentationLabel: field.label,
+            fileFieldKey: null,
+            expireDate: null,
+            dateIndefinite: null,
+            removeDefault: true,
+          });
+          return;
+        }
+
+        const baselineDateIndefinite = Boolean(baselineDoc.dateIndefinite);
+        const baselineExpireDate = baselineDateIndefinite ? null : baselineDoc.expireDate;
+        const effectiveExpireDate = indefinite ? null : expireDate;
+        const changed = Boolean(file) || baselineDateIndefinite !== indefinite || baselineExpireDate !== effectiveExpireDate;
+
+        if (!changed) {
+          return;
+        }
+      }
 
       const hasAnyData = enabled || indefinite || Boolean(expireDate) || Boolean(file);
       if (!hasAnyData) {
@@ -214,6 +266,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
         fileFieldKey,
         expireDate: indefinite ? null : expireDate,
         dateIndefinite: enabled ? indefinite : null,
+        removeDefault: null,
       });
 
       if (file && fileFieldKey) {
@@ -642,6 +695,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
               activeChecks={documentationChecks}
               selectedFiles={documentationFiles}
               formValues={documentationFormValues}
+              existingFileNames={existingDocumentationFileNames}
               onToggleCheck={handleDocumentationToggle}
               onFileChange={handleDocumentationFileChange}
               onClearFile={handleDocumentationClearFile}

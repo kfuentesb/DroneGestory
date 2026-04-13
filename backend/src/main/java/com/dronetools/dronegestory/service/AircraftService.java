@@ -173,9 +173,7 @@ public class AircraftService {
         Aircraft savedAircraft = createWithFile(aircraft, manufacturer, modelName, imageFile);
         
         // 2. Save the associated documentation linked to this specific aircraft
-        if (documentations != null && !documentations.isEmpty()) {
-            aircraftDocumentationService.saveFromUploadRequests(savedAircraft, documentations, multipartRequest);
-        }
+        aircraftDocumentationService.initializeFromModelAndSpecificUploads(savedAircraft, documentations, multipartRequest);
         
         return savedAircraft;
     }

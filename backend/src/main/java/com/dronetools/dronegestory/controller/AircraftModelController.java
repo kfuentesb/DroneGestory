@@ -3,8 +3,13 @@ package com.dronetools.dronegestory.controller;
 import com.dronetools.dronegestory.dto.aircraft.AircraftModelDTO;
 import com.dronetools.dronegestory.dto.aircraft.AircraftModelRequestDTO;
 import com.dronetools.dronegestory.dto.aircraft.AircraftModelUpdateDTO;
+import com.dronetools.dronegestory.dto.AircraftDocumentationUploadRequest;
+import com.dronetools.dronegestory.dto.AircraftModelDocumentationDTO;
 import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.service.AircraftModelService;
+import com.dronetools.dronegestory.service.AircraftModelDocumentationService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -22,12 +27,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/aircraft-models")
@@ -35,6 +42,7 @@ import java.util.List;
 public class AircraftModelController {
 
     private final AircraftModelService aircraftModelService;
+    private final AircraftModelDocumentationService aircraftModelDocumentationService;
 
     @GetMapping
     public List<AircraftModelDTO> getAll() {
@@ -52,12 +60,28 @@ public class AircraftModelController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/documentation")
+    public List<AircraftModelDocumentationDTO> getModelDocumentation(@PathVariable Long id) {
+        return aircraftModelDocumentationService.findDtoByModelId(id);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AircraftModelDTO> create(
             @ModelAttribute AircraftModelRequestDTO request,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "documentations", required = false) String documentationsJson,
+            MultipartHttpServletRequest multipartRequest
     ) throws IOException {
+        List<AircraftDocumentationUploadRequest> documentations = Collections.emptyList();
+        if (documentationsJson != null && !documentationsJson.isBlank()) {
+            documentations = new ObjectMapper().readValue(
+                    documentationsJson,
+                    new TypeReference<List<AircraftDocumentationUploadRequest>>() {}
+            );
+        }
+
         AircraftModel created = aircraftModelService.create(request, imageFile);
+        aircraftModelDocumentationService.saveFromUploadRequests(created, documentations, multipartRequest);
         return ResponseEntity.ok(toDto(created));
     }
 

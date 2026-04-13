@@ -4,6 +4,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { apiFetch } from "../../api";
 import { aircraftClasses, configs } from "../../global-const/aircraft-const";
+import AircraftDocumentationSection, {
+  aircraftDocumentationFields,
+} from "../certificates/AircraftDocumentationSection";
+
+type AircraftDocumentationUploadRequest = {
+  documentationType: string;
+  documentationLabel: string;
+  fileFieldKey: string | null;
+  expireDate: string | null;
+  dateIndefinite: boolean | null;
+  removeDefault: boolean | null;
+};
 
 type SelectOption = { value: string; label: string };
 
@@ -58,6 +70,20 @@ export default function FormAircraftModel() {
     cautiveDefault: null as SelectOption | null,
     accessoriesDefault: "",
   });
+  const [documentationFiles, setDocumentationFiles] = useState<Record<string, File | null>>(
+    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.fileKey, null]))
+  );
+  const [documentationFormValues, setDocumentationFormValues] = useState<Record<string, string>>(
+    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.dateKey, ""]))
+  );
+  const [documentationChecks, setDocumentationChecks] = useState<Record<string, boolean>>(
+    Object.fromEntries(
+      aircraftDocumentationFields.flatMap((f) => [
+        [f.enabledKey, false],
+        [f.indefiniteKey, false],
+      ])
+    )
+  );
 
   const manufacturerError = touched.manufacturer && !manufacturer.trim();
   const modelError = touched.model && !model.trim();
@@ -85,6 +111,84 @@ export default function FormAircraftModel() {
     }
     setError(null);
     setSelectedFile(file);
+  };
+
+  const validateDocumentationFile = (file: File): string | null => {
+    const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedDocumentationTypes.includes(file.type)) {
+      return "Solo PDF, JPG, PNG o WEBP.";
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return "El archivo debe pesar menos de 5MB.";
+    }
+    return null;
+  };
+
+  const handleDocumentationToggle = (id: string) => {
+    setDocumentationChecks((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleDocumentationFileChange = (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) {
+      setDocumentationFiles((prev) => ({ ...prev, [id]: null }));
+      return;
+    }
+
+    const validationError = validateDocumentationFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setDocumentationFiles((prev) => ({ ...prev, [id]: file }));
+    setError(null);
+  };
+
+  const handleDocumentationClearFile = (id: string, inputId: string) => {
+    setDocumentationFiles((prev) => ({ ...prev, [id]: null }));
+    const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
+    if (fileInput) fileInput.value = "";
+  };
+
+  const handleDocumentationDateChange = (key: string, value: string) => {
+    setDocumentationFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const buildDocumentationPayload = (): {
+    metadata: AircraftDocumentationUploadRequest[];
+    files: Array<{ fileFieldKey: string; file: File }>;
+  } => {
+    const metadata: AircraftDocumentationUploadRequest[] = [];
+    const files: Array<{ fileFieldKey: string; file: File }> = [];
+
+    aircraftDocumentationFields.forEach((field) => {
+      const enabled = Boolean(documentationChecks[field.enabledKey]);
+      const indefinite = Boolean(documentationChecks[field.indefiniteKey]);
+      const expireDate = documentationFormValues[field.dateKey] || null;
+      const file = documentationFiles[field.fileKey];
+      const fileFieldKey = file ? `documentation_${field.key}` : null;
+
+      const hasAnyData = enabled || indefinite || Boolean(expireDate) || Boolean(file);
+      if (!hasAnyData) {
+        return;
+      }
+
+      metadata.push({
+        documentationType: field.key,
+        documentationLabel: field.label,
+        fileFieldKey,
+        expireDate: indefinite ? null : expireDate,
+        dateIndefinite: enabled ? indefinite : null,
+        removeDefault: null,
+      });
+
+      if (file && fileFieldKey) {
+        files.push({ fileFieldKey, file });
+      }
+    });
+
+    return { metadata, files };
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -117,6 +221,11 @@ export default function FormAircraftModel() {
       if (defaultValues.accessoriesDefault.trim()) formData.append("accessoriesDefault", defaultValues.accessoriesDefault.trim());
     }
     if (selectedFile) formData.append("imageFile", selectedFile, selectedFile.name);
+    const documentationPayload = buildDocumentationPayload();
+    formData.append("documentations", JSON.stringify(documentationPayload.metadata));
+    documentationPayload.files.forEach(({ fileFieldKey, file }) => {
+      formData.append(fileFieldKey, file, file.name);
+    });
 
     setLoading(true);
     try {
@@ -335,40 +444,6 @@ export default function FormAircraftModel() {
                 </div>
 
                 <div className="row mb-3">
-                  <div className="col-12 col-md">
-                    <label className="form-label d-block text-start ps-1">Imagen por defecto del modelo</label>
-                    <div
-                      className="d-flex align-items-center rounded"
-                      style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
-                    >
-                      <span className="text-truncate" style={{ maxWidth: "200px" }}>
-                        {selectedFile ? selectedFile.name : "No hay archivo"}
-                      </span>
-                      <input
-                        id="model-file-upload"
-                        type="file"
-                        accept=".jpg,.jpeg,.png"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                      />
-                      <label htmlFor="model-file-upload" className="btn btn-success ms-auto" style={{ cursor: "pointer" }}>
-                        Seleccionar archivo
-                      </label>
-                      {selectedFile && (
-                        <button
-                          type="button"
-                          className="btn btn-danger"
-                          onClick={() => setSelectedFile(null)}
-                          title="Eliminar archivo seleccionado"
-                        >
-                          X
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="row mb-3">
                   <div className="col-12">
                     <label className="form-label d-block text-start ps-1">Accesorios / notas por defecto</label>
                     <textarea
@@ -382,6 +457,54 @@ export default function FormAircraftModel() {
                 </div>
               </>
             )}
+
+            <div className="row mb-3">
+              <div className="col-12 col-md">
+                <label className="form-label d-block text-start ps-1">Imagen por defecto del modelo</label>
+                <div
+                  className="d-flex align-items-center rounded"
+                  style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
+                >
+                  <span className="text-truncate" style={{ maxWidth: "200px" }}>
+                    {selectedFile ? selectedFile.name : "No hay archivo"}
+                  </span>
+                  <input
+                    id="model-file-upload"
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="model-file-upload" className="btn btn-success ms-auto" style={{ cursor: "pointer" }}>
+                    Seleccionar archivo
+                  </label>
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() => setSelectedFile(null)}
+                      title="Eliminar archivo seleccionado"
+                    >
+                      X
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <AircraftDocumentationSection
+              isExistingModel={false}
+              showInsuranceDocumentation={true}
+              showFTSDocumentation={true}
+              showParachuteDocumentation={true}
+              activeChecks={documentationChecks}
+              selectedFiles={documentationFiles}
+              formValues={documentationFormValues}
+              onToggleCheck={handleDocumentationToggle}
+              onFileChange={handleDocumentationFileChange}
+              onClearFile={handleDocumentationClearFile}
+              onFormDateChange={handleDocumentationDateChange}
+            />
 
             {error && <p className="text-danger mb-3">{error}</p>}
 

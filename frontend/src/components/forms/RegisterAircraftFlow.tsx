@@ -28,6 +28,7 @@ type AircraftModelApiItem = {
 };
 
 type AircraftModelOption = {
+  id: number;
   value: string;
   label: string;
   manufacturer: string;
@@ -47,6 +48,15 @@ type AircraftModelOption = {
   accessoriesDefault?: string;
 };
 
+type AircraftModelDocumentationItem = {
+  id: number;
+  aircraftModelId: number;
+  documentationType: string;
+  documentationName: string | null;
+  expireDate: string | null;
+  dateIndefinite: boolean | null;
+};
+
 export default function RegisterAircraftFlow() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -54,6 +64,8 @@ export default function RegisterAircraftFlow() {
   const [mode, setMode] = useState<Mode>("new");
   const [selectedOption, setSelectedOption] = useState<AircraftModelOption | null>(null);
   const [modelOptions, setModelOptions] = useState<AircraftModelOption[]>([]);
+  const [selectedModelDocumentation, setSelectedModelDocumentation] = useState<AircraftModelDocumentationItem[]>([]);
+  const [loadingModelDocumentation, setLoadingModelDocumentation] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
@@ -75,8 +87,9 @@ export default function RegisterAircraftFlow() {
           if (!manufacturer || !model) return;
 
           const key = `${manufacturer.toLowerCase()}::${model.toLowerCase()}`;
-          if (!uniqueMap.has(key)) {
+          if (!uniqueMap.has(key) && modelItem.id != null) {
             uniqueMap.set(key, {
+              id: modelItem.id,
               value: key,
               label: `${manufacturer} - ${model}`,
               manufacturer,
@@ -112,8 +125,27 @@ export default function RegisterAircraftFlow() {
 
   const isContinueDisabled = useMemo(() => {
     if (mode === "new") return false;
-    return !selectedOption;
-  }, [mode, selectedOption]);
+    return !selectedOption || loadingModelDocumentation;
+  }, [mode, selectedOption, loadingModelDocumentation]);
+
+  const handleContinueWithExistingModel = async () => {
+    if (!selectedOption) return;
+    setLoadingModelDocumentation(true);
+    setError(null);
+    try {
+      const res = await apiFetch(`/api/aircraft-models/${selectedOption.id}/documentation`, {
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res) return;
+      const modelDocs: AircraftModelDocumentationItem[] = await res.json();
+      setSelectedModelDocumentation(modelDocs);
+      setShowForm(true);
+    } catch (err: any) {
+      setError(err?.message ?? "No se pudo cargar la documentación por defecto del modelo.");
+    } finally {
+      setLoadingModelDocumentation(false);
+    }
+  };
 
   if (showForm) {
     return (
@@ -154,6 +186,7 @@ export default function RegisterAircraftFlow() {
                 }
               : undefined
           }
+          initialDocumentation={mode === "existing" ? selectedModelDocumentation : undefined}
         />
       </>
     );
@@ -231,9 +264,9 @@ export default function RegisterAircraftFlow() {
                 type="button"
                 className="btn btn-success w-100 mt-3 py-2 fw-bold"
                 disabled={!selectedOption}
-                onClick={() => setShowForm(true)}
+                onClick={handleContinueWithExistingModel}
               >
-                Continuar
+                {loadingModelDocumentation ? "Cargando..." : "Continuar"}
               </button>
             </div>
           )}

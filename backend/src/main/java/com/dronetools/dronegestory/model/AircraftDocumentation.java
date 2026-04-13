@@ -21,4 +21,8 @@ public class AircraftDocumentation extends BaseDocumentation {
     @JoinColumn(name = "aircraft_id", nullable = false)
     private Aircraft aircraft;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "aircraft_model_documentation_id")
+    private AircraftModelDocumentation modelDocumentation;
+
 }
