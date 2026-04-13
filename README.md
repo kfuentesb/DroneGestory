@@ -97,6 +97,7 @@ VISUAL<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
 -Arreglar la toma de IP en local y en servidor<br>
+-Actualizar pilotos activos
 
 -USUARIO<br>
 -Un usuario no admin no puede ver su propio perfil<br>

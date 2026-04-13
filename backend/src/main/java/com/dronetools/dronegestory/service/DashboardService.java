@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.repository.PilotRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.dronetools.dronegestory.model.enums.UserType;
 
 @Service
 public class DashboardService {
@@ -18,7 +19,7 @@ public class DashboardService {
     public DashboardDTO getDashboard() {
         DashboardDTO dto = new DashboardDTO();
         dto.setTotalOperaciones(operationRepo.count());
-        dto.setTotalPilotos(pilotRepo.count());
+        dto.setTotalPilotos(userRepo.countByTypeAndStateTrue(UserType.PILOT));
         dto.setTotalUsuarios(userRepo.count());
         dto.setTotalDrones(aircraftRepo.count());
         return dto;
