@@ -14,6 +14,7 @@ export default function FormAircraftModel() {
   const [manufacturer, setManufacturer] = useState("");
   const [model, setModel] = useState("");
   const [showDefaults, setShowDefaults] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState({ manufacturer: false, model: false });
@@ -67,6 +68,25 @@ export default function FormAircraftModel() {
     return Number.isNaN(parsed) ? undefined : parsed;
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+    const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!allowedImageTypes.includes(file.type)) {
+      setError("Solo se permiten imagenes JPG o PNG.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("La imagen debe pesar menos de 5MB.");
+      return;
+    }
+    setError(null);
+    setSelectedFile(file);
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setTouched({ manufacturer: true, model: true });
@@ -77,41 +97,32 @@ export default function FormAircraftModel() {
       return;
     }
 
-    const payload: any = {
-      manufacturer: manufacturer.trim(),
-      model: model.trim(),
-    };
+    const formData = new FormData();
+    formData.append("manufacturer", manufacturer.trim());
+    formData.append("model", model.trim());
 
     if (showDefaults) {
-      payload.aircraftClassDefault = defaultValues.aircraftClassDefault?.value;
-      payload.mtomDefault = parseNumber(defaultValues.mtomDefault);
-      payload.wingspanDefault = parseNumber(defaultValues.wingspanDefault);
-      payload.maxSpeedDefault = parseNumber(defaultValues.maxSpeedDefault);
-      payload.configDefault = defaultValues.configDefault?.value;
-      payload.impactEnergyDefault = parseNumber(defaultValues.impactEnergyDefault);
-      payload.hasCameraDefault = defaultValues.hasCameraDefault
-        ? defaultValues.hasCameraDefault.value === "true"
-        : undefined;
-      payload.privatelyBuiltDefault = defaultValues.privatelyBuiltDefault
-        ? defaultValues.privatelyBuiltDefault.value === "true"
-        : undefined;
-      payload.hasParachuteDefault = defaultValues.hasParachuteDefault
-        ? defaultValues.hasParachuteDefault.value === "true"
-        : undefined;
-      payload.hasEnsuranceDefault = defaultValues.hasEnsuranceDefault
-        ? defaultValues.hasEnsuranceDefault.value === "true"
-        : undefined;
-      payload.hasFTSDefault = defaultValues.hasFTSDefault ? defaultValues.hasFTSDefault.value === "true" : undefined;
-      payload.cautiveDefault = defaultValues.cautiveDefault?.value;
-      payload.accessoriesDefault = defaultValues.accessoriesDefault.trim() || undefined;
+      if (defaultValues.aircraftClassDefault?.value) formData.append("aircraftClassDefault", defaultValues.aircraftClassDefault.value);
+      if (parseNumber(defaultValues.mtomDefault) !== undefined) formData.append("mtomDefault", String(parseNumber(defaultValues.mtomDefault)));
+      if (parseNumber(defaultValues.wingspanDefault) !== undefined) formData.append("wingspanDefault", String(parseNumber(defaultValues.wingspanDefault)));
+      if (parseNumber(defaultValues.maxSpeedDefault) !== undefined) formData.append("maxSpeedDefault", String(parseNumber(defaultValues.maxSpeedDefault)));
+      if (defaultValues.configDefault?.value) formData.append("configDefault", defaultValues.configDefault.value);
+      if (parseNumber(defaultValues.impactEnergyDefault) !== undefined) formData.append("impactEnergyDefault", String(parseNumber(defaultValues.impactEnergyDefault)));
+      if (defaultValues.hasCameraDefault) formData.append("hasCameraDefault", defaultValues.hasCameraDefault.value);
+      if (defaultValues.privatelyBuiltDefault) formData.append("privatelyBuiltDefault", defaultValues.privatelyBuiltDefault.value);
+      if (defaultValues.hasParachuteDefault) formData.append("hasParachuteDefault", defaultValues.hasParachuteDefault.value);
+      if (defaultValues.hasEnsuranceDefault) formData.append("hasEnsuranceDefault", defaultValues.hasEnsuranceDefault.value);
+      if (defaultValues.hasFTSDefault) formData.append("hasFTSDefault", defaultValues.hasFTSDefault.value);
+      if (defaultValues.cautiveDefault?.value) formData.append("cautiveDefault", defaultValues.cautiveDefault.value);
+      if (defaultValues.accessoriesDefault.trim()) formData.append("accessoriesDefault", defaultValues.accessoriesDefault.trim());
     }
+    if (selectedFile) formData.append("imageFile", selectedFile, selectedFile.name);
 
     setLoading(true);
     try {
       const res = await apiFetch("/api/aircraft-models", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       if (!res) return;
@@ -320,6 +331,40 @@ export default function FormAircraftModel() {
                       onChange={(value) => setDefaultValues((prev) => ({ ...prev, cautiveDefault: value }))}
                       isClearable
                     />
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <div className="col-12 col-md">
+                    <label className="form-label d-block text-start ps-1">Imagen por defecto del modelo</label>
+                    <div
+                      className="d-flex align-items-center rounded"
+                      style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
+                    >
+                      <span className="text-truncate" style={{ maxWidth: "200px" }}>
+                        {selectedFile ? selectedFile.name : "No hay archivo"}
+                      </span>
+                      <input
+                        id="model-file-upload"
+                        type="file"
+                        accept=".jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                      <label htmlFor="model-file-upload" className="btn btn-success ms-auto" style={{ cursor: "pointer" }}>
+                        Seleccionar archivo
+                      </label>
+                      {selectedFile && (
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          onClick={() => setSelectedFile(null)}
+                          title="Eliminar archivo seleccionado"
+                        >
+                          X
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

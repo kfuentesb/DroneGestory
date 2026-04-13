@@ -148,4 +148,16 @@ export const aircraftModelFields: FieldConfig[] = [
     validate: (v: any) => v == null || String(v).length <= 800,
     error: "Maximo 800 caracteres",
   },
+  {
+    label: "Imagen del modelo",
+    key: "imageFile",
+    type: "file",
+    validate: (file: File | null) => {
+      if (!file) return true;
+      const maxSize = 5 * 1024 * 1024;
+      const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+      return file.size <= maxSize && allowedTypes.includes(file.type);
+    },
+    error: "La imagen debe ser JPG o PNG y pesar menos de 5MB",
+  },
 ];

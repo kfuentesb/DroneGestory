@@ -26,6 +26,9 @@ public class AircraftModel {
     @Column(name = "model", length = 100, nullable = false)
     private String model;
 
+    @Column(name = "image_path")
+    private String imagePath;
+
     @Column(name = "aircraft_class_default")
     @Enumerated(EnumType.STRING)
     private AircraftClass aircraftClassDefault;

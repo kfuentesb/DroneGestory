@@ -3,24 +3,29 @@ package com.dronetools.dronegestory.dto.aircraft;
 import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-public record AircraftModelRequestDTO(
-        String manufacturer,
-        String model,
-        AircraftClass aircraftClassDefault,
-        BigDecimal mtomDefault,
-        BigDecimal wingspanDefault,
-        BigDecimal maxSpeedDefault,
-        AircraftConfig configDefault,
-        BigDecimal impactEnergyDefault,
-        Boolean hasCameraDefault,
-        Boolean privatelyBuiltDefault,
-        Boolean hasParachuteDefault,
-        Boolean hasEnsuranceDefault,
-        Boolean hasFTSDefault,
-        SelectionStatus cautiveDefault,
-        String accessoriesDefault
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+public class AircraftModelRequestDTO {
+    private String manufacturer;
+    private String model;
+    private AircraftClass aircraftClassDefault;
+    private BigDecimal mtomDefault;
+    private BigDecimal wingspanDefault;
+    private BigDecimal maxSpeedDefault;
+    private AircraftConfig configDefault;
+    private BigDecimal impactEnergyDefault;
+    private Boolean hasCameraDefault;
+    private Boolean privatelyBuiltDefault;
+    private Boolean hasParachuteDefault;
+    private Boolean hasEnsuranceDefault;
+    private Boolean hasFTSDefault;
+    private SelectionStatus cautiveDefault;
+    private String accessoriesDefault;
 }

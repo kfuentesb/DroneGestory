@@ -10,6 +10,7 @@ public record AircraftModelDTO(
     Long id,
     String manufacturer,
     String model,
+    String imagePath,
     AircraftClass aircraftClassDefault,
     BigDecimal mtomDefault,
     BigDecimal wingspanDefault,
