@@ -12,11 +12,13 @@ import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 import LoadingSpinner from "../commons/Loading";
 
 type Aircraft = {
-  aircraftId: number;
-  aircraftModel?: {
-    manufacturer: string;
-    model: string;
-  };
+  id: number;
+  manufacturer: string;
+  model: string;
+  // aircraftModel?: {
+  //   manufacturer: string;
+  //   model: string;
+  // };
   serialNumber?: string;
   aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "Legacy";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
@@ -74,8 +76,8 @@ export default function AircraftList() {
   }, []);
 
   const filteredAircrafts = useSearchFilter(aircrafts, search, (a) => [
-    a.aircraftModel?.manufacturer ?? "",
-    a.aircraftModel?.model ?? "",
+    a.manufacturer ?? "",
+    a.model ?? "",
     a.serialNumber ?? "",
     a.aircraftClass,
     a.config,
@@ -94,7 +96,7 @@ export default function AircraftList() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const userHeaders: TableHeader[] = [
+  const modelHeaders: TableHeader[] = [
     { label: "Fabricante", key: "manufacturer", sortable: true },
     { label: "Modelo", key: "model", sortable: true },
     { label: "Nº Serie", key: "serialNumber", sortable: true },
@@ -121,18 +123,20 @@ export default function AircraftList() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <SearchBar value={search} onChange={setSearch} />
 
-        <ButtonProp onClick={() => navigate("/register-aircraft")}>
-              <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
+          <ButtonProp onClick={() => navigate("/register-aircraft")}>
+            <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
             </ButtonProp>
           </div>
 
           <ReusableTable
-            headers={userHeaders}
+            headers={modelHeaders}
             rows={paginatedAircrafts}
+            onEditClick={(m) => navigate(`/edit-model/${m.id}`)} // Shows the icon
+            // onRowClick={(m) => navigate(`/models/${m.manufacturer}/${m.model}`)} // Navigates to View B
             renderRow={(a) => (
               <>
-                <td>{a.aircraftModel?.manufacturer || "N/A"}</td>
-                <td>{a.aircraftModel?.model || "N/A"}</td>
+                <td>{a.manufacturer || "N/A"}</td>
+                <td>{a.model || "N/A"}</td>
                 <td>{a.serialNumber ?? "-"}</td>
                 <td>{a.aircraftClass}</td>
                 <td>
@@ -149,7 +153,7 @@ export default function AircraftList() {
                 </td>
               </>
             )}
-                        onRowClick={(a) => navigate(`/aircrafts/${a.aircraftId}`)}
+                        onRowClick={(a) => navigate(`/aircrafts/${a.id}`)}
             emptyText="No hay aeronaves registradas."
           />
 

@@ -13,6 +13,7 @@ type ReusableTableProps<T> = {
   renderRow: (row: T) => React.ReactNode;
   emptyText?: string;
   onRowClick?: (row: T) => void;
+  onEditClick?: (row: T) => void;
 };
 
 export function ReusableTable<T>({
@@ -21,6 +22,7 @@ export function ReusableTable<T>({
   renderRow,
   emptyText = "Sin datos.",
   onRowClick,
+  onEditClick,
 }: ReusableTableProps<T>) {
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -71,25 +73,18 @@ export function ReusableTable<T>({
   return (
     <div className="table-responsive">
       <table className="table table-sm table-bordered table-hover align-middle" 
-      style={{ 
-        borderColor: "#E5E7EB", 
-        fontSize: "0.85rem",
-        whiteSpace: "nowrap"
-      }}
-      >
-        <thead className="table-dark">
+        style={{ borderColor: "#E5E7EB", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+        <thead className="table-dark text-center">
           <tr>
+            {/* NEW: Extra header if editing is enabled */}
+            {onEditClick && <th style={{ width: "50px" }}>Editar</th>}
+            
             {headers.map((h, i) => (
-              <th 
-                key={i} 
+              <th key={i} 
                 onClick={h.sortable !== false ? () => requestSort(h.key) : undefined}
-                style={{ cursor: h.sortable !== false ? "pointer" : "default", userSelect: "none"}}
-                className="position-relative"
-              >
+                style={{ cursor: h.sortable !== false ? "pointer" : "default", userSelect: "none" }}>
                 <div className="d-flex align-items-center justify-content-center">
-                  <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                    {h.label}
-                  </span>
+                  {h.label}
                   {h.sortable !== false && getSortIcon(h.key)}
                 </div>
               </th>
@@ -99,17 +94,32 @@ export function ReusableTable<T>({
         <tbody className="text-start">
           {sortedRows.length === 0 ? (
             <tr>
-              <td colSpan={headers.length} className="text-center text-muted py-4">
+              <td colSpan={headers.length + (onEditClick ? 1 : 0)} className="text-center text-muted py-4">
                 {emptyText}
               </td>
             </tr>
           ) : (
             sortedRows.map((row, idx) => (
-              <tr
-                key={(row as any).id ?? (row as any).idOperacion ?? idx}
+              <tr key={(row as any).id ?? idx}
                 style={{ cursor: onRowClick ? "pointer" : "default" }}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
+                {/* NEW: Edit cell with stopPropagation to avoid triggering onRowClick */}
+                {onEditClick && (
+                  <td className="text-center">
+                    <button 
+                      className="btn btn-sm p-0 border-0"
+                      onClick={(e) => {
+                        e.stopPropagation(); // CRITICAL: Stops the row navigation from firing
+                        onEditClick(row);
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f0ad4e" viewBox="0 0 16 16">
+                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                      </svg>
+                    </button>
+                  </td>
+                )}
                 {renderRow(row)}
               </tr>
             ))

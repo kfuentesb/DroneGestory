@@ -12,7 +12,7 @@ import lombok.Setter;
 public class AircraftModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "aircraft_model_id")
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "manufacturer", length = 100, nullable = false)
