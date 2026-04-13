@@ -105,7 +105,25 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
   },
 ];
 
+// Fields that ONLY belong to a specific physical drone
+export const AIRCRAFT_SPECIFIC_KEYS = new Set([
+  "caracterizacion",
+  "seguroResponsabilidadCivil",
+  "otraDocumentacion"
+]);
+
+// Fields that ONLY belong to the general drone model
+export const MODEL_SPECIFIC_KEYS = new Set([
+  "manualUsuario",
+  "manualMantenimiento",
+  "manualUsuarioFTS",
+  "documentoTecnicoFTS",
+  "manualUsuarioParacaidas",
+  "documentoTecnicoParacaidas",
+]);
+
 type AircraftDocumentationSectionProps = {
+  context: "model" | "aircraft";
   isExistingModel: boolean;
   showInsuranceDocumentation: boolean;
   showFTSDocumentation: boolean;
@@ -130,6 +148,7 @@ const EXISTING_MODEL_HIDDEN_KEYS = new Set([
 ]);
 
 export function getVisibleAircraftDocumentationFields(
+  context: "model" | "aircraft",
   isExistingModel: boolean,
   showInsuranceDocumentation: boolean,
   showFTSDocumentation: boolean,
@@ -157,6 +176,7 @@ export function getVisibleAircraftDocumentationFields(
 }
 
 export default function AircraftDocumentationSection({
+  context,
   isExistingModel,
   showInsuranceDocumentation,
   showFTSDocumentation,
@@ -173,7 +193,7 @@ export default function AircraftDocumentationSection({
   onFormDateChange,
 }: AircraftDocumentationSectionProps) {
   const [showOptional, setShowOptional] = useState(false);
-  const visibleFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
+  const visibleFields = getVisibleAircraftDocumentationFields(context, isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
   return (
     <div
