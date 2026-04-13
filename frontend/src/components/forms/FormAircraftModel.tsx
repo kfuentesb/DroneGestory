@@ -7,6 +7,7 @@ import { aircraftClasses, configs } from "../../global-const/aircraft-const";
 import AircraftDocumentationSection, {
   aircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
+import { getAircraftDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 
 type AircraftDocumentationUploadRequest = {
   documentationType: string;
@@ -87,6 +88,11 @@ export default function FormAircraftModel() {
 
   const manufacturerError = touched.manufacturer && !manufacturer.trim();
   const modelError = touched.model && !model.trim();
+  const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } = getAircraftDocumentationFlags({
+    hasEnsurance: defaultValues.hasEnsuranceDefault,
+    hasFTS: defaultValues.hasFTSDefault,
+    hasParachute: defaultValues.hasParachuteDefault,
+  });
 
   const parseNumber = (value: string): number | undefined => {
     if (!value.trim()) return undefined;
@@ -163,9 +169,10 @@ export default function FormAircraftModel() {
     const files: Array<{ fileFieldKey: string; file: File }> = [];
 
     aircraftDocumentationFields.forEach((field) => {
+      const supportsDate = field.key === "seguroResponsabilidadCivil";
       const enabled = Boolean(documentationChecks[field.enabledKey]);
-      const indefinite = Boolean(documentationChecks[field.indefiniteKey]);
-      const expireDate = documentationFormValues[field.dateKey] || null;
+      const indefinite = supportsDate ? Boolean(documentationChecks[field.indefiniteKey]) : false;
+      const expireDate = supportsDate ? (documentationFormValues[field.dateKey] || null) : null;
       const file = documentationFiles[field.fileKey];
       const fileFieldKey = file ? `documentation_${field.key}` : null;
 
@@ -178,8 +185,8 @@ export default function FormAircraftModel() {
         documentationType: field.key,
         documentationLabel: field.label,
         fileFieldKey,
-        expireDate: indefinite ? null : expireDate,
-        dateIndefinite: enabled ? indefinite : null,
+        expireDate: supportsDate && !indefinite ? expireDate : null,
+        dateIndefinite: supportsDate && enabled ? indefinite : null,
         removeDefault: null,
       });
 
@@ -494,9 +501,10 @@ export default function FormAircraftModel() {
 
             <AircraftDocumentationSection
               isExistingModel={false}
-              showInsuranceDocumentation={true}
-              showFTSDocumentation={true}
-              showParachuteDocumentation={true}
+              showInsuranceDocumentation={showInsuranceDocumentation}
+              showFTSDocumentation={showFTSDocumentation}
+              showParachuteDocumentation={showParachuteDocumentation}
+              onlyInsuranceHasDates
               activeChecks={documentationChecks}
               selectedFiles={documentationFiles}
               formValues={documentationFormValues}

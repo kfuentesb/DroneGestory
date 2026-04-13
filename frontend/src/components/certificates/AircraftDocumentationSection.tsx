@@ -110,10 +110,12 @@ type AircraftDocumentationSectionProps = {
   showInsuranceDocumentation: boolean;
   showFTSDocumentation: boolean;
   showParachuteDocumentation: boolean;
+  onlyInsuranceHasDates?: boolean;
   activeChecks: Record<string, boolean>;
   selectedFiles: Record<string, File | null>;
   formValues: Record<string, string>;
   existingFileNames?: Record<string, string>;
+  modelDefaultByType?: Record<string, boolean>;
   onToggleCheck: (id: string) => void;
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string) => void;
   onClearFile: (id: string, inputId: string) => void;
@@ -159,10 +161,12 @@ export default function AircraftDocumentationSection({
   showInsuranceDocumentation,
   showFTSDocumentation,
   showParachuteDocumentation,
+  onlyInsuranceHasDates = false,
   activeChecks,
   selectedFiles,
   formValues,
   existingFileNames = {},
+  modelDefaultByType = {},
   onToggleCheck,
   onFileChange,
   onClearFile,
@@ -227,6 +231,8 @@ export default function AircraftDocumentationSection({
                   indefiniteId={`indefinite-aircraft-${field.indefiniteKey}`}
                   isIndefinite={Boolean(activeChecks[field.indefiniteKey])}
                   onToggleIndefinite={() => onToggleCheck(field.indefiniteKey)}
+                  showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
+                  isModelDefault={Boolean(modelDefaultByType[field.key])}
                 />
               </div>
             ))}

@@ -12,6 +12,7 @@ type AircraftModelApiItem = {
   id?: number;
   manufacturer?: string;
   model?: string;
+  imagePath?: string;
   aircraftClassDefault?: string;
   mtomDefault?: number;
   wingspanDefault?: number;
@@ -33,6 +34,7 @@ type AircraftModelOption = {
   label: string;
   manufacturer: string;
   model: string;
+  imagePath?: string;
   aircraftClassDefault?: string;
   mtomDefault?: number;
   wingspanDefault?: number;
@@ -94,6 +96,7 @@ export default function RegisterAircraftFlow() {
               label: `${manufacturer} - ${model}`,
               manufacturer,
               model,
+              imagePath: modelItem.imagePath,
               aircraftClassDefault: modelItem.aircraftClassDefault,
               mtomDefault: modelItem.mtomDefault,
               wingspanDefault: modelItem.wingspanDefault,
@@ -170,6 +173,7 @@ export default function RegisterAircraftFlow() {
               ? {
                   manufacturer: selectedOption.manufacturer,
                   model: selectedOption.model,
+                  imagePath: selectedOption.imagePath,
                   aircraftClassDefault: selectedOption.aircraftClassDefault,
                   mtomDefault: selectedOption.mtomDefault,
                   wingspanDefault: selectedOption.wingspanDefault,

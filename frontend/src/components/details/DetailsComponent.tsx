@@ -1337,6 +1337,7 @@ export default function DetailsComponent({
                                         showInsuranceDocumentation={aircraftDocumentationFlags.showInsuranceDocumentation}
                                         showFTSDocumentation={aircraftDocumentationFlags.showFTSDocumentation}
                                         showParachuteDocumentation={aircraftDocumentationFlags.showParachuteDocumentation}
+                                        onlyInsuranceHasDates
                                         activeChecks={aircraftDocumentationChecks}
                                         selectedFiles={aircraftDocumentationFiles}
                                         formValues={aircraftDocumentationFormValues}

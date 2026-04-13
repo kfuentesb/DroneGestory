@@ -22,6 +22,8 @@ interface InsertDocProps {
     expirationLabel?: string;
     indefiniteLabel?: string;
     mode?: 'register' | 'edit';
+    showDateControls?: boolean;
+    isModelDefault?: boolean;
 }
 
 export default function InsertDoc({
@@ -45,6 +47,8 @@ export default function InsertDoc({
     fileLabel = "Certificado PDF",
     expirationLabel = "Vencimiento",
     indefiniteLabel = "Indefinido",
+    showDateControls = true,
+    isModelDefault = false,
 }: InsertDocProps) {
 
     const shouldShowContent = !showAddBtn || isChecked;
@@ -90,6 +94,19 @@ export default function InsertDoc({
                         >
                             {checkboxLabel}
                         </label>
+                        {isModelDefault && (
+                            <span
+                                className="badge"
+                                style={{
+                                    backgroundColor: "#FCD34D",
+                                    color: "#78350F",
+                                    fontSize: "0.65rem",
+                                    fontWeight: 700
+                                }}
+                            >
+                                Valor por defecto del modelo
+                            </span>
+                        )}
                     </div>
                 </div>
             )}
@@ -138,32 +155,34 @@ export default function InsertDoc({
                         </div>
                     </div>
 
-                    <div className="col-12 col-md-4">
-                        <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
-                            {expirationLabel}
-                        </small>
-                        <div className="input-group input-group-sm mb-1">
-                            <input
-                                type="date"
-                                className="form-control"
-                                disabled={isIndefinite}
-                                value={isIndefinite ? "" : expirationDate}
-                                onChange={(e) => onExpirationDateChange(e.target.value)}
-                            />
+                    {showDateControls && (
+                        <div className="col-12 col-md-4">
+                            <small className="text-muted d-block mb-1 text-start" style={{ fontSize: "0.65rem" }}>
+                                {expirationLabel}
+                            </small>
+                            <div className="input-group input-group-sm mb-1">
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    disabled={isIndefinite}
+                                    value={isIndefinite ? "" : expirationDate}
+                                    onChange={(e) => onExpirationDateChange(e.target.value)}
+                                />
+                            </div>
+                            <div className="form-check text-start">
+                                <input
+                                    className="form-check-input shadow-none"
+                                    type="checkbox"
+                                    id={indefiniteId}
+                                    checked={isIndefinite}
+                                    onChange={onToggleIndefinite}
+                                />
+                                <label className="form-check-label text-muted text-start" htmlFor={indefiniteId} style={{ fontSize: "0.65rem" }}>
+                                    {indefiniteLabel}
+                                </label>
+                            </div>
                         </div>
-                        <div className="form-check text-start">
-                            <input
-                                className="form-check-input shadow-none"
-                                type="checkbox"
-                                id={indefiniteId}
-                                checked={isIndefinite}
-                                onChange={onToggleIndefinite}
-                            />
-                            <label className="form-check-label text-muted text-start" htmlFor={indefiniteId} style={{ fontSize: "0.65rem" }}>
-                                {indefiniteLabel}
-                            </label>
-                        </div>
-                    </div>
+                    )}
                 </div>
             )}
         </div>
