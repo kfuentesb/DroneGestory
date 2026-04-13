@@ -21,6 +21,8 @@ import OperationAnexoDetail from "../components/details/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
 import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
+import FormAircraftModel from "../components/forms/FormAircraftModel";
+import AircraftModelList from "../components/lists/AircraftModelList";
 
 import FormAnexo4 from "../components/forms/FormAnexo4";
 
@@ -74,6 +76,7 @@ export default class RouterPrincipal extends React.Component {
         {/* Aircrafts */}
         <Route path="/aircrafts" element={<AircraftList />} />
         <Route path="/aircrafts/:id" element={<AircraftDetail />} />
+        <Route path="/aircraft-models" element={<AircraftModelList />} />
         
         {/* Registrar aeronave está restringido */}
         <Route 
@@ -83,6 +86,14 @@ export default class RouterPrincipal extends React.Component {
               <RegisterAircraftFlow />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/register-model"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormAircraftModel />
+            </ProtectedRoute>
+          }
         />
 
         {/* Operations */}

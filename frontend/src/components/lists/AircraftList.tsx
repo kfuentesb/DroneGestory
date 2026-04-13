@@ -123,15 +123,19 @@ export default function AircraftList() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <SearchBar value={search} onChange={setSearch} />
 
-          <ButtonProp onClick={() => navigate("/register-aircraft")}>
-            <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
-            </ButtonProp>
+            <div className="d-flex align-items-center gap-2">
+              <ButtonProp onClick={() => navigate("/aircraft-models")}>
+                Listar modelos
+              </ButtonProp>
+              <ButtonProp onClick={() => navigate("/register-aircraft")}>
+                <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
+              </ButtonProp>
+            </div>
           </div>
 
           <ReusableTable
             headers={modelHeaders}
             rows={paginatedAircrafts}
-            onEditClick={(m) => navigate(`/edit-model/${m.id}`)} // Shows the icon
             // onRowClick={(m) => navigate(`/models/${m.manufacturer}/${m.model}`)} // Navigates to View B
             renderRow={(a) => (
               <>

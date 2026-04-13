@@ -8,7 +8,8 @@ import FormAircraft from "./FormAircraft";
 
 type Mode = "new" | "existing";
 
-type AircraftApiItem = {
+type AircraftModelApiItem = {
+  id?: number;
   manufacturer?: string;
   model?: string;
 };
@@ -30,21 +31,21 @@ export default function RegisterAircraftFlow() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    const loadAircrafts = async () => {
+    const loadModels = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch("/api/aircraft", {
+        const res = await apiFetch("/api/aircraft-models", {
           headers: { "Content-Type": "application/json" },
         });
         if (!res) return;
 
-        const aircrafts: AircraftApiItem[] = await res.json();
+        const models: AircraftModelApiItem[] = await res.json();
         const uniqueMap = new Map<string, AircraftModelOption>();
 
-        aircrafts.forEach((aircraft) => {
-          const manufacturer = (aircraft.manufacturer ?? "").trim();
-          const model = (aircraft.model ?? "").trim();
+        models.forEach((modelItem) => {
+          const manufacturer = (modelItem.manufacturer ?? "").trim();
+          const model = (modelItem.model ?? "").trim();
           if (!manufacturer || !model) return;
 
           const key = `${manufacturer.toLowerCase()}::${model.toLowerCase()}`;
@@ -67,7 +68,7 @@ export default function RegisterAircraftFlow() {
       }
     };
 
-    loadAircrafts();
+    loadModels();
   }, []);
 
   const isContinueDisabled = useMemo(() => {
@@ -107,6 +108,14 @@ export default function RegisterAircraftFlow() {
     return <LoadingSpinner message="Cargando modelos de aeronave..." />;
   }
 
+  if (error) {
+    return (
+      <div className="container py-4">
+        <div className="alert alert-danger mb-0">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-4 position-relative">
       {/* Static Volver Arrow */}
@@ -132,10 +141,7 @@ export default function RegisterAircraftFlow() {
             <button
               type="button"
               className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
-              onClick={() => {
-                setMode("new");
-                setShowForm(true);
-              }}
+              onClick={() => navigate("/register-model", { state: { from: "/register-aircraft" } })}
             >
               Nuevo modelo
             </button>
