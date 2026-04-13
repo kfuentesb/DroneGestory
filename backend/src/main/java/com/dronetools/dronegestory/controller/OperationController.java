@@ -67,5 +67,4 @@ public class OperationController {
         operationService.deleteOperationWithAnexos(operationId);
         return ResponseEntity.noContent().build();
     }
-
 }
