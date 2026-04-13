@@ -4,7 +4,9 @@ import com.dronetools.dronegestory.dto.AircraftDocumentationDTO;
 import com.dronetools.dronegestory.dto.AircraftDocumentationUploadRequest;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.AircraftDocumentation;
+import com.dronetools.dronegestory.model.AircraftModelDocumentation;
 import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
+import com.dronetools.dronegestory.repository.AircraftModelDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,35 +17,69 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AircraftDocumentationService {
 
     private final AircraftDocumentationRepository aircraftDocumentationRepository;
+    private final AircraftModelDocumentationRepository aircraftModelDocumentationRepository;
     private final AircraftRepository aircraftRepository;
 
     public AircraftDocumentationService(
             AircraftDocumentationRepository aircraftDocumentationRepository,
+            AircraftModelDocumentationRepository aircraftModelDocumentationRepository,
             AircraftRepository aircraftRepository
     ) {
         this.aircraftDocumentationRepository = aircraftDocumentationRepository;
+        this.aircraftModelDocumentationRepository = aircraftModelDocumentationRepository;
         this.aircraftRepository = aircraftRepository;
     }
 
-    public List<AircraftDocumentationDTO> findByAircraftId(Integer aircraftId) {
-        return aircraftDocumentationRepository.findByAircraftId(aircraftId).stream().map(this::toDto).toList();
+    public List<AircraftDocumentationDTO> findByAircraftId(Long aircraftId) {
+        List<AircraftDocumentation> raw = aircraftDocumentationRepository.findByAircraft_AircraftId(aircraftId);
+        Map<String, AircraftDocumentation> byType = new HashMap<>();
+
+        for (AircraftDocumentation documentation : raw) {
+            String type = resolveEffectiveType(documentation);
+            if (type == null || type.isBlank()) {
+                continue;
+            }
+
+            AircraftDocumentation existing = byType.get(type);
+            if (existing == null || isSpecificDocumentation(documentation)) {
+                byType.put(type, documentation);
+            }
+        }
+
+        return byType.values().stream().map(this::toDto).collect(Collectors.toList());
     }
 
     public Optional<AircraftDocumentationDTO> updateWithFile(
-            Integer id,
+            Long id,
             String documentationType,
             String expireDateRaw,
             Boolean dateIndefinite,
             MultipartFile file
     ) {
         return aircraftDocumentationRepository.findById(id).map(documentation -> {
+            if (documentation.getModelDocumentation() != null) {
+                boolean shouldKeepPointer = shouldKeepPointerLink(documentation, documentationType, expireDateRaw, dateIndefinite, file);
+                if (!shouldKeepPointer) {
+                    documentation.setModelDocumentation(null);
+                    documentation.setDocumentationName(null);
+                    documentation.setExpireDate(null);
+                    documentation.setDateIndefinite(null);
+                }
+            }
+
             documentation.setDocumentationType(documentationType);
             applyMetadataAndFile(documentation, documentationType, expireDateRaw, dateIndefinite, file);
             return toDto(aircraftDocumentationRepository.save(documentation));
@@ -51,7 +87,7 @@ public class AircraftDocumentationService {
     }
 
     public AircraftDocumentationDTO createWithFile(
-            Integer aircraftId,
+            Long aircraftId,
             String documentationType,
             String expireDateRaw,
             Boolean dateIndefinite,
@@ -63,8 +99,38 @@ public class AircraftDocumentationService {
         AircraftDocumentation documentation = new AircraftDocumentation();
         documentation.setAircraft(aircraft);
         documentation.setDocumentationType(documentationType);
+        documentation.setModelDocumentation(null);
         applyMetadataAndFile(documentation, documentationType, expireDateRaw, dateIndefinite, file);
         return toDto(aircraftDocumentationRepository.save(documentation));
+    }
+
+    public void initializeFromModelAndSpecificUploads(
+            Aircraft aircraft,
+            List<AircraftDocumentationUploadRequest> documentations,
+            MultipartHttpServletRequest multipartRequest
+    ) {
+        List<AircraftModelDocumentation> modelDocumentations =
+                aircraftModelDocumentationRepository.findByAircraftModel_Id(aircraft.getAircraftModel().getId());
+
+        Set<String> overriddenTypes = extractOverriddenTypes(documentations, multipartRequest);
+
+        saveFromUploadRequests(aircraft, documentations, multipartRequest);
+
+        for (AircraftModelDocumentation modelDocumentation : modelDocumentations) {
+            String documentationType = modelDocumentation.getDocumentationType();
+            if (documentationType == null || documentationType.isBlank()) {
+                continue;
+            }
+            if (overriddenTypes.contains(documentationType)) {
+                continue;
+            }
+
+            AircraftDocumentation pointer = new AircraftDocumentation();
+            pointer.setAircraft(aircraft);
+            pointer.setDocumentationType(documentationType);
+            pointer.setModelDocumentation(modelDocumentation);
+            aircraftDocumentationRepository.save(pointer);
+        }
     }
 
     public void saveFromUploadRequests(
@@ -86,6 +152,9 @@ public class AircraftDocumentationService {
                     documentationRequest.documentationLabel(),
                     documentationRequest.fileFieldKey()
             );
+            if (Boolean.TRUE.equals(documentationRequest.removeDefault())) {
+                continue;
+            }
             String fileFieldKey = documentationRequest.fileFieldKey();
             Boolean dateIndefinite = documentationRequest.dateIndefinite();
 
@@ -101,7 +170,7 @@ public class AircraftDocumentationService {
 
             String storedDocumentationPath = null;
             if (documentationFile != null && !documentationFile.isEmpty()) {
-                storedDocumentationPath = storeDocumentationFile(aircraft.getId(), documentationType, documentationFile);
+                storedDocumentationPath = storeDocumentationFile(aircraft.getAircraftId(), documentationType, documentationFile);
             }
 
             boolean emptyDocumentation =
@@ -116,6 +185,7 @@ public class AircraftDocumentationService {
             AircraftDocumentation entity = new AircraftDocumentation();
             entity.setAircraft(aircraft);
             entity.setDocumentationType(documentationType);
+            entity.setModelDocumentation(null);
             entity.setDocumentationName(storedDocumentationPath);
             entity.setExpireDate(expireDate);
             entity.setDateIndefinite(dateIndefinite);
@@ -123,19 +193,19 @@ public class AircraftDocumentationService {
         }
     }
 
-    public void deleteById(Integer id) {
+    public void deleteById(Long id) {
         AircraftDocumentation documentation = aircraftDocumentationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aircraft documentation not found with id: " + id));
         deleteStoredFile(documentation.getDocumentationName());
         aircraftDocumentationRepository.delete(documentation);
     }
 
-    public void deleteByAircraftId(Integer aircraftId) {
-        List<AircraftDocumentation> docs = aircraftDocumentationRepository.findByAircraftId(aircraftId);
+    public void deleteByAircraftId(Long aircraftId) {
+        List<AircraftDocumentation> docs = aircraftDocumentationRepository.findByAircraft_AircraftId(aircraftId);
         for (AircraftDocumentation doc : docs) {
             deleteStoredFile(doc.getDocumentationName());
         }
-        aircraftDocumentationRepository.deleteByAircraftId(aircraftId);
+        aircraftDocumentationRepository.deleteByAircraft_AircraftId(aircraftId);
     }
 
     private void applyMetadataAndFile(
@@ -156,13 +226,13 @@ public class AircraftDocumentationService {
 
         if (file != null && !file.isEmpty()) {
             String oldPath = documentation.getDocumentationName();
-            String storedPath = storeDocumentationFile(documentation.getAircraft().getId(), documentationType, file);
+            String storedPath = storeDocumentationFile(documentation.getAircraft().getAircraftId(), documentationType, file);
             documentation.setDocumentationName(storedPath);
             deleteStoredFile(oldPath);
         }
     }
 
-    private String storeDocumentationFile(Integer aircraftId, String documentationType, MultipartFile file) {
+    private String storeDocumentationFile(Long aircraftId, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
             String safeTypeDir = (documentationType == null || documentationType.isBlank())
@@ -231,13 +301,110 @@ public class AircraftDocumentationService {
     }
 
     private AircraftDocumentationDTO toDto(AircraftDocumentation documentation) {
+        String documentationType = documentation.getDocumentationType();
+        String documentationName = documentation.getDocumentationName();
+        LocalDate expireDate = documentation.getExpireDate();
+        Boolean dateIndefinite = documentation.getDateIndefinite();
+
+        if (documentation.getModelDocumentation() != null) {
+            AircraftModelDocumentation modelDocumentation = documentation.getModelDocumentation();
+            documentationType = firstNonBlank(documentationType, modelDocumentation.getDocumentationType());
+            documentationName = firstNonBlank(documentationName, modelDocumentation.getDocumentationName());
+            expireDate = expireDate != null ? expireDate : modelDocumentation.getExpireDate();
+            dateIndefinite = dateIndefinite != null ? dateIndefinite : modelDocumentation.getDateIndefinite();
+        }
+
         return new AircraftDocumentationDTO(
                 documentation.getId(),
-                documentation.getAircraft().getId(),
-                documentation.getDocumentationType(),
-                documentation.getDocumentationName(),
-                documentation.getExpireDate(),
-                documentation.getDateIndefinite()
+                documentation.getAircraft().getAircraftId(),
+                documentationType,
+                documentationName,
+                expireDate,
+                dateIndefinite
         );
+    }
+
+    private String resolveEffectiveType(AircraftDocumentation documentation) {
+        if (documentation.getDocumentationType() != null && !documentation.getDocumentationType().isBlank()) {
+            return documentation.getDocumentationType();
+        }
+        if (documentation.getModelDocumentation() != null) {
+            return documentation.getModelDocumentation().getDocumentationType();
+        }
+        return null;
+    }
+
+    private boolean isSpecificDocumentation(AircraftDocumentation documentation) {
+        return documentation.getModelDocumentation() == null;
+    }
+
+    private Set<String> extractOverriddenTypes(
+            List<AircraftDocumentationUploadRequest> documentations,
+            MultipartHttpServletRequest multipartRequest
+    ) {
+        Set<String> overriddenTypes = new HashSet<>();
+        if (documentations == null) {
+            return overriddenTypes;
+        }
+
+        for (AircraftDocumentationUploadRequest request : documentations) {
+            if (request == null) continue;
+
+            String type = resolveDocumentationType(request.documentationType(), request.documentationLabel(), request.fileFieldKey());
+            if (type == null || type.isBlank()) continue;
+
+            MultipartFile file = null;
+            if (request.fileFieldKey() != null && !request.fileFieldKey().isBlank()) {
+                file = multipartRequest.getFile(request.fileFieldKey());
+            }
+
+            boolean hasAnyData =
+                    (file != null && !file.isEmpty()) ||
+                            (request.expireDate() != null && !request.expireDate().isBlank()) ||
+                            request.dateIndefinite() != null ||
+                            Boolean.TRUE.equals(request.removeDefault());
+
+            if (hasAnyData) {
+                overriddenTypes.add(type);
+            }
+        }
+
+        return overriddenTypes;
+    }
+
+    private boolean shouldKeepPointerLink(
+            AircraftDocumentation documentation,
+            String documentationType,
+            String expireDateRaw,
+            Boolean dateIndefinite,
+            MultipartFile file
+    ) {
+        AircraftModelDocumentation modelDocumentation = documentation.getModelDocumentation();
+        if (modelDocumentation == null) return false;
+        if (file != null && !file.isEmpty()) return false;
+
+        String requestedType = documentationType == null || documentationType.isBlank()
+                ? modelDocumentation.getDocumentationType()
+                : documentationType.trim();
+
+        LocalDate requestedExpireDate = null;
+        if (expireDateRaw != null && !expireDateRaw.isBlank()) {
+            requestedExpireDate = LocalDate.parse(expireDateRaw);
+        }
+
+        Boolean requestedIndefinite = dateIndefinite;
+        LocalDate normalizedRequestedExpire = Boolean.TRUE.equals(requestedIndefinite) ? null : requestedExpireDate;
+        LocalDate normalizedModelExpire = Boolean.TRUE.equals(modelDocumentation.getDateIndefinite()) ? null : modelDocumentation.getExpireDate();
+
+        return Objects.equals(requestedType, modelDocumentation.getDocumentationType())
+                && Objects.equals(requestedIndefinite, modelDocumentation.getDateIndefinite())
+                && Objects.equals(normalizedRequestedExpire, normalizedModelExpire);
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        if (primary != null && !primary.isBlank()) {
+            return primary;
+        }
+        return fallback;
     }
 }

@@ -71,25 +71,16 @@ export function ReusableTable<T>({
   return (
     <div className="table-responsive">
       <table className="table table-sm table-bordered table-hover align-middle" 
-      style={{ 
-        borderColor: "#E5E7EB", 
-        fontSize: "0.85rem",
-        whiteSpace: "nowrap"
-      }}
-      >
-        <thead className="table-dark">
+        style={{ borderColor: "#E5E7EB", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+        <thead className="table-dark text-center">
           <tr>
+            
             {headers.map((h, i) => (
-              <th 
-                key={i} 
+              <th key={i} 
                 onClick={h.sortable !== false ? () => requestSort(h.key) : undefined}
-                style={{ cursor: h.sortable !== false ? "pointer" : "default", userSelect: "none"}}
-                className="position-relative"
-              >
+                style={{ cursor: h.sortable !== false ? "pointer" : "default", userSelect: "none" }}>
                 <div className="d-flex align-items-center justify-content-center">
-                  <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                    {h.label}
-                  </span>
+                  {h.label}
                   {h.sortable !== false && getSortIcon(h.key)}
                 </div>
               </th>
@@ -99,14 +90,13 @@ export function ReusableTable<T>({
         <tbody className="text-start">
           {sortedRows.length === 0 ? (
             <tr>
-              <td colSpan={headers.length} className="text-center text-muted py-4">
+              <td className="text-center text-muted py-4">
                 {emptyText}
               </td>
             </tr>
           ) : (
             sortedRows.map((row, idx) => (
-              <tr
-                key={(row as any).id ?? (row as any).idOperacion ?? idx}
+              <tr key={(row as any).id ?? idx}
                 style={{ cursor: onRowClick ? "pointer" : "default" }}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >

@@ -97,14 +97,23 @@ VISUAL<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
 -Arreglar la toma de IP en local y en servidor<br>
+-La tabla al estar vacía el "No hay x registrados" se muestra a la derecha mal<br>
 
 
 -USUARIO<br>
 -Un usuario no admin no puede ver su propio perfil<br>
 
 -DRONES<br>
--Cambiar lógica de modelo y fabricante, siendo estos sus propias tablas<br>
+-Si se modifica la fecha de un doc general de un modelo dentro de un especifico, no coge el pdf.<br>
+-Al registrar un dron y dejar la imagen por defecto, no se guarda esa imagen<br>
+-Cuando se borra un modelo, no se borra todas las imagenes y la documentaciónes de ese modelo<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
+-Cuando el usuario registra un drone y modifica un doc, el badge de "valor por defecto del modelo" debería desaparecer, y si se hace click a la X debería a volver a mostrar el valor por defecto. Solo se debería borrar el doc si se presiona la papelera<br>
+-En la tabla mostrando documentacion de aeronave, solo debería salir una columna hasta que una documentación si tenga fecha de expiración.<br>
+-En la tabla mostrando documentación de aeronave, debería indicarse si el documento se trata de un puntero apuntando al documento por defecto o si es "especifico" de esa aeronave<br>
+-El editar modelo también debería poder editar documentaciones<br>
+-Al entrar en la vista de modelo, poner un texto en grande indicando que es un modelo y los valores serán los que aparezcan por defecto.<br>
+
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
@@ -117,3 +126,53 @@ VISUAL<br>
 -DOCUMENTACIONES<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
+
+
+
+COSAS DE MIGRACION DE LA BASE DE DATOS<br>
+
+-- 1. Backup and Move Data
+CREATE TABLE aircraft_backup AS SELECT * FROM aircraft;
+
+-- 2. Populate the new Model table
+INSERT INTO aircraft_model (manufacturer, model)
+SELECT DISTINCT manufacturer, model FROM aircraft_backup;
+
+-- 3. Link Aircraft to the new Models
+ALTER TABLE aircraft ADD COLUMN aircraft_model_id INTEGER;
+
+UPDATE aircraft a
+SET aircraft_model_id = m.id
+FROM aircraft_model m
+WHERE a.manufacturer = m.manufacturer 
+  AND a.model = m.model;
+
+-- 4. Clean up old columns and constraints
+ALTER TABLE aircraft DROP COLUMN manufacturer;
+ALTER TABLE aircraft DROP COLUMN model;
+
+-- 5. Wipe documentation (as requested) to avoid "Orphan" errors
+DROP TABLE IF EXISTS aircraft_documentation CASCADE;
+DROP TABLE IF EXISTS aircraft_model_documentation CASCADE;
+
+-- 6. Upgrade IDs to BIGINT for the remaining tables
+ALTER TABLE aircraft ALTER COLUMN aircraft_id TYPE BIGINT;
+ALTER TABLE aircraft_model ALTER COLUMN id TYPE BIGINT; -- Note: check if col name is 'id' or 'aircraft_model_id'
+ALTER TABLE aircraft ALTER COLUMN aircraft_model_id TYPE BIGINT;
+
+-- 7. Sync the Sequences (CRITICAL)
+-- This prevents "Duplicate Key" errors when users try to create new drones
+SELECT setval(pg_get_serial_sequence('aircraft', 'aircraft_id'), (SELECT MAX(aircraft_id) FROM aircraft));
+SELECT setval(pg_get_serial_sequence('aircraft_model', 'id'), (SELECT MAX(id) FROM aircraft_model));
+
+ALTER TABLE aircraft_model 
+  DROP COLUMN max_speed, 
+  DROP COLUMN model_name, 
+  DROP COLUMN mtom, 
+  DROP COLUMN wingspan,
+  DROP COLUMN aircraft_class,
+  DROP COLUMN config,
+  DROP COLUMN impact_energy,
+  DROP COLUMN aircraft_model_id;
+
+ALTER TABLE aircraft_model DROP COLUMN aircraft_model_id;

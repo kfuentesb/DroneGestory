@@ -22,16 +22,41 @@ type AircraftDocumentationUploadRequest = {
   fileFieldKey: string | null;
   expireDate: string | null;
   dateIndefinite: boolean | null;
+  removeDefault: boolean | null;
+};
+
+type InitialDocumentationItem = {
+  id: number;
+  aircraftModelId: number;
+  documentationType: string;
+  documentationName: string | null;
+  expireDate: string | null;
+  dateIndefinite: boolean | null;
 };
 
 interface FormAircraftProps {
   initialValues?: {
     manufacturer?: string;
     model?: string;
+    imagePath?: string;
+    aircraftClassDefault?: string;
+    mtomDefault?: number;
+    wingspanDefault?: number;
+    maxSpeedDefault?: number;
+    configDefault?: string;
+    impactEnergyDefault?: number;
+    hasCameraDefault?: boolean;
+    privatelyBuiltDefault?: boolean;
+    hasParachuteDefault?: boolean;
+    hasEnsuranceDefault?: boolean;
+    hasFTSDefault?: boolean;
+    cautiveDefault?: string;
+    accessoriesDefault?: string;
   };
+  initialDocumentation?: InitialDocumentationItem[];
 }
 
-export default function FormAircraft({ initialValues }: FormAircraftProps) {
+export default function FormAircraft({ initialValues, initialDocumentation = [] }: FormAircraftProps) {
   const yesNoOptions: SelectOption[] = [
     { value: "true", label: "Sí" },
     { value: "false", label: "No" },
@@ -46,39 +71,65 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showModelDefaultImage, setShowModelDefaultImage] = useState(Boolean(initialValues?.imagePath));
+  const modelDefaultImageName = initialValues?.imagePath?.split("/").pop() ?? "";
+  const getOptionByValue = (options: SelectOption[], value?: string | null) =>
+    value ? options.find((option) => option.value === value) ?? null : null;
+  const getYesNoOption = (value?: boolean | null) =>
+    value === null || value === undefined ? null : yesNoOptions.find((option) => option.value === String(value)) ?? null;
 
+  const documentationByType = Object.fromEntries(
+    initialDocumentation.map((doc) => [doc.documentationType, doc] as const)
+  ) as Record<string, InitialDocumentationItem>;
   const [documentationFiles, setDocumentationFiles] = useState<Record<string, File | null>>(
     Object.fromEntries(aircraftDocumentationFields.map((f) => [f.fileKey, null]))
   );
   const [documentationFormValues, setDocumentationFormValues] = useState<Record<string, string>>(
-    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.dateKey, ""]))
+    Object.fromEntries(
+      aircraftDocumentationFields.map((f) => [
+        f.dateKey,
+        documentationByType[f.key]?.dateIndefinite ? "" : (documentationByType[f.key]?.expireDate ?? ""),
+      ])
+    )
   );
   const [documentationChecks, setDocumentationChecks] = useState<Record<string, boolean>>(
     Object.fromEntries(
       aircraftDocumentationFields.flatMap((f) => [
-        [f.enabledKey, false],
-        [f.indefiniteKey, false],
+        [f.enabledKey, Boolean(documentationByType[f.key])],
+        [f.indefiniteKey, Boolean(documentationByType[f.key]?.dateIndefinite)],
       ])
     )
+  );
+  const [existingDocumentationFileNames] = useState<Record<string, string>>(
+    Object.fromEntries(
+      aircraftDocumentationFields.map((f) => {
+        const fullPath = documentationByType[f.key]?.documentationName ?? "";
+        const fileName = fullPath ? fullPath.split("/").pop() ?? "" : "";
+        return [f.fileKey, fileName];
+      })
+    )
+  );
+  const [modelDefaultByType] = useState<Record<string, boolean>>(
+    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.key, Boolean(documentationByType[f.key])]))
   );
 
   const [formValues, setFormValues] = useState({
     manufacturer: initialValues?.manufacturer ?? "",
     model: initialValues?.model ?? "",
     serialNumber: "",
-    aircraftClass: null as SelectOption | null,
-    mtom: 0,
-    wingspan: 0,
-    maxSpeed: 0,
-    config: null as SelectOption | null,
-    impactEnergy: 0,
-    hasCamera: null as SelectOption | null,
-    privatelyBuilt: null as SelectOption | null,
-    hasParachute: null as SelectOption | null,
-    hasEnsurance: null as SelectOption | null,
-    hasFTS: null as SelectOption | null,
-    cautive: null as SelectOption | null,
-    accessories: "",
+    aircraftClass: getOptionByValue(aircraftClasses, initialValues?.aircraftClassDefault) as SelectOption | null,
+    mtom: initialValues?.mtomDefault ?? 0,
+    wingspan: initialValues?.wingspanDefault ?? 0,
+    maxSpeed: initialValues?.maxSpeedDefault ?? 0,
+    config: getOptionByValue(configs, initialValues?.configDefault) as SelectOption | null,
+    impactEnergy: initialValues?.impactEnergyDefault ?? 0,
+    hasCamera: getYesNoOption(initialValues?.hasCameraDefault) as SelectOption | null,
+    privatelyBuilt: getYesNoOption(initialValues?.privatelyBuiltDefault) as SelectOption | null,
+    hasParachute: getYesNoOption(initialValues?.hasParachuteDefault) as SelectOption | null,
+    hasEnsurance: getYesNoOption(initialValues?.hasEnsuranceDefault) as SelectOption | null,
+    hasFTS: getYesNoOption(initialValues?.hasFTSDefault) as SelectOption | null,
+    cautive: getOptionByValue(cautiveOptions, initialValues?.cautiveDefault) as SelectOption | null,
+    accessories: initialValues?.accessoriesDefault ?? "",
     image: null as File | null,
   });
 
@@ -180,11 +231,36 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
     const visibleDocumentationFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
     visibleDocumentationFields.forEach((field) => {
+      const baselineDoc = documentationByType[field.key];
       const enabled = Boolean(documentationChecks[field.enabledKey]);
-      const indefinite = Boolean(documentationChecks[field.indefiniteKey]);
-      const expireDate = documentationFormValues[field.dateKey] || null;
+      const supportsDate = field.key === "seguroResponsabilidadCivil";
+      const indefinite = supportsDate ? Boolean(documentationChecks[field.indefiniteKey]) : false;
+      const expireDate = supportsDate ? (documentationFormValues[field.dateKey] || null) : null;
       const file = documentationFiles[field.fileKey];
       const fileFieldKey = file ? `documentation_${field.key}` : null;
+
+      if (baselineDoc) {
+        if (!enabled) {
+          metadata.push({
+            documentationType: field.key,
+            documentationLabel: field.label,
+            fileFieldKey: null,
+            expireDate: null,
+            dateIndefinite: null,
+            removeDefault: true,
+          });
+          return;
+        }
+
+        const baselineDateIndefinite = Boolean(baselineDoc.dateIndefinite);
+        const baselineExpireDate = supportsDate ? (baselineDateIndefinite ? null : baselineDoc.expireDate) : null;
+        const effectiveExpireDate = supportsDate ? (indefinite ? null : expireDate) : null;
+        const changed = Boolean(file) || (supportsDate && (baselineDateIndefinite !== indefinite || baselineExpireDate !== effectiveExpireDate));
+
+        if (!changed) {
+          return;
+        }
+      }
 
       const hasAnyData = enabled || indefinite || Boolean(expireDate) || Boolean(file);
       if (!hasAnyData) {
@@ -195,8 +271,9 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
         documentationType: field.key,
         documentationLabel: field.label,
         fileFieldKey,
-        expireDate: indefinite ? null : expireDate,
-        dateIndefinite: enabled ? indefinite : null,
+        expireDate: supportsDate && !indefinite ? expireDate : null,
+        dateIndefinite: supportsDate && enabled ? indefinite : null,
+        removeDefault: null,
       });
 
       if (file && fileFieldKey) {
@@ -224,6 +301,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
       return;
     }
     setSelectedFile(file);
+    setShowModelDefaultImage(false);
     setFormValues({ ...formValues, image: file });
     setError("");
   };
@@ -231,6 +309,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
   const handleClearFile = () => {
     setSelectedFile(null);
     setFormValues({ ...formValues, image: null });
+    setShowModelDefaultImage(false);
     const fileInput = document.getElementById("file-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   };
@@ -499,7 +578,7 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                   style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
                 >
                   <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                    {selectedFile ? selectedFile.name : "No hay archivo"}
+                    {selectedFile ? selectedFile.name : (showModelDefaultImage && modelDefaultImageName ? modelDefaultImageName : "No hay archivo")}
                   </span>
                   <input
                     id="file-upload"
@@ -513,29 +592,34 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
                     className="btn btn-success ms-auto"
                     style={{
                       cursor: "pointer",
-                      borderTopRightRadius: selectedFile ? "0" : "4px",
-                      borderBottomRightRadius: selectedFile ? "0" : "4px",
+                      borderTopRightRadius: selectedFile || showModelDefaultImage ? "0" : "4px",
+                      borderBottomRightRadius: selectedFile || showModelDefaultImage ? "0" : "4px",
                       marginRight: "0",
                     }}
                   >
                     Seleccionar archivo
                   </label>
-                  {selectedFile && (
+                  {(selectedFile || showModelDefaultImage) && (
                     <button
                       type="button"
                       className="btn btn-danger"
-                      onClick={handleClearFile}
+                      onClick={selectedFile ? handleClearFile : () => setShowModelDefaultImage(false)}
                       style={{
                         borderTopLeftRadius: "0",
                         borderBottomLeftRadius: "0",
                         borderLeft: "1px solid rgba(255,255,255,0.1)",
                       }}
-                      title="Eliminar archivo seleccionado"
+                      title={selectedFile ? "Eliminar archivo seleccionado" : "No usar imagen por defecto del modelo"}
                     >
                       ✕
                     </button>
                   )}
                 </div>
+                {!selectedFile && showModelDefaultImage && modelDefaultImageName && (
+                  <small className="text-warning d-block text-start mt-1">
+                    Imagen por defecto del modelo
+                  </small>
+                )}
               </div>
             </div>
 
@@ -625,6 +709,9 @@ export default function FormAircraft({ initialValues }: FormAircraftProps) {
               activeChecks={documentationChecks}
               selectedFiles={documentationFiles}
               formValues={documentationFormValues}
+              existingFileNames={existingDocumentationFileNames}
+              modelDefaultByType={modelDefaultByType}
+              onlyInsuranceHasDates
               onToggleCheck={handleDocumentationToggle}
               onFileChange={handleDocumentationFileChange}
               onClearFile={handleDocumentationClearFile}

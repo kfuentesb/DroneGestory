@@ -8,16 +8,55 @@ import FormAircraft from "./FormAircraft";
 
 type Mode = "new" | "existing";
 
-type AircraftApiItem = {
+type AircraftModelApiItem = {
+  id?: number;
   manufacturer?: string;
   model?: string;
+  imagePath?: string;
+  aircraftClassDefault?: string;
+  mtomDefault?: number;
+  wingspanDefault?: number;
+  maxSpeedDefault?: number;
+  configDefault?: string;
+  impactEnergyDefault?: number;
+  hasCameraDefault?: boolean;
+  privatelyBuiltDefault?: boolean;
+  hasParachuteDefault?: boolean;
+  hasEnsuranceDefault?: boolean;
+  hasFTSDefault?: boolean;
+  cautiveDefault?: string;
+  accessoriesDefault?: string;
 };
 
 type AircraftModelOption = {
+  id: number;
   value: string;
   label: string;
   manufacturer: string;
   model: string;
+  imagePath?: string;
+  aircraftClassDefault?: string;
+  mtomDefault?: number;
+  wingspanDefault?: number;
+  maxSpeedDefault?: number;
+  configDefault?: string;
+  impactEnergyDefault?: number;
+  hasCameraDefault?: boolean;
+  privatelyBuiltDefault?: boolean;
+  hasParachuteDefault?: boolean;
+  hasEnsuranceDefault?: boolean;
+  hasFTSDefault?: boolean;
+  cautiveDefault?: string;
+  accessoriesDefault?: string;
+};
+
+type AircraftModelDocumentationItem = {
+  id: number;
+  aircraftModelId: number;
+  documentationType: string;
+  documentationName: string | null;
+  expireDate: string | null;
+  dateIndefinite: boolean | null;
 };
 
 export default function RegisterAircraftFlow() {
@@ -27,33 +66,50 @@ export default function RegisterAircraftFlow() {
   const [mode, setMode] = useState<Mode>("new");
   const [selectedOption, setSelectedOption] = useState<AircraftModelOption | null>(null);
   const [modelOptions, setModelOptions] = useState<AircraftModelOption[]>([]);
+  const [selectedModelDocumentation, setSelectedModelDocumentation] = useState<AircraftModelDocumentationItem[]>([]);
+  const [loadingModelDocumentation, setLoadingModelDocumentation] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    const loadAircrafts = async () => {
+    const loadModels = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch("/api/aircraft", {
+        const res = await apiFetch("/api/aircraft-models", {
           headers: { "Content-Type": "application/json" },
         });
         if (!res) return;
 
-        const aircrafts: AircraftApiItem[] = await res.json();
+        const models: AircraftModelApiItem[] = await res.json();
         const uniqueMap = new Map<string, AircraftModelOption>();
 
-        aircrafts.forEach((aircraft) => {
-          const manufacturer = (aircraft.manufacturer ?? "").trim();
-          const model = (aircraft.model ?? "").trim();
+        models.forEach((modelItem) => {
+          const manufacturer = (modelItem.manufacturer ?? "").trim();
+          const model = (modelItem.model ?? "").trim();
           if (!manufacturer || !model) return;
 
           const key = `${manufacturer.toLowerCase()}::${model.toLowerCase()}`;
-          if (!uniqueMap.has(key)) {
+          if (!uniqueMap.has(key) && modelItem.id != null) {
             uniqueMap.set(key, {
+              id: modelItem.id,
               value: key,
               label: `${manufacturer} - ${model}`,
               manufacturer,
               model,
+              imagePath: modelItem.imagePath,
+              aircraftClassDefault: modelItem.aircraftClassDefault,
+              mtomDefault: modelItem.mtomDefault,
+              wingspanDefault: modelItem.wingspanDefault,
+              maxSpeedDefault: modelItem.maxSpeedDefault,
+              configDefault: modelItem.configDefault,
+              impactEnergyDefault: modelItem.impactEnergyDefault,
+              hasCameraDefault: modelItem.hasCameraDefault,
+              privatelyBuiltDefault: modelItem.privatelyBuiltDefault,
+              hasParachuteDefault: modelItem.hasParachuteDefault,
+              hasEnsuranceDefault: modelItem.hasEnsuranceDefault,
+              hasFTSDefault: modelItem.hasFTSDefault,
+              cautiveDefault: modelItem.cautiveDefault,
+              accessoriesDefault: modelItem.accessoriesDefault,
             });
           }
         });
@@ -67,13 +123,32 @@ export default function RegisterAircraftFlow() {
       }
     };
 
-    loadAircrafts();
+    loadModels();
   }, []);
 
   const isContinueDisabled = useMemo(() => {
     if (mode === "new") return false;
-    return !selectedOption;
-  }, [mode, selectedOption]);
+    return !selectedOption || loadingModelDocumentation;
+  }, [mode, selectedOption, loadingModelDocumentation]);
+
+  const handleContinueWithExistingModel = async () => {
+    if (!selectedOption) return;
+    setLoadingModelDocumentation(true);
+    setError(null);
+    try {
+      const res = await apiFetch(`/api/aircraft-models/${selectedOption.id}/documentation`, {
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res) return;
+      const modelDocs: AircraftModelDocumentationItem[] = await res.json();
+      setSelectedModelDocumentation(modelDocs);
+      setShowForm(true);
+    } catch (err: any) {
+      setError(err?.message ?? "No se pudo cargar la documentación por defecto del modelo.");
+    } finally {
+      setLoadingModelDocumentation(false);
+    }
+  };
 
   if (showForm) {
     return (
@@ -95,9 +170,27 @@ export default function RegisterAircraftFlow() {
           key={mode === "existing" && selectedOption ? selectedOption.value : "new-aircraft"}
           initialValues={
             mode === "existing" && selectedOption
-              ? { manufacturer: selectedOption.manufacturer, model: selectedOption.model }
+              ? {
+                  manufacturer: selectedOption.manufacturer,
+                  model: selectedOption.model,
+                  imagePath: selectedOption.imagePath,
+                  aircraftClassDefault: selectedOption.aircraftClassDefault,
+                  mtomDefault: selectedOption.mtomDefault,
+                  wingspanDefault: selectedOption.wingspanDefault,
+                  maxSpeedDefault: selectedOption.maxSpeedDefault,
+                  configDefault: selectedOption.configDefault,
+                  impactEnergyDefault: selectedOption.impactEnergyDefault,
+                  hasCameraDefault: selectedOption.hasCameraDefault,
+                  privatelyBuiltDefault: selectedOption.privatelyBuiltDefault,
+                  hasParachuteDefault: selectedOption.hasParachuteDefault,
+                  hasEnsuranceDefault: selectedOption.hasEnsuranceDefault,
+                  hasFTSDefault: selectedOption.hasFTSDefault,
+                  cautiveDefault: selectedOption.cautiveDefault,
+                  accessoriesDefault: selectedOption.accessoriesDefault,
+                }
               : undefined
           }
+          initialDocumentation={mode === "existing" ? selectedModelDocumentation : undefined}
         />
       </>
     );
@@ -105,6 +198,14 @@ export default function RegisterAircraftFlow() {
 
   if (loading) {
     return <LoadingSpinner message="Cargando modelos de aeronave..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="container py-4">
+        <div className="alert alert-danger mb-0">{error}</div>
+      </div>
+    );
   }
 
   return (
@@ -132,10 +233,7 @@ export default function RegisterAircraftFlow() {
             <button
               type="button"
               className="btn btn-outline-success px-4 py-2 fw-semibold transition-btn"
-              onClick={() => {
-                setMode("new");
-                setShowForm(true);
-              }}
+              onClick={() => navigate("/register-model", { state: { from: "/register-aircraft" } })}
             >
               Nuevo modelo
             </button>
@@ -160,15 +258,19 @@ export default function RegisterAircraftFlow() {
                 onChange={(value) => setSelectedOption(value as AircraftModelOption)}
                 placeholder="Escribe para buscar..."
                 isClearable
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: base => ({ ...base, zIndex: 9999 })
+                }}
               />
               
               <button
                 type="button"
                 className="btn btn-success w-100 mt-3 py-2 fw-bold"
                 disabled={!selectedOption}
-                onClick={() => setShowForm(true)}
+                onClick={handleContinueWithExistingModel}
               >
-                Continuar
+                {loadingModelDocumentation ? "Cargando..." : "Continuar"}
               </button>
             </div>
           )}

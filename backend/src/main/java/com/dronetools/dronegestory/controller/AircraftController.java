@@ -55,7 +55,7 @@ public class AircraftController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AircraftResponseDTO> getById(@PathVariable int id) {
+    public ResponseEntity<AircraftResponseDTO> getById(@PathVariable Long id) {
         return aircraftService.getAircraftById(id)
                 .map(AircraftResponseDTO::fromEntity)
                 .map(ResponseEntity::ok)
@@ -77,25 +77,32 @@ public class AircraftController {
             );
         }
 
+        // We use the manufacturer/model from DTO to handle the relationship in Service
+        // Note: dto.toEntity() now likely returns an Aircraft without the model set, 
+        // or you can adjust your service to handle the dto directly.
+        
         Aircraft createdAircraft = aircraftService.createWithFileAndDocumentation(
-                dto.toEntity(),
+                dto.toEntity(null), // Pass null model initially, service will link it
+                dto.getManufacturer(),
+                dto.getModel(),
                 imageFile,
                 documentations,
                 multipartRequest
         );
+        
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(createdAircraft));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AircraftResponseDTO> updateAircraftAWithFile(
-            @PathVariable Integer id,
+    public ResponseEntity<AircraftResponseDTO> updateAircraftWithFile(
+            @PathVariable Long id,
             @ModelAttribute AircraftRequestDTO dto,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
-        Aircraft aircraft = dto.toEntity();
-
+        
+        // Map presence booleans for partial updates
         boolean mtomPresent = request.getParameterMap().containsKey("mtom");
         boolean wingspanPresent = request.getParameterMap().containsKey("wingspan");
         boolean maxSpeedPresent = request.getParameterMap().containsKey("maxSpeed");
@@ -109,7 +116,9 @@ public class AircraftController {
 
         Aircraft updatedAircraft = aircraftService.updateWithFile(
                 id,
-                aircraft,
+                dto.toEntity(null), // Data container
+                dto.getManufacturer(),
+                dto.getModel(),
                 imageFile,
                 removeImage,
                 mtomPresent,
@@ -126,9 +135,8 @@ public class AircraftController {
 
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));
     }
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             aircraftService.deleteAircraft(id);
             return ResponseEntity.noContent().build();

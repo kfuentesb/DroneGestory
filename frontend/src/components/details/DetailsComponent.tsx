@@ -37,6 +37,7 @@ interface DetailsComponentProps {
     validateForm?: (values: any) => Record<string, string | null>
     showCertificates?: boolean
     certificateSectionType?: "user" | "aircraft"
+    clearableFieldKeys?: string[]
 }
 
 type UserCertificate = {
@@ -111,6 +112,7 @@ export default function DetailsComponent({
     validateForm,
     showCertificates = false,
     certificateSectionType,
+    clearableFieldKeys = [],
 }: DetailsComponentProps) {
     const { token } = useAuth();
     const resolvedCertificateSectionType = certificateSectionType ?? (showCertificates ? "user" : undefined);
@@ -987,15 +989,37 @@ export default function DetailsComponent({
                     "cautive",
                     "accessories",
                 ].includes(field.key);
+                const isExplicitClearableField = clearableFieldKeys.includes(field.key);
                 if (isCleared) {
-                    if (isAircraftClearableField) {
+                    if (isAircraftClearableField || isExplicitClearableField) {
                         formData.append(field.key, "");
                     }
                     return;
                 }
                 let stringValue = value.toString().trim();
-                const isNumericField = ["mtom", "wingspan", "maxSpeed", "impactEnergy"].includes(field.key);
-                const isBooleanField = ["state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS"].includes(field.key);
+                const isNumericField = [
+                    "mtom",
+                    "wingspan",
+                    "maxSpeed",
+                    "impactEnergy",
+                    "mtomDefault",
+                    "wingspanDefault",
+                    "maxSpeedDefault",
+                    "impactEnergyDefault",
+                ].includes(field.key);
+                const isBooleanField = [
+                    "state",
+                    "hasCamera",
+                    "privatelyBuilt",
+                    "hasParachute",
+                    "hasEnsurance",
+                    "hasFTS",
+                    "hasCameraDefault",
+                    "privatelyBuiltDefault",
+                    "hasParachuteDefault",
+                    "hasEnsuranceDefault",
+                    "hasFTSDefault",
+                ].includes(field.key);
                 if (isBooleanField) {
                     const parsed = toBooleanLike(value);
                     if (parsed === null) {
@@ -1003,7 +1027,7 @@ export default function DetailsComponent({
                     }
                     stringValue = parsed ? "true" : "false";
                 }
-                if (field.key === "cautive") {
+                if (field.key === "cautive" || field.key === "cautiveDefault") {
                     const normalized = stringValue
                         .normalize("NFD")
                         .replace(/\p{M}/gu, "")
@@ -1313,6 +1337,7 @@ export default function DetailsComponent({
                                         showInsuranceDocumentation={aircraftDocumentationFlags.showInsuranceDocumentation}
                                         showFTSDocumentation={aircraftDocumentationFlags.showFTSDocumentation}
                                         showParachuteDocumentation={aircraftDocumentationFlags.showParachuteDocumentation}
+                                        onlyInsuranceHasDates
                                         activeChecks={aircraftDocumentationChecks}
                                         selectedFiles={aircraftDocumentationFiles}
                                         formValues={aircraftDocumentationFormValues}
