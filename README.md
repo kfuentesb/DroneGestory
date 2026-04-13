@@ -102,10 +102,8 @@ VISUAL<br>
 -Un usuario no admin no puede ver su propio perfil<br>
 
 -DRONES<br>
--Al listar Drones -> lista con modelos (ver drones del modelo / editar modelo), luego en ver drones del modelo, poder
-editarlos sin modificar los campos del modelo.<br>
+-Si se modifica la fecha de un doc general de un modelo dentro de un especifico, no coge el pdf.<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
--documentos de modelo aún van a los documentos especificos del drone, deberían ser compartidos<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
