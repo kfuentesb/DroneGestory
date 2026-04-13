@@ -2,9 +2,9 @@ package com.dronetools.dronegestory.dto;
 
 import java.time.LocalDate;
 
-public record AircraftDocumentationDTO(
+public record AircraftModelDocumentationDTO(
         Long id,
-        Long aircraftId,
+        Long aircraftModelId,
         String documentationType,
         String documentationName,
         LocalDate expireDate,

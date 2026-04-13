@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class AircraftResponseDTO {
 
-    private Integer id;
+    private Long id;
     private String manufacturer;
     private String model;
     private String serialNumber;
@@ -36,9 +36,14 @@ public class AircraftResponseDTO {
 
     public static AircraftResponseDTO fromEntity(Aircraft aircraft) {
         AircraftResponseDTO dto = new AircraftResponseDTO();
-        dto.setId(aircraft.getId());
-        dto.setManufacturer(aircraft.getManufacturer());
-        dto.setModel(aircraft.getModel());
+        dto.setId(aircraft.getAircraftId());
+        
+        // Extract data from the nested Model entity
+        if (aircraft.getAircraftModel() != null) {
+            dto.setManufacturer(aircraft.getAircraftModel().getManufacturer());
+            dto.setModel(aircraft.getAircraftModel().getModel());
+        }
+
         dto.setSerialNumber(aircraft.getSerialNumber());
         dto.setAircraftClass(aircraft.getAircraftClass());
         dto.setMtom(aircraft.getMtom());

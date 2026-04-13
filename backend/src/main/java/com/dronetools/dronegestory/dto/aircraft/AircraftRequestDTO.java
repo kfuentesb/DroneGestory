@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.dto.aircraft;
 
 import com.dronetools.dronegestory.model.Aircraft;
+import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
@@ -40,10 +41,12 @@ public class AircraftRequestDTO {
     private String tether;
     private String observations;
 
-    public Aircraft toEntity() {
+    public Aircraft toEntity(AircraftModel aircraftModel) {
         Aircraft aircraft = new Aircraft();
-        aircraft.setManufacturer(manufacturer);
-        aircraft.setModel(model);
+        aircraft.setAircraftModel(aircraftModel);
+
+        // aircraft.setManufacturer(manufacturer);
+        // aircraft.setModel(model);
         aircraft.setSerialNumber(serialNumber);
         aircraft.setAircraftClass(aircraftClass);
         aircraft.setMtom(mtom);
@@ -52,8 +55,8 @@ public class AircraftRequestDTO {
         aircraft.setConfig(config);
         aircraft.setImpactEnergy(impactEnergy);
         aircraft.setHasCamera(hasCamera);
-
         aircraft.setPrivatelyBuilt(privatelyBuilt);
+
         aircraft.setHasParachute(resolveBoolean(hasParachute, parachute));
         aircraft.setHasEnsurance(resolveBoolean(hasEnsurance, hasInsurance));
         aircraft.setHasFTS(resolveBoolean(hasFTS, hasFts));

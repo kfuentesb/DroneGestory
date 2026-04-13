@@ -27,14 +27,14 @@ public class AircraftDocumentationController {
 
     @GetMapping("/aircraft/{aircraftId}")
     @PreAuthorize("isAuthenticated()")
-    public List<AircraftDocumentationDTO> getByAircraftId(@PathVariable Integer aircraftId) {
+    public List<AircraftDocumentationDTO> getByAircraftId(@PathVariable Long aircraftId) {
         return aircraftDocumentationService.findByAircraftId(aircraftId);
     }
 
     @PostMapping(value = "/aircraft/{aircraftId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AircraftDocumentationDTO> createWithFile(
-            @PathVariable Integer aircraftId,
+            @PathVariable Long aircraftId,
             @RequestParam(value = "documentationType", required = false) String documentationType,
             @RequestParam(value = "documentationLabel", required = false) String documentationLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
@@ -55,7 +55,7 @@ public class AircraftDocumentationController {
     @PutMapping(value = "/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AircraftDocumentationDTO> updateWithFile(
-            @PathVariable Integer id,
+            @PathVariable Long id,
             @RequestParam(value = "documentationType", required = false) String documentationType,
             @RequestParam(value = "documentationLabel", required = false) String documentationLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
@@ -75,7 +75,7 @@ public class AircraftDocumentationController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         aircraftDocumentationService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

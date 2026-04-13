@@ -5,6 +5,7 @@ public record AircraftDocumentationUploadRequest(
         String documentationLabel,
         String fileFieldKey,
         String expireDate,
-        Boolean dateIndefinite
+        Boolean dateIndefinite,
+        Boolean removeDefault
 ) {
 }

@@ -13,6 +13,7 @@ import NotFound from "../components/main-elements-views/NotFound";
 import AircraftList from "../components/lists/AircraftList";
 import ProfileDetail from "../components/details/user&profile/ProfileDetail";
 import AircraftDetail from "../components/details/aircraft/AircraftDetail";
+import AircraftModelDetail from "../components/details/aircraft/AircraftModelDetail";
 import OperationList from "../components/lists/OperationList";
 import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
@@ -21,6 +22,8 @@ import OperationAnexoDetail from "../components/details/operation/OperationAnexo
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
 import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
+import FormAircraftModel from "../components/forms/FormAircraftModel";
+import AircraftModelList from "../components/lists/AircraftModelList";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -72,6 +75,8 @@ export default class RouterPrincipal extends React.Component {
         {/* Aircrafts */}
         <Route path="/aircrafts" element={<AircraftList />} />
         <Route path="/aircrafts/:id" element={<AircraftDetail />} />
+        <Route path="/aircraft-models" element={<AircraftModelList />} />
+        <Route path="/aircraft-models/:id" element={<AircraftModelDetail />} />
         
         {/* Registrar aeronave está restringido */}
         <Route 
@@ -81,6 +86,14 @@ export default class RouterPrincipal extends React.Component {
               <RegisterAircraftFlow />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/register-model"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormAircraftModel />
+            </ProtectedRoute>
+          }
         />
 
         {/* Operations */}

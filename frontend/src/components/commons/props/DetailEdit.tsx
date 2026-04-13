@@ -13,7 +13,19 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
     const normalize = (v: string) =>
         v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
-    const BOOLEAN_FIELD_KEYS = new Set(["state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS"]);
+    const BOOLEAN_FIELD_KEYS = new Set([
+        "state",
+        "hasCamera",
+        "privatelyBuilt",
+        "hasParachute",
+        "hasEnsurance",
+        "hasFTS",
+        "hasCameraDefault",
+        "privatelyBuiltDefault",
+        "hasParachuteDefault",
+        "hasEnsuranceDefault",
+        "hasFTSDefault",
+    ]);
 
     const parseBooleanLike = (value: unknown): boolean | null => {
         if (value === null || value === undefined || value === "") return null;
@@ -153,7 +165,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 let currentStr = "";
                                 if (BOOLEAN_FIELD_KEYS.has(field.key)) {
                                     currentStr = mapBooleanToOption(field.options, values[field.key]);
-                                } else if (field.key === "cautive") {
+                                } else if (field.key === "cautive" || field.key === "cautiveDefault") {
                                     currentStr = mapCautiveToOption(field.options, values[field.key]);
                                 } else {
                                     currentStr = values[field.key] || "";
@@ -173,7 +185,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 if (BOOLEAN_FIELD_KEYS.has(field.key)) {
                                     const parsed = parseBooleanLike(val);
                                     finalValue = parsed !== null ? parsed : null;
-                                } else if (field.key === "cautive") {
+                                } else if (field.key === "cautive" || field.key === "cautiveDefault") {
                                     const normalized = normalize(val).replace(/[^a-z]/g, "");
                                     if (normalized.startsWith("s")) finalValue = "YES";
                                     else if (normalized.startsWith("n")) finalValue = "NO";
