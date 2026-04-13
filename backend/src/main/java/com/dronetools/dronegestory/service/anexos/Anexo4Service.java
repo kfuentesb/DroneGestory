@@ -7,6 +7,12 @@ import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
@@ -142,6 +148,53 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         copia.setOtrasLimitaciones(origen.getOtrasLimitaciones());
 
         return copia;
+    }
+
+    @Transactional
+    public Anexo4 createWithFile(
+            Long operationId,
+            Anexo4 anexo4,
+            MultipartFile imagenEspacioAereoFile,
+            MultipartFile imagenZonaVueloFile
+    ) throws IOException {
+        // Asocia la operación
+        Operation op = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada: " + operationId));
+        anexo4.setOperation(op);
+
+        // Prepara base de la carpeta
+        Path anexoDir = Paths.get("uploads", "operations", operationId.toString(), "anexo4").toAbsolutePath().normalize();
+        Files.createDirectories(anexoDir);
+
+        // Imagen espacio aéreo
+        if (imagenEspacioAereoFile != null && !imagenEspacioAereoFile.isEmpty()) {
+            String originalName = imagenEspacioAereoFile.getOriginalFilename();
+            String safeName = (originalName == null || originalName.isBlank())
+                    ? "espacioAereo"
+                    : Paths.get(originalName).getFileName().toString();
+            String filename = System.currentTimeMillis() + "_" + safeName;
+            Path target = anexoDir.resolve(filename);
+            imagenEspacioAereoFile.transferTo(target.toFile());
+            anexo4.setImagenEspacioAereo(
+                    Paths.get("operations", operationId.toString(), "anexo4", filename).toString().replace("\\", "/")
+            );
+        }
+
+        // Imagen zona vuelo
+        if (imagenZonaVueloFile != null && !imagenZonaVueloFile.isEmpty()) {
+            String originalName = imagenZonaVueloFile.getOriginalFilename();
+            String safeName = (originalName == null || originalName.isBlank())
+                    ? "zonaVuelo"
+                    : Paths.get(originalName).getFileName().toString();
+            String filename = System.currentTimeMillis() + "_" + safeName;
+            Path target = anexoDir.resolve(filename);
+            imagenZonaVueloFile.transferTo(target.toFile());
+            anexo4.setImagenZonaVuelo(
+                    Paths.get("operations", operationId.toString(), "anexo4", filename).toString().replace("\\", "/")
+            );
+        }
+
+        return anexo4Repository.save(anexo4);
     }
 
 }
