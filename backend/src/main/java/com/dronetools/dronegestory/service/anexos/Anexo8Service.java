@@ -30,12 +30,21 @@ public class Anexo8Service extends AnexoServiceBase<Anexo8> {
     @Override
     protected Anexo8 crearCopia(Anexo8 origen) {
         Anexo8 copia = new Anexo8();
-        copia.setNombreConops(origen.getNombreConops());
+        actualizarCampos(copia, origen);
         return copia;
     }
 
     @Override
     protected void actualizarCampos(Anexo8 destino, Anexo8 origen) {
         destino.setNombreConops(origen.getNombreConops());
+        destino.setFechaOp(origen.getFechaOp());
+        destino.setCondicionesATSP(origen.getCondicionesATSP());
+        destino.setComunicacion3FinalizacionOperacion(origen.getComunicacion3FinalizacionOperacion());
+        destino.setComunicacionZrvfCecaf(origen.getComunicacionZrvfCecaf());
+        destino.setAnotacionTiempoVueloAeronave(origen.getAnotacionTiempoVueloAeronave());
+        destino.setAnotacionTIempoActividadPersonal(origen.getAnotacionTIempoActividadPersonal());
+        destino.setAnotacionEventosOcurridosOperacion(origen.getAnotacionEventosOcurridosOperacion());
+        destino.setComunicacionIncidentes(origen.getComunicacionIncidentes());
     }
 }
+

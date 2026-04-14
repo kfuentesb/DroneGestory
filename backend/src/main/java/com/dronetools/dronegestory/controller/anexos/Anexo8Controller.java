@@ -1,13 +1,17 @@
 package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
-import com.dronetools.dronegestory.dto.operation.AnexoInfoDTO;
+import com.dronetools.dronegestory.dto.operation.Anexo8ResponseDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.anexos.Anexo8Service;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo8")
@@ -19,13 +23,48 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
         super(service, operationRepository, repository);
     }
 
-    @PostMapping
-    public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId,
-                                     @RequestParam(required = false) String nombreConops) {
-        Anexo8 input = new Anexo8();
-        input.setNombreConops(nombreConops);
-        Anexo8 saved = service.registrarAnexo8(operationId, input);
-        return AnexoInfoDTO.from(saved);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Anexo8ResponseDTO> createAnexo8(@PathVariable Long operationId,
+                                                          @ModelAttribute Anexo8 anexo8) {
+        Anexo8 saved = service.registrarAnexo8(operationId, anexo8);
+        return ResponseEntity.ok(Anexo8ResponseDTO.fromEntity(saved));
+    }
+
+    @PutMapping("/{idAnexo}/firmar/datos")
+    public Anexo8ResponseDTO firmarConDatos(@PathVariable Long idAnexo, Principal principal) {
+        String username = (principal != null) ? principal.getName() : "Sistema";
+        Anexo8 anexo = service.firmarAnexo(idAnexo, username);
+        return Anexo8ResponseDTO.fromEntity(anexo);
+    }
+
+    @PostMapping("/{idAnexo}/rehacer/datos")
+    public Anexo8ResponseDTO rehacerConDatos(@PathVariable Long idAnexo) {
+        Anexo8 anexoRehecho = service.rehacerAnexo8(idAnexo);
+        return Anexo8ResponseDTO.fromEntity(anexoRehecho);
+    }
+
+    @GetMapping("/datos")
+    public ResponseEntity<Anexo8ResponseDTO> getDatos(@PathVariable Long operationId) {
+        Operation op = operationRepository.findByIdWithAnexos(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        Anexo8 anexo8 = op.getAnexo8Actual();
+        if (anexo8 == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(Anexo8ResponseDTO.fromEntity(anexo8));
+    }
+
+    @GetMapping("/{idAnexo}/datos")
+    public ResponseEntity<Anexo8ResponseDTO> getDatosVersion(@PathVariable Long operationId,
+                                                             @PathVariable Long idAnexo) {
+        operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        Anexo8 anexo8 = repository.findById(idAnexo)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+        if (anexo8.getOperation() == null || !anexo8.getOperation().getIdOperacion().equals(operationId)) {
+            throw new RuntimeException("El anexo no pertenece a la operación indicada");
+        }
+        return ResponseEntity.ok(Anexo8ResponseDTO.fromEntity(anexo8));
     }
 
     @Override
@@ -43,3 +82,4 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
         return op.getAnexo8Actual();
     }
 }
+

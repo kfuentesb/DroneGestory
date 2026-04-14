@@ -30,12 +30,50 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
     @Override
     protected Anexo7 crearCopia(Anexo7 origen) {
         Anexo7 copia = new Anexo7();
-        copia.setNombreConops(origen.getNombreConops());
+        actualizarCampos(copia, origen);
         return copia;
     }
 
     @Override
     protected void actualizarCampos(Anexo7 destino, Anexo7 origen) {
         destino.setNombreConops(origen.getNombreConops());
+        destino.setFechaOp(origen.getFechaOp());
+        destino.setEstructuraCorrecto(origen.getEstructuraCorrecto());
+        destino.setEstructuraObservaciones(origen.getEstructuraObservaciones());
+        destino.setBateriasCorrecto(origen.getBateriasCorrecto());
+        destino.setBateriasObservaciones(origen.getBateriasObservaciones());
+        destino.setSensoresCorrecto(origen.getSensoresCorrecto());
+        destino.setSensoresObservaciones(origen.getSensoresObservaciones());
+        destino.setMotoresCorrecto(origen.getMotoresCorrecto());
+        destino.setMotoresObservaciones(origen.getMotoresObservaciones());
+        destino.setHelicesCorrecto(origen.getHelicesCorrecto());
+        destino.setHelicesObservaciones(origen.getHelicesObservaciones());
+        destino.setPartesMovilesCorrecto(origen.getPartesMovilesCorrecto());
+        destino.setPartesMovilesObservaciones(origen.getPartesMovilesObservaciones());
+        destino.setComunicacionesCorrecto(origen.getComunicacionesCorrecto());
+        destino.setComunicacionesObservaciones(origen.getComunicacionesObservaciones());
+        destino.setPlantaPotenciaCorrecto(origen.getPlantaPotenciaCorrecto());
+        destino.setPlantaPotenciaObservaciones(origen.getPlantaPotenciaObservaciones());
+        destino.setCargaPagoCorrecto(origen.getCargaPagoCorrecto());
+        destino.setCargaPagoObservaciones(origen.getCargaPagoObservaciones());
+        destino.setIdentificacionRemotaCorrecto(origen.getIdentificacionRemotaCorrecto());
+        destino.setIdentificacionRemotaObservaciones(origen.getIdentificacionRemotaObservaciones());
+        destino.setSistemaGeoconscienciaCorrecto(origen.getSistemaGeoconscienciaCorrecto());
+        destino.setSistemaGeoconscienciaObservaciones(origen.getSistemaGeoconscienciaObservaciones());
+        destino.setDatosVueloCorrecto(origen.getDatosVueloCorrecto());
+        destino.setDatosVueloObservaciones(origen.getDatosVueloObservaciones());
+        destino.setOtrosVerificacionCorrecto(origen.getOtrosVerificacionCorrecto());
+        destino.setOtrosVerificacionObservaciones(origen.getOtrosVerificacionObservaciones());
+        destino.setAeronaveCorrecto(origen.getAeronaveCorrecto());
+        destino.setAeronaveObservaciones(origen.getAeronaveObservaciones());
+        destino.setUnidadControlCorrecto(origen.getUnidadControlCorrecto());
+        destino.setUnidadControlObservaciones(origen.getUnidadControlObservaciones());
+        destino.setSensoresRecogidaCorrecto(origen.getSensoresRecogidaCorrecto());
+        destino.setSensoresRecogidaObservaciones(origen.getSensoresRecogidaObservaciones());
+        destino.setAntenasCorrecto(origen.getAntenasCorrecto());
+        destino.setAntenasObservaciones(origen.getAntenasObservaciones());
+        destino.setOtrosRecogidaCorrecto(origen.getOtrosRecogidaCorrecto());
+        destino.setOtrosRecogidaObservaciones(origen.getOtrosRecogidaObservaciones());
     }
 }
+
