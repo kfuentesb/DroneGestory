@@ -55,11 +55,18 @@ const DEFAULT_VALUES = FORM_FIELDS.reduce(
 
 const BOOL_OPTIONS = [
   { value: "", label: "Sin especificar" },
-  { value: "true", label: "Sí" },
-  { value: "false", label: "No" },
+  { value: "true", label: "Correcto" },
+  { value: "false", label: "Incorrecto" },
 ];
 
-type SectionItem = { num: string; title: string; key: FormKey; level: number };
+type SectionItem = {
+  num: string;
+  title: string;
+  key?: FormKey;
+  level: number; // 0,1,2
+  inputType?: "select" | "title"; // default: "select"
+  bold?: boolean; // default: false
+};
 
 const SECCIONES_CONFIG: {
   seccion2: SectionItem[];
@@ -75,48 +82,48 @@ const SECCIONES_CONFIG: {
   seccion12: SectionItem[];
 } = {
   seccion2: [
-    { num: "2.1", title: "Sin impacto", key: "sinImpacto", level: 0 },
+    { num: "2.1", title: "Sin impacto ni muescas", key: "sinImpacto", level: 0 },
     { num: "2.2", title: "Centro de gravedad", key: "centroGravedad", level: 0 },
     { num: "2.3", title: "Integridad estructural", key: "integridadEstructural", level: 0 },
-    { num: "2.4", title: "Cableado", key: "cableado", level: 0 },
+    { num: "2.4", title: "Cableado/conexiones", key: "cableado", level: 0 },
     { num: "2.5", title: "Verificación de luces", key: "verificacionLuces", level: 0 },
   ],
   seccion3: [
     { num: "3.1", title: "Calibración", key: "calibracion", level: 0 },
-    { num: "3.2", title: "Validar salida de datos", key: "validarSalidaDatos", level: 0 },
+    { num: "3.2", title: "Validar de salida de datos", key: "validarSalidaDatos", level: 0 },
   ],
   seccion4: [
     { num: "4.1", title: "Giran libremente", key: "giranLibremente", level: 0 },
     { num: "4.2", title: "Sentido de giro correcto", key: "sentidoGiroCorrecto", level: 0 },
-    { num: "4.3", title: "Sin impacto en motores", key: "sinImpactoMotores", level: 0 },
+    { num: "4.3", title: "Sin impacto ni muescas", key: "sinImpactoMotores", level: 0 },
   ],
   seccion5: [
     { num: "5.1", title: "Colocación correcta", key: "colocacionCorrecta", level: 0 },
     { num: "5.2", title: "Sujeción firme", key: "sujetacionFirme", level: 0 },
-    { num: "5.3", title: "Sin impacto en hélices", key: "sinImpactoHelices", level: 0 },
+    { num: "5.3", title: "Sin impacto ni muescas", key: "sinImpactoHelices", level: 0 },
   ],
   seccion6: [
-    { num: "6.1", title: "Batería cargada", key: "bateriaCarga", level: 0 },
-    { num: "6.2", title: "Movimiento fluido del mando", key: "movimientoFluidoMando", level: 0 },
+    { num: "6.1", title: "Batería con carga adecuada", key: "bateriaCarga", level: 0 },
+    { num: "6.2", title: "Movimiento fluido de los mandos", key: "movimientoFluidoMando", level: 0 },
   ],
   seccion7: [
-    { num: "7.1", title: "Sin impacto en partes móviles", key: "sinImpactoPartesMoviles", level: 0 },
-    { num: "7.2", title: "Movimiento fluido partes móviles", key: "movimientoFluidoPartesMoviles", level: 0 },
+    { num: "7.1", title: "Sin impacto ni muescas", key: "sinImpactoPartesMoviles", level: 0 },
+    { num: "7.2", title: "Movimiento fluido", key: "movimientoFluidoPartesMoviles", level: 0 },
   ],
   seccion8: [
     { num: "8.1", title: "Antenas instaladas y orientadas", key: "antenasInstaladasYOrientadas", level: 0 },
-    { num: "8.2", title: "Calidad de onda", key: "calidadOnda", level: 0 },
+    { num: "8.2", title: "Calidad de la señal", key: "calidadOnda", level: 0 },
     { num: "8.3", title: "Recepción adecuada", key: "recepcionAdecuada", level: 0 },
   ],
   seccion9: [
-    { num: "9.1", title: "Fuente de alimentación", key: "fuenteAlimentacion", level: 0 },
-    { num: "9.2", title: "Nivel fuente alimentación", key: "nivelFuenteAlimentacion", level: 0 },
+    { num: "9.1", title: "Fuente de alimentación (Baterías, combustible, etc...)", key: "fuenteAlimentacion", level: 0 },
+    { num: "9.2", title: "Nivel de fuente de alimentación", key: "nivelFuenteAlimentacion", level: 0 },
   ],
   seccion10: [
     { num: "10.1", title: "Fijación correcta", key: "fijacionCorrecta", level: 0 },
-    { num: "10.2", title: "Memoria suficiente para datos", key: "memoriaSuficienteParaDatos", level: 0 },
-    { num: "10.3", title: "Sin impacto carga de pago", key: "sinImpactoCargaPago", level: 0 },
-    { num: "10.4", title: "Conexiones carga de pago", key: "conexionesCargaPago", level: 0 },
+    { num: "10.2", title: "Memoria suficiente para almacenar datos", key: "memoriaSuficienteParaDatos", level: 0 },
+    { num: "10.3", title: "Sin impacto ni muescas", key: "sinImpactoCargaPago", level: 0 },
+    { num: "10.4", title: "Conexiones", key: "conexionesCargaPago", level: 0 },
   ],
   seccion11: [
     { num: "11.1", title: "Datos cargados", key: "datosCargados", level: 0 },
