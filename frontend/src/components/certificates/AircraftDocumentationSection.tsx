@@ -157,6 +157,10 @@ export function getVisibleAircraftDocumentationFields(
   showParachuteDocumentation: boolean
 ): AircraftDocumentationFieldConfig[] {
   return aircraftDocumentationFields.filter((field) => {
+    if (context === "model" && !MODEL_SPECIFIC_KEYS.has(field.key)) {
+      return false;
+    }
+
     if (isExistingModel && EXISTING_MODEL_HIDDEN_KEYS.has(field.key)) {
       return false;
     }
