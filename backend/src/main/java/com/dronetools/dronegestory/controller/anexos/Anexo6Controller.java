@@ -21,9 +21,9 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
 
     @PostMapping
     public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId,
-                                     @RequestParam(required = false) String textoPrueba) {
+                                     @RequestParam(required = false) String nombreConops) {
         Anexo6 input = new Anexo6();
-        input.setTextoPrueba(textoPrueba);
+        input.setNombreConops(nombreConops);
         Anexo6 saved = service.registrarAnexo6(operationId, input);
         return AnexoInfoDTO.from(saved);
     }

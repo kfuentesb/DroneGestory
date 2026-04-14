@@ -17,7 +17,7 @@ public class Anexo6 extends Anexo {
 
     // Solo campo de prueba
     @Column(name = "nombre_conops")
-    private String conops;
+    private String nombreConops;
 
     @Column(name = "fechaOp")
     private LocalDateTime fechaOp;

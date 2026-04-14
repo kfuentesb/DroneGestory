@@ -21,9 +21,9 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
 
     @PostMapping
     public AnexoInfoDTO saveOrUpdate(@PathVariable Long operationId,
-                                     @RequestParam(required = false) String textoPrueba) {
+                                     @RequestParam(required = false) String nombreConops) {
         Anexo8 input = new Anexo8();
-        input.setTextoPrueba(textoPrueba);
+        input.setNombreConops(nombreConops);
         Anexo8 saved = service.registrarAnexo8(operationId, input);
         return AnexoInfoDTO.from(saved);
     }

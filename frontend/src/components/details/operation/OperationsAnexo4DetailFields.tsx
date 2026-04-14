@@ -86,7 +86,7 @@ export const operationAnexo4DetailFields: FieldConfig[] = [
   { label: "Coordenadas", key: "coords", type: "text" },
   { label: "Personal", key: "personal", type: "text" },
   { label: "Imagen Espacio Aéreo", 
-    key: "imagenEspacioAereo", 
+    key: "imagenEspacioAereoFile", 
     type: "file",
     validate: (file: File | null) => {
         if (!file) return true;
@@ -100,7 +100,7 @@ export const operationAnexo4DetailFields: FieldConfig[] = [
   },
   { label: 
     "Imagen Zona Vuelo", 
-    key: "imagenZonaVuelo", 
+    key: "imagenZonaVueloFile", 
     type: "file",
     validate: (file: File | null) => {
         if (!file) return true;

@@ -157,12 +157,11 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
             MultipartFile imagenEspacioAereoFile,
             MultipartFile imagenZonaVueloFile
     ) throws IOException {
-        // Asocia la operación
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada: " + operationId));
-        anexo4.setOperation(op);
+        // Validate and reject disallowed file types
+        validateImageFile(imagenEspacioAereoFile);
+        validateImageFile(imagenZonaVueloFile);
 
-        // Prepara base de la carpeta
+        // Prepare upload directory
         Path anexoDir = Paths.get("uploads", "operations", operationId.toString(), "anexo4").toAbsolutePath().normalize();
         Files.createDirectories(anexoDir);
 
@@ -173,7 +172,10 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                     ? "espacioAereo"
                     : Paths.get(originalName).getFileName().toString();
             String filename = System.currentTimeMillis() + "_" + safeName;
-            Path target = anexoDir.resolve(filename);
+            Path target = anexoDir.resolve(filename).normalize();
+            if (!target.startsWith(anexoDir)) {
+                throw new IllegalArgumentException("Nombre de archivo no válido");
+            }
             imagenEspacioAereoFile.transferTo(target.toFile());
             anexo4.setImagenEspacioAereo(
                     Paths.get("operations", operationId.toString(), "anexo4", filename).toString().replace("\\", "/")
@@ -187,14 +189,34 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                     ? "zonaVuelo"
                     : Paths.get(originalName).getFileName().toString();
             String filename = System.currentTimeMillis() + "_" + safeName;
-            Path target = anexoDir.resolve(filename);
+            Path target = anexoDir.resolve(filename).normalize();
+            if (!target.startsWith(anexoDir)) {
+                throw new IllegalArgumentException("Nombre de archivo no válido");
+            }
             imagenZonaVueloFile.transferTo(target.toFile());
             anexo4.setImagenZonaVuelo(
                     Paths.get("operations", operationId.toString(), "anexo4", filename).toString().replace("\\", "/")
             );
         }
 
-        return anexo4Repository.save(anexo4);
+        // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)
+        return registrarAnexo4(operationId, anexo4);
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return;
+        }
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/jpeg") &&
+                 !contentType.equals("image/png"))) {
+            throw new IllegalArgumentException("Solo se permiten imágenes JPG o PNG");
+        }
+        long maxSize = 5L * 1024 * 1024; // 5 MB
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException("La imagen no puede superar los 5 MB");
+        }
     }
 
 }

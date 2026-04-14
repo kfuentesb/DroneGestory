@@ -30,12 +30,12 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
     @Override
     protected Anexo5 crearCopia(Anexo5 origen) {
         Anexo5 copia = new Anexo5();
-        copia.setTextoPrueba(origen.getTextoPrueba());
+        copia.setNombreConops(origen.getNombreConops());
         return copia;
     }
 
     @Override
     protected void actualizarCampos(Anexo5 destino, Anexo5 origen) {
-        destino.setTextoPrueba(origen.getTextoPrueba());
+        destino.setNombreConops(origen.getNombreConops());
     }
 }

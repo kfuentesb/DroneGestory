@@ -46,16 +46,16 @@ public class AnexoHistoricoDTO {
             return anexo4.getDescripcion();
         }
         if (anexo instanceof Anexo5 anexo5) {
-            return anexo5.getTextoPrueba();
+            return anexo5.getNombreConops();
         }
         if (anexo instanceof Anexo6 anexo6) {
-            return anexo6.getTextoPrueba();
+            return anexo6.getNombreConops();
         }
         if (anexo instanceof Anexo7 anexo7) {
-            return anexo7.getTextoPrueba();
+            return anexo7.getNombreConops();
         }
         if (anexo instanceof Anexo8 anexo8) {
-            return anexo8.getTextoPrueba();
+            return anexo8.getNombreConops();
         }
         return null;
     }
