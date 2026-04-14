@@ -485,8 +485,18 @@ export default function DetailsComponent({
     };
 
     const handleAircraftDocumentationFileChange = (event: ChangeEvent<HTMLInputElement>, key: string, isModel: boolean = false) => {
-        const setter = isModel ? setAircraftModelDocumentationFiles : setAircraftDocumentationFiles;
-        handleFileMapChange(event, key, setter);
+        const filesSetter = isModel ? setAircraftModelDocumentationFiles : setAircraftDocumentationFiles;
+        const checksSetter = isModel ? setAircraftModelDocumentationChecks : setAircraftDocumentationChecks;
+        
+        handleFileMapChange(event, key, filesSetter);
+        
+        const fieldConfig = aircraftDocumentationFields.find((field) => field.fileKey === key);
+        if (fieldConfig && event.target.files?.[0]) {
+            checksSetter((prev: Record<string, boolean>) => ({
+                ...prev,
+                [fieldConfig.enabledKey]: true
+            }));
+        }
     };
 
     const handleCertificateFileChange = (event: ChangeEvent<HTMLInputElement>, key: string) => {

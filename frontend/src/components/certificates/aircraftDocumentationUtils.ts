@@ -51,6 +51,7 @@ export function getAircraftDocumentationFlags(values: {
 }
 
 export function getAircraftModelDocumentationFlags(values: {
+  hasEnsuranceDefault?: unknown;
   hasFTSDefault?: unknown;
   hasParachuteDefault?: unknown;
 }) {

@@ -89,9 +89,9 @@ export default function FormAircraftModel() {
   const manufacturerError = touched.manufacturer && !manufacturer.trim();
   const modelError = touched.model && !model.trim();
   const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } = getAircraftModelDocumentationFlags({
-    hasEnsurance: defaultValues.hasEnsuranceDefault,
-    hasFTS: defaultValues.hasFTSDefault,
-    hasParachute: defaultValues.hasParachuteDefault,
+    hasEnsuranceDefault: defaultValues.hasEnsuranceDefault,
+    hasFTSDefault: defaultValues.hasFTSDefault,
+    hasParachuteDefault: defaultValues.hasParachuteDefault,
   });
 
   const parseNumber = (value: string): number | undefined => {
