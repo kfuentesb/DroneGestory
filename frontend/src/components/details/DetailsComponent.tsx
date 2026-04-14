@@ -931,6 +931,12 @@ export default function DetailsComponent({
             if (enabled) {
                 desiredTypes.add(field.key);
                 
+                // Skip update if this is a model default document and user didn't upload a new file
+                const isModelDefaultWithoutNewFile = existing?.isModelDefault && !file;
+                if (isModelDefaultWithoutNewFile) {
+                    continue;
+                }
+                
                 const shouldPersist = Boolean(file) || Boolean(expireDate) || dateIndefinite || Boolean(existing);
                 if (shouldPersist) {
                     const formData = new FormData();
