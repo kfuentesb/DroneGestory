@@ -228,7 +228,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
   } => {
     const metadata: AircraftDocumentationUploadRequest[] = [];
     const files: Array<{ fileFieldKey: string; file: File }> = [];
-    const visibleDocumentationFields = getVisibleAircraftDocumentationFields(isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
+    const visibleDocumentationFields = getVisibleAircraftDocumentationFields("aircraft", isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
     visibleDocumentationFields.forEach((field) => {
       const baselineDoc = documentationByType[field.key];
@@ -702,6 +702,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
             {error && <p className="text-danger text-center">{error}</p>}
 
             <AircraftDocumentationSection
+              context={"aircraft"}
               isExistingModel={isExistingModel}
               showInsuranceDocumentation={showInsuranceDocumentation}
               showFTSDocumentation={showFTSDocumentation}

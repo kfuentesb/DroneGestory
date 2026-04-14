@@ -2,9 +2,12 @@ package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.AircraftModelDocumentationDTO;
 import com.dronetools.dronegestory.dto.AircraftDocumentationUploadRequest;
+import com.dronetools.dronegestory.model.AircraftDocumentation;
 import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.model.AircraftModelDocumentation;
+import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftModelDocumentationRepository;
+import com.dronetools.dronegestory.repository.AircraftModelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -15,15 +18,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class AircraftModelDocumentationService {
 
     private final AircraftModelDocumentationRepository aircraftModelDocumentationRepository;
+    private final AircraftModelRepository aircraftModelRepository;
+    private final AircraftDocumentationRepository aircraftDocumentationRepository;
 
-    public AircraftModelDocumentationService(AircraftModelDocumentationRepository aircraftModelDocumentationRepository) {
+    public AircraftModelDocumentationService(
+            AircraftModelDocumentationRepository aircraftModelDocumentationRepository,
+            AircraftModelRepository aircraftModelRepository,
+            AircraftDocumentationRepository aircraftDocumentationRepository
+    ) {
         this.aircraftModelDocumentationRepository = aircraftModelDocumentationRepository;
+        this.aircraftModelRepository = aircraftModelRepository;
+        this.aircraftDocumentationRepository = aircraftDocumentationRepository;
     }
 
     public List<AircraftModelDocumentation> findByModelId(Long modelId) {
@@ -35,6 +47,114 @@ public class AircraftModelDocumentationService {
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<AircraftModelDocumentationDTO> createWithFile(
+            Long modelId,
+            String documentationType,
+            String expireDate,
+            Boolean dateIndefinite,
+            MultipartFile file
+    ) {
+        return aircraftModelRepository.findById(modelId).map(aircraftModel -> {
+            LocalDate parsedExpireDate = parseExpireDate(expireDate);
+            String storedDocumentationPath = null;
+            if (file != null && !file.isEmpty()) {
+                storedDocumentationPath = storeDocumentationFile(aircraftModel.getId(), documentationType, file);
+            }
+
+            boolean emptyDocumentation = (storedDocumentationPath == null || storedDocumentationPath.isBlank())
+                    && parsedExpireDate == null
+                    && dateIndefinite == null;
+            if (emptyDocumentation) {
+                return null;
+            }
+
+            AircraftModelDocumentation entity = new AircraftModelDocumentation();
+            entity.setAircraftModel(aircraftModel);
+            entity.setDocumentationType(documentationType);
+            entity.setDocumentationName(storedDocumentationPath);
+            entity.setExpireDate(parsedExpireDate);
+            entity.setDateIndefinite(dateIndefinite);
+            return toDto(aircraftModelDocumentationRepository.save(entity));
+        });
+    }
+
+    private LocalDate parseExpireDate(String expireDate) {
+        if (expireDate == null || expireDate.isBlank()) {
+            return null;
+        }
+        return LocalDate.parse(expireDate);
+    }
+
+    public Optional<AircraftModelDocumentationDTO> updateWithFile(
+            Long id,
+            String documentationType,
+            String expireDate,
+            Boolean dateIndefinite,
+            MultipartFile file
+    ) {
+        return aircraftModelDocumentationRepository.findById(id)
+                .map(existing -> {
+                    if (documentationType != null && !documentationType.isBlank()) {
+                        existing.setDocumentationType(documentationType);
+                    }
+
+                    if (expireDate != null) {
+                        existing.setExpireDate(expireDate.isBlank() ? null : LocalDate.parse(expireDate));
+                    }
+
+                    if (dateIndefinite != null) {
+                        existing.setDateIndefinite(dateIndefinite);
+                    }
+
+                    if (file != null && !file.isEmpty()) {
+                        deleteStoredFile(existing.getDocumentationName());
+                        String storedDocumentationPath = storeDocumentationFile(
+                                existing.getAircraftModel().getId(),
+                                existing.getDocumentationType(),
+                                file
+                        );
+                        existing.setDocumentationName(storedDocumentationPath);
+                    }
+
+                    AircraftModelDocumentation saved = aircraftModelDocumentationRepository.save(existing);
+                    
+                    // Synchronize changes to all aircraft documentations pointing to this model documentation
+                    syncPointingAircraftDocumentations(saved);
+                    
+                    return toDto(saved);
+                });
+    }
+
+    private void syncPointingAircraftDocumentations(AircraftModelDocumentation modelDocumentation) {
+        List<AircraftDocumentation> pointingDocs = aircraftDocumentationRepository.findByModelDocumentation_Id(modelDocumentation.getId());
+        
+        for (AircraftDocumentation aircraftDoc : pointingDocs) {
+            // Only sync if aircraft documentation has no aircraft-specific file
+            if (aircraftDoc.getDocumentationName() == null || aircraftDoc.getDocumentationName().isBlank()) {
+                aircraftDoc.setDocumentationType(modelDocumentation.getDocumentationType());
+                aircraftDoc.setExpireDate(modelDocumentation.getExpireDate());
+                aircraftDoc.setDateIndefinite(modelDocumentation.getDateIndefinite());
+                aircraftDocumentationRepository.save(aircraftDoc);
+            }
+        }
+    }
+
+    public void deleteById(Long id) {
+        aircraftModelDocumentationRepository.findById(id).ifPresent(existing -> {
+            deleteStoredFile(existing.getDocumentationName());
+            
+            // Break pointers: set modelDocumentation_id to NULL in all aircraft docs pointing to this model doc
+            List<AircraftDocumentation> pointingDocs = aircraftDocumentationRepository.findByModelDocumentation_Id(id);
+            for (AircraftDocumentation aircraftDoc : pointingDocs) {
+                aircraftDoc.setModelDocumentation(null);
+                aircraftDocumentationRepository.save(aircraftDoc);
+            }
+            
+            // Delete the model documentation itself
+            aircraftModelDocumentationRepository.deleteById(id);
+        });
     }
 
     public void saveFromUploadRequests(

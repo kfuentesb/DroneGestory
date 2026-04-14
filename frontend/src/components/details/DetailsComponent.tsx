@@ -16,6 +16,16 @@ import AircraftDocumentationSection, {
     getVisibleAircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
+import {
+    buildDocStateDefaults,
+    clearFileMapValue,
+    getDocumentationFetchUrl,
+    handleFileMapChange,
+    toggleBooleanMapValue,
+    validateCertificateFile,
+    typeColors,
+    stateColors
+} from "./detailsUtils";
 
 import editIcon from '../../assets/commons/edit_white.svg';
 import deleteIcon from '../../assets/commons/delete_white.svg';
@@ -53,11 +63,14 @@ type UserCertificate = {
 
 type AircraftDocumentation = {
     id: number;
-    aircraftId: number;
+    aircraftId?: number;
+    aircraftModelId?: number;
     documentationType: string;
     documentationName: string | null;
     expireDate: string | null;
     dateIndefinite: boolean | null;
+    modelDocumentationId?: number | null;
+    isModelDefault?: boolean;
 };
 
 type CertificateFieldPayload = {
@@ -80,21 +93,6 @@ interface LoadingState {
     certificates: boolean;
     image: boolean;
 }
-
-// this sets all keys in the array to the same value, used for initializing state objects for certificates and documentation
-const buildRecord = <T,>(keys: string[], value: T): Record<string, T> =>
-    Object.fromEntries(keys.map((key) => [key, value])) as Record<string, T>;
-
-const buildDocStateDefaults = (
-    config: Array<{ fileKey: string; dateKey: string; enabledKey: string; indefiniteKey: string }>
-) => ({
-    files: buildRecord(config.map((field) => field.fileKey), null as File | null),
-    dates: buildRecord(config.map((field) => field.dateKey), ""),
-    checks: buildRecord(
-        config.flatMap((field) => [field.enabledKey, field.indefiniteKey]),
-        false
-    ),
-});
 
 const USER_CERTIFICATE_DEFAULTS = buildDocStateDefaults(staticUserCertificateConfig);
 const AIRCRAFT_DOCUMENTATION_DEFAULTS = buildDocStateDefaults(aircraftDocumentationFields);
@@ -324,18 +322,19 @@ export default function DetailsComponent({
         setCurrentSelection("");
     }, [certificates, showUserCertificates]);
 
-    // Cargar documentación de aeronave si corresponde
+    // Cargar documentación si corresponde, tanto de aeronave como de modelo
     useEffect(() => {
-        if (!showAircraftDocumentation || !id) {
+        if (!id || !(showAircraftDocumentation || showAircraftModelDocumentation)) {
             return;
         }
 
-        const loadAircraftDocumentations = async () => {
+        const loadDocumentations = async () => {
             updateLoading("certificates", true);
             try {
-                const res = await fetch(`/api/aircraft-documentation/aircraft/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const res = await fetch(
+                    getDocumentationFetchUrl(showAircraftModelDocumentation ? "model" : "aircraft", id),
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
 
                 if (!res.ok) {
                     setAircraftDocumentations([]);
@@ -345,19 +344,19 @@ export default function DetailsComponent({
                 const json = (await res.json()) as AircraftDocumentation[];
                 setAircraftDocumentations(json);
             } catch (error) {
-                console.error("Error loading aircraft documentations:", error);
+                console.error("Error loading documentations:", error);
                 setAircraftDocumentations([]);
             } finally {
                 updateLoading("certificates", false);
             }
         };
 
-        loadAircraftDocumentations();
-    }, [id, showAircraftDocumentation, token]);
+        loadDocumentations();
+    }, [id, showAircraftDocumentation, showAircraftModelDocumentation, token]);
 
-    // Sincronizar estado de documentación de aeronave con los datos cargados
+    // Sincronizar estado de documentación con los datos cargados
     useEffect(() => {
-        if (!showAircraftDocumentation) {
+        if (!showAircraftDocumentation && !showAircraftModelDocumentation) {
             return;
         }
 
@@ -385,7 +384,7 @@ export default function DetailsComponent({
         setAircraftDocumentationChecks(nextChecks);
         setAircraftDocumentationFormValues(nextForm);
         setExistingAircraftDocumentationFileNames(nextNames);
-    }, [aircraftDocumentations, showAircraftDocumentation]);
+    }, [aircraftDocumentations, showAircraftDocumentation, showAircraftModelDocumentation]);
 
     const handleConfirmClick = () => {
         if (validateForm) {
@@ -451,53 +450,6 @@ export default function DetailsComponent({
         }
 
         return new Date(certificate.expireDate).toLocaleDateString("es-ES");
-    };
-
-    const toggleBooleanMapValue = (
-        setter: Dispatch<SetStateAction<Record<string, boolean>>>,
-        key: string
-    ) => {
-        setter((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
-
-    const validateCertificateFile = (file: File): string | null => {
-        const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
-        if (!allowedTypes.includes(file.type)) {
-            return "Solo PDF, JPG, PNG o WEBP.";
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            return "El archivo debe pesar menos de 5MB.";
-        }
-        return null;
-    };
-
-    const handleFileMapChange = (
-        event: ChangeEvent<HTMLInputElement>,
-        key: string,
-        setter: Dispatch<SetStateAction<Record<string, File | null>>>
-    ) => {
-        const file = event.target.files?.[0] ?? null;
-        if (!file) {
-            setter((prev) => ({ ...prev, [key]: null }));
-            return;
-        }
-
-        const fileError = validateCertificateFile(file);
-        if (fileError) {
-            alert(fileError);
-            return;
-        }
-        setter((prev) => ({ ...prev, [key]: file }));
-    };
-
-    const clearFileMapValue = (
-        key: string,
-        inputId: string,
-        setter: Dispatch<SetStateAction<Record<string, File | null>>>
-    ) => {
-        setter((prev) => ({ ...prev, [key]: null }));
-        const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
-        if (fileInput) fileInput.value = "";
     };
 
     const handleAircraftDocumentationCheckChange = (key: string) => {
@@ -835,142 +787,6 @@ export default function DetailsComponent({
         }
     };
 
-    // const syncAircraftDocumentation = async () => {
-    //     if (!showAircraftDocumentation || !id) return;
-
-    //     const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } =
-    //         getAircraftDocumentationFlags(formValues);
-    //     const visibleFields = getVisibleAircraftDocumentationFields(
-    //         "aircraft",
-    //         false,
-    //         showInsuranceDocumentation,
-    //         showFTSDocumentation,
-    //         showParachuteDocumentation
-    //     );
-
-    //     const existingByType = new Map(
-    //         aircraftDocumentations.map((documentation) => [documentation.documentationType, documentation])
-    //     );
-    //     const desiredTypes = new Set<string>();
-
-    //     for (const field of visibleFields) {
-    //         const enabled = Boolean(aircraftDocumentationChecks[field.enabledKey]);
-    //         const file = aircraftDocumentationFiles[field.fileKey];
-    //         const expireDate = aircraftDocumentationFormValues[field.dateKey] || null;
-    //         const dateIndefinite = Boolean(aircraftDocumentationChecks[field.indefiniteKey]);
-    //         const existing = existingByType.get(field.key);
-
-    //         if (enabled) {
-    //             desiredTypes.add(field.key);
-    //         }
-
-    //         const shouldPersist = enabled && (Boolean(file) || Boolean(expireDate) || dateIndefinite || Boolean(existing));
-    //         if (!shouldPersist) {
-    //             continue;
-    //         }
-
-    //         const formData = new FormData();
-    //         formData.append("documentationType", field.key);
-    //         formData.append("documentationLabel", field.label);
-    //         if (expireDate && !dateIndefinite) formData.append("expireDate", expireDate);
-    //         formData.append("dateIndefinite", dateIndefinite ? "true" : "false");
-    //         if (file) formData.append("file", file, file.name);
-
-    //         const url = existing
-    //             ? `/api/aircraft-documentation/${existing.id}/upload`
-    //             : `/api/aircraft-documentation/aircraft/${id}/upload`;
-    //         const method = existing ? "PUT" : "POST";
-
-    //         const res = await fetch(url, {
-    //             method,
-    //             headers: { Authorization: `Bearer ${token}` },
-    //             body: formData,
-    //         });
-
-    //         if (!res.ok) {
-    //             const errorText = await res.text();
-    //             throw new Error(errorText || "Error guardando documentación de aeronave.");
-    //         }
-    //     }
-
-    //     for (const documentation of aircraftDocumentations) {
-    //         if (!desiredTypes.has(documentation.documentationType)) {
-    //             const res = await fetch(`/api/aircraft-documentation/${documentation.id}`, {
-    //                 method: "DELETE",
-    //                 headers: { Authorization: `Bearer ${token}` },
-    //             });
-
-    //             if (!res.ok) {
-    //                 const errorText = await res.text();
-    //                 throw new Error(errorText || "Error eliminando documentación de aeronave.");
-    //             }
-    //         }
-    //     }
-
-    //     const refreshed = await fetch(`/api/aircraft-documentation/aircraft/${id}`, {
-    //         headers: { Authorization: `Bearer ${token}` },
-    //     });
-
-    //     if (refreshed.ok) {
-    //         const json = (await refreshed.json()) as AircraftDocumentation[];
-    //         setAircraftDocumentations(json);
-    //     }
-    // };
-
-    // const syncAircraftModelDocumentation = async () => {
-    //     if (!showAircraftModelDocumentation || !id) return;
-
-    //     const { showFTSDocumentation, showParachuteDocumentation, showInsuranceDocumentation } = getAircraftDocumentationFlags(formValues);
-
-    //     const visibleFields = getVisibleAircraftDocumentationFields(
-    //         "model",
-    //         true,
-    //         showInsuranceDocumentation,
-    //         showFTSDocumentation,
-    //         showParachuteDocumentation
-    //     );
-
-    //     const existingByType = new Map(
-    //         aircraftDocumentations.map((doc) => [doc.documentationType, doc])
-    //     );
-    //     const desiredTypes = new Set<string>();
-
-    //     for (const field of visibleFields) {
-    //         const enabled = Boolean(aircraftDocumentationChecks[field.enabledKey]);
-    //         const file = aircraftDocumentationFiles[field.fileKey];
-    //         const expireDate = aircraftDocumentationFormValues[field.dateKey] || null;
-    //         const dateIndefinite = Boolean(aircraftDocumentationChecks[field.indefiniteKey]);
-    //         const existing = existingByType.get(field.key);
-
-    //         if (enabled) desiredTypes.add(field.key);
-
-    //         const shouldPersist = enabled && (Boolean(file) || Boolean(expireDate) || dateIndefinite || Boolean(existing));
-    //         if (!shouldPersist) continue;
-
-    //         const formData = new FormData();
-    //         formData.append("documentationType", field.key);
-    //         formData.append("documentationLabel", field.label);
-    //         if (expireDate && !dateIndefinite) formData.append("expireDate", expireDate);
-    //         formData.append("dateIndefinite", dateIndefinite ? "true" : "false");
-    //         if (file) formData.append("file", file, file.name);
-
-    //         const url = existing
-    //             ? `/api/aircraft-model-documentation/${existing.id}/upload`
-    //             : `/api/aircraft-model-documentation/model/${id}/upload`;
-    //         const method = existing ? "PUT" : "POST";
-
-    //         const res = await fetch(url, {
-    //             method,
-    //             headers: { Authorization: `Bearer ${token}` },
-    //             body: formData,
-    //         });
-
-    //         if (!res.ok) throw new Error(await res.text() || "Error guardando documentación de modelo.");
-    //     }
-
-    //     // Logic for deleting removed model documents...
-    // };
-
     const syncAircraftDocumentation = async () => {
         if (!showAircraftDocumentation || !id) return;
 
@@ -1020,27 +836,35 @@ export default function DetailsComponent({
             }
         }
 
-        // DELETE removed docs
+        // DELETE removed docs (only AIRCRAFT_SPECIFIC docs should be deleted)
         for (const doc of aircraftDocumentations) {
-            // Only delete if it belongs to the 'aircraft' set and is no longer desired
-            if (AIRCRAFT_SPECIFIC_KEYS.has(doc.documentationType) && !desiredTypes.has(doc.documentationType)) {
-                await fetch(`/api/aircraft-documentation/${doc.id}`, {
+            const isAircraftSpecific = AIRCRAFT_SPECIFIC_KEYS.has(doc.documentationType);
+            const isNotDesired = !desiredTypes.has(doc.documentationType);
+            
+            if (isAircraftSpecific && isNotDesired) {
+                const res = await fetch(`/api/aircraft-documentation/${doc.id}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 });
+                if (!res.ok) {
+                    throw new Error(`Error deleting aircraft documentation: ${res.status}`);
+                }
             }
         }
+
+        // Refresh documentation list after sync
+        await loadAircraftDocumentations();
     };
 
     const syncAircraftModelDocumentation = async () => {
         if (!showAircraftModelDocumentation || !id) return;
 
-        const { showFTSDocumentation, showParachuteDocumentation } = getAircraftDocumentationFlags(formValues);
+        const { showFTSDocumentation, showParachuteDocumentation, showInsuranceDocumentation } = getAircraftDocumentationFlags(formValues);
         
         const visibleFields = getVisibleAircraftDocumentationFields(
             "model",
             true, // isExistingModel
-            false, // No insurance for models usually
+            showInsuranceDocumentation,
             showFTSDocumentation,
             showParachuteDocumentation
         );
@@ -1080,15 +904,24 @@ export default function DetailsComponent({
             }
         }
 
-        // DELETE removed model docs
+        // DELETE removed model docs (only MODEL_SPECIFIC docs should be deleted)
         for (const doc of aircraftDocumentations) {
-            if (MODEL_SPECIFIC_KEYS.has(doc.documentationType) && !desiredTypes.has(doc.documentationType)) {
-                await fetch(`/api/aircraft-model-documentation/${doc.id}`, {
+            const isModelSpecific = MODEL_SPECIFIC_KEYS.has(doc.documentationType);
+            const isNotDesired = !desiredTypes.has(doc.documentationType);
+            
+            if (isModelSpecific && isNotDesired) {
+                const res = await fetch(`/api/aircraft-model-documentation/${doc.id}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 });
+                if (!res.ok) {
+                    throw new Error(`Error deleting model documentation: ${res.status}`);
+                }
             }
         }
+
+        // Refresh documentation list after sync
+        await loadAircraftDocumentations();
     };
 
     const openAircraftDocumentation = async (documentation: AircraftDocumentation) => {
@@ -1102,7 +935,12 @@ export default function DetailsComponent({
                 .map(encodeURIComponent)
                 .join("/");
 
-            const res = await fetch(`/api/aircraft/images/${encodedPath}`, {
+            const isModelDocumentation = documentation.documentationName.startsWith("aircraft-model/");
+            const url = isModelDocumentation
+                ? `/api/aircraft-models/images/${encodedPath}`
+                : `/api/aircraft/images/${encodedPath}`;
+
+            const res = await fetch(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -1122,6 +960,84 @@ export default function DetailsComponent({
         } catch (error) {
             console.error("Error opening documentation:", error);
             alert("No se pudo abrir la documentación.");
+        }
+    };
+
+    const loadAircraftDocumentations = async () => {
+        if (!id || !(showAircraftDocumentation || showAircraftModelDocumentation)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                getDocumentationFetchUrl(showAircraftModelDocumentation ? "model" : "aircraft", id),
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (!res.ok) {
+                setAircraftDocumentations([]);
+                return;
+            }
+
+            const json = (await res.json()) as AircraftDocumentation[];
+            setAircraftDocumentations(json);
+        } catch (error) {
+            console.error("Error loading documentations:", error);
+            setAircraftDocumentations([]);
+        }
+    };
+
+    const restoreAircraftDocumentationToDefault = async (docId: number) => {
+        if (!token) {
+            alert("No estás autenticado");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/aircraft-documentation/${docId}/restore-default`, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error restoring documentation: ${res.status}`);
+            }
+
+            // Refresh documentation list
+            await loadAircraftDocumentations();
+            alert("Documentación restaurada al valor por defecto");
+        } catch (error) {
+            console.error("Error restoring documentation:", error);
+            alert("No se pudo restaurar la documentación.");
+        }
+    };
+
+    const detachAircraftDocumentationFromDefault = async (docId: number) => {
+        if (!token) {
+            alert("No estás autenticado");
+            return;
+        }
+
+        if (!window.confirm("Esta acción desasociará el documento del modelo. ¿Continuar?")) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/aircraft-documentation/${docId}/detach`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error detaching documentation: ${res.status}`);
+            }
+
+            // Refresh documentation list
+            await loadAircraftDocumentations();
+            alert("Documentación desasociada del modelo");
+        } catch (error) {
+            console.error("Error detaching documentation:", error);
+            alert("No se pudo desasociar la documentación.");
         }
     };
 
@@ -1294,17 +1210,6 @@ export default function DetailsComponent({
     if (status === 404 || (!data && !loading.data)) return <NotFound />;
     if (status >= 500) return <div className="text-center p-5">Error interno del servidor</div>;
 
-    const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-        ADMIN: { backgroundColor: "#FEE2E2", color: "#991B1B" },
-        MANAGER: { backgroundColor: "#E0F2FE", color: "#075985" },
-        PILOT: { backgroundColor: "#E6F4EC", color: "#1F6B43" },
-    };
-
-    const stateColors = {
-        active: { backgroundColor: "#DCFCE7", color: "#166534" },
-        inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
-    };
-
     const defaultProfileImage = defaultImage === "drone" ? "/default-drone.png" : "/default-user.jpg";
     const detailTitle =
         entityType === "aircraft"
@@ -1474,6 +1379,40 @@ export default function DetailsComponent({
                                                         onOpen: documentation.documentationName
                                                             ? () => openAircraftDocumentation(documentation)
                                                             : undefined,
+                                                        isModelDefault: documentation.isModelDefault ?? false,
+                                                        onRestore: documentation.isModelDefault
+                                                            ? () => restoreAircraftDocumentationToDefault(documentation.id)
+                                                            : undefined,
+                                                        onDetach: documentation.isModelDefault
+                                                            ? () => detachAircraftDocumentationFromDefault(documentation.id)
+                                                            : undefined,
+                                                    };
+                                                })}
+                                            />
+                                        )}
+
+                                        {showAircraftModelDocumentation && (
+                                            <AircraftDocumentationSummarySection
+                                                items={aircraftDocumentations.map((documentation) => {
+                                                    const config = aircraftDocumentationFields.find(
+                                                        (field) => field.key === documentation.documentationType
+                                                    );
+                                                    return {
+                                                        key: documentation.id.toString(),
+                                                        certificateType: config?.label || documentation.documentationType,
+                                                        expireDate: formatAircraftDocumentationDate(documentation),
+                                                        dateIndefinite: documentation.dateIndefinite ?? false,
+                                                        hasFile: Boolean(documentation.documentationName),
+                                                        onOpen: documentation.documentationName
+                                                            ? () => openAircraftDocumentation(documentation)
+                                                            : undefined,
+                                                        isModelDefault: documentation.isModelDefault ?? false,
+                                                        // onRestore: documentation.isModelDefault
+                                                        //     ? () => restoreAircraftDocumentationToDefault(documentation.id)
+                                                        //     : undefined,
+                                                        // onDetach: documentation.isModelDefault
+                                                        //     ? () => detachAircraftDocumentationFromDefault(documentation.id)
+                                                        //     : undefined,
                                                     };
                                                 })}
                                             />

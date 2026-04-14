@@ -44,6 +44,7 @@ export default function AircraftModelDetail() {
       onDelete={handleDelete}
       onBack={() => navigate("/aircraft-models")}
       validateForm={validateForm}
+      certificateSectionType="model"
       clearableFieldKeys={[
         "aircraftClassDefault",
         "mtomDefault",

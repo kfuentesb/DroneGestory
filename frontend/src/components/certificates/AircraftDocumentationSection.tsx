@@ -12,6 +12,7 @@ export type AircraftDocumentationFieldConfig = {
   infoLabel: string;
 };
 
+
 export type AircraftSummaryItem = {
   key: string;
   certificateType: string;
@@ -19,6 +20,9 @@ export type AircraftSummaryItem = {
   dateIndefinite?: boolean;
   hasFile?: boolean;
   onOpen?: () => void;
+  isModelDefault?: boolean;
+  // onRestore?: () => void;
+  // onDetach?: () => void;
 };
 
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
@@ -109,7 +113,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
 export const AIRCRAFT_SPECIFIC_KEYS = new Set([
   "caracterizacion",
   "seguroResponsabilidadCivil",
-  "otraDocumentacion"
+  "otraDocumentacion",
 ]);
 
 // Fields that ONLY belong to the general drone model
@@ -277,8 +281,9 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">
               <tr>
-                <th scope="col" style={{ width: "60%" }}>Documentación</th>
-                <th scope="col" style={{ width: "40%" }}>Fecha de expiración</th>
+                <th scope="col" style={{ width: "50%" }}>Documentación</th>
+                <th scope="col" style={{ width: "30%" }}>Fecha de expiración</th>
+                {/* <th scope="col" style={{ width: "20%" }}>Acciones</th> */}
               </tr>
             </thead>
             <tbody>
@@ -297,6 +302,9 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
                     ) : (
                       <span className="text-dark">{item.certificateType}</span>
                     )}
+                    {item.isModelDefault && (
+                      <span className="badge bg-secondary ms-2 fw-normal">Valor por defecto</span>
+                    )}
                   </td>
                   <td>
                     {item.dateIndefinite ? (
@@ -305,6 +313,30 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
                       <span className="text-secondary">{item.expireDate || "No especificada"}</span>
                     )}
                   </td>
+                  {/* <td>
+                    <div className="d-flex gap-2 flex-wrap">
+                      {item.isModelDefault && item.onDetach && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={item.onDetach}
+                          title="Desasociar del modelo"
+                        >
+                          <i className="bi bi-link-45deg"></i>
+                        </button>
+                      )}
+                      {!item.isModelDefault && item.onRestore && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-success"
+                          onClick={item.onRestore}
+                          title="Restaurar a valor por defecto"
+                        >
+                          <i className="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                      )}
+                    </div>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

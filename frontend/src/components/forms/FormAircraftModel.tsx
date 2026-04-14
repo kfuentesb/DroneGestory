@@ -501,6 +501,7 @@ export default function FormAircraftModel() {
             )}
 
             <AircraftDocumentationSection
+              context={"model"}
               isExistingModel={false}
               showInsuranceDocumentation={showInsuranceDocumentation}
               showFTSDocumentation={showFTSDocumentation}

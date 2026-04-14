@@ -305,6 +305,8 @@ public class AircraftDocumentationService {
         String documentationName = documentation.getDocumentationName();
         LocalDate expireDate = documentation.getExpireDate();
         Boolean dateIndefinite = documentation.getDateIndefinite();
+        Long modelDocumentationId = null;
+        Boolean isModelDefault = false;
 
         if (documentation.getModelDocumentation() != null) {
             AircraftModelDocumentation modelDocumentation = documentation.getModelDocumentation();
@@ -312,6 +314,8 @@ public class AircraftDocumentationService {
             documentationName = firstNonBlank(documentationName, modelDocumentation.getDocumentationName());
             expireDate = expireDate != null ? expireDate : modelDocumentation.getExpireDate();
             dateIndefinite = dateIndefinite != null ? dateIndefinite : modelDocumentation.getDateIndefinite();
+            modelDocumentationId = modelDocumentation.getId();
+            isModelDefault = true;
         }
 
         return new AircraftDocumentationDTO(
@@ -320,7 +324,9 @@ public class AircraftDocumentationService {
                 documentationType,
                 documentationName,
                 expireDate,
-                dateIndefinite
+                dateIndefinite,
+                modelDocumentationId,
+                isModelDefault
         );
     }
 
@@ -406,5 +412,46 @@ public class AircraftDocumentationService {
             return primary;
         }
         return fallback;
+    }
+
+    public Optional<AircraftDocumentationDTO> restoreToDefault(Long aircraftDocumentationId) {
+        return aircraftDocumentationRepository.findById(aircraftDocumentationId).flatMap(aircraftDoc -> {
+            Aircraft aircraft = aircraftDoc.getAircraft();
+            String documentationType = resolveEffectiveType(aircraftDoc);
+
+            // Find matching model documentation by type
+            List<AircraftModelDocumentation> modelDocs =
+                    aircraftModelDocumentationRepository.findByAircraftModel_Id(aircraft.getAircraftModel().getId());
+
+            Optional<AircraftModelDocumentation> matchingModelDoc = modelDocs.stream()
+                    .filter(doc -> documentationType.equals(doc.getDocumentationType()))
+                    .findFirst();
+
+            if (matchingModelDoc.isPresent()) {
+                AircraftModelDocumentation modelDoc = matchingModelDoc.get();
+                // Restore pointer and inherit model values
+                aircraftDoc.setModelDocumentation(modelDoc);
+                aircraftDoc.setDocumentationType(modelDoc.getDocumentationType());
+                aircraftDoc.setExpireDate(modelDoc.getExpireDate());
+                aircraftDoc.setDateIndefinite(modelDoc.getDateIndefinite());
+                // Clear aircraft-specific file if any
+                aircraftDoc.setDocumentationName(null);
+                return Optional.of(toDto(aircraftDocumentationRepository.save(aircraftDoc)));
+            }
+
+            return Optional.empty();
+        });
+    }
+
+    public Optional<AircraftDocumentationDTO> detachFromDefault(Long aircraftDocumentationId) {
+        return aircraftDocumentationRepository.findById(aircraftDocumentationId).map(aircraftDoc -> {
+            // Only allow detach if currently has a pointer
+            if (aircraftDoc.getModelDocumentation() != null) {
+                aircraftDoc.setModelDocumentation(null);
+                // Keep current values (type, expireDate, dateIndefinite) as aircraft-specific
+                return toDto(aircraftDocumentationRepository.save(aircraftDoc));
+            }
+            return toDto(aircraftDoc);
+        });
     }
 }

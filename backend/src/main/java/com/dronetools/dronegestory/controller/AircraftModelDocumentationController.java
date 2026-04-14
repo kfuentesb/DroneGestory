@@ -1,7 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
-import com.dronetools.dronegestory.dto.AircraftDocumentationDTO;
-import com.dronetools.dronegestory.service.AircraftDocumentationService;
+import com.dronetools.dronegestory.dto.AircraftModelDocumentationDTO;
+import com.dronetools.dronegestory.service.AircraftModelDocumentationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,42 +19,42 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/aircraft-documentation")
+@RequestMapping("/api/aircraft-model-documentation")
 @RequiredArgsConstructor
-public class AircraftDocumentationController {
+public class AircraftModelDocumentationController {
 
-    private final AircraftDocumentationService aircraftDocumentationService;
+    private final AircraftModelDocumentationService aircraftModelDocumentationService;
 
-    @GetMapping("/aircraft/{aircraftId}")
+    @GetMapping("/model/{modelId}")
     @PreAuthorize("isAuthenticated()")
-    public List<AircraftDocumentationDTO> getByAircraftId(@PathVariable Long aircraftId) {
-        return aircraftDocumentationService.findByAircraftId(aircraftId);
+    public List<AircraftModelDocumentationDTO> getByModelId(@PathVariable Long modelId) {
+        return aircraftModelDocumentationService.findDtoByModelId(modelId);
     }
 
-    @PostMapping(value = "/aircraft/{aircraftId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/model/{modelId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AircraftDocumentationDTO> createWithFile(
-            @PathVariable Long aircraftId,
+    public ResponseEntity<AircraftModelDocumentationDTO> createWithFile(
+            @PathVariable Long modelId,
             @RequestParam(value = "documentationType", required = false) String documentationType,
             @RequestParam(value = "documentationLabel", required = false) String documentationLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
             @RequestParam(value = "dateIndefinite", required = false) Boolean dateIndefinite,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
-        return ResponseEntity.ok(
-                aircraftDocumentationService.createWithFile(
-                        aircraftId,
+        return aircraftModelDocumentationService.createWithFile(
+                        modelId,
                         resolveDocumentationType(documentationType, documentationLabel),
                         expireDate,
                         dateIndefinite,
                         file
                 )
-        );
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping(value = "/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AircraftDocumentationDTO> updateWithFile(
+    public ResponseEntity<AircraftModelDocumentationDTO> updateWithFile(
             @PathVariable Long id,
             @RequestParam(value = "documentationType", required = false) String documentationType,
             @RequestParam(value = "documentationLabel", required = false) String documentationLabel,
@@ -62,7 +62,7 @@ public class AircraftDocumentationController {
             @RequestParam(value = "dateIndefinite", required = false) Boolean dateIndefinite,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
-        return aircraftDocumentationService.updateWithFile(
+        return aircraftModelDocumentationService.updateWithFile(
                         id,
                         resolveDocumentationType(documentationType, documentationLabel),
                         expireDate,
@@ -76,24 +76,8 @@ public class AircraftDocumentationController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        aircraftDocumentationService.deleteById(id);
+        aircraftModelDocumentationService.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/{id}/restore-default")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AircraftDocumentationDTO> restoreToDefault(@PathVariable Long id) {
-        return aircraftDocumentationService.restoreToDefault(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}/detach")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AircraftDocumentationDTO> detachFromDefault(@PathVariable Long id) {
-        return aircraftDocumentationService.detachFromDefault(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 
     private String resolveDocumentationType(String documentationType, String documentationLabel) {
@@ -103,6 +87,6 @@ public class AircraftDocumentationController {
         if (documentationLabel != null && !documentationLabel.isBlank()) {
             return documentationLabel.trim();
         }
-        throw new IllegalArgumentException("Either documentationType or documentationLabel is required.");
+        return null;
     }
 }

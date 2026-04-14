@@ -9,4 +9,5 @@ public interface AircraftDocumentationRepository extends JpaRepository<AircraftD
     // Spring will now look for aircraft.aircraftId
     void deleteByAircraft_AircraftId(Long aircraftId);
     List<AircraftDocumentation> findByAircraft_AircraftId(Long aircraftId);
+    List<AircraftDocumentation> findByModelDocumentation_Id(Long modelDocumentationId);
 }

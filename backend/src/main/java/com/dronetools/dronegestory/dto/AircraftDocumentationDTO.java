@@ -8,6 +8,11 @@ public record AircraftDocumentationDTO(
         String documentationType,
         String documentationName,
         LocalDate expireDate,
-        Boolean dateIndefinite
+        Boolean dateIndefinite,
+        Long modelDocumentationId,
+        Boolean isModelDefault
 ) {
+    public AircraftDocumentationDTO(Long id, Long aircraftId, String documentationType, String documentationName, LocalDate expireDate, Boolean dateIndefinite) {
+        this(id, aircraftId, documentationType, documentationName, expireDate, dateIndefinite, null, false);
+    }
 }
