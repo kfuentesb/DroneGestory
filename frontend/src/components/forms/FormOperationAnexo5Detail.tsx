@@ -62,15 +62,15 @@ const SECCIONES_CONFIG: {
 } = {
   seccion1: [
     { num: "1.1.1", title: "VLOS/BVLOS", key: "vlos", level: 1 },
-    { num: "1.1.1", title: "Ubicación de observadores", key: "ubicacionObservadores", level: 1 },
-    { num: "1.1.1", title: "Evaluación visibilidad y alcance", key: "evaluacionVisibilidadYAlcance", level: 1 },
-    { num: "1.1.2", title: "Condicionantes acordados con gestor", key: "condicionantesAcordadosConGestor", level: 1 },
-    { num: "1.1.3", title: "Análisis en función del CONOPS", key: "analisisEnFuncionConops", level: 1 },
-    { num: "1.1.3", title: "Evaluación entorno aéreo adyacente", key: "evaluacionEntornoAereoAdyacente", level: 1 },
-    { num: "1.1.3", title: "Vuelo terrestre controlado", key: "vueloTerrestreControlado", level: 1 },
+    { num: "1.1.2", title: "Ubicación de observadores", key: "ubicacionObservadores", level: 1 },
+    { num: "1.1.3", title: "Evaluación visibilidad y alcance", key: "evaluacionVisibilidadYAlcance", level: 1 },
+    { num: "1.1.4", title: "Condicionantes acordados con gestor", key: "condicionantesAcordadosConGestor", level: 1 },
+    { num: "1.1.5", title: "Análisis en función del CONOPS", key: "analisisEnFuncionConops", level: 1 },
+    { num: "1.1.6", title: "Evaluación entorno aéreo adyacente", key: "evaluacionEntornoAereoAdyacente", level: 1 },
+    { num: "1.1.7", title: "Vuelo terrestre controlado", key: "vueloTerrestreControlado", level: 1 },
     { num: "1.2.1", title: "NOTAM activos", key: "notamActivos", level: 1 },
-    { num: "1.2.1", title: "TSA previa / publicación NOTAM", key: "tsaPreviaNotam", level: 1 },
-    { num: "1.2.1", title: "Procedimientos ATSP", key: "procedimientosATSP", level: 1 },
+    { num: "1.2.2", title: "TSA previa / publicación NOTAM", key: "tsaPreviaNotam", level: 1 },
+    { num: "1.2.3", title: "Procedimientos ATSP", key: "procedimientosATSP", level: 1 },
   ],
   seccion2: [
     { num: "2.1", title: "Condiciones climatológicas", key: "condicionesClimatologicas", level: 0 },
