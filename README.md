@@ -108,14 +108,9 @@ VISUAL<br>
 -DRONES<br>
 -Si se modifica la fecha de un doc general de un modelo dentro de un especifico, no coge el pdf.<br>
 -Al registrar un dron y dejar la imagen por defecto, no se guarda esa imagen<br>
--Cuando se borra un modelo, no se borra todas las imagenes y la documentaciónes de ese modelo<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
 -Cuando el usuario registra un drone y modifica un doc, el badge de "valor por defecto del modelo" debería desaparecer, y si se hace click a la X debería a volver a mostrar el valor por defecto. Solo se debería borrar el doc si se presiona la papelera<br>
--En la tabla mostrando documentacion de aeronave, solo debería salir una columna hasta que una documentación si tenga fecha de expiración.<br>
 -En la tabla mostrando documentación de aeronave, debería indicarse si el documento se trata de un puntero apuntando al documento por defecto o si es "especifico" de esa aeronave<br>
--El editar modelo también debería poder editar documentaciones<br>
--Al entrar en la vista de modelo, poner un texto en grande indicando que es un modelo y los valores serán los que aparezcan por defecto.<br>
--Caracterización y FTS no tienen que estar en modelo.<br>
 
 
 -OPERACIONES<br>
