@@ -67,6 +67,7 @@ public class AircraftController {
     public ResponseEntity<AircraftResponseDTO> createAircraftWithFile(
             @ModelAttribute AircraftRequestDTO dto,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "useModelDefaultImage", required = false, defaultValue = "false") boolean useModelDefaultImage,
             @RequestParam(value = "documentations", required = false) String documentationsJson,
             MultipartHttpServletRequest multipartRequest
     ) throws IOException {
@@ -87,6 +88,7 @@ public class AircraftController {
                 dto.getManufacturer(),
                 dto.getModel(),
                 imageFile,
+                useModelDefaultImage,
                 documentations,
                 multipartRequest
         );
