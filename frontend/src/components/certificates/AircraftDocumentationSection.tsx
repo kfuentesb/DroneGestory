@@ -159,11 +159,19 @@ export function getVisibleAircraftDocumentationFields(
   showParachuteDocumentation: boolean
 ): AircraftDocumentationFieldConfig[] {
   return aircraftDocumentationFields.filter((field) => {
-    if (context === "model" && !MODEL_SPECIFIC_KEYS.has(field.key)) {
+
+    // Si es contexto MODELO, ocultamos lo que es específico de la unidad física
+    if (context === "model" && AIRCRAFT_SPECIFIC_KEYS.has(field.key)) {
       return false;
     }
 
-    if (isExistingModel && EXISTING_MODEL_HIDDEN_KEYS.has(field.key)) {
+    // si el modelo ya existe. En context "aircraft" queremos que se vean.
+    if (context === "model" && isExistingModel && EXISTING_MODEL_HIDDEN_KEYS.has(field.key)) {
+      return false;
+    }
+
+    // Lógica de Flags (Estos deben mandar en el contexto "aircraft")
+    if (!showInsuranceDocumentation && field.key === "seguroResponsabilidadCivil") {
       return false;
     }
 
