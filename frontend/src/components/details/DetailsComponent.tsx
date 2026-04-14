@@ -15,7 +15,7 @@ import AircraftDocumentationSection, {
     MODEL_SPECIFIC_KEYS,
     getVisibleAircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
-import { getAircraftDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
+import { getAircraftDocumentationFlags,getAircraftModelDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
 import {
     buildDocStateDefaults,
     clearFileMapValue,
@@ -1169,6 +1169,7 @@ export default function DetailsComponent({
     const userTypeLabel = entityType === "user" ? data.type : undefined;
     const userStateLabel = entityType === "user" ? (data.state ? "Activo" : "Inactivo") : undefined;
     const aircraftDocumentationFlags = getAircraftDocumentationFlags(formValues);
+    const aircraftModelDocumentationFlags = getAircraftModelDocumentationFlags(formValues);
 
     return (
         <div className="container-fluid py-4">
@@ -1415,9 +1416,9 @@ export default function DetailsComponent({
                                     <AircraftDocumentationSection
                                         context="model"
                                         isExistingModel={false}
-                                        showInsuranceDocumentation={aircraftDocumentationFlags.showInsuranceDocumentation}
-                                        showFTSDocumentation={aircraftDocumentationFlags.showFTSDocumentation}
-                                        showParachuteDocumentation={aircraftDocumentationFlags.showParachuteDocumentation}
+                                        showInsuranceDocumentation={aircraftModelDocumentationFlags.showInsuranceDocumentation}
+                                        showFTSDocumentation={aircraftModelDocumentationFlags.showFTSDocumentation}
+                                        showParachuteDocumentation={aircraftModelDocumentationFlags.showParachuteDocumentation}
                                         onlyInsuranceHasDates
                                         activeChecks={aircraftDocumentationChecks}
                                         selectedFiles={aircraftDocumentationFiles}

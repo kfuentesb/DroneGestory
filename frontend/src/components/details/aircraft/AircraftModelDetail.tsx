@@ -55,7 +55,6 @@ export default function AircraftModelDetail() {
         "hasCameraDefault",
         "privatelyBuiltDefault",
         "hasParachuteDefault",
-        "hasEnsuranceDefault",
         "hasFTSDefault",
         "cautiveDefault",
         "accessoriesDefault",
