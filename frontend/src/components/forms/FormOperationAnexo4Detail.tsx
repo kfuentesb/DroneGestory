@@ -109,6 +109,15 @@ export default function FormOperationAnexo4Detail({
     );
 
     setFormValues(normalized);
+
+    // Limpiar las URLs de previsualización previas para que se muestre
+    // la imagen guardada en BD después de guardar, firmar o rehacer versión.
+    setPreviewUrls((prev) => {
+      Object.values(prev).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+      return {};
+    });
   }, [initialValues]);
 
   const handleChange = (key: string, value: any) => {
