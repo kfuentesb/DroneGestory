@@ -21,8 +21,6 @@ export type AircraftSummaryItem = {
   hasFile?: boolean;
   onOpen?: () => void;
   isModelDefault?: boolean;
-  // onRestore?: () => void;
-  // onDetach?: () => void;
 };
 
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
@@ -283,7 +281,6 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
               <tr>
                 <th scope="col" style={{ width: "50%" }}>Documentación</th>
                 <th scope="col" style={{ width: "30%" }}>Fecha de expiración</th>
-                {/* <th scope="col" style={{ width: "20%" }}>Acciones</th> */}
               </tr>
             </thead>
             <tbody>
@@ -313,30 +310,6 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
                       <span className="text-secondary">{item.expireDate || "No especificada"}</span>
                     )}
                   </td>
-                  {/* <td>
-                    <div className="d-flex gap-2 flex-wrap">
-                      {item.isModelDefault && item.onDetach && (
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={item.onDetach}
-                          title="Desasociar del modelo"
-                        >
-                          <i className="bi bi-link-45deg"></i>
-                        </button>
-                      )}
-                      {!item.isModelDefault && item.onRestore && (
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-success"
-                          onClick={item.onRestore}
-                          title="Restaurar a valor por defecto"
-                        >
-                          <i className="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                      )}
-                    </div>
-                  </td> */}
                 </tr>
               ))}
             </tbody>

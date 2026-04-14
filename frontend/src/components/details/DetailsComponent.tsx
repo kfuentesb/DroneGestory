@@ -987,60 +987,6 @@ export default function DetailsComponent({
         }
     };
 
-    const restoreAircraftDocumentationToDefault = async (docId: number) => {
-        if (!token) {
-            alert("No estás autenticado");
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/aircraft-documentation/${docId}/restore-default`, {
-                method: "PUT",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!res.ok) {
-                throw new Error(`Error restoring documentation: ${res.status}`);
-            }
-
-            // Refresh documentation list
-            await loadAircraftDocumentations();
-            alert("Documentación restaurada al valor por defecto");
-        } catch (error) {
-            console.error("Error restoring documentation:", error);
-            alert("No se pudo restaurar la documentación.");
-        }
-    };
-
-    const detachAircraftDocumentationFromDefault = async (docId: number) => {
-        if (!token) {
-            alert("No estás autenticado");
-            return;
-        }
-
-        if (!window.confirm("Esta acción desasociará el documento del modelo. ¿Continuar?")) {
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/aircraft-documentation/${docId}/detach`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!res.ok) {
-                throw new Error(`Error detaching documentation: ${res.status}`);
-            }
-
-            // Refresh documentation list
-            await loadAircraftDocumentations();
-            alert("Documentación desasociada del modelo");
-        } catch (error) {
-            console.error("Error detaching documentation:", error);
-            alert("No se pudo desasociar la documentación.");
-        }
-    };
-
     const formatAircraftDocumentationDate = (documentation: AircraftDocumentation) => {
         if (documentation.dateIndefinite) {
             return "Indefinida";
@@ -1380,12 +1326,6 @@ export default function DetailsComponent({
                                                             ? () => openAircraftDocumentation(documentation)
                                                             : undefined,
                                                         isModelDefault: documentation.isModelDefault ?? false,
-                                                        onRestore: documentation.isModelDefault
-                                                            ? () => restoreAircraftDocumentationToDefault(documentation.id)
-                                                            : undefined,
-                                                        onDetach: documentation.isModelDefault
-                                                            ? () => detachAircraftDocumentationFromDefault(documentation.id)
-                                                            : undefined,
                                                     };
                                                 })}
                                             />
@@ -1407,12 +1347,6 @@ export default function DetailsComponent({
                                                             ? () => openAircraftDocumentation(documentation)
                                                             : undefined,
                                                         isModelDefault: documentation.isModelDefault ?? false,
-                                                        // onRestore: documentation.isModelDefault
-                                                        //     ? () => restoreAircraftDocumentationToDefault(documentation.id)
-                                                        //     : undefined,
-                                                        // onDetach: documentation.isModelDefault
-                                                        //     ? () => detachAircraftDocumentationFromDefault(documentation.id)
-                                                        //     : undefined,
                                                     };
                                                 })}
                                             />
