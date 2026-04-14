@@ -280,7 +280,6 @@ export default function AircraftDocumentationSection({
 export function AircraftDocumentationSummarySection({ items }: { items: AircraftSummaryItem[] }) {
   return (
     <div className="mt-4 border-top pt-3">
-      <h5 className="fw-bold mb-3" style={{ color: "#1E1E1E" }}>Documentación de Aeronave</h5>
 
       {items.length === 0 ? (
         <div className="p-3 bg-light rounded text-center border">
@@ -291,36 +290,53 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">
               <tr>
-                <th scope="col" style={{ width: "50%" }}>Documentación</th>
-                <th scope="col" style={{ width: "30%" }}>Fecha de expiración</th>
+                <th scope="col">Documentación</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={item.key}>
-                  <td>
-                    {item.hasFile && item.onOpen ? (
-                      <button 
-                        type="button" 
-                        className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none shadow-none" 
-                        onClick={item.onOpen} 
-                      >
-                        <i className="bi bi-file-earmark-arrow-down me-2"></i>
-                        {item.certificateType}
-                      </button>
-                    ) : (
-                      <span className="text-dark">{item.certificateType}</span>
-                    )}
-                    {item.isModelDefault && (
-                      <span className="badge bg-secondary ms-2 fw-normal">Valor por defecto</span>
-                    )}
-                  </td>
-                  <td>
-                    {item.dateIndefinite ? (
-                      <span className="badge bg-info text-dark fw-normal">Indefinida</span>
-                    ) : (
-                      <span className="text-secondary">{item.expireDate || "No especificada"}</span>
-                    )}
+                  <td className="py-2">
+                    <div className="d-flex align-items-center flex-wrap">
+                      {/* 1. Categoría/Tipo de Documento */}
+                      <span className="text-secondary fw-bold me-2" style={{ fontSize: '0.9rem' }}>
+                        {item.certificateType}:
+                      </span>
+
+                      {/* 2. Nombre del archivo (clickable si tiene onOpen) */}
+                      {item.hasFile && item.onOpen ? (
+                        <button
+                          type="button"
+                          className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none shadow-none me-2"
+                          onClick={item.onOpen}
+                        >
+                          <i className="bi bi-file-earmark-arrow-down me-1"></i>
+                          Ver documento
+                        </button>
+                      ) : (
+                        <span className="text-muted small me-2">Sin archivo</span>
+                      )}
+
+                      {/* 3. Badge de "Valor por defecto" */}
+                      {item.isModelDefault && (
+                        <span className="badge bg-secondary fw-normal me-2" style={{ fontSize: '0.75rem' }}>
+                          Doc. del modelo
+                        </span>
+                      )}
+
+                      {/* 4. Fecha de Expiración (Solo si hay datos reales) */}
+                      {((item.expireDate && item.expireDate.trim() !== "-") || item.dateIndefinite) && (
+                        <span 
+                          className={`badge fw-normal ${
+                            item.dateIndefinite ? "bg-info text-dark" : "bg-light text-secondary border"
+                          }`}
+                          style={{ fontSize: '0.75rem' }}
+                        >
+                          <i className="bi bi-calendar3 me-1"></i>
+                          {item.dateIndefinite ? "Indefinida" : `Expira: ${item.expireDate}`}
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
