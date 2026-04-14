@@ -49,3 +49,15 @@ export function getAircraftDocumentationFlags(values: {
     showParachuteDocumentation: toBooleanLike(values.hasParachute) === true,
   };
 }
+
+export function getAircraftModelDocumentationFlags(values: {
+  hasEnsurance?: unknown;
+  hasFTS?: unknown;
+  hasParachute?: unknown;
+}) {
+  return {
+    showInsuranceDocumentation: toBooleanLike(values.hasEnsurance) === false,
+    showFTSDocumentation: toBooleanLike(values.hasFTS) === true,
+    showParachuteDocumentation: toBooleanLike(values.hasParachute) === true,
+  };
+}
