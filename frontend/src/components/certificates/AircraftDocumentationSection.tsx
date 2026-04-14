@@ -136,10 +136,10 @@ type AircraftDocumentationSectionProps = {
   formValues: Record<string, string>;
   existingFileNames?: Record<string, string>;
   modelDefaultByType?: Record<string, boolean>;
-  onToggleCheck: (id: string) => void;
-  onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string) => void;
-  onClearFile: (id: string, inputId: string) => void;
-  onFormDateChange: (key: string, value: string) => void;
+  onToggleCheck: (id: string, isModel?: boolean) => void;
+  onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string, isModel?: boolean) => void;
+  onClearFile: (id: string, inputId: string, isModel?: boolean) => void;
+  onFormDateChange: (key: string, value: string, isModel?: boolean) => void;
 };
 
 const EXISTING_MODEL_HIDDEN_KEYS = new Set([
@@ -200,6 +200,8 @@ export default function AircraftDocumentationSection({
 }: AircraftDocumentationSectionProps) {
   const [showOptional, setShowOptional] = useState(false);
   const visibleFields = getVisibleAircraftDocumentationFields(context, isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
+  const isModelContext = context === "model";
+  const inputPrefix = isModelContext ? "model" : "aircraft";
 
   return (
     <div
@@ -245,18 +247,24 @@ export default function AircraftDocumentationSection({
                 <InsertDoc
                   className="mb-2"
                   checkboxLabel={field.label}
+
+                  key={field.key}
                   isChecked={Boolean(activeChecks[field.enabledKey])}
-                  onToggleCheck={() => onToggleCheck(field.enabledKey)}
-                  fileInputId={`file-upload-aircraft-${field.fileKey}`}
+                  onToggleCheck={() => onToggleCheck(field.enabledKey, isModelContext)}
+
+                  fileInputId={`file-upload-${inputPrefix}-${field.fileKey}`}
                   selectedFile={selectedFiles[field.fileKey] ?? null}
                   existingFileName={existingFileNames[field.fileKey]}
-                  onFileChange={(e) => onFileChange(e, field.fileKey)}
-                  onClearFile={() => onClearFile(field.fileKey, `file-upload-aircraft-${field.fileKey}`)}
+
+                  onFileChange={(e) => onFileChange(e, field.fileKey, isModelContext)}
+                  onClearFile={() => onClearFile(field.fileKey, `file-upload-${inputPrefix}-${field.fileKey}`, isModelContext)}
+
                   expirationDate={formValues[field.dateKey] || ""}
-                  onExpirationDateChange={(value) => onFormDateChange(field.dateKey, value)}
-                  indefiniteId={`indefinite-aircraft-${field.indefiniteKey}`}
+                  onExpirationDateChange={(value) => onFormDateChange(field.dateKey, value, isModelContext)}
+
+                  indefiniteId={`indefinite-${inputPrefix}-${field.indefiniteKey}`}
                   isIndefinite={Boolean(activeChecks[field.indefiniteKey])}
-                  onToggleIndefinite={() => onToggleCheck(field.indefiniteKey)}
+                  onToggleIndefinite={() => onToggleCheck(field.indefiniteKey, isModelContext)}
                   showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
                   isModelDefault={Boolean(modelDefaultByType[field.key])}
                 />
