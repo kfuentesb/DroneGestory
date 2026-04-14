@@ -6,16 +6,33 @@ import { useAuth } from "../../commons/hooks/useAuth";
 import {
   fetchAnexo4Data,
   fetchAnexo4VersionData,
+  fetchAnexo5Data,
+  fetchAnexo5VersionData,
+  fetchAnexo6Data,
+  fetchAnexo6VersionData,
+  fetchAnexo7Data,
+  fetchAnexo7VersionData,
+  fetchAnexo8Data,
+  fetchAnexo8VersionData,
   fetchOperationDetail,
   remakeAnexo4Data,
-  remakeAnexo,
-  saveAnexo,
+  remakeAnexo5Data,
+  remakeAnexo6Data,
+  remakeAnexo7Data,
+  remakeAnexo8Data,
   signAnexo4Data,
-  signAnexo,
+  signAnexo5Data,
+  signAnexo6Data,
+  signAnexo7Data,
+  signAnexo8Data,
+  type Anexo4Data,
+  type Anexo5Data,
+  type Anexo6Data,
+  type Anexo7Data,
+  type Anexo8Data,
 } from "../../operations/operation.api";
 import type {
   AnexoHistoricoDTO,
-  OperationAnexoDetailDTO,
   OperationDetailDTO,
 } from "../../operations/operation.types";
 import {
@@ -25,10 +42,16 @@ import {
   getOperationStatusStyle,
 } from "../../operations/operation.utils";
 import FormOperationAnexo4Detail from "../../forms/FormOperationAnexo4Detail";
+import FormOperationAnexo5Detail from "../../forms/FormOperationAnexo5Detail";
+import FormOperationAnexo6Detail from "../../forms/FormOperationAnexo6Detail";
+import FormOperationAnexo7Detail from "../../forms/FormOperationAnexo7Detail";
+import FormOperationAnexo8Detail from "../../forms/FormOperationAnexo8Detail";
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
 };
+
+type AnexoData = Anexo4Data | Anexo5Data | Anexo6Data | Anexo7Data | Anexo8Data;
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -45,28 +68,20 @@ function Badge({ label, style }: { label: string; style: CSSProperties }) {
   );
 }
 
-function buildDraft(anexo: OperationAnexoDetailDTO | null) {
-  return anexo?.versiones[0]?.textoPrueba ?? "";
-}
-
 export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetailProps) {
   const { id, versionId } = useParams();
   const navigate = useNavigate();
   const { role } = useAuth();
 
   const [operation, setOperation] = useState<OperationDetailDTO | null>(null);
-  const [draftValue, setDraftValue] = useState("");
-  const [anexo4Data, setAnexo4Data] = useState<Record<string, any> | null>(null);
+  const [anexoData, setAnexoData] = useState<AnexoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingVersionData, setLoadingVersionData] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [signing, setSigning] = useState(false);
   const [remaking, setRemaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
-
-  const isAnexo4 = tipoAnexo === 4;
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -124,10 +139,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       }
 
       setOperation(data);
-      const anexoData = data.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null;
-      if (!isAnexo4) {
-        setDraftValue(buildDraft(anexoData));
-      }
     } catch (err) {
       console.error("Error cargando anexo:", err);
       setError("No se pudo cargar el anexo.");
@@ -141,46 +152,68 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, [id, tipoAnexo, versionId]);
 
   useEffect(() => {
-    if (!isAnexo4 || !operation) {
+    if (!operation) {
       return;
     }
 
-    const loadSelectedAnexo4Data = async () => {
+    const loadSelectedAnexoData = async () => {
       setLoadingVersionData(true);
       try {
-        const data = selectedVersionId
-          ? await fetchAnexo4VersionData(operation.idOperacion, selectedVersionId)
-          : await fetchAnexo4Data(operation.idOperacion);
-        setAnexo4Data(data);
+        let data: AnexoData | null = null;
+
+        if (selectedVersionId) {
+          switch (tipoAnexo) {
+            case 4:
+              data = await fetchAnexo4VersionData(operation.idOperacion, selectedVersionId);
+              break;
+            case 5:
+              data = await fetchAnexo5VersionData(operation.idOperacion, selectedVersionId);
+              break;
+            case 6:
+              data = await fetchAnexo6VersionData(operation.idOperacion, selectedVersionId);
+              break;
+            case 7:
+              data = await fetchAnexo7VersionData(operation.idOperacion, selectedVersionId);
+              break;
+            case 8:
+              data = await fetchAnexo8VersionData(operation.idOperacion, selectedVersionId);
+              break;
+            default:
+              data = null;
+          }
+        } else {
+          switch (tipoAnexo) {
+            case 4:
+              data = await fetchAnexo4Data(operation.idOperacion);
+              break;
+            case 5:
+              data = await fetchAnexo5Data(operation.idOperacion);
+              break;
+            case 6:
+              data = await fetchAnexo6Data(operation.idOperacion);
+              break;
+            case 7:
+              data = await fetchAnexo7Data(operation.idOperacion);
+              break;
+            case 8:
+              data = await fetchAnexo8Data(operation.idOperacion);
+              break;
+            default:
+              data = null;
+          }
+        }
+
+        setAnexoData(data);
       } catch (err) {
-        console.error("Error cargando datos del Anexo 4:", err);
-        setAnexo4Data(null);
+        console.error(`Error cargando datos del Anexo ${tipoAnexo}:`, err);
+        setAnexoData(null);
       } finally {
         setLoadingVersionData(false);
       }
     };
 
-    void loadSelectedAnexo4Data();
-  }, [isAnexo4, operation, selectedVersionId]);
-
-  const handleSave = async () => {
-    if (!operation || !draftValue.trim()) {
-      return;
-    }
-
-    try {
-      setSaving(true);
-      await saveAnexo(operation.idOperacion, tipoAnexo, draftValue.trim());
-      navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
-      await loadOperation();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      console.error(`Error guardando ${getAnexoLabel(tipoAnexo)}:`, err);
-      alert(`No se pudo guardar ${getAnexoLabel(tipoAnexo)}.`);
-    } finally {
-      setSaving(false);
-    }
-  };
+    void loadSelectedAnexoData();
+  }, [operation, selectedVersionId, tipoAnexo]);
 
   const handleSign = async () => {
     if (!operation || !anexo?.actual.id) {
@@ -189,11 +222,28 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     try {
       setSigning(true);
-      if (isAnexo4) {
-        const signedData = await signAnexo4Data(operation.idOperacion, anexo.actual.id);
-        setAnexo4Data(signedData);
-      } else {
-        await signAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      let signedData: AnexoData | null = null;
+      switch (tipoAnexo) {
+        case 4:
+          signedData = await signAnexo4Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 5:
+          signedData = await signAnexo5Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 6:
+          signedData = await signAnexo6Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 7:
+          signedData = await signAnexo7Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 8:
+          signedData = await signAnexo8Data(operation.idOperacion, anexo.actual.id);
+          break;
+        default:
+          signedData = null;
+      }
+      if (signedData) {
+        setAnexoData(signedData);
       }
       setShowSignConfirm(false);
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
@@ -213,11 +263,28 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     try {
       setRemaking(true);
-      if (isAnexo4) {
-        const remadeData = await remakeAnexo4Data(operation.idOperacion, anexo.actual.id);
-        setAnexo4Data(remadeData);
-      } else {
-        await remakeAnexo(operation.idOperacion, tipoAnexo, anexo.actual.id);
+      let remadeData: AnexoData | null = null;
+      switch (tipoAnexo) {
+        case 4:
+          remadeData = await remakeAnexo4Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 5:
+          remadeData = await remakeAnexo5Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 6:
+          remadeData = await remakeAnexo6Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 7:
+          remadeData = await remakeAnexo7Data(operation.idOperacion, anexo.actual.id);
+          break;
+        case 8:
+          remadeData = await remakeAnexo8Data(operation.idOperacion, anexo.actual.id);
+          break;
+        default:
+          remadeData = null;
+      }
+      if (remadeData) {
+        setAnexoData(remadeData);
       }
       setShowRemakeConfirm(false);
       navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
@@ -228,6 +295,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     } finally {
       setRemaking(false);
     }
+  };
+
+  const handleSaved = async (savedData: AnexoData | null) => {
+    setAnexoData(savedData);
+    navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
+    await loadOperation();
   };
 
   if (loading) {
@@ -281,14 +354,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
 
         <div className="d-flex gap-2 flex-wrap">
-          {!isAnexo4 && (
-            <ButtonProp
-              onClick={() => void handleSave()}
-              disabled={!canEditDraft || saving || !draftValue.trim()}
-            >
-              {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
-            </ButtonProp>
-          )}
           <ButtonProp
             className="btn"
             style={{ backgroundColor: "#92400E", color: "#FFFFFF", fontWeight: "bold" }}
@@ -362,51 +427,89 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             )}
           </div>
 
-          {isAnexo4 ? (
-            loadingVersionData ? (
-              <div className="text-center py-4">Cargando versión...</div>
-            ) : (
-              <FormOperationAnexo4Detail
-                key={selectedVersionId ?? anexo.actual.id ?? "current"}
-                operationId={operation.idOperacion}
-                initialValues={anexo4Data ?? {}}
-                disabled={isViewingHistoricalVersion || !canEditDraft}
-                readOnlyMessage={
-                  isViewingHistoricalVersion
-                    ? "Estás consultando una versión histórica. Esta vista es solo lectura."
-                    : undefined
-                }
-                onSaved={async (savedData) => {
-                  setAnexo4Data(savedData);
-                  navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
-                  await loadOperation();
-                }}
-              />
-            )
+          {loadingVersionData ? (
+            <div className="text-center py-4">Cargando versión...</div>
           ) : (
             <>
-              <label className="form-label fw-bold" htmlFor={`draft-anexo-${tipoAnexo}`}>
-                Texto
-              </label>
-              <textarea
-                id={`draft-anexo-${tipoAnexo}`}
-                className="form-control"
-                rows={10}
-                value={isViewingHistoricalVersion ? selectedVersion?.textoPrueba ?? "" : draftValue}
-                disabled={isViewingHistoricalVersion || saving || !canEditDraft}
-                onChange={(event) => setDraftValue(event.target.value)}
-                placeholder={`Contenido de ${getAnexoLabel(tipoAnexo)}`}
-              />
-
-              {!isViewingHistoricalVersion && (
-                <div className="d-flex gap-2 flex-wrap mt-3">
-                  <ButtonProp
-                    onClick={() => void handleSave()}
-                    disabled={!canEditDraft || saving || !draftValue.trim()}
-                  >
-                    {saving ? "Guardando..." : anexo.actual.id ? "Guardar borrador" : "Crear anexo"}
-                  </ButtonProp>
-                </div>
+              {tipoAnexo === 4 && (
+                <FormOperationAnexo4Detail
+                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  operationId={operation.idOperacion}
+                  initialValues={(anexoData as Anexo4Data | null) ?? {}}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  readOnlyMessage={
+                    isViewingHistoricalVersion
+                      ? "Estás consultando una versión histórica. Esta vista es solo lectura."
+                      : undefined
+                  }
+                  onSaved={async (savedData) => {
+                    await handleSaved(savedData as AnexoData | null);
+                  }}
+                />
+              )}
+              {tipoAnexo === 5 && (
+                <FormOperationAnexo5Detail
+                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  operationId={operation.idOperacion}
+                  initialValues={anexoData as Anexo5Data | null}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  readOnlyMessage={
+                    isViewingHistoricalVersion
+                      ? "Estás consultando una versión histórica. Esta vista es solo lectura."
+                      : undefined
+                  }
+                  onSaved={async (savedData) => {
+                    await handleSaved(savedData as AnexoData | null);
+                  }}
+                />
+              )}
+              {tipoAnexo === 6 && (
+                <FormOperationAnexo6Detail
+                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  operationId={operation.idOperacion}
+                  initialValues={anexoData as Anexo6Data | null}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  readOnlyMessage={
+                    isViewingHistoricalVersion
+                      ? "Estás consultando una versión histórica. Esta vista es solo lectura."
+                      : undefined
+                  }
+                  onSaved={async (savedData) => {
+                    await handleSaved(savedData as AnexoData | null);
+                  }}
+                />
+              )}
+              {tipoAnexo === 7 && (
+                <FormOperationAnexo7Detail
+                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  operationId={operation.idOperacion}
+                  initialValues={anexoData as Anexo7Data | null}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  readOnlyMessage={
+                    isViewingHistoricalVersion
+                      ? "Estás consultando una versión histórica. Esta vista es solo lectura."
+                      : undefined
+                  }
+                  onSaved={async (savedData) => {
+                    await handleSaved(savedData as AnexoData | null);
+                  }}
+                />
+              )}
+              {tipoAnexo === 8 && (
+                <FormOperationAnexo8Detail
+                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  operationId={operation.idOperacion}
+                  initialValues={anexoData as Anexo8Data | null}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  readOnlyMessage={
+                    isViewingHistoricalVersion
+                      ? "Estás consultando una versión histórica. Esta vista es solo lectura."
+                      : undefined
+                  }
+                  onSaved={async (savedData) => {
+                    await handleSaved(savedData as AnexoData | null);
+                  }}
+                />
               )}
             </>
           )}
