@@ -158,7 +158,6 @@ public class AircraftModelController {
                 model.getHasCameraDefault(),
                 model.getPrivatelyBuiltDefault(),
                 model.getHasParachuteDefault(),
-                model.getHasEnsuranceDefault(),
                 model.getHasFTSDefault(),
                 model.getCautiveDefault(),
                 model.getAccessoriesDefault()

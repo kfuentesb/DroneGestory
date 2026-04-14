@@ -67,7 +67,6 @@ public class AircraftModelService {
         newModel.setHasCameraDefault(request.getHasCameraDefault());
         newModel.setPrivatelyBuiltDefault(request.getPrivatelyBuiltDefault());
         newModel.setHasParachuteDefault(request.getHasParachuteDefault());
-        newModel.setHasEnsuranceDefault(request.getHasEnsuranceDefault());
         newModel.setHasFTSDefault(request.getHasFTSDefault());
         newModel.setCautiveDefault(request.getCautiveDefault());
         newModel.setAccessoriesDefault(request.getAccessoriesDefault());
@@ -130,7 +129,6 @@ public class AircraftModelService {
         applyIfPresent(parameterMap, "hasCameraDefault", dto.getHasCameraDefault(), model::setHasCameraDefault);
         applyIfPresent(parameterMap, "privatelyBuiltDefault", dto.getPrivatelyBuiltDefault(), model::setPrivatelyBuiltDefault);
         applyIfPresent(parameterMap, "hasParachuteDefault", dto.getHasParachuteDefault(), model::setHasParachuteDefault);
-        applyIfPresent(parameterMap, "hasEnsuranceDefault", dto.getHasEnsuranceDefault(), model::setHasEnsuranceDefault);
         applyIfPresent(parameterMap, "hasFTSDefault", dto.getHasFTSDefault(), model::setHasFTSDefault);
         applyIfPresent(parameterMap, "cautiveDefault", dto.getCautiveDefault(), model::setCautiveDefault);
         applyIfPresent(parameterMap, "accessoriesDefault", normalizeNullableText(dto.getAccessoriesDefault()), model::setAccessoriesDefault);
