@@ -17,8 +17,6 @@ export default function AircraftDetail() {
     const canManage = role === "ADMIN" || role === "MANAGER"
 
     const handleDelete = async () => {
-        if (!confirm("¿Eliminar dron?")) return
-
         try {
             const token = localStorage.getItem("token");
             console.log("Token found:", token ? "Yes" : "No");

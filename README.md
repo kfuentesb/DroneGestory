@@ -106,10 +106,8 @@ VISUAL<br>
 -Un usuario no admin no puede ver su propio perfil<br>
 
 -DRONES<br>
--Al registrar un dron y dejar la imagen por defecto, no se guarda esa imagen<br>
--Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
--Cuando el usuario registra un drone y modifica un doc, el badge de "valor por defecto del modelo" debería desaparecer, y si se hace click a la X debería a volver a mostrar el valor por defecto. Solo se debería borrar el doc si se presiona la papelera<br>
--En la tabla mostrando documentación de aeronave, debería indicarse si el documento se trata de un puntero apuntando al documento por defecto o si es "especifico" de esa aeronave<br>
+-Documentación otros debe poderse añadir multiples documentos, como con otros certificados<br>
+-Al actualizar la documentacion de modelo, no se actualiza la documentación de las aeronaves con esos campos<br>
 
 
 -OPERACIONES<br>

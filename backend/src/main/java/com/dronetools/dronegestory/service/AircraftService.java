@@ -40,7 +40,13 @@ public class AircraftService {
     }
 
     @Transactional
-    public Aircraft createWithFile(Aircraft aircraft, String manufacturer, String modelName, MultipartFile imageFile) throws IOException {
+    public Aircraft createWithFile(
+            Aircraft aircraft,
+            String manufacturer,
+            String modelName,
+            MultipartFile imageFile,
+            boolean useModelDefaultImage
+    ) throws IOException {
 
         AircraftModel model = aircraftModelService.findOrCreate(manufacturer, modelName);
         aircraft.setAircraftModel(model);
@@ -49,6 +55,8 @@ public class AircraftService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             handleImageUpload(savedAircraft, imageFile);
+        } else if (useModelDefaultImage && model.getImagePath() != null && !model.getImagePath().isBlank()) {
+            savedAircraft.setImagePath(model.getImagePath());
         }
 
         return aircraftRepository.save(savedAircraft);
@@ -111,10 +119,14 @@ public class AircraftService {
         String oldImage = aircraft.getImagePath();
 
         if (removeImage) {
-            deleteExistingImage(uploadDir, oldImage);
+            if (oldImage != null && oldImage.startsWith("aircraft/")) {
+                deleteExistingImage(uploadDir, oldImage);
+            }
             aircraft.setImagePath(null);
         } else if (imageFile != null && !imageFile.isEmpty()) {
-            deleteExistingImage(uploadDir, oldImage);
+            if (oldImage != null && oldImage.startsWith("aircraft/")) {
+                deleteExistingImage(uploadDir, oldImage);
+            }
             handleImageUpload(aircraft, imageFile);
         }
     }
@@ -167,11 +179,12 @@ public class AircraftService {
             String manufacturer,
             String modelName,
             MultipartFile imageFile,
+            boolean useModelDefaultImage,
             List<AircraftDocumentationUploadRequest> documentations,
             MultipartHttpServletRequest multipartRequest
     ) throws IOException {
         
-        Aircraft savedAircraft = createWithFile(aircraft, manufacturer, modelName, imageFile);
+        Aircraft savedAircraft = createWithFile(aircraft, manufacturer, modelName, imageFile, useModelDefaultImage);
         
         // 2. Save the associated documentation linked to this specific aircraft
         aircraftDocumentationService.initializeFromModelAndSpecificUploads(savedAircraft, documentations, multipartRequest);

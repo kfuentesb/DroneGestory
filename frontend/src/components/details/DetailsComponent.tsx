@@ -132,6 +132,7 @@ export default function DetailsComponent({
     const [editing, setEditing] = useState(false);
     const [formValues, setFormValues] = useState<any>(initialData || {});
     const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [imageVersion, setImageVersion] = useState(0);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [removeImage, setRemoveImage] = useState(false);
     const [certificates, setCertificates] = useState<UserCertificate[]>([]);
@@ -201,7 +202,7 @@ export default function DetailsComponent({
             }
 
             try {
-                const res = await fetch(`${imageEndpoint}/${data.imagePath}`, {
+                const res = await fetch(`${imageEndpoint}/${data.imagePath}?v=${imageVersion}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -226,7 +227,7 @@ export default function DetailsComponent({
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
-    }, [data?.imagePath, token, imageEndpoint]);
+    }, [data?.imagePath, token, imageEndpoint, imageVersion]);
 
     // Cargar certificados si corresponde
     useEffect(() => {
@@ -1277,6 +1278,13 @@ export default function DetailsComponent({
             setEditing(false);
 
             // Forzar limpieza de imagen si el backend confirma que ya no existe path
+            if (imageFieldConfig) {
+                const updatedFile = formValues[imageFieldConfig.key];
+                if (updatedFile instanceof File) {
+                    setImageVersion((prev) => prev + 1);
+                }
+            }
+
             if (!updated.imagePath) {
                 setImageUrl(null);
             }

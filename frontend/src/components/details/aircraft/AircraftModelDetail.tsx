@@ -14,7 +14,6 @@ export default function AircraftModelDetail() {
   const canManage = role === "ADMIN" || role === "MANAGER";
 
   const handleDelete = async () => {
-    if (!confirm("¿Eliminar modelo y todas las aeronaves asociadas?")) return;
     await apiFetch(`${API_BASE_URL}/api/aircraft-models/${id}`, { method: "DELETE" });
     navigate("/aircraft-models");
   };

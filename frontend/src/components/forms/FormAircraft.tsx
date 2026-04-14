@@ -388,7 +388,12 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       if (formValues.hasFTS) formData.append("hasFTS", formValues.hasFTS.value);
       if (formValues.cautive) formData.append("cautive", formValues.cautive.value);
       if (formValues.accessories.trim()) formData.append("accessories", formValues.accessories.trim());
-      if (selectedFile) formData.append("imageFile", selectedFile, selectedFile.name);
+      if (selectedFile) {
+        formData.append("imageFile", selectedFile, selectedFile.name);
+      }
+      if (initialValues?.imagePath) {
+        formData.append("useModelDefaultImage", String(showModelDefaultImage));
+      }
 
       const documentationPayload = buildDocumentationPayload();
       formData.append("documentations", JSON.stringify(documentationPayload.metadata));
