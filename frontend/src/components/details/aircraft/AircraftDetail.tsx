@@ -42,8 +42,19 @@ export default function AircraftDetail() {
             }
             
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error ${response.status}: ${errorText}`);
+                let errorMessage = `Error ${response.status}`;
+                try {
+                    const errorJson = await response.json();
+                    if (errorJson.error) {
+                        errorMessage += `: ${errorJson.error}`;
+                    }
+                } catch (e) {
+                    const errorText = await response.text();
+                    if (errorText) {
+                        errorMessage += `: ${errorText}`;
+                    }
+                }
+                throw new Error(errorMessage);
             }
             
             navigate("/aircrafts");

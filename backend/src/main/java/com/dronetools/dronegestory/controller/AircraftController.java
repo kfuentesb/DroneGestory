@@ -36,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -136,14 +137,14 @@ public class AircraftController {
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
             aircraftService.deleteAircraft(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             System.err.println("Error deleting aircraft: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 

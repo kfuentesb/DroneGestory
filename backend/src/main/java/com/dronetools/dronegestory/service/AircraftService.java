@@ -152,6 +152,7 @@ public class AircraftService {
         return "aircraft_" + aircraftId + "_profile" + extension;
     }
 
+    @Transactional
     public void deleteAircraft(Long id) {
         if (!aircraftRepository.existsById(id)) {
             throw new RuntimeException("Aircraft not found with id: " + id);
