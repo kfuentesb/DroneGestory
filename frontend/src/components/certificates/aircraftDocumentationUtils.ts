@@ -50,22 +50,13 @@ export function getAircraftDocumentationFlags(values: {
   };
 }
 
-// export function getAircraftModelDocumentationFlags(values: {
-//   hasEnsurance?: unknown;
-//   hasFTS?: unknown;
-//   hasParachute?: unknown;
-// }) {
-//   return {
-//     showInsuranceDocumentation: toBooleanLike(values.hasEnsurance) === true,
-//     showFTSDocumentation: toBooleanLike(values.hasFTS) === true,
-//     showParachuteDocumentation: toBooleanLike(values.hasParachute) === true,
-//   };
-// }
-
-export function getAircraftModelDocumentationFlags(values: any) {
+export function getAircraftModelDocumentationFlags(values: {
+  hasFTSDefault?: unknown;
+  hasParachuteDefault?: unknown;
+}) {
   return {
     showInsuranceDocumentation: false,
-    showFTSDocumentation: toBooleanLike(values.hasFTS || values.fts) === true,
-    showParachuteDocumentation: toBooleanLike(values.hasParachute || values.parachute) === true,
+    showFTSDocumentation: toBooleanLike(values.hasFTSDefault ) === true,
+    showParachuteDocumentation: toBooleanLike(values.hasParachuteDefault) === true,
   };
 }

@@ -1229,8 +1229,8 @@ export default function DetailsComponent({
 
     console.log("Flags para modelo:", aircraftModelDocumentationFlags);
     console.log("Valores actuales del formulario:", {
-        hasFTS: formValues.hasFTS,
-        hasParachute: formValues.hasParachute
+        hasFTSDefault: formValues.hasFTSDefault,
+        hasParachuteDefault: formValues.hasParachuteDefault
     });
 
     return (
