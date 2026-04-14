@@ -104,16 +104,19 @@ export default function FormOperationAnexo7Detail({
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_VALUES);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!initialValues) return;
+    useEffect(() => {
+    if (!initialValues) {
+      setFormValues({ ...DEFAULT_VALUES });
+      return;
+    }
 
-    const normalizeDateTimeLocal = (value: string | null | undefined) => {
+    const normalizeDateTimeLocal = (value: string | null | undefined): string => {
       if (!value) return "";
       const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
       return match ? match[1] : value;
     };
 
-    const normalized = { ...DEFAULT_VALUES };
+    const normalized: FormValues = { ...DEFAULT_VALUES };
     FORM_FIELDS.forEach((key) => {
       const value = initialValues[key];
       if (key === "fechaOp") {
@@ -122,13 +125,14 @@ export default function FormOperationAnexo7Detail({
       }
       if (value === null || value === undefined) {
         normalized[key] = "";
-      } else if (typeof value === "boolean") {
-        normalized[key] = String(value);
-      } else {
-        normalized[key] = String(value);
+        return;
       }
+      if (typeof value === "boolean") {
+        normalized[key] = String(value);
+        return;
+      }
+      normalized[key] = String(value);
     });
-
     setFormValues(normalized);
   }, [initialValues]);
 

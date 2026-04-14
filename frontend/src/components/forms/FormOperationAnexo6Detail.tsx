@@ -148,17 +148,21 @@ export default function FormOperationAnexo6Detail({
   const [materialesAuxiliares, setMaterialesAuxiliares] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!initialValues) return;
+    useEffect(() => {
+    if (!initialValues) {
+      setFormValues({ ...DEFAULT_VALUES });
+      setMaterialesAuxiliares([""]);
+      return;
+    }
 
-    const normalizeDateTimeLocal = (value: string | null | undefined) => {
+    const normalizeDateTimeLocal = (value: string | null | undefined): string => {
       if (!value) return "";
       const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
       return match ? match[1] : value;
     };
 
-    // Inicializa campos simples
-    const normalized = { ...DEFAULT_VALUES };
+    // Campos simples
+    const normalized: FormValues = { ...DEFAULT_VALUES };
     FORM_FIELDS.forEach((key) => {
       const value = initialValues[key];
       if (key === "fechaOp") {
@@ -177,7 +181,7 @@ export default function FormOperationAnexo6Detail({
     });
     setFormValues(normalized);
 
-    // Inicializa materialesAuxiliares como array
+    // Array de materialesAuxiliares
     if (Array.isArray(initialValues.materialesAuxiliares)) {
       setMaterialesAuxiliares(
         initialValues.materialesAuxiliares.length > 0

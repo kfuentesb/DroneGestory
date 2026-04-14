@@ -194,8 +194,36 @@ export default function FormOperationAnexo5Detail({
   const [formValues, setFormValues] = useState<FormValues>(() => normalizeInitialValues(initialValues));
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    setFormValues(normalizeInitialValues(initialValues));
+    useEffect(() => {
+    if (!initialValues) {
+      setFormValues({ ...DEFAULT_VALUES });
+      return;
+    }
+
+    const normalizeDateTimeLocal = (value: string | null | undefined): string => {
+      if (!value) return "";
+      const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+      return match ? match[1] : value;
+    };
+
+    const normalized: FormValues = { ...DEFAULT_VALUES };
+    FORM_FIELDS.forEach((key) => {
+      const value = initialValues[key];
+      if (key === "fechaOp") {
+        normalized[key] = normalizeDateTimeLocal(value as string | null | undefined);
+        return;
+      }
+      if (value === null || value === undefined) {
+        normalized[key] = "";
+        return;
+      }
+      if (typeof value === "boolean") {
+        normalized[key] = String(value);
+        return;
+      }
+      normalized[key] = String(value);
+    });
+    setFormValues(normalized);
   }, [initialValues]);
 
   const handleChange = (key: FormKey, value: string) => {
