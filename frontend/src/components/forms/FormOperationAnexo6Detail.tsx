@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { saveAnexo6Data, type Anexo6Data } from "../operations/operation.api";
+import { MaterialesAuxiliaresInput } from "../commons/MaterialesAuxiliaresInput";
 
 type FormOperationAnexo6DetailProps = {
   operationId: number;
@@ -9,10 +10,10 @@ type FormOperationAnexo6DetailProps = {
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
 };
 
+// Ojo: materialesAuxiliares lo gestionamos a parte como array.
 const FORM_FIELDS = [
   "nombreConops",
   "fechaOp",
-  "materialesAuxiliares",
   "sinImpacto",
   "centroGravedad",
   "integridadEstructural",
@@ -48,18 +49,22 @@ const FORM_FIELDS = [
 type FormKey = (typeof FORM_FIELDS)[number];
 type FormValues = Record<FormKey, string>;
 
-const DEFAULT_VALUES = FORM_FIELDS.reduce(
-  (acc, key) => ({ ...acc, [key]: "" }),
-  {} as FormValues,
-);
+const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as FormValues);
 
 const BOOL_OPTIONS = [
   { value: "", label: "Sin especificar" },
-  { value: "true", label: "Sí" },
-  { value: "false", label: "No" },
+  { value: "true", label: "Correcto" },
+  { value: "false", label: "Incorrecto" },
 ];
 
-type SectionItem = { num: string; title: string; key: FormKey; level: number };
+type SectionItem = {
+  num: string;
+  title: string;
+  key?: FormKey;
+  level: number;
+  inputType?: "select" | "title";
+  bold?: boolean;
+};
 
 const SECCIONES_CONFIG: {
   seccion2: SectionItem[];
@@ -75,48 +80,48 @@ const SECCIONES_CONFIG: {
   seccion12: SectionItem[];
 } = {
   seccion2: [
-    { num: "2.1", title: "Sin impacto", key: "sinImpacto", level: 0 },
+    { num: "2.1", title: "Sin impacto ni muescas", key: "sinImpacto", level: 0 },
     { num: "2.2", title: "Centro de gravedad", key: "centroGravedad", level: 0 },
     { num: "2.3", title: "Integridad estructural", key: "integridadEstructural", level: 0 },
-    { num: "2.4", title: "Cableado", key: "cableado", level: 0 },
+    { num: "2.4", title: "Cableado/conexiones", key: "cableado", level: 0 },
     { num: "2.5", title: "Verificación de luces", key: "verificacionLuces", level: 0 },
   ],
   seccion3: [
     { num: "3.1", title: "Calibración", key: "calibracion", level: 0 },
-    { num: "3.2", title: "Validar salida de datos", key: "validarSalidaDatos", level: 0 },
+    { num: "3.2", title: "Validar de salida de datos", key: "validarSalidaDatos", level: 0 },
   ],
   seccion4: [
     { num: "4.1", title: "Giran libremente", key: "giranLibremente", level: 0 },
     { num: "4.2", title: "Sentido de giro correcto", key: "sentidoGiroCorrecto", level: 0 },
-    { num: "4.3", title: "Sin impacto en motores", key: "sinImpactoMotores", level: 0 },
+    { num: "4.3", title: "Sin impacto ni muescas", key: "sinImpactoMotores", level: 0 },
   ],
   seccion5: [
     { num: "5.1", title: "Colocación correcta", key: "colocacionCorrecta", level: 0 },
     { num: "5.2", title: "Sujeción firme", key: "sujetacionFirme", level: 0 },
-    { num: "5.3", title: "Sin impacto en hélices", key: "sinImpactoHelices", level: 0 },
+    { num: "5.3", title: "Sin impacto ni muescas", key: "sinImpactoHelices", level: 0 },
   ],
   seccion6: [
-    { num: "6.1", title: "Batería cargada", key: "bateriaCarga", level: 0 },
-    { num: "6.2", title: "Movimiento fluido del mando", key: "movimientoFluidoMando", level: 0 },
+    { num: "6.1", title: "Batería con carga adecuada", key: "bateriaCarga", level: 0 },
+    { num: "6.2", title: "Movimiento fluido de los mandos", key: "movimientoFluidoMando", level: 0 },
   ],
   seccion7: [
-    { num: "7.1", title: "Sin impacto en partes móviles", key: "sinImpactoPartesMoviles", level: 0 },
-    { num: "7.2", title: "Movimiento fluido partes móviles", key: "movimientoFluidoPartesMoviles", level: 0 },
+    { num: "7.1", title: "Sin impacto ni muescas", key: "sinImpactoPartesMoviles", level: 0 },
+    { num: "7.2", title: "Movimiento fluido", key: "movimientoFluidoPartesMoviles", level: 0 },
   ],
   seccion8: [
     { num: "8.1", title: "Antenas instaladas y orientadas", key: "antenasInstaladasYOrientadas", level: 0 },
-    { num: "8.2", title: "Calidad de onda", key: "calidadOnda", level: 0 },
+    { num: "8.2", title: "Calidad de la señal", key: "calidadOnda", level: 0 },
     { num: "8.3", title: "Recepción adecuada", key: "recepcionAdecuada", level: 0 },
   ],
   seccion9: [
-    { num: "9.1", title: "Fuente de alimentación", key: "fuenteAlimentacion", level: 0 },
-    { num: "9.2", title: "Nivel fuente alimentación", key: "nivelFuenteAlimentacion", level: 0 },
+    { num: "9.1", title: "Fuente de alimentación (Baterías, combustible, etc...)", key: "fuenteAlimentacion", level: 0 },
+    { num: "9.2", title: "Nivel de fuente de alimentación", key: "nivelFuenteAlimentacion", level: 0 },
   ],
   seccion10: [
     { num: "10.1", title: "Fijación correcta", key: "fijacionCorrecta", level: 0 },
-    { num: "10.2", title: "Memoria suficiente para datos", key: "memoriaSuficienteParaDatos", level: 0 },
-    { num: "10.3", title: "Sin impacto carga de pago", key: "sinImpactoCargaPago", level: 0 },
-    { num: "10.4", title: "Conexiones carga de pago", key: "conexionesCargaPago", level: 0 },
+    { num: "10.2", title: "Memoria suficiente para almacenar datos", key: "memoriaSuficienteParaDatos", level: 0 },
+    { num: "10.3", title: "Sin impacto ni muescas", key: "sinImpactoCargaPago", level: 0 },
+    { num: "10.4", title: "Conexiones", key: "conexionesCargaPago", level: 0 },
   ],
   seccion11: [
     { num: "11.1", title: "Datos cargados", key: "datosCargados", level: 0 },
@@ -140,6 +145,7 @@ export default function FormOperationAnexo6Detail({
   onSaved,
 }: FormOperationAnexo6DetailProps) {
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_VALUES);
+  const [materialesAuxiliares, setMaterialesAuxiliares] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -151,15 +157,12 @@ export default function FormOperationAnexo6Detail({
       return match ? match[1] : value;
     };
 
+    // Inicializa campos simples
     const normalized = { ...DEFAULT_VALUES };
     FORM_FIELDS.forEach((key) => {
       const value = initialValues[key];
       if (key === "fechaOp") {
         normalized[key] = normalizeDateTimeLocal(value as string | null | undefined);
-        return;
-      }
-      if (key === "materialesAuxiliares" && Array.isArray(value)) {
-        normalized[key] = value.join("\n");
         return;
       }
       if (value === null || value === undefined) {
@@ -172,8 +175,18 @@ export default function FormOperationAnexo6Detail({
       }
       normalized[key] = String(value);
     });
-
     setFormValues(normalized);
+
+    // Inicializa materialesAuxiliares como array
+    if (Array.isArray(initialValues.materialesAuxiliares)) {
+      setMaterialesAuxiliares(
+        initialValues.materialesAuxiliares.length > 0
+          ? initialValues.materialesAuxiliares
+          : [""]
+      );
+    } else {
+      setMaterialesAuxiliares([""]);
+    }
   }, [initialValues]);
 
   const handleChange = (key: FormKey, value: string) => {
@@ -187,16 +200,16 @@ export default function FormOperationAnexo6Detail({
     setSaving(true);
     try {
       const formData = new FormData();
+
+      // Materiales auxiliares como array de strings
+      materialesAuxiliares
+        .map(m => m.trim())
+        .filter(Boolean)
+        .forEach(m => formData.append("materialesAuxiliares", m));
+
+      // resto de campos
       FORM_FIELDS.forEach((key) => {
         const value = formValues[key];
-        if (key === "materialesAuxiliares") {
-          const items = value
-            .split(/\r?\n|,/)
-            .map((item) => item.trim())
-            .filter(Boolean);
-          items.forEach((item) => formData.append("materialesAuxiliares", item));
-          return;
-        }
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, value);
         }
@@ -216,25 +229,65 @@ export default function FormOperationAnexo6Detail({
     }
   };
 
-  const renderApartadoRow = (item: { num: string; title: string; key: FormKey; level: number }) => {
+  // renderApartadoRow igual que en Anexo5 refactorizado
+  const renderApartadoRow = (
+    item: { num: string; title: string; key?: FormKey; level: number; inputType?: "select" | "title"; bold?: boolean }
+  ) => {
+    const paddingLeft = item.level === 0 ? 0 : item.level === 1 ? "2rem" : "3.5rem";
+
+    const bullet =
+      item.level === 0
+        ? null
+        : item.level === 1
+        ? <span className="me-2 text-muted small">•</span>
+        : <span className="me-2 text-muted small">◦</span>;
+
+    const baseTextClass =
+      item.level === 0
+        ? "text-dark"
+        : item.level === 2
+        ? "text-secondary small fst-italic"
+        : "text-secondary small";
+
+    const textClass = baseTextClass + (item.bold ? " fw-bold" : "");
+
+    if (item.inputType === "title" || !item.key) {
+      return (
+        <div
+          key={`title-${item.num}-${item.title}`}
+          className="d-flex align-items-center mb-1 py-2 border-bottom border-light"
+          style={{ paddingLeft }}
+        >
+          <div className="d-flex align-items-baseline">
+            {bullet}
+            <div className={textClass}>
+              {item.num}. {item.title}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const value = formValues[item.key] ?? "";
+
     return (
       <div
-        key={item.key}
+        key={item.key ?? `${item.num}-${item.title}`}
         className="d-flex align-items-center justify-content-between mb-1 py-2 border-bottom border-light"
-        style={{ paddingLeft: item.level === 0 ? 0 : "2rem" }}
+        style={{ paddingLeft }}
       >
         <div className="d-flex align-items-baseline">
-          {item.level > 0 && <span className="me-2 text-muted small">•</span>}
-          <div className={item.level === 0 ? "fw-bold text-dark" : "text-secondary small"}>
+          {bullet}
+          <div className={textClass}>
             {item.num}. {item.title}
           </div>
         </div>
+
         <div className="ms-3">
           <select
             className="form-select form-select-sm d-inline-block w-auto"
             value={value}
-            onChange={(e) => handleChange(item.key, e.target.value)}
+            onChange={(e) => handleChange(item.key!, e.target.value)}
             disabled={disabled || saving}
             style={{ minWidth: "120px" }}
           >
@@ -252,7 +305,7 @@ export default function FormOperationAnexo6Detail({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
-        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 6</h3>
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</h3>
         <div
           style={
             disabled
@@ -269,7 +322,7 @@ export default function FormOperationAnexo6Detail({
             <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-bold small text-uppercase text-muted">Nombre CONOPS</label>
+                <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
                 <input
                   type="text"
                   className="form-control bg-white border"
@@ -290,18 +343,12 @@ export default function FormOperationAnexo6Detail({
               </div>
             </div>
 
-            <SectionTitle>SECCIÓN 1: Material auxiliar</SectionTitle>
-            <div className="mb-3">
-              <label className="form-label fw-bold small text-uppercase text-muted">Materiales auxiliares</label>
-              <textarea
-                className="form-control bg-white border"
-                rows={4}
-                value={formValues.materialesAuxiliares}
-                onChange={(e) => handleChange("materialesAuxiliares", e.target.value)}
-                disabled={disabled || saving}
-                placeholder="Introduce un material por línea"
-              />
-            </div>
+            <SectionTitle>SECCIÓN 1: Material auxiliar necesario durante la operación</SectionTitle>
+            <MaterialesAuxiliaresInput
+              value={materialesAuxiliares}
+              onChange={setMaterialesAuxiliares}
+              disabled={disabled || saving}
+            />
 
             <SectionTitle>SECCIÓN 2: Estructura</SectionTitle>
             <div className="bg-white border rounded p-3 mb-4 text-start">
