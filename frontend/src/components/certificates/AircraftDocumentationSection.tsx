@@ -281,7 +281,12 @@ export default function AircraftDocumentationSection({
                   showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
                   isModelDefault={Boolean(modelDefaultByType[field.key])}
                   modelDefaultFileName={modelDefaultFileNames[field.fileKey]}
-                  onRestoreModelDefault={onRestoreModelDefault ? () => onRestoreModelDefault(field.fileKey, isModelContext) : undefined}
+                  isModelSection={isModelContext}
+                  onRestoreModelDefault={
+                    !isModelContext && onRestoreModelDefault
+                      ? () => onRestoreModelDefault(field.fileKey, isModelContext)
+                      : undefined
+                  }
                 />
               </div>
             ))}

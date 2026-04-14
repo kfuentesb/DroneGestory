@@ -26,6 +26,7 @@ interface InsertDocProps {
     isModelDefault?: boolean;
     modelDefaultFileName?: string | null;
     onRestoreModelDefault?: () => void;
+    isModelSection?: boolean;
 }
 
 export default function InsertDoc({
@@ -52,13 +53,37 @@ export default function InsertDoc({
     showDateControls = true,
     isModelDefault = false,
     modelDefaultFileName = null,
+    isModelSection = false,
     onRestoreModelDefault,
 }: InsertDocProps) {
 
     const shouldShowContent = !showAddBtn || isChecked;
 
-    const canRestore = Boolean(modelDefaultFileName) &&
-                Boolean(onRestoreModelDefault);
+    const canRestore = !isModelSection && 
+                    Boolean(modelDefaultFileName) && 
+                    Boolean(onRestoreModelDefault) &&
+                    (
+                        selectedFile !== null || 
+                        !existingFileName || 
+                        existingFileName !== modelDefaultFileName
+                    );
+
+    console.group(`DEBUG: ${checkboxLabel}`);
+    console.log("Valores recibidos:", {
+        isModelSection,
+        modelDefaultFileName,
+        onRestoreModelDefault: !!onRestoreModelDefault,
+        selectedFile,
+        existingFileName
+    });
+    console.log("Evaluación canRestore:", {
+        "1. No es sección modelo": !isModelSection,
+        "2. Hay nombre en modelo": Boolean(modelDefaultFileName),
+        "3. Hay función restore": Boolean(onRestoreModelDefault),
+        "4. Archivo cambiado/vacío": (selectedFile !== null || !existingFileName || existingFileName !== modelDefaultFileName),
+        "RESULTADO FINAL": canRestore
+    });
+    console.groupEnd();
 
     return (
         <div className={className}>
@@ -118,7 +143,7 @@ export default function InsertDoc({
                             </span>
                         )}
                         {/* 3. RESTORE MODEL DEFAULT BUTTON */}
-                        {canRestore && isChecked && (
+                        {canRestore &&(
                             <button
                                 type="button"
                                 className="btn btn-sm d-flex align-items-center gap-1 shadow-none ms-auto"

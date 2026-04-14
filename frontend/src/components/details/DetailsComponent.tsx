@@ -500,7 +500,6 @@ export default function DetailsComponent({
 
         const baseKey = fieldConfig.key;
 
-        // 2. Buscar el documento por defecto del modelo en la lista
         const modelDoc = aircraftDocumentations.find(
             doc => doc.documentationType === baseKey && doc.isModelDefault === true
         );
@@ -588,8 +587,7 @@ export default function DetailsComponent({
         
         if (!hasSelectedFile && !hasExistingFile) return;
 
-        const shouldDelete = window.confirm("Se eliminará esta documentación al guardar los cambios. ¿Continuar?");
-        if (!shouldDelete) return;
+        if (!window.confirm("¿Desea eliminar este documento? Podrá restaurar la referencia al modelo después si lo desea.")) return;
 
         clearFileMapValue(key, inputId, setFiles);
 
