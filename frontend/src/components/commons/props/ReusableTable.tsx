@@ -90,7 +90,7 @@ export function ReusableTable<T>({
         <tbody className="text-start">
           {sortedRows.length === 0 ? (
             <tr>
-              <td className="text-center text-muted py-4">
+              <td colSpan={headers.length} className="text-center text-muted py-4">
                 {emptyText}
               </td>
             </tr>
