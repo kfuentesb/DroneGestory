@@ -30,12 +30,45 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
     @Override
     protected Anexo6 crearCopia(Anexo6 origen) {
         Anexo6 copia = new Anexo6();
-        copia.setNombreConops(origen.getNombreConops());
+        actualizarCampos(copia, origen);
         return copia;
     }
 
     @Override
     protected void actualizarCampos(Anexo6 destino, Anexo6 origen) {
         destino.setNombreConops(origen.getNombreConops());
+        destino.setFechaOp(origen.getFechaOp());
+        destino.setMaterialesAuxiliares(origen.getMaterialesAuxiliares());
+        destino.setSinImpacto(origen.getSinImpacto());
+        destino.setCentroGravedad(origen.getCentroGravedad());
+        destino.setIntegridadEstructural(origen.getIntegridadEstructural());
+        destino.setCableado(origen.getCableado());
+        destino.setVerificacionLuces(origen.getVerificacionLuces());
+        destino.setCalibracion(origen.getCalibracion());
+        destino.setValidarSalidaDatos(origen.getValidarSalidaDatos());
+        destino.setGiranLibremente(origen.getGiranLibremente());
+        destino.setSentidoGiroCorrecto(origen.getSentidoGiroCorrecto());
+        destino.setSinImpactoMotores(origen.getSinImpactoMotores());
+        destino.setColocacionCorrecta(origen.getColocacionCorrecta());
+        destino.setSujetacionFirme(origen.getSujetacionFirme());
+        destino.setSinImpactoHelices(origen.getSinImpactoHelices());
+        destino.setBateriaCarga(origen.getBateriaCarga());
+        destino.setMovimientoFluidoMando(origen.getMovimientoFluidoMando());
+        destino.setSinImpactoPartesMoviles(origen.getSinImpactoPartesMoviles());
+        destino.setMovimientoFluidoPartesMoviles(origen.getMovimientoFluidoPartesMoviles());
+        destino.setAntenasInstaladasYOrientadas(origen.getAntenasInstaladasYOrientadas());
+        destino.setCalidadOnda(origen.getCalidadOnda());
+        destino.setRecepcionAdecuada(origen.getRecepcionAdecuada());
+        destino.setFuenteAlimentacion(origen.getFuenteAlimentacion());
+        destino.setNivelFuenteAlimentacion(origen.getNivelFuenteAlimentacion());
+        destino.setFijacionCorrecta(origen.getFijacionCorrecta());
+        destino.setMemoriaSuficienteParaDatos(origen.getMemoriaSuficienteParaDatos());
+        destino.setSinImpactoCargaPago(origen.getSinImpactoCargaPago());
+        destino.setConexionesCargaPago(origen.getConexionesCargaPago());
+        destino.setDatosCargados(origen.getDatosCargados());
+        destino.setTransmisionDatos(origen.getTransmisionDatos());
+        destino.setInformacionActualizada(origen.getInformacionActualizada());
+        destino.setSistemaActivado(origen.getSistemaActivado());
     }
 }
+
