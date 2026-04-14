@@ -30,12 +30,12 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
     @Override
     protected Anexo7 crearCopia(Anexo7 origen) {
         Anexo7 copia = new Anexo7();
-        copia.setTextoPrueba(origen.getTextoPrueba());
+        copia.setNombreConops(origen.getNombreConops());
         return copia;
     }
 
     @Override
     protected void actualizarCampos(Anexo7 destino, Anexo7 origen) {
-        destino.setTextoPrueba(origen.getTextoPrueba());
+        destino.setNombreConops(origen.getNombreConops());
     }
 }

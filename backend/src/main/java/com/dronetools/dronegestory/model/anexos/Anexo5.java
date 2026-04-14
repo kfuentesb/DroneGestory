@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Anexo5 extends Anexo {
 
     @Column(name = "nombre_conops")
-    private String conops;
+    private String nombreConops;
 
     @Column(name = "fechaOp")
     private LocalDateTime fechaOp;
