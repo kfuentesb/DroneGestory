@@ -141,7 +141,9 @@ public class AircraftController {
             aircraftService.deleteAircraft(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            System.err.println("Error deleting aircraft: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
         }
     }
 

@@ -280,7 +280,7 @@ public class AircraftDocumentationService {
         try {
             Files.deleteIfExists(fullPath);
         } catch (IOException ex) {
-            throw new RuntimeException("Error deleting documentation file", ex);
+            System.err.println("Warning: Failed to delete documentation file: " + relativePath);
         }
     }
 
