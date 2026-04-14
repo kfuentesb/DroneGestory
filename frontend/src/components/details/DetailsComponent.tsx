@@ -914,7 +914,7 @@ export default function DetailsComponent({
         
         const visibleFields = getVisibleAircraftDocumentationFields(
             "model",
-            true,
+            false,
             showInsuranceDocumentation,
             showFTSDocumentation,
             showParachuteDocumentation
