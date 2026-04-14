@@ -210,7 +210,7 @@ export default function FormOperationAnexo7Detail({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
-        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 7</h3>
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</h3>
         <div
           style={
             disabled
@@ -227,7 +227,7 @@ export default function FormOperationAnexo7Detail({
             <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-bold small text-uppercase text-muted">Nombre CONOPS</label>
+                <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
                 <input
                   type="text"
                   className="form-control bg-white border"

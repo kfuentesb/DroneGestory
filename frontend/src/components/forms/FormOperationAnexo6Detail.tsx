@@ -59,14 +59,7 @@ const BOOL_OPTIONS = [
   { value: "false", label: "Incorrecto" },
 ];
 
-type SectionItem = {
-  num: string;
-  title: string;
-  key?: FormKey;
-  level: number; // 0,1,2
-  inputType?: "select" | "title"; // default: "select"
-  bold?: boolean; // default: false
-};
+type SectionItem = { num: string; title: string; key: FormKey; level: number };
 
 const SECCIONES_CONFIG: {
   seccion2: SectionItem[];
@@ -259,7 +252,7 @@ export default function FormOperationAnexo6Detail({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
-        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 6</h3>
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</h3>
         <div
           style={
             disabled
@@ -276,7 +269,7 @@ export default function FormOperationAnexo6Detail({
             <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-bold small text-uppercase text-muted">Nombre CONOPS</label>
+                <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
                 <input
                   type="text"
                   className="form-control bg-white border"

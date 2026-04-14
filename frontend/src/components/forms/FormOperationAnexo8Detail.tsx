@@ -173,7 +173,7 @@ export default function FormOperationAnexo8Detail({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
-        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 8</h3>
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 8 - LISTA VERIFICACIÓN POSVUELO OPERACIONAL</h3>
         <div
           style={
             disabled
@@ -190,7 +190,7 @@ export default function FormOperationAnexo8Detail({
             <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-bold small text-uppercase text-muted">Nombre CONOPS</label>
+                <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
                 <input
                   type="text"
                   className="form-control bg-white border"
@@ -211,7 +211,7 @@ export default function FormOperationAnexo8Detail({
               </div>
             </div>
 
-            <SectionTitle>SECCIÓN 1: Condiciones y limitaciones</SectionTitle>
+            <SectionTitle>SECCIÓN 1: Condiciones y limitaciones de zonas geográficas de UAS</SectionTitle>
             <div className="bg-white border rounded p-3 mb-4 text-start">
               {SECCIONES_CONFIG.seccion1.map(renderApartadoRow)}
             </div>
