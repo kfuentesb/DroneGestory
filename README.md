@@ -18,6 +18,8 @@ Para montar el proyecto en un servidor desde 0:<br>
 > git clone https://
 
 # Creamos el docker (el que está en la raíz, no el que está en backend)
+> docker system prune <br>
+> docker image prune -a <br>
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
 
@@ -113,6 +115,7 @@ VISUAL<br>
 -En la tabla mostrando documentación de aeronave, debería indicarse si el documento se trata de un puntero apuntando al documento por defecto o si es "especifico" de esa aeronave<br>
 -El editar modelo también debería poder editar documentaciones<br>
 -Al entrar en la vista de modelo, poner un texto en grande indicando que es un modelo y los valores serán los que aparezcan por defecto.<br>
+-Caracterización y FTS no tienen que estar en modelo.<br>
 
 
 -OPERACIONES<br>
