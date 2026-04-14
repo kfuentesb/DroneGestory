@@ -21,6 +21,7 @@ export type AircraftSummaryItem = {
   hasFile?: boolean;
   onOpen?: () => void;
   isModelDefault?: boolean;
+  fileName?: string;
 };
 
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
@@ -325,7 +326,7 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
                           onClick={item.onOpen}
                         >
                           <i className="bi bi-file-earmark-arrow-down me-1"></i>
-                          Ver documento
+                          {item.fileName || "Ver documento"}
                         </button>
                       ) : (
                         <span className="text-muted small me-2">Sin archivo</span>

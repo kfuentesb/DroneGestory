@@ -56,7 +56,9 @@ export default function InsertDoc({
 }: InsertDocProps) {
 
     const shouldShowContent = !showAddBtn || isChecked;
-    const hasModelDefault = Boolean(modelDefaultFileName) && onRestoreModelDefault;
+
+    const canRestore = Boolean(modelDefaultFileName) &&
+                Boolean(onRestoreModelDefault);
 
     return (
         <div className={className}>
@@ -99,51 +101,50 @@ export default function InsertDoc({
                         >
                             {checkboxLabel}
                         </label>
-                        {isModelDefault && (
+
+
+                        {isModelDefault && isChecked && (
                             <span
                                 className="badge"
                                 style={{
-                                    backgroundColor: "#FCD34D",
-                                    color: "#78350F",
+                                    backgroundColor: "#FEF3C7",
+                                    color: "#92400E",
                                     fontSize: "0.65rem",
-                                    fontWeight: 700
+                                    fontWeight: 700,
+                                    border: "1px solid #FCD34D"
                                 }}
                             >
-                                Valor por defecto del modelo
+                                Predeterminado del modelo
                             </span>
                         )}
-
                         {/* 3. RESTORE MODEL DEFAULT BUTTON */}
-                        {hasModelDefault && !selectedFile && existingFileName !== modelDefaultFileName && (
+                        {canRestore && isChecked && (
                             <button
                                 type="button"
-                                className="btn btn-sm d-flex align-items-center gap-1 shadow-none"
+                                className="btn btn-sm d-flex align-items-center gap-1 shadow-none ms-auto"
                                 style={{
-                                    backgroundColor: "#FCD34D",
-                                    color: "#78350F",
-                                    border: "1px solid #F59E0B",
+                                    backgroundColor: "#F3F4F6",
+                                    color: "#374151",
+                                    border: "1px solid #D1D5DB",
                                     borderRadius: "6px",
                                     padding: "4px 8px",
-                                    fontSize: "0.75rem",
+                                    fontSize: "0.72rem",
                                     fontWeight: 600,
                                     transition: "all 0.2s ease"
                                 }}
                                 onClick={onRestoreModelDefault}
-                                title="Usar el documento del modelo"
                                 onMouseOver={(e) => {
-                                    e.currentTarget.style.backgroundColor = "#F59E0B";
-                                    e.currentTarget.style.color = "#FFFFFF";
+                                    e.currentTarget.style.backgroundColor = "#E5E7EB";
                                 }}
                                 onMouseOut={(e) => {
-                                    e.currentTarget.style.backgroundColor = "#FCD34D";
-                                    e.currentTarget.style.color = "#78350F";
+                                    e.currentTarget.style.backgroundColor = "#F3F4F6";
                                 }}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
                                     <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1a.5.5 0 0 1-1 0V2a.5.5 0 0 1 .5-.5h2.5a.5.5 0 0 1 0 1H8V3z"/>
                                     <path d="m8.5 5.5v2.793l1.146-1.147a.5.5 0 0 1 .708.708l-2.5 2.5a.5.5 0 0 1-.708 0l-2.5-2.5a.5.5 0 0 1 .708-.708L7.5 8.293V5.5a.5.5 0 0 1 1 0z"/>
                                 </svg>
-                                Usar del modelo
+                                Restaurar archivo del modelo
                             </button>
                         )}
                     </div>
@@ -163,7 +164,9 @@ export default function InsertDoc({
                         </small>
                         <div className="d-flex align-items-center rounded" style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}>
                             <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                                {selectedFile ? selectedFile.name : (existingFileName || "No hay archivo")}
+                                {selectedFile 
+                                    ? selectedFile.name 
+                                    : (existingFileName || (modelDefaultFileName ? "Pendiente: Doc. Modelo" : "No hay archivo"))}
                             </span>
                             <input
                                 id={fileInputId}
@@ -176,16 +179,17 @@ export default function InsertDoc({
                                 <label
                                     htmlFor={fileInputId}
                                     className="btn btn-success btn-sm"
-                                    style={{ cursor: "pointer", borderTopRightRadius: selectedFile ? "0" : "4px", borderBottomRightRadius: selectedFile ? "0" : "4px" }}
+                                    style={{ cursor: "pointer", borderTopRightRadius: (selectedFile || existingFileName) ? "0" : "4px", borderBottomRightRadius: (selectedFile || existingFileName) ? "0" : "4px" }}
                                 >
                                     Seleccionar
                                 </label>
-                                {selectedFile && (
+                                {(selectedFile || existingFileName) && (
                                     <button
                                         type="button"
                                         className="btn btn-danger btn-sm"
                                         onClick={onClearFile}
                                         style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
+                                        title="Eliminar este archivo"
                                     >
                                         X
                                     </button>
