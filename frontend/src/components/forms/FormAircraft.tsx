@@ -154,6 +154,14 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     hasFTS: formValues.hasFTS,
     hasParachute: formValues.hasParachute,
   });
+
+  console.log("FormAircraft - Initial Values:", initialValues);
+  console.log("FormAircraft - Form Values:", formValues);
+  console.log("FormAircraft - Documentation Flags:", {
+    showInsuranceDocumentation,
+    showFTSDocumentation,
+    showParachuteDocumentation,
+  });
   const allowedImageTypes = ["image/jpeg", "image/png"];
   const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 

@@ -136,10 +136,12 @@ type AircraftDocumentationSectionProps = {
   formValues: Record<string, string>;
   existingFileNames?: Record<string, string>;
   modelDefaultByType?: Record<string, boolean>;
+  modelDefaultFileNames?: Record<string, string>;
   onToggleCheck: (id: string, isModel?: boolean) => void;
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string, isModel?: boolean) => void;
   onClearFile: (id: string, inputId: string, isModel?: boolean) => void;
   onFormDateChange: (key: string, value: string, isModel?: boolean) => void;
+  onRestoreModelDefault?: (fieldKey: string, isModel?: boolean) => void;
 };
 
 const EXISTING_MODEL_HIDDEN_KEYS = new Set([
@@ -193,10 +195,12 @@ export default function AircraftDocumentationSection({
   formValues,
   existingFileNames = {},
   modelDefaultByType = {},
+  modelDefaultFileNames = {},
   onToggleCheck,
   onFileChange,
   onClearFile,
   onFormDateChange,
+  onRestoreModelDefault,
 }: AircraftDocumentationSectionProps) {
   const [showOptional, setShowOptional] = useState(false);
   const visibleFields = getVisibleAircraftDocumentationFields(context, isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
@@ -267,6 +271,8 @@ export default function AircraftDocumentationSection({
                   onToggleIndefinite={() => onToggleCheck(field.indefiniteKey, isModelContext)}
                   showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
                   isModelDefault={Boolean(modelDefaultByType[field.key])}
+                  modelDefaultFileName={modelDefaultFileNames[field.fileKey]}
+                  onRestoreModelDefault={onRestoreModelDefault ? () => onRestoreModelDefault(field.fileKey, isModelContext) : undefined}
                 />
               </div>
             ))}

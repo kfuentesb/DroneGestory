@@ -19,11 +19,15 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
         if (!confirm("¿Eliminar dron?")) return
 
-        await apiFetch(`${API_BASE_URL}/api/aircraft/${id}`, {
-        method: "DELETE"
-        })
-
-        navigate("/aircrafts")
+        try {
+            await apiFetch(`${API_BASE_URL}/api/aircraft/${id}`, {
+                method: "DELETE"
+            })
+            navigate("/aircrafts")
+        } catch (error) {
+            console.error("Error al eliminar:", error)
+            alert("Error al eliminar el dron")
+        }
     }
 
     const validateForm = (values:any) => {

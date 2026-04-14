@@ -385,10 +385,28 @@ export default function DetailsComponent({
 
             const filename = doc.documentationName?.split("/").pop() ?? "";
             
-            const isModel = MODEL_SPECIFIC_KEYS.has(type);
-            const targetChecks = isModel ? nextChecksModel : nextChecks;
-            const targetForm = isModel ? nextFormModel : nextForm;
-            const targetNames = isModel ? nextNamesModel : nextNames;
+            // Determine target based on context, not on whether it's a model key
+            // For aircraft: put everything in aircraft state (both specific and inherited from model)
+            // For model: put everything in model state
+            let targetChecks, targetForm, targetNames;
+            
+            if (showAircraftDocumentation && !showAircraftModelDocumentation) {
+                // Aircraft context: all documentation goes to aircraft state
+                targetChecks = nextChecks;
+                targetForm = nextForm;
+                targetNames = nextNames;
+            } else if (showAircraftModelDocumentation && !showAircraftDocumentation) {
+                // Model context: all documentation goes to model state
+                targetChecks = nextChecksModel;
+                targetForm = nextFormModel;
+                targetNames = nextNamesModel;
+            } else {
+                // Both visible - use type to separate
+                const isModel = MODEL_SPECIFIC_KEYS.has(type);
+                targetChecks = isModel ? nextChecksModel : nextChecks;
+                targetForm = isModel ? nextFormModel : nextForm;
+                targetNames = isModel ? nextNamesModel : nextNames;
+            }
 
             targetChecks[config.enabledKey] = true;
             targetChecks[config.indefiniteKey] = Boolean(doc.dateIndefinite);
@@ -473,6 +491,54 @@ export default function DetailsComponent({
         }
 
         return new Date(certificate.expireDate).toLocaleDateString("es-ES");
+    };
+
+    const handleRestoreModelDefault = (fieldKey: string, isModel: boolean = false) => {
+        // Find the model default document
+        const modelDoc = aircraftDocumentations.find(
+            doc => doc.documentationType === fieldKey && doc.isModelDefault === true
+        );
+
+        if (!modelDoc || !modelDoc.documentationName) {
+            alert("No se encontró el documento del modelo");
+            return;
+        }
+
+        // Find the field config to get the enabledKey
+        const fieldConfig = aircraftDocumentationFields.find(f => f.key === fieldKey);
+        if (!fieldConfig) return;
+
+        const setFiles = isModel ? setAircraftModelDocumentationFiles : setAircraftDocumentationFiles;
+        const setChecks = isModel ? setAircraftModelDocumentationChecks : setAircraftDocumentationChecks;
+        const setFormValues = isModel ? setAircraftModelDocumentationFormValues : setAircraftDocumentationFormValues;
+        const setExistingNames = isModel ? setExistingAircraftModelDocumentationFileNames : setExistingAircraftDocumentationFileNames;
+
+        // Clear any selected file for this field
+        setFiles((prev) => {
+            const newFiles = { ...prev };
+            delete newFiles[fieldConfig.fileKey];
+            return newFiles;
+        });
+
+        // Restore date values from model default
+        setFormValues((prev) => ({
+            ...prev,
+            [fieldConfig.dateKey]: modelDoc.expireDate ?? "",
+        }));
+
+        // Make sure the checkbox is enabled and indefinite matches model
+        setChecks((prev) => ({
+            ...prev,
+            [fieldConfig.enabledKey]: true,
+            [fieldConfig.indefiniteKey]: Boolean(modelDoc.dateIndefinite),
+        }));
+
+        // Restore the filename reference to the model default
+        const filename = modelDoc.documentationName.split("/").pop() ?? "";
+        setExistingNames((prev) => ({
+            ...prev,
+            [fieldConfig.fileKey]: filename,
+        }));
     };
 
     const handleAircraftDocumentationCheckChange = (key: string, isModel: boolean = false) => {
@@ -845,8 +911,12 @@ export default function DetailsComponent({
             showParachuteDocumentation
         );
 
-        const aircraftDocs = aircraftDocumentations.filter(d => AIRCRAFT_SPECIFIC_KEYS.has(d.documentationType));
-        const existingByType = new Map(aircraftDocs.map((d) => [d.documentationType, d]));
+        // Include both aircraft-specific AND inherited model-default docs
+        const allAircraftDocs = aircraftDocumentations.filter(d => 
+            AIRCRAFT_SPECIFIC_KEYS.has(d.documentationType) || 
+            (MODEL_SPECIFIC_KEYS.has(d.documentationType) && d.isModelDefault)
+        );
+        const existingByType = new Map(allAircraftDocs.map((d) => [d.documentationType, d]));
         const desiredTypes = new Set<string>();
 
         const tasks = [];
@@ -885,8 +955,8 @@ export default function DetailsComponent({
             }
         }
 
-        // DELETE removed docs (only AIRCRAFT_SPECIFIC docs should be deleted)
-        for (const doc of aircraftDocs) {
+        // DELETE removed docs (aircraft-specific and inherited model-default docs that are no longer desired)
+        for (const doc of allAircraftDocs) {
             if (!desiredTypes.has(doc.documentationType)) {
                 tasks.push(
                     fetch(`/api/aircraft-documentation/${doc.id}`, {
@@ -1243,6 +1313,21 @@ export default function DetailsComponent({
         hasParachuteDefault: formValues.hasParachuteDefault
     });
 
+    // Build model default file names for aircraft
+    const modelDefaultFileNames: Record<string, string> = {};
+    aircraftDocumentations.forEach((doc) => {
+        if (doc.isModelDefault && MODEL_SPECIFIC_KEYS.has(doc.documentationType) && doc.documentationName) {
+            const fieldConfig = aircraftDocumentationFields.find(f => f.key === doc.documentationType);
+            if (fieldConfig) {
+                const filename = doc.documentationName.split("/").pop() ?? "";
+                modelDefaultFileNames[fieldConfig.fileKey] = filename;
+            }
+        }
+    });
+
+    console.log("Model Default File Names:", modelDefaultFileNames);
+    console.log("Existing Aircraft Documentation File Names:", existingAircraftDocumentationFileNames);
+
     return (
         <div className="container-fluid py-4">
             <div className="card p-4 shadow-sm">
@@ -1475,12 +1560,14 @@ export default function DetailsComponent({
                                         selectedFiles={aircraftDocumentationFiles}
                                         formValues={aircraftDocumentationFormValues}
                                         existingFileNames={existingAircraftDocumentationFileNames}
+                                        modelDefaultFileNames={modelDefaultFileNames}
                                         onToggleCheck={handleAircraftDocumentationCheckChange}
                                         onFileChange={handleAircraftDocumentationFileChange}
                                         onClearFile={handleAircraftDocumentationClearFile}
                                         onFormDateChange={(key, value) =>
                                             setAircraftDocumentationFormValues((prev) => ({ ...prev, [key]: value }))
                                         }
+                                        onRestoreModelDefault={handleRestoreModelDefault}
                                     />
                                 )}
 
