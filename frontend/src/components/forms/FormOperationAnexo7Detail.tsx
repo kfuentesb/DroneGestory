@@ -107,9 +107,19 @@ export default function FormOperationAnexo7Detail({
   useEffect(() => {
     if (!initialValues) return;
 
+    const normalizeDateTimeLocal = (value: string | null | undefined) => {
+      if (!value) return "";
+      const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+      return match ? match[1] : value;
+    };
+
     const normalized = { ...DEFAULT_VALUES };
     FORM_FIELDS.forEach((key) => {
       const value = initialValues[key];
+      if (key === "fechaOp") {
+        normalized[key] = normalizeDateTimeLocal(value as string | null | undefined);
+        return;
+      }
       if (value === null || value === undefined) {
         normalized[key] = "";
       } else if (typeof value === "boolean") {
@@ -124,6 +134,34 @@ export default function FormOperationAnexo7Detail({
 
   const handleChange = (key: FormKey, value: string) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (disabled) return;
+
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      FORM_FIELDS.forEach((key) => {
+        const value = formValues[key];
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, value);
+        }
+      });
+
+      const savedData = await saveAnexo7Data(operationId, formData);
+      alert("Anexo 7 guardado correctamente");
+      await onSaved?.(savedData);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message || "Error al guardar el anexo.");
+      } else {
+        alert("Error al guardar el anexo.");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   const renderRow = (item: CheckItem) => {
@@ -165,17 +203,79 @@ export default function FormOperationAnexo7Detail({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
-        <form>
-          <SectionTitle>SECCIÓN 1: Verificación del estado de la aeronave</SectionTitle>
-          <div className="bg-white border rounded p-3">
-            {VERIFICACION_CONFIG.map(renderRow)}
-          </div>
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</h3>
+        <div
+          style={
+            disabled
+              ? {
+                  filter: "grayscale(1)",
+                  opacity: 0.7,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                }
+              : undefined
+          }
+        >
+          <form onSubmit={handleSubmit}>
+            <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
+                <input
+                  type="text"
+                  className="form-control bg-white border"
+                  value={formValues.nombreConops}
+                  onChange={(e) => handleChange("nombreConops", e.target.value)}
+                  disabled={disabled || saving}
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>
+                <input
+                  type="datetime-local"
+                  className="form-control bg-white border"
+                  value={formValues.fechaOp}
+                  onChange={(e) => handleChange("fechaOp", e.target.value)}
+                  disabled={disabled || saving}
+                />
+              </div>
+            </div>
 
-          <SectionTitle>SECCIÓN 2: Recogida y almacenaje de todos los elementos desplazados a campo</SectionTitle>
-          <div className="bg-white border rounded p-3">
-            {RECOGIDA_CONFIG.map(renderRow)}
+            <SectionTitle>SECCIÓN 1: Verificación del estado de la aeronave</SectionTitle>
+            <div className="bg-white border rounded p-3">
+              {VERIFICACION_CONFIG.map(renderRow)}
+            </div>
+
+            <SectionTitle>SECCIÓN 2: Recogida y almacenaje de todos los elementos desplazados a campo</SectionTitle>
+            <div className="bg-white border rounded p-3">
+              {RECOGIDA_CONFIG.map(renderRow)}
+            </div>
+
+            <div className="d-flex justify-content-end mt-5 pt-3 border-top">
+              <button type="submit" className="btn btn-success btn-lg px-5 shadow-sm" disabled={disabled || saving}>
+                {saving ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Guardando...
+                  </>
+                ) : (
+                  "Guardar borrador"
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+        {disabled && (
+          <div className="alert alert-secondary mt-4">
+            {readOnlyMessage ? (
+              readOnlyMessage
+            ) : (
+              <>
+                El anexo está firmado. No se puede editar. Pulsa <strong>Rehacer versión</strong> para poder modificar.
+              </>
+            )}
           </div>
-        </form>
+        )}
       </div>
     </div>
   );
