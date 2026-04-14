@@ -106,7 +106,6 @@ VISUAL<br>
 -Un usuario no admin no puede ver su propio perfil<br>
 
 -DRONES<br>
--Si se modifica la fecha de un doc general de un modelo dentro de un especifico, no coge el pdf.<br>
 -Al registrar un dron y dejar la imagen por defecto, no se guarda esa imagen<br>
 -Cuando se borra un dron, salen dos advertencias, debería ser una solo<br>
 -Cuando el usuario registra un drone y modifica un doc, el badge de "valor por defecto del modelo" debería desaparecer, y si se hace click a la X debería a volver a mostrar el valor por defecto. Solo se debería borrar el doc si se presiona la papelera<br>
