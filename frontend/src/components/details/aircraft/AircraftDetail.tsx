@@ -19,11 +19,38 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
         if (!confirm("¿Eliminar dron?")) return
 
-        await apiFetch(`${API_BASE_URL}/api/aircraft/${id}`, {
-        method: "DELETE"
-        })
+        try {
+            const token = localStorage.getItem("token");
+            console.log("Token found:", token ? "Yes" : "No");
+            const headers: HeadersInit = {};
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+                console.log("Authorization header set");
+            }
 
-        navigate("/aircrafts")
+            console.log("Deleting aircraft with ID:", id);
+            const response = await fetch(`${API_BASE_URL}/api/aircraft/${id}`, {
+                method: "DELETE",
+                headers
+            })
+            
+            console.log("DELETE response status:", response.status);
+            
+            if (response.status === 403) {
+                alert("No tienes permisos para eliminar este dron. Verifica tu rol de usuario.");
+                return;
+            }
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            
+            navigate("/aircrafts");
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+            alert("Error al eliminar el dron: " + (error instanceof Error ? error.message : "Error desconocido"));
+        }
     }
 
     const validateForm = (values:any) => {

@@ -7,7 +7,7 @@ import { aircraftClasses, configs } from "../../global-const/aircraft-const";
 import AircraftDocumentationSection, {
   aircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
-import { getAircraftDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
+import { getAircraftModelDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 
 type AircraftDocumentationUploadRequest = {
   documentationType: string;
@@ -88,10 +88,10 @@ export default function FormAircraftModel() {
 
   const manufacturerError = touched.manufacturer && !manufacturer.trim();
   const modelError = touched.model && !model.trim();
-  const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } = getAircraftDocumentationFlags({
-    hasEnsurance: defaultValues.hasEnsuranceDefault,
-    hasFTS: defaultValues.hasFTSDefault,
-    hasParachute: defaultValues.hasParachuteDefault,
+  const { showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation } = getAircraftModelDocumentationFlags({
+    hasEnsuranceDefault: defaultValues.hasEnsuranceDefault,
+    hasFTSDefault: defaultValues.hasFTSDefault,
+    hasParachuteDefault: defaultValues.hasParachuteDefault,
   });
 
   const parseNumber = (value: string): number | undefined => {
@@ -415,17 +415,6 @@ export default function FormAircraftModel() {
                 </div>
 
                 <div className="row mb-3">
-                  <div className="col-12 col-md mb-3 mb-md-0">
-                    <label className="form-label d-block text-start ps-1">Seguro RC por defecto</label>
-                    <Select
-                      options={yesNoOptions}
-                      styles={backgroundBorderInputsSelect}
-                      placeholder="Seleccione"
-                      value={defaultValues.hasEnsuranceDefault}
-                      onChange={(value) => setDefaultValues((prev) => ({ ...prev, hasEnsuranceDefault: value }))}
-                      isClearable
-                    />
-                  </div>
                   <div className="col-12 col-md mb-3 mb-md-0">
                     <label className="form-label d-block text-start ps-1">FTS por defecto</label>
                     <Select

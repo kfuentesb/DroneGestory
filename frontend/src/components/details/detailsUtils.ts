@@ -1,15 +1,26 @@
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { aircraftDocumentationFields, MODEL_SPECIFIC_KEYS } from "../certificates/AircraftDocumentationSection";
+import { staticUserCertificateFields as staticUserCertificateConfig } from "../certificates/staticUserCertificateFields";
 
 export const buildRecord = <T,>(keys: string[], value: T): Record<string, T> =>
     Object.fromEntries(keys.map((key) => [key, value])) as Record<string, T>;
 
-export const buildDocStateDefaults = (
+const buildDocStateDefaults = (
     config: Array<{ fileKey: string; dateKey: string; enabledKey: string; indefiniteKey: string }>
 ) => ({
     files: buildRecord(config.map((field) => field.fileKey), null as File | null),
     dates: buildRecord(config.map((field) => field.dateKey), ""),
     checks: buildRecord(config.flatMap((field) => [field.enabledKey, field.indefiniteKey]), false),
 });
+
+export const USER_CERTIFICATE_DEFAULTS = buildDocStateDefaults(staticUserCertificateConfig);
+
+export const modelDocumentationFields = aircraftDocumentationFields.filter(field => 
+    MODEL_SPECIFIC_KEYS.has(field.key)
+);
+
+export const AIRCRAFT_DOCUMENTATION_DEFAULTS = buildDocStateDefaults(aircraftDocumentationFields);
+export const MODEL_DOCUMENTATION_DEFAULTS = buildDocStateDefaults(modelDocumentationFields);
 
 export const BOOLEAN_FIELD_KEYS = new Set([
     "state",

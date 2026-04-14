@@ -154,6 +154,14 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     hasFTS: formValues.hasFTS,
     hasParachute: formValues.hasParachute,
   });
+
+  console.log("FormAircraft - Initial Values:", initialValues);
+  console.log("FormAircraft - Form Values:", formValues);
+  console.log("FormAircraft - Documentation Flags:", {
+    showInsuranceDocumentation,
+    showFTSDocumentation,
+    showParachuteDocumentation,
+  });
   const allowedImageTypes = ["image/jpeg", "image/png"];
   const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -699,8 +707,6 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
               {errors.tooMuchTextAccesories && <div className="text-danger small">Límite 800 caracteres</div>}
             </div>
 
-            {error && <p className="text-danger text-center">{error}</p>}
-
             <AircraftDocumentationSection
               context={"aircraft"}
               isExistingModel={isExistingModel}
@@ -718,6 +724,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
               onClearFile={handleDocumentationClearFile}
               onFormDateChange={handleDocumentationDateChange}
             />
+
+            {error && <p className="text-danger text-center">{error}</p>}
 
             <div className="d-flex gap-2 mt-3 justify-content-center">
               <button type="submit" className="btn btn-success px-4" disabled={loading}>

@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        System.out.println("URL: " + request.getRequestURI() + " | Auth: " + authHeader);
+        System.out.println("URL: " + request.getRequestURI() + " | Auth: " + (authHeader != null ? "Bearer ..." : "null"));
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -45,15 +45,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                System.out.println("User: " + username + " | Authorities: " + userDetails.getAuthorities());
                 if (jwtService.isTokenValid(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Authentication set for user: " + username);
                 }
             }
         } catch (Exception ignored) {
             // Invalid token, proceed without authentication
+            System.out.println("JWT parsing failed: " + ignored.getMessage());
         }
 
         filterChain.doFilter(request, response);

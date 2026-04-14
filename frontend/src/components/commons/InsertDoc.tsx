@@ -24,6 +24,8 @@ interface InsertDocProps {
     mode?: 'register' | 'edit';
     showDateControls?: boolean;
     isModelDefault?: boolean;
+    modelDefaultFileName?: string | null;
+    onRestoreModelDefault?: () => void;
 }
 
 export default function InsertDoc({
@@ -49,9 +51,12 @@ export default function InsertDoc({
     indefiniteLabel = "Indefinido",
     showDateControls = true,
     isModelDefault = false,
+    modelDefaultFileName = null,
+    onRestoreModelDefault,
 }: InsertDocProps) {
 
     const shouldShowContent = !showAddBtn || isChecked;
+    const hasModelDefault = Boolean(modelDefaultFileName) && onRestoreModelDefault;
 
     return (
         <div className={className}>
@@ -106,6 +111,40 @@ export default function InsertDoc({
                             >
                                 Valor por defecto del modelo
                             </span>
+                        )}
+
+                        {/* 3. RESTORE MODEL DEFAULT BUTTON */}
+                        {hasModelDefault && !selectedFile && existingFileName !== modelDefaultFileName && (
+                            <button
+                                type="button"
+                                className="btn btn-sm d-flex align-items-center gap-1 shadow-none"
+                                style={{
+                                    backgroundColor: "#FCD34D",
+                                    color: "#78350F",
+                                    border: "1px solid #F59E0B",
+                                    borderRadius: "6px",
+                                    padding: "4px 8px",
+                                    fontSize: "0.75rem",
+                                    fontWeight: 600,
+                                    transition: "all 0.2s ease"
+                                }}
+                                onClick={onRestoreModelDefault}
+                                title="Usar el documento del modelo"
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.backgroundColor = "#F59E0B";
+                                    e.currentTarget.style.color = "#FFFFFF";
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.backgroundColor = "#FCD34D";
+                                    e.currentTarget.style.color = "#78350F";
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1a.5.5 0 0 1-1 0V2a.5.5 0 0 1 .5-.5h2.5a.5.5 0 0 1 0 1H8V3z"/>
+                                    <path d="m8.5 5.5v2.793l1.146-1.147a.5.5 0 0 1 .708.708l-2.5 2.5a.5.5 0 0 1-.708 0l-2.5-2.5a.5.5 0 0 1 .708-.708L7.5 8.293V5.5a.5.5 0 0 1 1 0z"/>
+                                </svg>
+                                Usar del modelo
+                            </button>
                         )}
                     </div>
                 </div>

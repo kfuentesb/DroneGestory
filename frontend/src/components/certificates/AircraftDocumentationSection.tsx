@@ -21,8 +21,6 @@ export type AircraftSummaryItem = {
   hasFile?: boolean;
   onOpen?: () => void;
   isModelDefault?: boolean;
-  // onRestore?: () => void;
-  // onDetach?: () => void;
 };
 
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
@@ -138,10 +136,12 @@ type AircraftDocumentationSectionProps = {
   formValues: Record<string, string>;
   existingFileNames?: Record<string, string>;
   modelDefaultByType?: Record<string, boolean>;
-  onToggleCheck: (id: string) => void;
-  onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string) => void;
-  onClearFile: (id: string, inputId: string) => void;
-  onFormDateChange: (key: string, value: string) => void;
+  modelDefaultFileNames?: Record<string, string>;
+  onToggleCheck: (id: string, isModel?: boolean) => void;
+  onFileChange: (event: React.ChangeEvent<HTMLInputElement>, id: string, isModel?: boolean) => void;
+  onClearFile: (id: string, inputId: string, isModel?: boolean) => void;
+  onFormDateChange: (key: string, value: string, isModel?: boolean) => void;
+  onRestoreModelDefault?: (fieldKey: string, isModel?: boolean) => void;
 };
 
 const EXISTING_MODEL_HIDDEN_KEYS = new Set([
@@ -159,6 +159,10 @@ export function getVisibleAircraftDocumentationFields(
   showParachuteDocumentation: boolean
 ): AircraftDocumentationFieldConfig[] {
   return aircraftDocumentationFields.filter((field) => {
+    if (context === "model" && !MODEL_SPECIFIC_KEYS.has(field.key)) {
+      return false;
+    }
+
     if (isExistingModel && EXISTING_MODEL_HIDDEN_KEYS.has(field.key)) {
       return false;
     }
@@ -191,13 +195,17 @@ export default function AircraftDocumentationSection({
   formValues,
   existingFileNames = {},
   modelDefaultByType = {},
+  modelDefaultFileNames = {},
   onToggleCheck,
   onFileChange,
   onClearFile,
   onFormDateChange,
+  onRestoreModelDefault,
 }: AircraftDocumentationSectionProps) {
   const [showOptional, setShowOptional] = useState(false);
   const visibleFields = getVisibleAircraftDocumentationFields(context, isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
+  const isModelContext = context === "model";
+  const inputPrefix = isModelContext ? "model" : "aircraft";
 
   return (
     <div
@@ -243,20 +251,28 @@ export default function AircraftDocumentationSection({
                 <InsertDoc
                   className="mb-2"
                   checkboxLabel={field.label}
+
+                  key={field.key}
                   isChecked={Boolean(activeChecks[field.enabledKey])}
-                  onToggleCheck={() => onToggleCheck(field.enabledKey)}
-                  fileInputId={`file-upload-aircraft-${field.fileKey}`}
+                  onToggleCheck={() => onToggleCheck(field.enabledKey, isModelContext)}
+
+                  fileInputId={`file-upload-${inputPrefix}-${field.fileKey}`}
                   selectedFile={selectedFiles[field.fileKey] ?? null}
                   existingFileName={existingFileNames[field.fileKey]}
-                  onFileChange={(e) => onFileChange(e, field.fileKey)}
-                  onClearFile={() => onClearFile(field.fileKey, `file-upload-aircraft-${field.fileKey}`)}
+
+                  onFileChange={(e) => onFileChange(e, field.fileKey, isModelContext)}
+                  onClearFile={() => onClearFile(field.fileKey, `file-upload-${inputPrefix}-${field.fileKey}`, isModelContext)}
+
                   expirationDate={formValues[field.dateKey] || ""}
-                  onExpirationDateChange={(value) => onFormDateChange(field.dateKey, value)}
-                  indefiniteId={`indefinite-aircraft-${field.indefiniteKey}`}
+                  onExpirationDateChange={(value) => onFormDateChange(field.dateKey, value, isModelContext)}
+
+                  indefiniteId={`indefinite-${inputPrefix}-${field.indefiniteKey}`}
                   isIndefinite={Boolean(activeChecks[field.indefiniteKey])}
-                  onToggleIndefinite={() => onToggleCheck(field.indefiniteKey)}
+                  onToggleIndefinite={() => onToggleCheck(field.indefiniteKey, isModelContext)}
                   showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
                   isModelDefault={Boolean(modelDefaultByType[field.key])}
+                  modelDefaultFileName={modelDefaultFileNames[field.fileKey]}
+                  onRestoreModelDefault={onRestoreModelDefault ? () => onRestoreModelDefault(field.fileKey, isModelContext) : undefined}
                 />
               </div>
             ))}
@@ -270,7 +286,6 @@ export default function AircraftDocumentationSection({
 export function AircraftDocumentationSummarySection({ items }: { items: AircraftSummaryItem[] }) {
   return (
     <div className="mt-4 border-top pt-3">
-      <h5 className="fw-bold mb-3" style={{ color: "#1E1E1E" }}>Documentación de Aeronave</h5>
 
       {items.length === 0 ? (
         <div className="p-3 bg-light rounded text-center border">
@@ -281,62 +296,54 @@ export function AircraftDocumentationSummarySection({ items }: { items: Aircraft
           <table className="table table-hover align-middle mb-0">
             <thead className="table-light">
               <tr>
-                <th scope="col" style={{ width: "50%" }}>Documentación</th>
-                <th scope="col" style={{ width: "30%" }}>Fecha de expiración</th>
-                {/* <th scope="col" style={{ width: "20%" }}>Acciones</th> */}
+                <th scope="col">Documentación</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={item.key}>
-                  <td>
-                    {item.hasFile && item.onOpen ? (
-                      <button 
-                        type="button" 
-                        className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none shadow-none" 
-                        onClick={item.onOpen} 
-                      >
-                        <i className="bi bi-file-earmark-arrow-down me-2"></i>
-                        {item.certificateType}
-                      </button>
-                    ) : (
-                      <span className="text-dark">{item.certificateType}</span>
-                    )}
-                    {item.isModelDefault && (
-                      <span className="badge bg-secondary ms-2 fw-normal">Valor por defecto</span>
-                    )}
-                  </td>
-                  <td>
-                    {item.dateIndefinite ? (
-                      <span className="badge bg-info text-dark fw-normal">Indefinida</span>
-                    ) : (
-                      <span className="text-secondary">{item.expireDate || "No especificada"}</span>
-                    )}
-                  </td>
-                  {/* <td>
-                    <div className="d-flex gap-2 flex-wrap">
-                      {item.isModelDefault && item.onDetach && (
+                  <td className="py-2">
+                    <div className="d-flex align-items-center flex-wrap">
+                      {/* 1. Categoría/Tipo de Documento */}
+                      <span className="text-secondary fw-bold me-2" style={{ fontSize: '0.9rem' }}>
+                        {item.certificateType}:
+                      </span>
+
+                      {/* 2. Nombre del archivo (clickable si tiene onOpen) */}
+                      {item.hasFile && item.onOpen ? (
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={item.onDetach}
-                          title="Desasociar del modelo"
+                          className="btn btn-link p-0 text-start text-success fw-medium text-decoration-none shadow-none me-2"
+                          onClick={item.onOpen}
                         >
-                          <i className="bi bi-link-45deg"></i>
+                          <i className="bi bi-file-earmark-arrow-down me-1"></i>
+                          Ver documento
                         </button>
+                      ) : (
+                        <span className="text-muted small me-2">Sin archivo</span>
                       )}
-                      {!item.isModelDefault && item.onRestore && (
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-success"
-                          onClick={item.onRestore}
-                          title="Restaurar a valor por defecto"
+
+                      {/* 3. Badge de "Valor por defecto" */}
+                      {item.isModelDefault && (
+                        <span className="badge bg-secondary fw-normal me-2" style={{ fontSize: '0.75rem' }}>
+                          Doc. del modelo
+                        </span>
+                      )}
+
+                      {/* 4. Fecha de Expiración (Solo si hay datos reales) */}
+                      {((item.expireDate && item.expireDate.trim() !== "-") || item.dateIndefinite) && (
+                        <span 
+                          className={`badge fw-normal ${
+                            item.dateIndefinite ? "bg-info text-dark" : "bg-light text-secondary border"
+                          }`}
+                          style={{ fontSize: '0.75rem' }}
                         >
-                          <i className="bi bi-arrow-counterclockwise"></i>
-                        </button>
+                          <i className="bi bi-calendar3 me-1"></i>
+                          {item.dateIndefinite ? "Indefinida" : `Expira: ${item.expireDate}`}
+                        </span>
                       )}
                     </div>
-                  </td> */}
+                  </td>
                 </tr>
               ))}
             </tbody>

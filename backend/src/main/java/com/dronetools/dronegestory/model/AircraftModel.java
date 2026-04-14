@@ -58,9 +58,6 @@ public class AircraftModel {
     @Column(name = "has_parachute_default")
     private Boolean hasParachuteDefault;
 
-    @Column(name = "has_ensurance_default")
-    private Boolean hasEnsuranceDefault;
-
     @Column(name = "has_fts_default")
     private Boolean hasFTSDefault;
 

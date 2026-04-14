@@ -105,17 +105,17 @@ export const aircraftModelFields: FieldConfig[] = [
       return "No especificado";
     },
   },
-  {
-    label: "Seguro RC (valor por defecto)",
-    key: "hasEnsuranceDefault",
-    type: "select",
-    options: ["Si", "No"],
-    format: (v: any) => {
-      if (v === true) return "Si";
-      if (v === false) return "No";
-      return "No especificado";
-    },
-  },
+  // {
+  //   label: "Seguro RC (valor por defecto)",
+  //   key: "hasEnsuranceDefault",
+  //   type: "select",
+  //   options: ["Si", "No"],
+  //   format: (v: any) => {
+  //     if (v === true) return "Si";
+  //     if (v === false) return "No";
+  //     return "No especificado";
+  //   },
+  // },
   {
     label: "Sistema FTS (valor por defecto)",
     key: "hasFTSDefault",

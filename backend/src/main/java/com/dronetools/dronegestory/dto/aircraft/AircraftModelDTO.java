@@ -20,7 +20,6 @@ public record AircraftModelDTO(
     Boolean hasCameraDefault,
     Boolean privatelyBuiltDefault,
     Boolean hasParachuteDefault,
-    Boolean hasEnsuranceDefault,
     Boolean hasFTSDefault,
     SelectionStatus cautiveDefault,
     String accessoriesDefault
