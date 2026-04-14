@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { saveAnexo6Data, type Anexo6Data } from "../operations/operation.api";
+import { MaterialesAuxiliaresInput } from "../commons/MaterialesAuxiliaresInput";
 
 type FormOperationAnexo6DetailProps = {
   operationId: number;
@@ -9,10 +10,10 @@ type FormOperationAnexo6DetailProps = {
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
 };
 
+// Ojo: materialesAuxiliares lo gestionamos a parte como array.
 const FORM_FIELDS = [
   "nombreConops",
   "fechaOp",
-  "materialesAuxiliares",
   "sinImpacto",
   "centroGravedad",
   "integridadEstructural",
@@ -48,10 +49,7 @@ const FORM_FIELDS = [
 type FormKey = (typeof FORM_FIELDS)[number];
 type FormValues = Record<FormKey, string>;
 
-const DEFAULT_VALUES = FORM_FIELDS.reduce(
-  (acc, key) => ({ ...acc, [key]: "" }),
-  {} as FormValues,
-);
+const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as FormValues);
 
 const BOOL_OPTIONS = [
   { value: "", label: "Sin especificar" },
@@ -59,7 +57,14 @@ const BOOL_OPTIONS = [
   { value: "false", label: "Incorrecto" },
 ];
 
-type SectionItem = { num: string; title: string; key: FormKey; level: number };
+type SectionItem = {
+  num: string;
+  title: string;
+  key?: FormKey;
+  level: number;
+  inputType?: "select" | "title";
+  bold?: boolean;
+};
 
 const SECCIONES_CONFIG: {
   seccion2: SectionItem[];
@@ -140,6 +145,7 @@ export default function FormOperationAnexo6Detail({
   onSaved,
 }: FormOperationAnexo6DetailProps) {
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_VALUES);
+  const [materialesAuxiliares, setMaterialesAuxiliares] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -151,15 +157,12 @@ export default function FormOperationAnexo6Detail({
       return match ? match[1] : value;
     };
 
+    // Inicializa campos simples
     const normalized = { ...DEFAULT_VALUES };
     FORM_FIELDS.forEach((key) => {
       const value = initialValues[key];
       if (key === "fechaOp") {
         normalized[key] = normalizeDateTimeLocal(value as string | null | undefined);
-        return;
-      }
-      if (key === "materialesAuxiliares" && Array.isArray(value)) {
-        normalized[key] = value.join("\n");
         return;
       }
       if (value === null || value === undefined) {
@@ -172,8 +175,18 @@ export default function FormOperationAnexo6Detail({
       }
       normalized[key] = String(value);
     });
-
     setFormValues(normalized);
+
+    // Inicializa materialesAuxiliares como array
+    if (Array.isArray(initialValues.materialesAuxiliares)) {
+      setMaterialesAuxiliares(
+        initialValues.materialesAuxiliares.length > 0
+          ? initialValues.materialesAuxiliares
+          : [""]
+      );
+    } else {
+      setMaterialesAuxiliares([""]);
+    }
   }, [initialValues]);
 
   const handleChange = (key: FormKey, value: string) => {
@@ -187,16 +200,16 @@ export default function FormOperationAnexo6Detail({
     setSaving(true);
     try {
       const formData = new FormData();
+
+      // Materiales auxiliares como array de strings
+      materialesAuxiliares
+        .map(m => m.trim())
+        .filter(Boolean)
+        .forEach(m => formData.append("materialesAuxiliares", m));
+
+      // resto de campos
       FORM_FIELDS.forEach((key) => {
         const value = formValues[key];
-        if (key === "materialesAuxiliares") {
-          const items = value
-            .split(/\r?\n|,/)
-            .map((item) => item.trim())
-            .filter(Boolean);
-          items.forEach((item) => formData.append("materialesAuxiliares", item));
-          return;
-        }
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, value);
         }
@@ -216,25 +229,65 @@ export default function FormOperationAnexo6Detail({
     }
   };
 
-  const renderApartadoRow = (item: { num: string; title: string; key: FormKey; level: number }) => {
+  // renderApartadoRow igual que en Anexo5 refactorizado
+  const renderApartadoRow = (
+    item: { num: string; title: string; key?: FormKey; level: number; inputType?: "select" | "title"; bold?: boolean }
+  ) => {
+    const paddingLeft = item.level === 0 ? 0 : item.level === 1 ? "2rem" : "3.5rem";
+
+    const bullet =
+      item.level === 0
+        ? null
+        : item.level === 1
+        ? <span className="me-2 text-muted small">•</span>
+        : <span className="me-2 text-muted small">◦</span>;
+
+    const baseTextClass =
+      item.level === 0
+        ? "text-dark"
+        : item.level === 2
+        ? "text-secondary small fst-italic"
+        : "text-secondary small";
+
+    const textClass = baseTextClass + (item.bold ? " fw-bold" : "");
+
+    if (item.inputType === "title" || !item.key) {
+      return (
+        <div
+          key={`title-${item.num}-${item.title}`}
+          className="d-flex align-items-center mb-1 py-2 border-bottom border-light"
+          style={{ paddingLeft }}
+        >
+          <div className="d-flex align-items-baseline">
+            {bullet}
+            <div className={textClass}>
+              {item.num}. {item.title}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const value = formValues[item.key] ?? "";
+
     return (
       <div
-        key={item.key}
+        key={item.key ?? `${item.num}-${item.title}`}
         className="d-flex align-items-center justify-content-between mb-1 py-2 border-bottom border-light"
-        style={{ paddingLeft: item.level === 0 ? 0 : "2rem" }}
+        style={{ paddingLeft }}
       >
         <div className="d-flex align-items-baseline">
-          {item.level > 0 && <span className="me-2 text-muted small">•</span>}
-          <div className={item.level === 0 ? "fw-bold text-dark" : "text-secondary small"}>
+          {bullet}
+          <div className={textClass}>
             {item.num}. {item.title}
           </div>
         </div>
+
         <div className="ms-3">
           <select
             className="form-select form-select-sm d-inline-block w-auto"
             value={value}
-            onChange={(e) => handleChange(item.key, e.target.value)}
+            onChange={(e) => handleChange(item.key!, e.target.value)}
             disabled={disabled || saving}
             style={{ minWidth: "120px" }}
           >
@@ -290,18 +343,12 @@ export default function FormOperationAnexo6Detail({
               </div>
             </div>
 
-            <SectionTitle>SECCIÓN 1: Material auxiliar</SectionTitle>
-            <div className="mb-3">
-              <label className="form-label fw-bold small text-uppercase text-muted">Materiales auxiliares</label>
-              <textarea
-                className="form-control bg-white border"
-                rows={4}
-                value={formValues.materialesAuxiliares}
-                onChange={(e) => handleChange("materialesAuxiliares", e.target.value)}
-                disabled={disabled || saving}
-                placeholder="Introduce un material por línea"
-              />
-            </div>
+            <SectionTitle>SECCIÓN 1: Material auxiliar necesario durante la operación</SectionTitle>
+            <MaterialesAuxiliaresInput
+              value={materialesAuxiliares}
+              onChange={setMaterialesAuxiliares}
+              disabled={disabled || saving}
+            />
 
             <SectionTitle>SECCIÓN 2: Estructura</SectionTitle>
             <div className="bg-white border rounded p-3 mb-4 text-start">
