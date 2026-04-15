@@ -3,8 +3,6 @@ import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../commons/hooks/useAuth";
 
-// Assets - Ensure these paths match your project structure
-import HomeIcon from '../../assets/sidebar/home_white.svg';
 import ArrowBack from '../../assets/commons/arrow_back_white.svg';
 import ArrowForward from '../../assets/commons/arrow_forward_white.svg';
 import UsersIcon from '../../assets/sidebar/group_white.svg';
@@ -115,6 +113,12 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         <MenuItem onClick={() => { navigate("/aircrafts"); setToggled(false); }}>Listar Aeronaves</MenuItem>
                         {canManage && (
                             <MenuItem onClick={() => { navigate("/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
+                        )}
+                        {canManage && (
+                            <MenuItem onClick={() => { navigate("/maintenance"); setToggled(false); }}>Mantenimiento</MenuItem>
+                        )}
+                        {canManage && (
+                            <MenuItem onClick={() => { navigate("/flight-times"); setToggled(false); }}>Horas de vuelo</MenuItem>
                         )}
                     </SubMenu>
 
