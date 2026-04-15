@@ -114,9 +114,14 @@ VISUAL<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 -Crear TABLA OTROS
--UAS tabla asignable
--Asignar personal
+-UAS asignable
 -Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
+-Asignar aeronave en a6, a7
+-Hacer que CONOPS de a4 se autorellene en los demás
+-Meter opción cancelar
+-A5, aptitud para operar. Otros usuarios asignados pueden firmar
+-Acceder a una operación siendo un usuario asignado
+
 
 -DOCUMENTACIONES<br>
 -Arreglar la barra de busqueda<br>
