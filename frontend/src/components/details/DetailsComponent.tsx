@@ -1265,7 +1265,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     const profileInfo = useMemo(() => {
         // Determinamos el título y subtítulo según la entidad
         const isUser = props.entityType === "user";
-        const title = isUser ? `${data?.name || ""} ${data?.surname || ""}` : (data?.name || "Sin nombre");
+        const title = isUser ? `${data?.name || ""} ${data?.surname || ""}` : (data?.model || "Sin nombre");
         const subtitle = isUser ? data?.email : data?.serialNumber;
 
         return {
