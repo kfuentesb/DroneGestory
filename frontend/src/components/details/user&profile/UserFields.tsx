@@ -68,7 +68,15 @@ export const userFields: FieldConfig[] = [
             if (!v || v.toString().trim() === "") return true;
             return new Date(v).getTime() <= Date.now();
         },
-        error: "La fecha de nacimiento no puede ser futura"
+        error: "La fecha de nacimiento no puede ser futura",
+        format: (v: any) => { // Formatea la fecha a DD-MM-YYYY
+            if (!v) return "";
+            const d = new Date(v);
+            const day = d.getDate().toString().padStart(2, "0");
+            const month = (d.getMonth() + 1).toString().padStart(2, "0");
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
     },
     {
         label: "Tipo de usuario",
