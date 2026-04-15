@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useState, type ChangeEvent, type CSSProperties, type Dispatch, type SetStateAction } from "react";
 import { aircraftDocumentationFields, MODEL_SPECIFIC_KEYS } from "../certificates/AircraftDocumentationSection";
 import { staticUserCertificateFields as staticUserCertificateConfig } from "../certificates/staticUserCertificateFields";
 
@@ -160,42 +160,6 @@ export const validateCertificateFile = (file: File): string | null => {
     return null;
 };
 
-export const toggleBooleanMapValue = (
-    setter: Dispatch<SetStateAction<Record<string, boolean>>>,
-    key: string
-) => {
-    setter((prev) => ({ ...prev, [key]: !prev[key] }));
-};
-
-export const handleFileMapChange = (
-    event: ChangeEvent<HTMLInputElement>,
-    key: string,
-    setter: Dispatch<SetStateAction<Record<string, File | null>>>
-) => {
-    const file = event.target.files?.[0] ?? null;
-    if (!file) {
-        setter((prev) => ({ ...prev, [key]: null }));
-        return;
-    }
-
-    const fileError = validateCertificateFile(file);
-    if (fileError) {
-        alert(fileError);
-        return;
-    }
-    setter((prev) => ({ ...prev, [key]: file }));
-};
-
-export const clearFileMapValue = (
-    key: string,
-    inputId: string,
-    setter: Dispatch<SetStateAction<Record<string, File | null>>>
-) => {
-    setter((prev) => ({ ...prev, [key]: null }));
-    const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
-    if (fileInput) fileInput.value = "";
-};
-
 export const getDocumentationFetchUrl = (context: "aircraft" | "model", id: string): string =>
     context === "model"
         ? `/api/aircraft-models/${id}/documentation`
@@ -212,42 +176,29 @@ export const stateColors: Record<string, { backgroundColor: string; color: strin
     inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
 };
 
-// COSAS DE CAMPO "OTROS" EN DOCUMENTACIÓN DE AICRAFT Y CERTIFICADO USER
-// export type AdditionalDoc = {
-//     id: string;
-//     existingCertificateId?: number;
-//     label: string;
-//     certificate: File | null;
-//     dateExpire: string | null;
-//     dateIndefinite: boolean;
-// };
-
-// export const generateId = () => Math.random().toString(36).substr(2, 9);
-
-// export const getNewAdditionalDocList = (currentDocs: AdditionalDoc[]): AdditionalDoc[] => {
-//     if (currentDocs.length >= 10) return currentDocs;
-    
-//     const newDoc: AdditionalDoc = {
-//         id: generateId(),
-//         label: "",
-//         certificate: null,
-//         dateExpire: "",
-//         dateIndefinite: false,
-//     };
-//     return [...currentDocs, newDoc];
-// };
-
-// export const getFilteredAdditionalDocList = (currentDocs: AdditionalDoc[], id: string): AdditionalDoc[] => {
-//     return currentDocs.filter(doc => doc.id !== id);
-// };
-
-// export const getUpdatedAdditionalDocList = (
-//     currentDocs: AdditionalDoc[], 
-//     id: string, 
-//     field: keyof AdditionalDoc, 
-//     value: any
-// ): AdditionalDoc[] => {
-//     return currentDocs.map(doc => 
-//         doc.id === id ? { ...doc, [field]: value } : doc
-//     );
-// };
+export const styles: { [key: string]: CSSProperties } = {
+    backBtn: {
+        borderRadius: "8px",
+        width: "48px",
+        height: "48px",
+        transition: "all 0.2s ease",
+        marginTop: "4px",
+        border: "none",
+        backgroundColor: "transparent"
+    },
+    backIcon: {
+        width: "32px",
+        height: "32px",
+        filter: "invert(42%) sepia(93%) saturate(395%) hue-rotate(102deg) brightness(92%) contrast(85%)"
+    },
+    profileImg: {
+        width: "110px", 
+        height: "110px", 
+        objectFit: "cover"
+    },
+    badge: {
+        borderRadius: "4px",
+        fontSize: "0.85rem",
+        border: "1px solid currentColor"
+    }
+};
