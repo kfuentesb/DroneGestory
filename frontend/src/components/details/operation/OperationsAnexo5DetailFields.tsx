@@ -1,5 +1,27 @@
 import type { FieldConfig } from "../FieldConfig";
 
 export const operationAnexo5DetailFields: FieldConfig[] = [
-  { label: "Texto", key: "textoPrueba", type: "text" },
+  { label: "CONOPS", key: "nombreConops", type: "text" },
+  { label: "Fecha operación", key: "fechaOp", type: "date" },
+  { label: "VLOS/BVLOS", key: "vlos", type: "text" },
+  { label: "Ubicación observadores", key: "ubicacionObservadores", type: "text" },
+  { label: "Evaluación visibilidad y alcance", key: "evaluacionVisibilidadYAlcance", type: "text" },
+  { label: "Condicionantes acordados con gestor", key: "condicionantesAcordadosConGestor", type: "text" },
+  { label: "Análisis en función CONOPS", key: "analisisEnFuncionConops", type: "text" },
+  { label: "Evaluación entorno aéreo adyacente", key: "evaluacionEntornoAereoAdyacente", type: "text" },
+  { label: "Vuelo terrestre controlado", key: "vueloTerrestreControlado", type: "text" },
+  { label: "NOTAM activos", key: "notamActivos", type: "text" },
+  { label: "TSA previa NOTAM", key: "tsaPreviaNotam", type: "text" },
+  { label: "Procedimientos ATSP", key: "procedimientosATSP", type: "text" },
+  { label: "Condiciones climatológicas", key: "condicionesClimatologicas", type: "text" },
+  { label: "Personal sabe funciones", key: "personalSabeFunciones", type: "text" },
+  { label: "Comunicación entre personal", key: "comunicacionEntrePersonal", type: "text" },
+  { label: "Comunicación a 3ª partes", key: "comunicacion3Partes", type: "text" },
+  { label: "Requisitos seguridad", key: "requisitosSeguridad", type: "text" },
+  { label: "Requisitos medio ambiente", key: "requisitosMedioAmbiente", type: "text" },
+  { label: "Requisitos radioeléctrico", key: "requisitosRadioelectrico", type: "text" },
+  { label: "Requisitos locales específicos", key: "requisitosLocalesEspecificos", type: "text" },
+  { label: "Atenuaciones GRC", key: "atenuacionesGRC", type: "text" },
+  { label: "Atenuaciones ARC", key: "atenuacionesARC", type: "text" },
+  { label: "Comprobaciones UAS vuelo", key: "comprobacionesUasVuelo", type: "text" },
 ];
