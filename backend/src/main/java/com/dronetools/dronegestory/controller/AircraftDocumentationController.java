@@ -96,6 +96,17 @@ public class AircraftDocumentationController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/aircraft/{aircraftId}/restore-default")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<AircraftDocumentationDTO> restoreToDefaultByType(
+            @PathVariable Long aircraftId,
+            @RequestParam("documentationType") String documentationType
+    ) {
+        return aircraftDocumentationService.restoreToDefaultByType(aircraftId, documentationType)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}/detach")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AircraftDocumentationDTO> detachFromDefault(@PathVariable Long id) {

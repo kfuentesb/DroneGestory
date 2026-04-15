@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 public class AircraftResponseDTO {
 
     private Long id;
+    private Long aircraftModelId;
     private String manufacturer;
     private String model;
     private String serialNumber;
@@ -40,6 +41,7 @@ public class AircraftResponseDTO {
         
         // Extract data from the nested Model entity
         if (aircraft.getAircraftModel() != null) {
+            dto.setAircraftModelId(aircraft.getAircraftModel().getId());
             dto.setManufacturer(aircraft.getAircraftModel().getManufacturer());
             dto.setModel(aircraft.getAircraftModel().getModel());
         }

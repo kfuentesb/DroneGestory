@@ -443,6 +443,46 @@ public class AircraftDocumentationService {
         });
     }
 
+    public Optional<AircraftDocumentationDTO> restoreToDefaultByType(Long aircraftId, String documentationType) {
+        if (documentationType == null || documentationType.isBlank()) {
+            return Optional.empty();
+        }
+
+        Aircraft aircraft = aircraftRepository.findById(aircraftId)
+                .orElseThrow(() -> new RuntimeException("Aircraft not found with id: " + aircraftId));
+
+        List<AircraftModelDocumentation> modelDocs =
+                aircraftModelDocumentationRepository.findByAircraftModel_Id(aircraft.getAircraftModel().getId());
+
+        Optional<AircraftModelDocumentation> matchingModelDoc = modelDocs.stream()
+                .filter(doc -> documentationType.equals(doc.getDocumentationType()))
+                .findFirst();
+
+        if (matchingModelDoc.isEmpty()) {
+            return Optional.empty();
+        }
+
+        AircraftModelDocumentation modelDoc = matchingModelDoc.get();
+        List<AircraftDocumentation> aircraftDocs = aircraftDocumentationRepository.findByAircraft_AircraftId(aircraftId);
+        AircraftDocumentation aircraftDoc = aircraftDocs.stream()
+                .filter(doc -> documentationType.equals(resolveEffectiveType(doc)))
+                .findFirst()
+                .orElseGet(() -> {
+                    AircraftDocumentation created = new AircraftDocumentation();
+                    created.setAircraft(aircraft);
+                    return created;
+                });
+
+        deleteStoredFile(aircraftDoc.getDocumentationName());
+        aircraftDoc.setModelDocumentation(modelDoc);
+        aircraftDoc.setDocumentationType(modelDoc.getDocumentationType());
+        aircraftDoc.setDocumentationName(null);
+        aircraftDoc.setExpireDate(modelDoc.getExpireDate());
+        aircraftDoc.setDateIndefinite(modelDoc.getDateIndefinite());
+
+        return Optional.of(toDto(aircraftDocumentationRepository.save(aircraftDoc)));
+    }
+
     public Optional<AircraftDocumentationDTO> detachFromDefault(Long aircraftDocumentationId) {
         return aircraftDocumentationRepository.findById(aircraftDocumentationId).map(aircraftDoc -> {
             // Only allow detach if currently has a pointer
