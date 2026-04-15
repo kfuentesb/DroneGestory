@@ -45,7 +45,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
 
     @GetMapping("/datos")
     public ResponseEntity<Anexo5ResponseDTO> getDatos(@PathVariable Long operationId) {
-        Operation op = operationRepository.findByIdWithAnexos(operationId)
+        Operation op = operationRepository.findByIdWithAnexos5(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         Anexo5 anexo5 = op.getAnexo5Actual();
         if (anexo5 == null) {

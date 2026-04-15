@@ -26,7 +26,7 @@ public class Anexo6 extends Anexo {
     // TODO insertar aeronave
 
     // 1. Material auxiliar
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "anexo6_materiales_auxiliares",
             joinColumns = @JoinColumn(name = "anexo6_id") // anexo6_id es clave foránea a anexo6.id

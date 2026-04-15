@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -67,7 +68,9 @@ public class Anexo6ResponseDTO {
         dto.setEstado(anexo.getEstado());
         dto.setNombreConops(anexo.getNombreConops());
         dto.setFechaOp(anexo.getFechaOp());
-        dto.setMaterialesAuxiliares(anexo.getMaterialesAuxiliares());
+        dto.setMaterialesAuxiliares(
+                anexo.getMaterialesAuxiliares() == null ? List.of() : new ArrayList<>(anexo.getMaterialesAuxiliares())
+        );
         dto.setSinImpacto(anexo.getSinImpacto());
         dto.setCentroGravedad(anexo.getCentroGravedad());
         dto.setIntegridadEstructural(anexo.getIntegridadEstructural());

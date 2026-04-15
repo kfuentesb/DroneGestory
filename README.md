@@ -116,6 +116,7 @@ VISUAL<br>
 -Crear TABLA OTROS
 -UAS tabla asignable
 -Asignar personal
+-Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
 
 -DOCUMENTACIONES<br>
 -Arreglar la barra de busqueda<br>

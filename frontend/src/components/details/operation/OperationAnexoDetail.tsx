@@ -299,6 +299,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
   const handleSaved = async (savedData: AnexoData | null) => {
     setAnexoData(savedData);
+    if (!operation) return null;
     navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
     await loadOperation();
   };
