@@ -655,32 +655,6 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
             </div>
 
             <div className="row mb-4">
-              <div className="col-12 col-md-4">
-                <label className="form-label d-block text-start ps-1">Horas de vuelo (min)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  className="form-control"
-                  value={formValues.flightMinutes}
-                  onChange={(e) =>
-                    setFormValues({
-                      ...formValues,
-                      flightMinutes: e.target.value === "" ? 0 : Number(e.target.value),
-                    })
-                  }
-                  style={{
-                    ...backgroundBorderInputs,
-                    border: errors.flightMinutes ? "1px solid red" : "1px solid #D1D5DB",
-                  }}
-                />
-                {errors.flightMinutes && (
-                  <div className="text-danger small">Debe ser un entero mayor o igual que 0</div>
-                )}
-              </div>
-            </div>
-
-            <div className="row mb-4">
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label d-block text-start ps-1">Cámara</label>
                 <Select
