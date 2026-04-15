@@ -24,6 +24,14 @@ export type AircraftSummaryItem = {
   fileName?: string;
 };
 
+type AdditionalDoc = {
+  id: string;
+  label: string;
+  certificate: File | null;
+  dateExpire: string;
+  dateIndefinite: boolean;
+};
+
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
   {
     key: "caracterizacion",
@@ -143,6 +151,12 @@ type AircraftDocumentationSectionProps = {
   onClearFile: (id: string, inputId: string, isModel?: boolean) => void;
   onFormDateChange: (key: string, value: string, isModel?: boolean) => void;
   onRestoreModelDefault?: (fieldKey: string, isModel?: boolean) => void;
+
+  additionalDocs?: AdditionalDoc[];
+  existingAdditionalFileNames?: Record<string, string>;
+  onAddAdditionalDoc?: () => void;
+  onRemoveAdditionalDoc?: (id: string) => void;
+  onAdditionalFieldChange?: (id: string, field: keyof AdditionalDoc, value: any) => void;
 };
 
 const EXISTING_MODEL_HIDDEN_KEYS = new Set([
@@ -210,6 +224,12 @@ export default function AircraftDocumentationSection({
   onClearFile,
   onFormDateChange,
   onRestoreModelDefault,
+
+  additionalDocs = [],
+  existingAdditionalFileNames = {},
+  onAddAdditionalDoc,
+  onRemoveAdditionalDoc,
+  onAdditionalFieldChange,
 }: AircraftDocumentationSectionProps) {
   const [showOptional, setShowOptional] = useState(false);
   const visibleFields = getVisibleAircraftDocumentationFields(context, isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
@@ -217,79 +237,110 @@ export default function AircraftDocumentationSection({
   const inputPrefix = isModelContext ? "model" : "aircraft";
 
   return (
-    <div
-      className="mb-3"
-      style={{
-        marginLeft: "-30px",
-        marginRight: "-30px",
-        paddingLeft: "20px",
-        paddingRight: "20px",
-      }}
-    >
-      <div
-        className="p-2 rounded-3 shadow-sm"
-        style={{
-          backgroundColor: "#F9FAFB",
-          borderLeft: "2px solid #D1D5DB",
-          borderBottom: "2px solid #D1D5DB",
-          borderBottomLeftRadius: "12px",
-          color: "#6B7280",
-        }}
-      >
-        <button
-          type="button"
-          className="btn btn-success w-100 d-flex justify-content-center align-items-center py-2 shadow-sm border-0"
+    <div className="mb-3" style={{ marginLeft: "-30px", marginRight: "-30px", paddingLeft: "20px", paddingRight: "20px" }}>
+      <div className="p-2 rounded-3 shadow-sm" style={{ backgroundColor: "#F9FAFB", borderLeft: "2px solid #D1D5DB", borderBottom: "2px solid #D1D5DB", borderBottomLeftRadius: "12px", color: "#6B7280" }}>
+        
+        <button type="button" className="btn btn-success w-100 d-flex justify-content-center align-items-center py-2 shadow-sm border-0"
           style={{ borderRadius: "8px", fontWeight: "600" }}
-          onClick={() => setShowOptional(!showOptional)}
-        >
+          onClick={() => setShowOptional(!showOptional)}>
           <span className="me-2">{showOptional ? "−" : "+"}</span>
           {showOptional ? "Ocultar documentación" : "Documentación"}
         </button>
 
         {showOptional && (
           <div className="mt-3 animate__animated animate__fadeIn">
-            {visibleFields.map((field) => (
-              <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                <div className="d-flex align-items-center mb-3">
-                  <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                    {field.label}
-                  </h6>
-                  <InfoBadge text={field.infoLabel} />
+            {visibleFields.map((field) => {
+              // --- LÓGICA ESPECIAL PARA "OTRA DOCUMENTACIÓN" ---
+              if (field.key === "otraDocumentacion") {
+                return (
+                  <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <div className="d-flex align-items-center">
+                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>{field.label}</h6>
+                        <InfoBadge text={field.infoLabel} />
+                      </div>
+                      <button type="button" className="btn btn-sm btn-success" 
+                        onClick={onAddAdditionalDoc} 
+                        disabled={additionalDocs.length >= 10}>
+                        + Añadir otro
+                      </button>
+                    </div>
+
+                    {additionalDocs.length === 0 && (
+                      <p className="text-muted small mb-0 ps-1">No se han añadido documentos adicionales.</p>
+                    )}
+
+                    {additionalDocs.map((doc) => (
+                      <div key={doc.id} className="bg-white p-3 border rounded-3 mb-3 shadow-sm">
+                        <div className="d-flex gap-2 mb-3">
+                          <input type="text" className="form-control form-control-sm"
+                            placeholder="Nombre del documento (ej: Certificado de Pesaje)"
+                            value={doc.label}
+                            onChange={(e) => onAdditionalFieldChange?.(doc.id, "label", e.target.value)}
+                          />
+                          <button type="button" className="btn btn-sm d-flex align-items-center justify-content-center shadow-none p-0"
+                            style={{ width: "32px", height: "32px", backgroundColor: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA", borderRadius: "8px" }}
+                            onClick={() => onRemoveAdditionalDoc?.(doc.id)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <InsertDoc
+                          hideHeader={true}
+                          showAddBtn={true}
+                          checkboxLabel="Documento adjunto"
+                          isChecked={true} 
+                          onToggleCheck={() => {}}
+                          fileInputId={`file-additional-${doc.id}`}
+                          selectedFile={doc.certificate}
+                          existingFileName={existingAdditionalFileNames?.[doc.id]}
+                          onFileChange={(e) => onAdditionalFieldChange?.(doc.id, "certificate", e.target.files?.[0] || null)}
+                          onClearFile={() => onAdditionalFieldChange?.(doc.id, "certificate", null)}
+                          expirationDate={doc.dateExpire || ""}
+                          onExpirationDateChange={(val) => onAdditionalFieldChange?.(doc.id, "dateExpire", val)}
+                          indefiniteId={`indefinite-add-${doc.id}`}
+                          isIndefinite={doc.dateIndefinite || false}
+                          onToggleIndefinite={() => onAdditionalFieldChange?.(doc.id, "dateIndefinite", !doc.dateIndefinite)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
+
+              // --- RENDER ESTÁNDAR PARA EL RESTO DE CAMPOS ---
+              return (
+                <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
+                  <div className="d-flex align-items-center mb-3">
+                    <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>{field.label}</h6>
+                    <InfoBadge text={field.infoLabel} />
+                  </div>
+                  <InsertDoc
+                    className="mb-2"
+                    checkboxLabel={field.label}
+                    isChecked={Boolean(activeChecks[field.enabledKey])}
+                    onToggleCheck={() => onToggleCheck(field.enabledKey, isModelContext)}
+                    fileInputId={`file-upload-${inputPrefix}-${field.fileKey}`}
+                    selectedFile={selectedFiles[field.fileKey] ?? null}
+                    existingFileName={existingFileNames[field.fileKey]}
+                    onFileChange={(e) => onFileChange(e, field.fileKey, isModelContext)}
+                    onClearFile={() => onClearFile(field.fileKey, `file-upload-${inputPrefix}-${field.fileKey}`, isModelContext)}
+                    expirationDate={formValues[field.dateKey] || ""}
+                    onExpirationDateChange={(value) => onFormDateChange(field.dateKey, value, isModelContext)}
+                    indefiniteId={`indefinite-${inputPrefix}-${field.indefiniteKey}`}
+                    isIndefinite={Boolean(activeChecks[field.indefiniteKey])}
+                    onToggleIndefinite={() => onToggleCheck(field.indefiniteKey, isModelContext)}
+                    showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
+                    isModelDefault={Boolean(modelDefaultByType[field.key])}
+                    modelDefaultFileName={modelDefaultFileNames[field.fileKey]}
+                    isModelSection={isModelContext}
+                    onRestoreModelDefault={!isModelContext && onRestoreModelDefault ? () => onRestoreModelDefault(field.fileKey, isModelContext) : undefined}
+                  />
                 </div>
-
-                <InsertDoc
-                  className="mb-2"
-                  checkboxLabel={field.label}
-
-                  key={field.key}
-                  isChecked={Boolean(activeChecks[field.enabledKey])}
-                  onToggleCheck={() => onToggleCheck(field.enabledKey, isModelContext)}
-
-                  fileInputId={`file-upload-${inputPrefix}-${field.fileKey}`}
-                  selectedFile={selectedFiles[field.fileKey] ?? null}
-                  existingFileName={existingFileNames[field.fileKey]}
-
-                  onFileChange={(e) => onFileChange(e, field.fileKey, isModelContext)}
-                  onClearFile={() => onClearFile(field.fileKey, `file-upload-${inputPrefix}-${field.fileKey}`, isModelContext)}
-
-                  expirationDate={formValues[field.dateKey] || ""}
-                  onExpirationDateChange={(value) => onFormDateChange(field.dateKey, value, isModelContext)}
-
-                  indefiniteId={`indefinite-${inputPrefix}-${field.indefiniteKey}`}
-                  isIndefinite={Boolean(activeChecks[field.indefiniteKey])}
-                  onToggleIndefinite={() => onToggleCheck(field.indefiniteKey, isModelContext)}
-                  showDateControls={!onlyInsuranceHasDates || field.key === "seguroResponsabilidadCivil"}
-                  isModelDefault={Boolean(modelDefaultByType[field.key])}
-                  modelDefaultFileName={modelDefaultFileNames[field.fileKey]}
-                  isModelSection={isModelContext}
-                  onRestoreModelDefault={
-                    !isModelContext && onRestoreModelDefault
-                      ? () => onRestoreModelDefault(field.fileKey, isModelContext)
-                      : undefined
-                  }
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -1,6 +1,99 @@
-import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
 import { aircraftDocumentationFields, MODEL_SPECIFIC_KEYS } from "../certificates/AircraftDocumentationSection";
 import { staticUserCertificateFields as staticUserCertificateConfig } from "../certificates/staticUserCertificateFields";
+
+export interface DetailsComponentProps {
+    id: string | undefined
+    endpoint: string
+    imageEndpoint?: string
+    defaultImage?: "user" | "drone"
+    entityType?: "user" | "aircraft"
+    fields: any[]
+    initialData?: any;
+    allowEdit?: boolean
+    allowDelete?: boolean
+    onDelete?: () => Promise<void>
+    onBack?: () => void
+    validateForm?: (values: any) => Record<string, string | null>
+    showCertificates?: boolean
+    certificateSectionType?: "user" | "aircraft" | "model"
+    clearableFieldKeys?: string[]
+}
+
+export type UserCertificate = {
+    id: number;
+    userId: number;
+    certificateType: string;
+    certificateName: string | null;
+    expireDate: string | null;
+    dateIndefinite: boolean | null;
+};
+
+export type AircraftDocumentation = {
+    id: number;
+    aircraftId?: number;
+    aircraftModelId?: number;
+    documentationType: string;
+    documentationName: string | null;
+    expireDate: string | null;
+    dateIndefinite: boolean | null;
+    modelDocumentationId?: number | null;
+    isModelDefault?: boolean;
+};
+
+export type AircraftModelDocumentation = {
+    id: number;
+    aircraftModelId: number;
+    documentationType: string;
+    documentationName: string | null;
+    expireDate: string | null;
+    dateIndefinite: boolean | null;
+};
+
+export type CertificateFieldPayload = {
+    certificate: File | null;
+    dateExpire: string | null;
+    dateIndefinite: boolean | null;
+};
+
+export type AdditionalCertificatePayload = {
+    id: string;
+    existingCertificateId?: number;
+    label: string;
+    certificate: File | null;
+    dateExpire: string | null;
+    dateIndefinite: boolean | null;
+};
+
+export interface LoadingState {
+    data: boolean;
+    certificates: boolean;
+    image: boolean;
+}
+
+export interface DocumentationState {
+    files: Record<string, File | null>;
+    dates: Record<string, string>;
+    checks: Record<string, boolean>;
+    existingNames: Record<string, string>;
+}
+
+// Función para inicializar estados limpios
+export const createEmptyDocState = (defaults: any): DocumentationState => ({
+    files: { ...defaults.files },
+    dates: { ...defaults.dates },
+    checks: { ...defaults.checks },
+    existingNames: {}
+});
+
+export const getFileNameFromPath = (path: string | null): string => {
+    if (!path) return "";
+    return path.split("/").pop() ?? "";
+};
+
+export const isAdditionalCertificate = (type: string, staticKeys: Set<string>): boolean => {
+    return !staticKeys.has(type) && !type.startsWith("conops_");
+};
 
 export const buildRecord = <T,>(keys: string[], value: T): Record<string, T> =>
     Object.fromEntries(keys.map((key) => [key, value])) as Record<string, T>;
@@ -118,3 +211,43 @@ export const stateColors: Record<string, { backgroundColor: string; color: strin
     active: { backgroundColor: "#DCFCE7", color: "#166534" },
     inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
 };
+
+// COSAS DE CAMPO "OTROS" EN DOCUMENTACIÓN DE AICRAFT Y CERTIFICADO USER
+// export type AdditionalDoc = {
+//     id: string;
+//     existingCertificateId?: number;
+//     label: string;
+//     certificate: File | null;
+//     dateExpire: string | null;
+//     dateIndefinite: boolean;
+// };
+
+// export const generateId = () => Math.random().toString(36).substr(2, 9);
+
+// export const getNewAdditionalDocList = (currentDocs: AdditionalDoc[]): AdditionalDoc[] => {
+//     if (currentDocs.length >= 10) return currentDocs;
+    
+//     const newDoc: AdditionalDoc = {
+//         id: generateId(),
+//         label: "",
+//         certificate: null,
+//         dateExpire: "",
+//         dateIndefinite: false,
+//     };
+//     return [...currentDocs, newDoc];
+// };
+
+// export const getFilteredAdditionalDocList = (currentDocs: AdditionalDoc[], id: string): AdditionalDoc[] => {
+//     return currentDocs.filter(doc => doc.id !== id);
+// };
+
+// export const getUpdatedAdditionalDocList = (
+//     currentDocs: AdditionalDoc[], 
+//     id: string, 
+//     field: keyof AdditionalDoc, 
+//     value: any
+// ): AdditionalDoc[] => {
+//     return currentDocs.map(doc => 
+//         doc.id === id ? { ...doc, [field]: value } : doc
+//     );
+// };

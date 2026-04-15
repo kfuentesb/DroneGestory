@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type ChangeEvent, type Dispatch, type SetStateAction, useMemo } from "react";
 import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
@@ -27,6 +27,17 @@ import {
     USER_CERTIFICATE_DEFAULTS,
     AIRCRAFT_DOCUMENTATION_DEFAULTS,
     MODEL_DOCUMENTATION_DEFAULTS,
+    // getFileNameFromPath,
+    // isAdditionalCertificate,
+    type DetailsComponentProps,
+    type UserCertificate,
+    type AircraftDocumentation,
+    type AircraftModelDocumentation,
+    type CertificateFieldPayload,
+    type AdditionalCertificatePayload,
+    type LoadingState,
+    type DocumentationState,
+    createEmptyDocState,
 } from "./detailsUtils";
 
 import editIcon from '../../assets/commons/edit_white.svg';
@@ -35,75 +46,6 @@ import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
 import LoadingSpinner from "../commons/Loading";
-
-interface DetailsComponentProps {
-    id: string | undefined
-    endpoint: string
-    imageEndpoint?: string
-    defaultImage?: "user" | "drone"
-    entityType?: "user" | "aircraft"
-    fields: any[]
-    initialData?: any;
-    allowEdit?: boolean
-    allowDelete?: boolean
-    onDelete?: () => Promise<void>
-    onBack?: () => void
-    validateForm?: (values: any) => Record<string, string | null>
-    showCertificates?: boolean
-    certificateSectionType?: "user" | "aircraft" | "model"
-    clearableFieldKeys?: string[]
-}
-
-type UserCertificate = {
-    id: number;
-    userId: number;
-    certificateType: string;
-    certificateName: string | null;
-    expireDate: string | null;
-    dateIndefinite: boolean | null;
-};
-
-type AircraftDocumentation = {
-    id: number;
-    aircraftId?: number;
-    aircraftModelId?: number;
-    documentationType: string;
-    documentationName: string | null;
-    expireDate: string | null;
-    dateIndefinite: boolean | null;
-    modelDocumentationId?: number | null;
-    isModelDefault?: boolean;
-};
-
-type AircraftModelDocumentation = {
-    id: number;
-    aircraftModelId: number;
-    documentationType: string;
-    documentationName: string | null;
-    expireDate: string | null;
-    dateIndefinite: boolean | null;
-};
-
-type CertificateFieldPayload = {
-    certificate: File | null;
-    dateExpire: string | null;
-    dateIndefinite: boolean | null;
-};
-
-type AdditionalCertificatePayload = {
-    id: string;
-    existingCertificateId?: number;
-    label: string;
-    certificate: File | null;
-    dateExpire: string | null;
-    dateIndefinite: boolean | null;
-};
-
-interface LoadingState {
-    data: boolean;
-    certificates: boolean;
-    image: boolean;
-}
 
 export default function DetailsComponent({
     id,
@@ -123,10 +65,16 @@ export default function DetailsComponent({
     clearableFieldKeys = [],
 }: DetailsComponentProps) {
     const { token } = useAuth();
-    const resolvedCertificateSectionType = certificateSectionType ?? (showCertificates ? "user" : undefined);
-    const showUserCertificates = resolvedCertificateSectionType === "user";
-    const showAircraftDocumentation = resolvedCertificateSectionType === "aircraft";
-    const showAircraftModelDocumentation = resolvedCertificateSectionType === "model";
+    // Derived UI flags: memoized because they depend only on props
+    const { resolvedCertificateSectionType, showUserCertificates, showAircraftDocumentation, showAircraftModelDocumentation } = useMemo(() => {
+        const resolved = certificateSectionType ?? (showCertificates ? "user" : undefined);
+        return {
+            resolvedCertificateSectionType: resolved,
+            showUserCertificates: resolved === "user",
+            showAircraftDocumentation: resolved === "aircraft",
+            showAircraftModelDocumentation: resolved === "model"
+        };
+    }, [certificateSectionType, showCertificates]);
 
     const [data, setData] = useState<any>(initialData || null);
     const [status, setStatus] = useState<number>(200);
@@ -144,36 +92,46 @@ export default function DetailsComponent({
     const [imageVersion, setImageVersion] = useState(0);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [removeImage, setRemoveImage] = useState(false);
-    const [certificates, setCertificates] = useState<UserCertificate[]>([]);
-    
-    const [aircraftDocumentations, setAircraftDocumentations] = useState<AircraftDocumentation[]>([]);
-    const [aircraftModelDefaults, setAircraftModelDefaults] = useState<AircraftModelDocumentation[]>([]);
     const [certificateSelectedFiles, setCertificateSelectedFiles] = useState<Record<string, File | null>>(USER_CERTIFICATE_DEFAULTS.files);
     const [certificateFormValues, setCertificateFormValues] = useState<Record<string, string>>(USER_CERTIFICATE_DEFAULTS.dates);
     const [certificateActiveChecks, setCertificateActiveChecks] = useState<Record<string, boolean>>(USER_CERTIFICATE_DEFAULTS.checks);
-    
     const [aircraftDocumentationFiles, setAircraftDocumentationFiles] = useState<Record<string, File | null>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.files);
     const [aircraftDocumentationFormValues, setAircraftDocumentationFormValues] = useState<Record<string, string>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.dates);
     const [aircraftDocumentationChecks, setAircraftDocumentationChecks] = useState<Record<string, boolean>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.checks);
     const [aircraftDocumentationRestoreDefaults, setAircraftDocumentationRestoreDefaults] = useState<Record<string, boolean>>({});
-
     const [aircraftModelDocumentationFiles, setAircraftModelDocumentationFiles] = useState<Record<string, File | null>>(MODEL_DOCUMENTATION_DEFAULTS.files);
     const [aircraftModelDocumentationFormValues, setAircraftModelDocumentationFormValues] = useState<Record<string, string>>(MODEL_DOCUMENTATION_DEFAULTS.dates);
     const [aircraftModelDocumentationChecks, setAircraftModelDocumentationChecks] = useState<Record<string, boolean>>(MODEL_DOCUMENTATION_DEFAULTS.checks);
-
     const [existingAircraftDocumentationFileNames, setExistingAircraftDocumentationFileNames] = useState<Record<string, string>>({});
     const [existingAircraftModelDocumentationFileNames, setExistingAircraftModelDocumentationFileNames] = useState<Record<string, string>>({});
-
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [currentSelection, setCurrentSelection] = useState<string>("");
-    const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
     const [existingStaticFileNames, setExistingStaticFileNames] = useState<Record<string, string>>({});
     const [existingConopsFileNames, setExistingConopsFileNames] = useState<Record<string, string>>({});
-    const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
     const [existingAdditionalFileNames, setExistingAdditionalFileNames] = useState<Record<string, string>>({});
-
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
+
+    // 1. Lógica de Flags (UI)
+    const { isUser, isAircraft, isModel } = useMemo(() => {
+        const resolved = certificateSectionType ?? (showCertificates ? "user" : undefined);
+        return {
+            resolved,
+            isUser: resolved === "user",
+            isAircraft: resolved === "aircraft",
+            isModel: resolved === "model"
+        };
+    }, [certificateSectionType, showCertificates]);
+
+    // 2. Estados de Datos Crudos (API)
+    const [certificates, setCertificates] = useState<UserCertificate[]>([]);
+    const [aircraftDocumentations, setAircraftDocumentations] = useState<AircraftDocumentation[]>([]);
+    const [aircraftModelDefaults, setAircraftModelDefaults] = useState<AircraftModelDocumentation[]>([]);
+
+    // 4. Estados Específicos de Secciones Dinámicas
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
+    const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
+    const [currentSelection, setCurrentSelection] = useState<string>("");
+
 
     // Cargar datos iniciales
     useEffect(() => {
@@ -333,6 +291,8 @@ export default function DetailsComponent({
         setCertificateSelectedFiles({ ...USER_CERTIFICATE_DEFAULTS.files });
         setCertificateActiveChecks(nextChecks);
         setCertificateFormValues(nextForm);
+        setExistingStaticFileNames(nextStaticNames);
+
         setSelectedCategories(nextCategories);
         setConopsDocs(nextConopsDocs);
         setExistingStaticFileNames(nextStaticNames);
@@ -1399,6 +1359,75 @@ export default function DetailsComponent({
         setConfirmAction(null);
     };
 
+    const defaultProfileImage = useMemo(
+        () => (defaultImage === "drone" ? "/default-drone.png" : "/default-user.jpg"),
+        [defaultImage]
+    );
+
+    const detailTitle = useMemo(() => {
+        if (!data) {
+            return entityType === "aircraft" ? "Aeronave" : "Usuario";
+        }
+        if (entityType === "aircraft") {
+            return `${data.manufacturer ?? ""} ${data.model ?? ""}`.trim() || data.serialNumber || `Aeronave ${data.id ?? ""}`;
+        }
+        return `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() || data.username || `Usuario ${data.id ?? ""}`;
+    }, [entityType, data]);
+
+    const detailSubtitle = useMemo(() => {
+        if (!data) {
+            return undefined;
+        }
+        if (entityType === "aircraft") {
+            return data.serialNumber ? `Serie: ${data.serialNumber}` : undefined;
+        }
+        return data.username ? `@${data.username}` : undefined;
+    }, [entityType, data]);
+
+    const aircraftClassLabel = useMemo(
+        () => (entityType === "aircraft" ? data?.aircraftClass : undefined),
+        [entityType, data]
+    );
+
+    const userTypeLabel = useMemo(
+        () => (entityType === "user" ? data?.type : undefined),
+        [entityType, data]
+    );
+
+    const userStateLabel = useMemo(
+        () => (entityType === "user" ? (data?.state ? "Activo" : "Inactivo") : undefined),
+        [entityType, data]
+    );
+
+    const aircraftDocumentationFlags = useMemo(
+        () => getAircraftDocumentationFlags(formValues),
+        [formValues]
+    );
+
+    const aircraftModelDocumentationFlags = useMemo(
+        () => getAircraftModelDocumentationFlags(formValues),
+        [formValues]
+    );
+
+    const { modelDefaultFileNames, modelDefaultChecks } = useMemo(() => {
+        const fileNames: Record<string, string> = {};
+        const checks: Record<string, boolean> = {};
+
+        aircraftModelDefaults.forEach((doc) => {
+            if (MODEL_SPECIFIC_KEYS.has(doc.documentationType)) {
+                checks[doc.documentationType] = true;
+                if (doc.documentationName) {
+                    const fieldConfig = aircraftDocumentationFields.find(f => f.key === doc.documentationType);
+                    if (fieldConfig) {
+                        fileNames[fieldConfig.fileKey] = doc.documentationName.split("/").pop() ?? "";
+                    }
+                }
+            }
+        });
+
+        return { modelDefaultFileNames: fileNames, modelDefaultChecks: checks };
+    }, [aircraftModelDefaults]);
+
     const isAnythingLoading = Object.values(loading).some(v => v === true);
 
     if (isAnythingLoading) {
@@ -1407,37 +1436,6 @@ export default function DetailsComponent({
     if (status === 403) return <Forbidden />;
     if (status === 404 || (!data && !loading.data)) return <NotFound />;
     if (status >= 500) return <div className="text-center p-5">Error interno del servidor</div>;
-
-    const defaultProfileImage = defaultImage === "drone" ? "/default-drone.png" : "/default-user.jpg";
-    const detailTitle =
-        entityType === "aircraft"
-            ? `${data.manufacturer ?? ""} ${data.model ?? ""}`.trim() || data.serialNumber || `Aeronave ${data.id ?? ""}`
-            : `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() || data.username || `Usuario ${data.id ?? ""}`;
-    const detailSubtitle =
-        entityType === "aircraft"
-            ? data.serialNumber ? `Serie: ${data.serialNumber}` : undefined
-            : data.username ? `@${data.username}` : undefined;
-    const aircraftClassLabel = entityType === "aircraft" ? data.aircraftClass : undefined;
-    const userTypeLabel = entityType === "user" ? data.type : undefined;
-    const userStateLabel = entityType === "user" ? (data.state ? "Activo" : "Inactivo") : undefined;
-    const aircraftDocumentationFlags = getAircraftDocumentationFlags(formValues);
-    const aircraftModelDocumentationFlags = getAircraftModelDocumentationFlags(formValues);
-
-    // Build model default file names for aircraft
-    const modelDefaultFileNames: Record<string, string> = {};
-    const modelDefaultChecks: Record<string, boolean> = {};
-    aircraftModelDefaults.forEach((doc) => {
-        if (MODEL_SPECIFIC_KEYS.has(doc.documentationType) && doc.documentationName) {
-            const fieldConfig = aircraftDocumentationFields.find(f => f.key === doc.documentationType);
-            if (fieldConfig) {
-                const filename = doc.documentationName.split("/").pop() ?? "";
-                modelDefaultFileNames[fieldConfig.fileKey] = filename;
-            }
-        }
-        if (MODEL_SPECIFIC_KEYS.has(doc.documentationType)) {
-            modelDefaultChecks[doc.documentationType] = true;
-        }
-    });
 
     return (
         <div className="container-fluid py-4">
