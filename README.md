@@ -120,6 +120,9 @@ VISUAL<br>
 -A5, aptitud para operar. Otros usuarios asignados pueden firmar
 -Acceder a una operación siendo un usuario asignado
 -Añadir boton atras/siguiente entre anexos
+- A6 es vinculado al a7 por cada aeronave
+-Tiempo de vuelo y ciclos de aterrizaje en a7
+
 
 
 -DOCUMENTACIONES<br>
