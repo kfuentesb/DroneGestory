@@ -34,6 +34,23 @@ export const BOOL_OPTIONS_DEFAULT = [
   { value: "false", label: "No" },
 ];
 
+/** Utility to create customizable boolean option labels */
+export function getBoolOptions({
+  unspecified = "Sin especificar",
+  yes = "Sí",
+  no = "No",
+}: {
+  unspecified?: string;
+  yes?: string;
+  no?: string;
+} = {}) {
+  return [
+    { value: "", label: unspecified },
+    { value: "true", label: yes },
+    { value: "false", label: no },
+  ];
+}
+
 export type ApartadoRowProps = {
   /** Section item configuration */
   item: SectionItem;
@@ -47,6 +64,8 @@ export type ApartadoRowProps = {
   error?: string | null;
   /** Custom select options — overrides default boolean options */
   opciones?: { value: string; label: string }[];
+  /** Custom labels for boolean options (mutually exclusive with opciones) */
+  boolLabels?: { unspecified?: string; yes?: string; no?: string };
 };
 
 export function ApartadoRow({
@@ -56,6 +75,7 @@ export function ApartadoRow({
   disabled,
   error,
   opciones,
+  boolLabels,
 }: ApartadoRowProps) {
   const paddingLeft = item.level === 0 ? 0 : item.level === 1 ? "2rem" : "3.5rem";
 
@@ -93,7 +113,8 @@ export function ApartadoRow({
     );
   }
 
-  const options = opciones ?? BOOL_OPTIONS_DEFAULT;
+  const options =
+    opciones ?? (boolLabels ? getBoolOptions(boolLabels) : BOOL_OPTIONS_DEFAULT);
 
   return (
     <div

@@ -60,7 +60,7 @@ const DEFAULT_VALUES = FORM_FIELDS.reduce(
 );
 
 const BOOL_OPTIONS = [
-  { value: "", label: "Sin especificar" },
+  { value: "", label: "N/A" },
   { value: "true", label: "Sí" },
   { value: "false", label: "No" },
 ];

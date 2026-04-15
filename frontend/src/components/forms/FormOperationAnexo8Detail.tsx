@@ -108,6 +108,7 @@ export default function FormOperationAnexo8Detail({
       value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
+      boolLabels={{ unspecified: "N/A" }}
     />
   );
 

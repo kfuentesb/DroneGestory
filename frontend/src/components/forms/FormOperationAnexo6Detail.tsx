@@ -54,8 +54,8 @@ type FormKey = (typeof FORM_FIELDS)[number];
 
 const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
 
-const BOOL_OPTIONS_CORRECTO = [
-  { value: "", label: "Sin especificar" },
+const BOOL_OPTIONS = [
+  { value: "", label: "N/A" },
   { value: "true", label: "Correcto" },
   { value: "false", label: "Incorrecto" },
 ];
@@ -72,6 +72,7 @@ const SECCIONES_CONFIG: {
   seccion10: SectionItem[];
   seccion11: SectionItem[];
   seccion12: SectionItem[];
+  seccion13: SectionItem[];
 } = {
   seccion2: [
     { num: "2.1", title: "Sin impacto ni muescas", key: "sinImpacto", level: 0 },
@@ -125,6 +126,9 @@ const SECCIONES_CONFIG: {
     { num: "12.1", title: "Información actualizada", key: "informacionActualizada", level: 0 },
     { num: "12.2", title: "Sistema activado", key: "sistemaActivado", level: 0 },
   ],
+  seccion13: [
+        { num: "13.1", title: "Revisión de elementos auxiliares al CONOPS de la operación (Paracaídas, sistema cautivo, etc...)", level: 0, inputType: "title"},
+  ]
 };
 
 export default function FormOperationAnexo6Detail({
@@ -200,7 +204,7 @@ export default function FormOperationAnexo6Detail({
       value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
-      opciones={BOOL_OPTIONS_CORRECTO}
+      opciones={BOOL_OPTIONS}
     />
   );
 
@@ -297,6 +301,12 @@ export default function FormOperationAnexo6Detail({
       <div className="bg-white border rounded p-3 mb-4 text-start">
         {SECCIONES_CONFIG.seccion12.map(renderApartadoRow)}
       </div>
+
+      <SectionTitle>SECCIÓN 13: CONOPS</SectionTitle>
+      <div className="bg-white border rounded p-3 mb-4 text-start">
+        {SECCIONES_CONFIG.seccion13.map(renderApartadoRow)}
+      </div>
+
     </AnexoFormLayout>
   );
 }

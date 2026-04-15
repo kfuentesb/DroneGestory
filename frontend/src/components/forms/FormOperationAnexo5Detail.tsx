@@ -42,6 +42,12 @@ type FormKey = (typeof FORM_FIELDS)[number];
 
 const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
 
+const BOOL_OPTIONS = [
+  { value: "", label: "N/A" },
+  { value: "true", label: "Sí" },
+  { value: "false", label: "No" },
+];
+
 const SECCIONES_CONFIG: {
   seccion1: SectionItem[];
   seccion2: SectionItem[];
@@ -184,6 +190,7 @@ export default function FormOperationAnexo5Detail({
       value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
+      boolLabels={{ unspecified: "N/A"}}
     />
   );
 
