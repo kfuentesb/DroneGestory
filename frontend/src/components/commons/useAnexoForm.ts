@@ -75,6 +75,8 @@ export function useAnexoForm<K extends string>({
 
   useEffect(() => {
     setFormValues(normalizeFormValues(initialValues, fields, defaultValues, dateFields));
+    // fields, defaultValues, and dateFields are constant config arrays defined outside
+    // the component — they never change between renders, so only initialValues is needed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValues]);
 

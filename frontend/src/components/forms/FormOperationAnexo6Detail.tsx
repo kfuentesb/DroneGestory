@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveAnexo6Data, type Anexo6Data } from "../operations/operation.api";
 import { MaterialesAuxiliaresInput } from "../commons/MaterialesAuxiliaresInput";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/useAnexoForm";
-import { useEffect } from "react";
 
 type FormOperationAnexo6DetailProps = {
   operationId: number;
