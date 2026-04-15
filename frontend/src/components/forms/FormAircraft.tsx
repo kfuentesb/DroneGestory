@@ -100,7 +100,14 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       ])
     )
   );
-  const [existingDocumentationFileNames] = useState<Record<string, string>>(
+  const modelDefaultFileNames = Object.fromEntries(
+    aircraftDocumentationFields.map((f) => {
+      const fullPath = documentationByType[f.key]?.documentationName ?? "";
+      const fileName = fullPath ? fullPath.split("/").pop() ?? "" : "";
+      return [f.fileKey, fileName];
+    })
+  ) as Record<string, string>;
+  const [existingDocumentationFileNames, setExistingDocumentationFileNames] = useState<Record<string, string>>(
     Object.fromEntries(
       aircraftDocumentationFields.map((f) => {
         const fullPath = documentationByType[f.key]?.documentationName ?? "";
@@ -109,9 +116,9 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       })
     )
   );
-  const [modelDefaultByType] = useState<Record<string, boolean>>(
-    Object.fromEntries(aircraftDocumentationFields.map((f) => [f.key, Boolean(documentationByType[f.key])]))
-  );
+  const modelDefaultByType = Object.fromEntries(
+    aircraftDocumentationFields.map((f) => [f.key, Boolean(documentationByType[f.key])])
+  ) as Record<string, boolean>;
 
   const [formValues, setFormValues] = useState({
     manufacturer: initialValues?.manufacturer ?? "",
@@ -123,6 +130,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     maxSpeed: initialValues?.maxSpeedDefault ?? 0,
     config: getOptionByValue(configs, initialValues?.configDefault) as SelectOption | null,
     impactEnergy: initialValues?.impactEnergyDefault ?? 0,
+    flightMinutes: 0,
     hasCamera: getYesNoOption(initialValues?.hasCameraDefault) as SelectOption | null,
     privatelyBuilt: getYesNoOption(initialValues?.privatelyBuiltDefault) as SelectOption | null,
     hasParachute: getYesNoOption(initialValues?.hasParachuteDefault) as SelectOption | null,
@@ -143,6 +151,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     maxSpeed: false,
     config: false,
     impactEnergy: false,
+    flightMinutes: false,
     hasCamera: false,
     tooMuchTextAccesories: false,
   });
@@ -155,13 +164,6 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     hasParachute: formValues.hasParachute,
   });
 
-  console.log("FormAircraft - Initial Values:", initialValues);
-  console.log("FormAircraft - Form Values:", formValues);
-  console.log("FormAircraft - Documentation Flags:", {
-    showInsuranceDocumentation,
-    showFTSDocumentation,
-    showParachuteDocumentation,
-  });
   const allowedImageTypes = ["image/jpeg", "image/png"];
   const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -200,7 +202,39 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
   };
 
   const handleDocumentationToggle = (id: string) => {
-    setDocumentationChecks((prev) => ({ ...prev, [id]: !prev[id] }));
+    setDocumentationChecks((prev) => {
+      const nextValue = !prev[id];
+      const fieldConfig = aircraftDocumentationFields.find(
+        (field) => field.enabledKey === id || field.indefiniteKey === id
+      );
+
+      if (!fieldConfig) {
+        return { ...prev, [id]: nextValue };
+      }
+
+      if (fieldConfig.enabledKey === id && !nextValue) {
+        setDocumentationFiles((filesPrev) => ({
+          ...filesPrev,
+          [fieldConfig.fileKey]: null,
+        }));
+        setExistingDocumentationFileNames((namesPrev) => ({
+          ...namesPrev,
+          [fieldConfig.fileKey]: "",
+        }));
+        setDocumentationFormValues((valuesPrev) => ({
+          ...valuesPrev,
+          [fieldConfig.dateKey]: "",
+        }));
+
+        return {
+          ...prev,
+          [fieldConfig.enabledKey]: false,
+          [fieldConfig.indefiniteKey]: false,
+        };
+      }
+
+      return { ...prev, [id]: nextValue };
+    });
   };
 
   const handleDocumentationFileChange = (event: React.ChangeEvent<HTMLInputElement>, id: string) => {
@@ -217,17 +251,62 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     }
 
     setDocumentationFiles((prev) => ({ ...prev, [id]: file }));
+    setExistingDocumentationFileNames((prev) => ({ ...prev, [id]: "" }));
     setError(null);
   };
 
   const handleDocumentationClearFile = (id: string, inputId: string) => {
     setDocumentationFiles((prev) => ({ ...prev, [id]: null }));
+    setExistingDocumentationFileNames((prev) => ({ ...prev, [id]: "" }));
     const fileInput = document.getElementById(inputId) as HTMLInputElement | null;
     if (fileInput) fileInput.value = "";
+
+    const fieldConfig = aircraftDocumentationFields.find((field) => field.fileKey === id);
+    if (fieldConfig) {
+      setDocumentationChecks((prev) => ({
+        ...prev,
+        [fieldConfig.enabledKey]: false,
+        [fieldConfig.indefiniteKey]: false,
+      }));
+      setDocumentationFormValues((prev) => ({
+        ...prev,
+        [fieldConfig.dateKey]: "",
+      }));
+    }
   };
 
   const handleDocumentationDateChange = (key: string, value: string) => {
     setDocumentationFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleRestoreModelDefault = (fieldFileKey: string) => {
+    const fieldConfig = aircraftDocumentationFields.find((field) => field.fileKey === fieldFileKey);
+    if (!fieldConfig) {
+      return;
+    }
+
+    const baselineDoc = documentationByType[fieldConfig.key];
+    if (!baselineDoc) {
+      return;
+    }
+
+    setDocumentationFiles((prev) => ({
+      ...prev,
+      [fieldConfig.fileKey]: null,
+    }));
+    setExistingDocumentationFileNames((prev) => ({
+      ...prev,
+      [fieldConfig.fileKey]: modelDefaultFileNames[fieldConfig.fileKey] ?? "",
+    }));
+    setDocumentationChecks((prev) => ({
+      ...prev,
+      [fieldConfig.enabledKey]: true,
+      [fieldConfig.indefiniteKey]: Boolean(baselineDoc.dateIndefinite),
+    }));
+    setDocumentationFormValues((prev) => ({
+      ...prev,
+      [fieldConfig.dateKey]: baselineDoc.dateIndefinite ? "" : (baselineDoc.expireDate ?? ""),
+    }));
   };
 
   const buildDocumentationPayload = (): {
@@ -353,6 +432,9 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
         isNaN(Number(formValues.impactEnergy)) ||
         Number(formValues.impactEnergy) < 0 ||
         Number(formValues.impactEnergy) > LIMITS.MAX_ENERGY,
+      flightMinutes:
+        !Number.isInteger(Number(formValues.flightMinutes)) ||
+        Number(formValues.flightMinutes) < 0,
       config: !formValues.config,
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
       tooMuchTextAccesories: formValues.accessories.length > 800,
@@ -380,6 +462,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       if (formValues.maxSpeed) formData.append("maxSpeed", String(formValues.maxSpeed));
       if (formValues.config) formData.append("config", formValues.config?.value ?? "");
       if (formValues.impactEnergy) formData.append("impactEnergy", String(formValues.impactEnergy));
+      formData.append("flightMinutes", String(formValues.flightMinutes));
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
 
       if (formValues.privatelyBuilt) formData.append("privatelyBuilt", formValues.privatelyBuilt.value);
@@ -572,6 +655,32 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
             </div>
 
             <div className="row mb-4">
+              <div className="col-12 col-md-4">
+                <label className="form-label d-block text-start ps-1">Horas de vuelo (min)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  className="form-control"
+                  value={formValues.flightMinutes}
+                  onChange={(e) =>
+                    setFormValues({
+                      ...formValues,
+                      flightMinutes: e.target.value === "" ? 0 : Number(e.target.value),
+                    })
+                  }
+                  style={{
+                    ...backgroundBorderInputs,
+                    border: errors.flightMinutes ? "1px solid red" : "1px solid #D1D5DB",
+                  }}
+                />
+                {errors.flightMinutes && (
+                  <div className="text-danger small">Debe ser un entero mayor o igual que 0</div>
+                )}
+              </div>
+            </div>
+
+            <div className="row mb-4">
               <div className="col-12 col-md mb-3 mb-md-0">
                 <label className="form-label d-block text-start ps-1">Cámara</label>
                 <Select
@@ -722,12 +831,14 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
               selectedFiles={documentationFiles}
               formValues={documentationFormValues}
               existingFileNames={existingDocumentationFileNames}
+              modelDefaultFileNames={modelDefaultFileNames}
               modelDefaultByType={modelDefaultByType}
               onlyInsuranceHasDates
               onToggleCheck={handleDocumentationToggle}
               onFileChange={handleDocumentationFileChange}
               onClearFile={handleDocumentationClearFile}
               onFormDateChange={handleDocumentationDateChange}
+              onRestoreModelDefault={handleRestoreModelDefault}
             />
 
             {error && <p className="text-danger text-center">{error}</p>}

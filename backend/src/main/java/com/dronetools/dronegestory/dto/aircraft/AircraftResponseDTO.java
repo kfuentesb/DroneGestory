@@ -34,6 +34,7 @@ public class AircraftResponseDTO {
     private Boolean hasFTS;
     private SelectionStatus cautive;
     private String accessories;
+    private Integer flightMinutes;
 
     public static AircraftResponseDTO fromEntity(Aircraft aircraft) {
         AircraftResponseDTO dto = new AircraftResponseDTO();
@@ -61,6 +62,7 @@ public class AircraftResponseDTO {
         dto.setHasFTS(aircraft.getHasFTS());
         dto.setCautive(aircraft.getCautive());
         dto.setAccessories(aircraft.getAccessories());
+        dto.setFlightMinutes(aircraft.getFlightMinutes());
         return dto;
     }
 }

@@ -156,6 +156,15 @@ export const aircraftFields: FieldConfig[] = [
     error: "Máximo 800 caracteres",
   },
   {
+    label: "Horas de vuelo (min)",
+    key: "flightMinutes",
+    type: "number",
+    validate: (val: any) => Number.isInteger(Number(val)) && Number(val) >= 0,
+    error: "Debe ser un nÃºmero entero mayor o igual que 0",
+    format: (v: any) => v === null || v === undefined || v === "" ? "0 min" : `${v} min`,
+    readOnly: true,
+  },
+  {
     label: "Imagen de perfil",
     key: "imageFile",
     type: "file",

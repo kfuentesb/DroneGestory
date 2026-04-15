@@ -33,6 +33,7 @@ public class AircraftRequestDTO {
     private Boolean hasFTS;
     private SelectionStatus cautive;
     private String accessories;
+    private Integer flightMinutes;
 
     // Legacy aliases accepted for multipart binding compatibility.
     private Boolean parachute;
@@ -62,6 +63,7 @@ public class AircraftRequestDTO {
         aircraft.setHasFTS(resolveBoolean(hasFTS, hasFts));
         aircraft.setCautive(resolveSelectionStatus(cautive, tether));
         aircraft.setAccessories(resolveAccessories(accessories, observations));
+        aircraft.setFlightMinutes(flightMinutes != null ? flightMinutes : 0);
 
         return aircraft;
     }

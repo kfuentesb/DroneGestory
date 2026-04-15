@@ -83,5 +83,15 @@ public class Aircraft {
     @Column(name = "accessories", length = 800)
     private String accessories;
 
+    @Column(name = "flight_minutes", nullable = false, columnDefinition = "integer default 0")
+    private Integer flightMinutes = 0;
+
+    @PrePersist
+    public void ensureDefaults() {
+        if (flightMinutes == null) {
+            flightMinutes = 0;
+        }
+    }
+
 }
 
