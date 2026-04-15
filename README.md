@@ -107,9 +107,6 @@ VISUAL<br>
 
 -DRONES<br>
 -Documentación otros debe poderse añadir multiples documentos, como con otros certificados<br>
--Al actualizar la documentacion de modelo, no se actualiza la documentación de las aeronaves con esos campos<br>
--Añadir forma para volver a poner en un campo el valor por defecto del modelo (si está disponible)<br>
-
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
