@@ -110,7 +110,7 @@ export default function DetailsComponent({
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
 
-    // 1. Lógica de Flags (UI)
+    // Lógica de Flags (UI)
     const { isUser, isAircraft, isModel } = useMemo(() => {
         const resolved = certificateSectionType ?? (showCertificates ? "user" : undefined);
         return {
@@ -121,12 +121,12 @@ export default function DetailsComponent({
         };
     }, [certificateSectionType, showCertificates]);
 
-    // 2. Estados de Datos Crudos (API)
+    // Estados de Datos Crudos (API)
     const [certificates, setCertificates] = useState<UserCertificate[]>([]);
     const [aircraftDocumentations, setAircraftDocumentations] = useState<AircraftDocumentation[]>([]);
     const [aircraftModelDefaults, setAircraftModelDefaults] = useState<AircraftModelDocumentation[]>([]);
 
-    // 4. Estados Específicos de Secciones Dinámicas
+    // Estados Específicos de Secciones Dinámicas
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
     const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
