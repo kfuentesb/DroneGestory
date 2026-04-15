@@ -2,7 +2,7 @@ import { saveAnexo8Data, type Anexo8Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
-import { useAnexoForm } from "../commons/useAnexoForm";
+import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 
 type FormOperationAnexo8DetailProps = {
   operationId: number;
@@ -33,25 +33,30 @@ const DEFAULT_VALUES = FORM_FIELDS.reduce(
 
 const SECCIONES_CONFIG: { seccion1: SectionItem[]; seccion2: SectionItem[] } = {
   seccion1: [
-    { num: "1.1", title: "Condiciones ATSP", key: "condicionesATSP", level: 0 },
+    { num: "1.1", title: "Si la operación se lleva a cabo en espacio aéreo controlado o FIZ", inputType: "title", level: 0, bold: true},
+    { num: "1.1.1", title: "Se cierran las operaciones confomre a las condiciones acordadas con el ATSP", key: "condicionesATSP", level: 1},
+    { num: "1.2", title: "Otras condiciones", inputType: "title", level: 0, bold: true},
     {
-      num: "1.2",
-      title: "Comunicación a terceros finalización operación",
+      num: "1.2.1",
+      title: "Comunicación a terceros de la finalización de operaciones",
       key: "comunicacion3FinalizacionOperacion",
-      level: 0,
+      level: 1,
     },
-    { num: "1.3", title: "Comunicación ZRVF CECAF", key: "comunicacionZrvfCecaf", level: 0 },
+    { num: "1.2.2", title: "Comunicación imágenes tomadas en ZRVF al CECAF", key: "comunicacionZrvfCecaf", level: 1 },
   ],
   seccion2: [
-    { num: "2.1", title: "Anotación tiempo vuelo aeronave", key: "anotacionTiempoVueloAeronave", level: 0 },
-    { num: "2.2", title: "Anotación tiempo actividad personal", key: "anotacionTIempoActividadPersonal", level: 0 },
+    { num: "2.1", title: "Registros de actividad de vuelo", inputType: "title", level: 0, bold: true},
+    { num: "2.1.1", title: "Anotación de tiempos de vuelo de aeronave", key: "anotacionTiempoVueloAeronave", level: 1 },
+    { num: "2.1.2", title: "Anotación de tiempos de actividad del personal", key: "anotacionTIempoActividadPersonal", level: 1 },
+    { num: "2.2", title: "Registro y comunicación de eventos significativos", inputType: "title", level: 0, bold: true},
     {
-      num: "2.3",
+      num: "2.2.1",
       title: "Anotación eventos ocurridos en operación",
       key: "anotacionEventosOcurridosOperacion",
-      level: 0,
+      level: 1,
     },
-    { num: "2.4", title: "Comunicación de incidentes", key: "comunicacionIncidentes", level: 0 },
+    { num: "2.2.2", title: "Comunicación de incidentes", key: "comunicacionIncidentes", level: 1 },
+    { num: "2.3", title: "Otros", inputType: "title", level: 0, bold: true},
   ],
 };
 

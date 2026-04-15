@@ -1,7 +1,7 @@
 import { saveAnexo7Data, type Anexo7Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
-import { useAnexoForm } from "../commons/useAnexoForm";
+import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 
 type FormOperationAnexo7DetailProps = {
   operationId: number;

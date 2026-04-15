@@ -2,7 +2,7 @@ import { saveAnexo5Data, type Anexo5Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
-import { useAnexoForm } from "../commons/useAnexoForm";
+import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 
 type FormOperationAnexo5DetailProps = {
   operationId: number;

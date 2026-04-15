@@ -8,6 +8,8 @@ import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+
 @Service
 public class Anexo6Service extends AnexoServiceBase<Anexo6> {
 
@@ -38,7 +40,9 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
     protected void actualizarCampos(Anexo6 destino, Anexo6 origen) {
         destino.setNombreConops(origen.getNombreConops());
         destino.setFechaOp(origen.getFechaOp());
-        destino.setMaterialesAuxiliares(origen.getMaterialesAuxiliares());
+        destino.setMaterialesAuxiliares(
+                origen.getMaterialesAuxiliares() == null ? new ArrayList<>() : new ArrayList<>(origen.getMaterialesAuxiliares())
+        );
         destino.setSinImpacto(origen.getSinImpacto());
         destino.setCentroGravedad(origen.getCentroGravedad());
         destino.setIntegridadEstructural(origen.getIntegridadEstructural());

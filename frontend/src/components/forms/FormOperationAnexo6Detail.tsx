@@ -4,7 +4,7 @@ import { MaterialesAuxiliaresInput } from "../commons/MaterialesAuxiliaresInput"
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
-import { useAnexoForm } from "../commons/useAnexoForm";
+import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 
 type FormOperationAnexo6DetailProps = {
   operationId: number;
