@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,8 +26,13 @@ public class Anexo6 extends Anexo {
     // TODO insertar aeronave
 
     // 1. Material auxiliar
-    @Column(name = "materiales_auxiliares")
-    private List<String> materialesAuxiliares;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "anexo6_materiales_auxiliares",
+            joinColumns = @JoinColumn(name = "anexo6_id") // anexo6_id es clave foránea a anexo6.id
+    )
+    @Column(name = "material_auxiliar") // nombre de la columna para cada string
+    private List<String> materialesAuxiliares = new ArrayList<>();
 
     // BOOLEANS - CORRECTO, INCORRECTO, NA
     // 2. Estructura

@@ -219,7 +219,6 @@ export default function OperationDetail() {
                             <th>Estado</th>
                             <th>Firmado por</th>
                             <th>Fecha firma</th>
-                            <th>Descripción</th>
                             <th>Acción</th>
                           </tr>
                         </thead>
@@ -232,13 +231,7 @@ export default function OperationDetail() {
                               </td>
                               <td>{version.firmadoPor ?? "-"}</td>
                               <td>{formatDateTime(version.fechaFirma)}</td>
-                              <td
-                                className="text-truncate"
-                                style={{ minWidth: "280px", maxWidth: "450px", overflow: "hidden" }}
-                              >
-                                {version.textoPrueba ?? "-"}
-                              </td>
-                              <td className="text-end">
+                              <td>
                                 {version.estado === "FIRMADO" ? (
                                   <ButtonProp
                                   onClick={() =>

@@ -55,7 +55,7 @@ type FormValues = Record<FormKey, string>;
 
 const DEFAULT_VALUES = FORM_FIELDS.reduce(
   (acc, key) => ({ ...acc, [key]: "" }),
-  {} as FormValues,
+  {} as FormValues
 );
 
 const BOOL_OPTIONS = [
@@ -78,17 +78,17 @@ const VERIFICACION_CONFIG: CheckItem[] = [
   { num: "1.9", title: "Carga de pago", key: "cargaPagoCorrecto", obsKey: "cargaPagoObservaciones" },
   { num: "1.10", title: "Identificación remota", key: "identificacionRemotaCorrecto", obsKey: "identificacionRemotaObservaciones" },
   { num: "1.11", title: "Sistema de geoconsciencia", key: "sistemaGeoconscienciaCorrecto", obsKey: "sistemaGeoconscienciaObservaciones" },
-  { num: "1.12", title: "Datos de vuelo", key: "datosVueloCorrecto", obsKey: "datosVueloObservaciones" },
+  { num: "1.12", title: "Datos obtenidos durante el vuelo", key: "datosVueloCorrecto", obsKey: "datosVueloObservaciones" },
   { num: "1.13", title: "Otros", key: "otrosVerificacionCorrecto", obsKey: "otrosVerificacionObservaciones" },
-] as const;
+];
 
 const RECOGIDA_CONFIG: CheckItem[] = [
   { num: "2.1", title: "Aeronave", key: "aeronaveCorrecto", obsKey: "aeronaveObservaciones" },
   { num: "2.2", title: "Unidad de control", key: "unidadControlCorrecto", obsKey: "unidadControlObservaciones" },
   { num: "2.3", title: "Sensores", key: "sensoresRecogidaCorrecto", obsKey: "sensoresRecogidaObservaciones" },
   { num: "2.4", title: "Antenas", key: "antenasCorrecto", obsKey: "antenasObservaciones" },
-  { num: "2.5", title: "Otros", key: "otrosRecogidaCorrecto", obsKey: "otrosRecogidaObservaciones" },
-] as const;
+  { num: "2.5", title: "Otros (generadores, herramientas, manga, viento, etc)", key: "otrosRecogidaCorrecto", obsKey: "otrosRecogidaObservaciones" },
+];
 
 function SectionTitle({ children }: { children: string }) {
   return <h4 className="fw-bold mt-5 mb-3 pb-2 border-bottom text-success">{children}</h4>;
@@ -104,16 +104,19 @@ export default function FormOperationAnexo7Detail({
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_VALUES);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!initialValues) return;
+    useEffect(() => {
+    if (!initialValues) {
+      setFormValues({ ...DEFAULT_VALUES });
+      return;
+    }
 
-    const normalizeDateTimeLocal = (value: string | null | undefined) => {
+    const normalizeDateTimeLocal = (value: string | null | undefined): string => {
       if (!value) return "";
       const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
       return match ? match[1] : value;
     };
 
-    const normalized = { ...DEFAULT_VALUES };
+    const normalized: FormValues = { ...DEFAULT_VALUES };
     FORM_FIELDS.forEach((key) => {
       const value = initialValues[key];
       if (key === "fechaOp") {
@@ -130,7 +133,6 @@ export default function FormOperationAnexo7Detail({
       }
       normalized[key] = String(value);
     });
-
     setFormValues(normalized);
   }, [initialValues]);
 
@@ -166,27 +168,20 @@ export default function FormOperationAnexo7Detail({
     }
   };
 
-  const renderRow = (item: {
-    num: string;
-    title: string;
-    key: FormKey;
-    obsKey: FormKey;
-  }) => {
-    const value = formValues[item.key] ?? "";
-    const obsValue = formValues[item.obsKey] ?? "";
-
+  const renderRow = (item: CheckItem) => {
     return (
-      <div key={item.key} className="border-bottom py-2 d-flex flex-column flex-md-row gap-3">
-        <div className="flex-grow-1">
-          <div className="fw-bold text-dark">{item.num}. {item.title}</div>
+      <div key={item.key} className="border-bottom py-3">
+        <div className="fw-bold mb-2">
+          {item.num}. {item.title}
         </div>
-        <div className="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center">
+
+        <div className="d-flex flex-column flex-md-row gap-3">
           <select
             className="form-select form-select-sm"
-            value={value}
+            value={formValues[item.key]}
             onChange={(e) => handleChange(item.key, e.target.value)}
             disabled={disabled || saving}
-            style={{ minWidth: "140px" }}
+            style={{ maxWidth: "160px" }}
           >
             {BOOL_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -194,13 +189,15 @@ export default function FormOperationAnexo7Detail({
               </option>
             ))}
           </select>
-          <input
-            type="text"
+
+          <textarea
             className="form-control form-control-sm"
-            value={obsValue}
+            value={formValues[item.obsKey]}
             onChange={(e) => handleChange(item.obsKey, e.target.value)}
             disabled={disabled || saving}
             placeholder="Observaciones"
+            rows={1}
+            style={{ resize: "vertical" }}
           />
         </div>
       </div>
@@ -210,7 +207,7 @@ export default function FormOperationAnexo7Detail({
   return (
     <div className="card shadow-sm border-0">
       <div className="card-body p-4">
-        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 7</h3>
+        <h3 className="fw-bold mb-1 text-dark">APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</h3>
         <div
           style={
             disabled
@@ -227,7 +224,7 @@ export default function FormOperationAnexo7Detail({
             <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label fw-bold small text-uppercase text-muted">Nombre CONOPS</label>
+                <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
                 <input
                   type="text"
                   className="form-control bg-white border"
@@ -248,13 +245,13 @@ export default function FormOperationAnexo7Detail({
               </div>
             </div>
 
-            <SectionTitle>SECCIÓN 1: Verificación</SectionTitle>
-            <div className="bg-white border rounded p-3 mb-4 text-start">
+            <SectionTitle>SECCIÓN 1: Verificación del estado de la aeronave</SectionTitle>
+            <div className="bg-white border rounded p-3">
               {VERIFICACION_CONFIG.map(renderRow)}
             </div>
 
-            <SectionTitle>SECCIÓN 2: Recogida y almacenaje</SectionTitle>
-            <div className="bg-white border rounded p-3 mb-4 text-start">
+            <SectionTitle>SECCIÓN 2: Recogida y almacenaje de todos los elementos desplazados a campo</SectionTitle>
+            <div className="bg-white border rounded p-3">
               {RECOGIDA_CONFIG.map(renderRow)}
             </div>
 
