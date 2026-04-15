@@ -54,8 +54,8 @@ type FormKey = (typeof FORM_FIELDS)[number];
 
 const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
 
-const BOOL_OPTIONS_CORRECTO = [
-  { value: "", label: "Sin especificar" },
+const BOOL_OPTIONS = [
+  { value: "", label: "N/A" },
   { value: "true", label: "Correcto" },
   { value: "false", label: "Incorrecto" },
 ];
@@ -204,7 +204,7 @@ export default function FormOperationAnexo6Detail({
       value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
-      opciones={BOOL_OPTIONS_CORRECTO}
+      opciones={BOOL_OPTIONS}
     />
   );
 

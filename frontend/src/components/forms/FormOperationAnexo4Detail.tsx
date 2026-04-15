@@ -59,7 +59,7 @@ type FormOperationAnexo4DetailProps = {
 type ErrorsMap = Record<string, string | null>;
 
 const BOOL_OPTIONS = [
-  { value: "", label: "Sin especificar" },
+  { value: "", label: "N/A" },
   { value: "true", label: "Sí" },
   { value: "false", label: "No" },
 ];
