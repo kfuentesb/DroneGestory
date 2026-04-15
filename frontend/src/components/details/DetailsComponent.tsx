@@ -47,79 +47,45 @@ import checkIcon from '../../assets/commons/check_white.svg';
 import cancelIcon from '../../assets/commons/cancel_white.svg';
 import LoadingSpinner from "../commons/Loading";
 
-export default function DetailsComponent({
-    id,
-    endpoint,
-    fields,
-    initialData,
-    imageEndpoint,
-    defaultImage = "user",
-    entityType = "user",
-    allowEdit,
-    allowDelete,
-    onDelete,
-    onBack,
-    validateForm,
-    showCertificates = false,
-    certificateSectionType,
-    clearableFieldKeys = [],
-}: DetailsComponentProps) {
+export default function DetailsComponent(props: DetailsComponentProps) {
     const { token } = useAuth();
-    // Derived UI flags: memoized because they depend only on props
-    const { resolvedCertificateSectionType, showUserCertificates, showAircraftDocumentation, showAircraftModelDocumentation } = useMemo(() => {
-        const resolved = certificateSectionType ?? (showCertificates ? "user" : undefined);
-        return {
-            resolvedCertificateSectionType: resolved,
-            showUserCertificates: resolved === "user",
-            showAircraftDocumentation: resolved === "aircraft",
-            showAircraftModelDocumentation: resolved === "model"
-        };
-    }, [certificateSectionType, showCertificates]);
-
-    const [data, setData] = useState<any>(initialData || null);
-    const [status, setStatus] = useState<number>(200);
-    const [loading, setLoading] = useState<LoadingState>({
-        data: true,
-        image: false,
-        certificates: false
-    });
-    const updateLoading = (key: keyof typeof loading, value: boolean) => {
-        setLoading(prev => ({ ...prev, [key]: value }));
-    };
-    const [editing, setEditing] = useState(false);
-    const [formValues, setFormValues] = useState<any>(initialData || {});
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [imageVersion, setImageVersion] = useState(0);
-    const [errors, setErrors] = useState<Record<string, string | null>>({});
-    const [removeImage, setRemoveImage] = useState(false);
-    const [certificateSelectedFiles, setCertificateSelectedFiles] = useState<Record<string, File | null>>(USER_CERTIFICATE_DEFAULTS.files);
-    const [certificateFormValues, setCertificateFormValues] = useState<Record<string, string>>(USER_CERTIFICATE_DEFAULTS.dates);
-    const [certificateActiveChecks, setCertificateActiveChecks] = useState<Record<string, boolean>>(USER_CERTIFICATE_DEFAULTS.checks);
-    const [aircraftDocumentationFiles, setAircraftDocumentationFiles] = useState<Record<string, File | null>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.files);
-    const [aircraftDocumentationFormValues, setAircraftDocumentationFormValues] = useState<Record<string, string>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.dates);
-    const [aircraftDocumentationChecks, setAircraftDocumentationChecks] = useState<Record<string, boolean>>(AIRCRAFT_DOCUMENTATION_DEFAULTS.checks);
-    const [aircraftDocumentationRestoreDefaults, setAircraftDocumentationRestoreDefaults] = useState<Record<string, boolean>>({});
-    const [aircraftModelDocumentationFiles, setAircraftModelDocumentationFiles] = useState<Record<string, File | null>>(MODEL_DOCUMENTATION_DEFAULTS.files);
-    const [aircraftModelDocumentationFormValues, setAircraftModelDocumentationFormValues] = useState<Record<string, string>>(MODEL_DOCUMENTATION_DEFAULTS.dates);
-    const [aircraftModelDocumentationChecks, setAircraftModelDocumentationChecks] = useState<Record<string, boolean>>(MODEL_DOCUMENTATION_DEFAULTS.checks);
-    const [existingAircraftDocumentationFileNames, setExistingAircraftDocumentationFileNames] = useState<Record<string, string>>({});
-    const [existingAircraftModelDocumentationFileNames, setExistingAircraftModelDocumentationFileNames] = useState<Record<string, string>>({});
-    const [existingStaticFileNames, setExistingStaticFileNames] = useState<Record<string, string>>({});
-    const [existingConopsFileNames, setExistingConopsFileNames] = useState<Record<string, string>>({});
-    const [existingAdditionalFileNames, setExistingAdditionalFileNames] = useState<Record<string, string>>({});
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
-
-    // Lógica de Flags (UI)
-    const { isUser, isAircraft, isModel } = useMemo(() => {
-        const resolved = certificateSectionType ?? (showCertificates ? "user" : undefined);
+    
+    // 1. UI Logic centralizada
+    const ui = useMemo(() => {
+        const resolved = props.certificateSectionType ?? (props.showCertificates ? "user" : undefined);
         return {
             resolved,
             isUser: resolved === "user",
             isAircraft: resolved === "aircraft",
             isModel: resolved === "model"
         };
-    }, [certificateSectionType, showCertificates]);
+    }, [props.certificateSectionType, props.showCertificates]);
+
+    // 2. Estados de la Entidad Principal
+    const [data, setData] = useState<any>(props.initialData || null);
+    const [formValues, setFormValues] = useState<any>(props.initialData || {});
+    const [editing, setEditing] = useState(false);
+    const [loading, setLoading] = useState<LoadingState>({ data: true, image: false, certificates: false });
+
+    // 3. ESTADOS AGRUPADOS (Solo 3 objetos en lugar de 15 variables)
+    const [userDocState, setUserDocState] = useState(createEmptyDocState(USER_CERTIFICATE_DEFAULTS));
+    const [aircraftDocState, setAircraftDocState] = useState(createEmptyDocState(AIRCRAFT_DOCUMENTATION_DEFAULTS));
+    const [modelDocState, setModelDocState] = useState(createEmptyDocState(MODEL_DOCUMENTATION_DEFAULTS));
+
+    // 4. Estados Dinámicos (Solo si son realmente necesarios fuera del objeto anterior)
+    const [dynamicDocs, setDynamicDocs] = useState({
+        categories: [] as string[],
+        conops: {} as Record<string, CertificateFieldPayload>,
+        additional: [] as AdditionalCertificatePayload[]
+    });
+
+    // 5. Handlers genéricos (Uno para todo)
+    const updateLoading = (key: keyof LoadingState, val: boolean) => 
+        setLoading(prev => ({ ...prev, [key]: val }));
+
+    const handleDocChange = (setter: typeof setUserDocState, key: keyof DocumentationState, field: string, value: any) => {
+        setter(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
+    };
 
     // Estados de Datos Crudos (API)
     const [certificates, setCertificates] = useState<UserCertificate[]>([]);
