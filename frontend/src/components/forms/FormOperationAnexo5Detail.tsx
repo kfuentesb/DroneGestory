@@ -1,4 +1,5 @@
 import { saveAnexo5Data, type Anexo5Data } from "../operations/operation.api";
+import { operationAnexo5DetailFields } from "../details/operation/OperationsAnexo5DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
@@ -12,35 +13,9 @@ type FormOperationAnexo5DetailProps = {
   onSaved?: (savedData: Anexo5Data | null) => void | Promise<void>;
 };
 
-const FORM_FIELDS = [
-  "nombreConops",
-  "fechaOp",
-  "vlos",
-  "ubicacionObservadores",
-  "evaluacionVisibilidadYAlcance",
-  "condicionantesAcordadosConGestor",
-  "analisisEnFuncionConops",
-  "evaluacionEntornoAereoAdyacente",
-  "vueloTerrestreControlado",
-  "notamActivos",
-  "tsaPreviaNotam",
-  "procedimientosATSP",
-  "condicionesClimatologicas",
-  "personalSabeFunciones",
-  "comunicacionEntrePersonal",
-  "comunicacion3Partes",
-  "requisitosSeguridad",
-  "requisitosMedioAmbiente",
-  "requisitosRadioelectrico",
-  "requisitosLocalesEspecificos",
-  "atenuacionesGRC",
-  "atenuacionesARC",
-  "comprobacionesUasVuelo",
-] as const;
-
-type FormKey = (typeof FORM_FIELDS)[number];
-
-const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
+const fields = operationAnexo5DetailFields;
+const FORM_FIELDS = fields.map(f => f.key);
+const DEFAULT_VALUES = fields.reduce((acc, f) => ({ ...acc, [f.key]: "" }), {} as Record<string, string>);
 
 const SECCIONES_CONFIG: {
   seccion1: SectionItem[];
@@ -162,7 +137,6 @@ export default function FormOperationAnexo5Detail({
           formData.append(key, value);
         }
       });
-
       const savedData = await saveAnexo5Data(operationId, formData);
       alert("Anexo 5 guardado correctamente");
       await onSaved?.(savedData);
@@ -181,7 +155,7 @@ export default function FormOperationAnexo5Detail({
     <ApartadoRow
       key={item.key ?? `title-${item.num}-${item.title}`}
       item={item}
-      value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
+      value={item.key ? formValues[item.key] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
     />
@@ -201,11 +175,12 @@ export default function FormOperationAnexo5Detail({
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
           <input
             type="text"
-            className="form-control bg-white border"
+            className="form-control bg-light border"
             value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
+            readOnly
+            disabled
           />
+          <small className="text-muted">Se sincroniza automáticamente desde el título de Anexo 4</small>
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

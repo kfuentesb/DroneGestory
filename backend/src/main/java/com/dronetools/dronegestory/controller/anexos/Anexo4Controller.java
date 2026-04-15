@@ -100,6 +100,9 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     protected Anexo4 convertDtoToEntity(Anexo4RequestDTO dto) {
         Anexo4 anexo = new Anexo4();
 
+        // Título
+        anexo.setTitle(dto.getTitle());
+
         // Campos simples
         anexo.setDescripcion(dto.getDescripcion());
         anexo.setFechaHoraPrevista(dto.getFechaHoraPrevista());

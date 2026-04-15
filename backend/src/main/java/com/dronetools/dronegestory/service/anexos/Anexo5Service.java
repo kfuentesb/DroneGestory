@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.anexos.Anexo5;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo5Repository;
@@ -17,6 +18,13 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
 
     @Transactional
     public Anexo5 registrarAnexo5(Long operationId, Anexo5 datosNuevos) {
+        // Sync nombreConops from Anexo4's title
+        Operation op = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        Anexo4 anexo4 = op.getAnexo4Actual();
+        if (anexo4 != null && anexo4.getTitle() != null) {
+            datosNuevos.setNombreConops(anexo4.getTitle());
+        }
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo5Actual,
                 Operation::getNextVersionAnexo5);

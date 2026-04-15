@@ -1,6 +1,7 @@
 import type { FieldConfig } from "../FieldConfig";
 
 const initialFields = {
+  title: "",
   descripcion: "",
   fechaHoraPrevista: "",
   mediosMateriales: "",
@@ -73,6 +74,13 @@ const booleanFields = [
 ];
 
 export const operationAnexo4DetailFields: FieldConfig[] = [
+  {
+    label: "Título",
+    key: "title",
+    type: "text",
+    validate: (v: string) => typeof v === "string" && v.trim().length > 0,
+    error: "El título es obligatorio",
+  },
   {
     label: "Descripción",
     key: "descripcion",

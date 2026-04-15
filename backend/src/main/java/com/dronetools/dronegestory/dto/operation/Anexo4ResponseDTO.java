@@ -14,6 +14,7 @@ public class Anexo4ResponseDTO {
     private Long id;
     private int numeroVersion;
     private AnexoStatus estado;
+    private String title;
     private String descripcion;
     private LocalDateTime fechaHoraPrevista;
     private String mediosMateriales;
@@ -64,6 +65,7 @@ public class Anexo4ResponseDTO {
         dto.setId(anexo.getId());
         dto.setNumeroVersion(anexo.getNumeroVersion());
         dto.setEstado(anexo.getEstado());
+        dto.setTitle(anexo.getTitle());
         dto.setDescripcion(anexo.getDescripcion());
         dto.setFechaHoraPrevista(anexo.getFechaHoraPrevista());
         dto.setMediosMateriales(anexo.getMediosMateriales());

@@ -1,4 +1,5 @@
 import { saveAnexo7Data, type Anexo7Data } from "../operations/operation.api";
+import { operationAnexo7DetailFields } from "../details/operation/OperationsAnexo7DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
@@ -11,53 +12,9 @@ type FormOperationAnexo7DetailProps = {
   onSaved?: (savedData: Anexo7Data | null) => void | Promise<void>;
 };
 
-const FORM_FIELDS = [
-  "nombreConops",
-  "fechaOp",
-  "estructuraCorrecto",
-  "estructuraObservaciones",
-  "bateriasCorrecto",
-  "bateriasObservaciones",
-  "sensoresCorrecto",
-  "sensoresObservaciones",
-  "motoresCorrecto",
-  "motoresObservaciones",
-  "helicesCorrecto",
-  "helicesObservaciones",
-  "partesMovilesCorrecto",
-  "partesMovilesObservaciones",
-  "comunicacionesCorrecto",
-  "comunicacionesObservaciones",
-  "plantaPotenciaCorrecto",
-  "plantaPotenciaObservaciones",
-  "cargaPagoCorrecto",
-  "cargaPagoObservaciones",
-  "identificacionRemotaCorrecto",
-  "identificacionRemotaObservaciones",
-  "sistemaGeoconscienciaCorrecto",
-  "sistemaGeoconscienciaObservaciones",
-  "datosVueloCorrecto",
-  "datosVueloObservaciones",
-  "otrosVerificacionCorrecto",
-  "otrosVerificacionObservaciones",
-  "aeronaveCorrecto",
-  "aeronaveObservaciones",
-  "unidadControlCorrecto",
-  "unidadControlObservaciones",
-  "sensoresRecogidaCorrecto",
-  "sensoresRecogidaObservaciones",
-  "antenasCorrecto",
-  "antenasObservaciones",
-  "otrosRecogidaCorrecto",
-  "otrosRecogidaObservaciones",
-] as const;
-
-type FormKey = (typeof FORM_FIELDS)[number];
-
-const DEFAULT_VALUES = FORM_FIELDS.reduce(
-  (acc, key) => ({ ...acc, [key]: "" }),
-  {} as Record<FormKey, string>
-);
+const fields = operationAnexo7DetailFields;
+const FORM_FIELDS = fields.map(f => f.key);
+const DEFAULT_VALUES = fields.reduce((acc, f) => ({ ...acc, [f.key]: "" }), {} as Record<string, string>);
 
 const BOOL_OPTIONS = [
   { value: "", label: "Sin especificar" },
@@ -65,7 +22,7 @@ const BOOL_OPTIONS = [
   { value: "false", label: "No" },
 ];
 
-type CheckItem = { num: string; title: string; key: FormKey; obsKey: FormKey };
+type CheckItem = { num: string; title: string; key: string; obsKey: string };
 
 const VERIFICACION_CONFIG: CheckItem[] = [
   { num: "1.1", title: "Estructura", key: "estructuraCorrecto", obsKey: "estructuraObservaciones" },
@@ -182,11 +139,12 @@ export default function FormOperationAnexo7Detail({
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
           <input
             type="text"
-            className="form-control bg-white border"
+            className="form-control bg-light border"
             value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
+            readOnly
+            disabled
           />
+          <small className="text-muted">Se sincroniza automáticamente desde el título de Anexo 4</small>
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

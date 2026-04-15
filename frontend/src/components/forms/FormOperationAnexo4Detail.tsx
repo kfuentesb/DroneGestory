@@ -204,6 +204,20 @@ export default function FormOperationAnexo4Detail({
       readOnlyMessage={readOnlyMessage}
       onSubmit={handleSubmit}
     >
+      {/* TÍTULO */}
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">Título</label>
+        <input
+          type="text"
+          className={`form-control bg-white border${errors.title ? " is-invalid" : ""}`}
+          value={formValues.title ?? ""}
+          onChange={(e) => handleChange("title", e.target.value)}
+          disabled={disabled || saving}
+          placeholder="Título de la operación (obligatorio)"
+        />
+        {errors.title && <div className="invalid-feedback">{errors.title}</div>}
+      </div>
+
       {/* SECCIÓN 1 */}
       <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
       <div className="mb-3">

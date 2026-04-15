@@ -2,8 +2,13 @@ package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo5Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,15 +22,28 @@ import java.nio.file.Paths;
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
-    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository) {
+    private final Anexo5Repository anexo5Repository;
+    private final Anexo6Repository anexo6Repository;
+    private final Anexo7Repository anexo7Repository;
+    private final Anexo8Repository anexo8Repository;
+
+    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository,
+                         Anexo5Repository anexo5Repository, Anexo6Repository anexo6Repository,
+                         Anexo7Repository anexo7Repository, Anexo8Repository anexo8Repository) {
         super(repository, operationRepository);
+        this.anexo5Repository = anexo5Repository;
+        this.anexo6Repository = anexo6Repository;
+        this.anexo7Repository = anexo7Repository;
+        this.anexo8Repository = anexo8Repository;
     }
 
     @Transactional
     public Anexo4 registrarAnexo4(Long operationId, Anexo4 datosNuevos) {
-        return registrarAnexo(operationId, datosNuevos,
+        Anexo4 saved = registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
+        propagateTitleToAnexos(saved.getOperation(), saved.getTitle());
+        return saved;
     }
 
     @Transactional
@@ -33,8 +51,26 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         return rehacerAnexo(idAnexoOrigen, Operation::getNextVersionAnexo4);
     }
 
+    /**
+     * Propaga el título de Anexo4 al campo nombreConops de los borradores de Anexo5-8.
+     */
+    private void propagateTitleToAnexos(Operation op, String title) {
+        if (op == null) return;
+        anexo5Repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
+                .ifPresent(a -> { a.setNombreConops(title); anexo5Repository.save(a); });
+        anexo6Repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
+                .ifPresent(a -> { a.setNombreConops(title); anexo6Repository.save(a); });
+        anexo7Repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
+                .ifPresent(a -> { a.setNombreConops(title); anexo7Repository.save(a); });
+        anexo8Repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
+                .ifPresent(a -> { a.setNombreConops(title); anexo8Repository.save(a); });
+    }
+
     @Override
     protected void actualizarCampos(Anexo4 destino, Anexo4 origen) {
+        // Título
+        destino.setTitle(origen.getTitle());
+
         // Campos simples
         destino.setDescripcion(origen.getDescripcion());
         destino.setFechaHoraPrevista(origen.getFechaHoraPrevista());
@@ -95,6 +131,9 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
     @Override
     protected Anexo4 crearCopia(Anexo4 origen) {
         Anexo4 copia = new Anexo4();
+
+        // Título
+        copia.setTitle(origen.getTitle());
 
         // Campos simples
         copia.setDescripcion(origen.getDescripcion());

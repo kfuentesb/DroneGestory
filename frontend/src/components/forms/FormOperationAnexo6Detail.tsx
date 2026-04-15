@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { saveAnexo6Data, type Anexo6Data } from "../operations/operation.api";
+import { operationAnexo6DetailFields } from "../details/operation/OperationsAnexo6DetailFields";
 import { MaterialesAuxiliaresInput } from "../commons/MaterialesAuxiliaresInput";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
@@ -14,45 +15,10 @@ type FormOperationAnexo6DetailProps = {
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
 };
 
+const fields = operationAnexo6DetailFields;
 // Ojo: materialesAuxiliares lo gestionamos a parte como array.
-const FORM_FIELDS = [
-  "nombreConops",
-  "fechaOp",
-  "sinImpacto",
-  "centroGravedad",
-  "integridadEstructural",
-  "cableado",
-  "verificacionLuces",
-  "calibracion",
-  "validarSalidaDatos",
-  "giranLibremente",
-  "sentidoGiroCorrecto",
-  "sinImpactoMotores",
-  "colocacionCorrecta",
-  "sujetacionFirme",
-  "sinImpactoHelices",
-  "bateriaCarga",
-  "movimientoFluidoMando",
-  "sinImpactoPartesMoviles",
-  "movimientoFluidoPartesMoviles",
-  "antenasInstaladasYOrientadas",
-  "calidadOnda",
-  "recepcionAdecuada",
-  "fuenteAlimentacion",
-  "nivelFuenteAlimentacion",
-  "fijacionCorrecta",
-  "memoriaSuficienteParaDatos",
-  "sinImpactoCargaPago",
-  "conexionesCargaPago",
-  "datosCargados",
-  "transmisionDatos",
-  "informacionActualizada",
-  "sistemaActivado",
-] as const;
-
-type FormKey = (typeof FORM_FIELDS)[number];
-
-const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
+const FORM_FIELDS = fields.map(f => f.key);
+const DEFAULT_VALUES = fields.reduce((acc, f) => ({ ...acc, [f.key]: "" }), {} as Record<string, string>);
 
 const BOOL_OPTIONS_CORRECTO = [
   { value: "", label: "Sin especificar" },
@@ -197,7 +163,7 @@ export default function FormOperationAnexo6Detail({
     <ApartadoRow
       key={item.key ?? `title-${item.num}-${item.title}`}
       item={item}
-      value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
+      value={item.key ? formValues[item.key] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
       opciones={BOOL_OPTIONS_CORRECTO}
@@ -218,11 +184,12 @@ export default function FormOperationAnexo6Detail({
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
           <input
             type="text"
-            className="form-control bg-white border"
+            className="form-control bg-light border"
             value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
+            readOnly
+            disabled
           />
+          <small className="text-muted">Se sincroniza automáticamente desde el título de Anexo 4</small>
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

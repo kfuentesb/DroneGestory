@@ -9,6 +9,9 @@ import java.util.List;
 @Getter
 @Setter
 public class Anexo4RequestDTO {
+    // TÍTULO
+    private String title;
+
     // CAMPOS PRINCIPALES
     private String descripcion;
     private LocalDateTime fechaHoraPrevista;

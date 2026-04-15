@@ -1,4 +1,5 @@
 import { saveAnexo8Data, type Anexo8Data } from "../operations/operation.api";
+import { operationAnexo8DetailFields } from "../details/operation/OperationsAnexo8DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
@@ -12,23 +13,11 @@ type FormOperationAnexo8DetailProps = {
   onSaved?: (savedData: Anexo8Data | null) => void | Promise<void>;
 };
 
-const FORM_FIELDS = [
-  "nombreConops",
-  "fechaOp",
-  "condicionesATSP",
-  "comunicacion3FinalizacionOperacion",
-  "comunicacionZrvfCecaf",
-  "anotacionTiempoVueloAeronave",
-  "anotacionTIempoActividadPersonal",
-  "anotacionEventosOcurridosOperacion",
-  "comunicacionIncidentes",
-] as const;
-
-type FormKey = (typeof FORM_FIELDS)[number];
-
-const DEFAULT_VALUES = FORM_FIELDS.reduce(
-  (acc, key) => ({ ...acc, [key]: "" }),
-  {} as Record<FormKey, string>,
+const fields = operationAnexo8DetailFields;
+const FORM_FIELDS = fields.map(f => f.key);
+const DEFAULT_VALUES = fields.reduce(
+  (acc, f) => ({ ...acc, [f.key]: "" }),
+  {} as Record<string, string>,
 );
 
 const SECCIONES_CONFIG: { seccion1: SectionItem[]; seccion2: SectionItem[] } = {
@@ -105,7 +94,7 @@ export default function FormOperationAnexo8Detail({
     <ApartadoRow
       key={item.key ?? `title-${item.num}-${item.title}`}
       item={item}
-      value={item.key ? formValues[item.key as FormKey] ?? "" : ""}
+      value={item.key ? formValues[item.key] ?? "" : ""}
       onChange={handleChange}
       disabled={disabled || saving}
     />
@@ -125,11 +114,12 @@ export default function FormOperationAnexo8Detail({
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
           <input
             type="text"
-            className="form-control bg-white border"
+            className="form-control bg-light border"
             value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
+            readOnly
+            disabled
           />
+          <small className="text-muted">Se sincroniza automáticamente desde el título de Anexo 4</small>
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

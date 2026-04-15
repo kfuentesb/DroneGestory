@@ -19,6 +19,10 @@ import java.util.List;
 @Setter
 public class Anexo4 extends Anexo {
 
+    // TÍTULO (origen de nombreConops para Anexos 5-8)
+    @Column(name = "title")
+    private String title;
+
     // FORMULARIO
     @Column(name = "descripcion")
     private String descripcion;
