@@ -104,9 +104,13 @@ VISUAL<br>
 
 -USUARIO<br>
 -Un usuario no admin no puede ver su propio perfil<br>
+-Evitar que un usuario pueda tener el mismo nombre de usuario<br>
+-La fecha se muestra con el formato americano, cambiarlo a gregorian<br>
 
 -DRONES<br>
 -Documentación otros debe poderse añadir multiples documentos, como con otros certificados<br>
+-Sale el nombre en la vista de aeronave mal. <br>
+-A la hora de seleccion de fabricantes y modelos debería ser un select/buscador<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
