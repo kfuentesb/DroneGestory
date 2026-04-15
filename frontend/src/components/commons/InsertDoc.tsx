@@ -111,7 +111,7 @@ export default function InsertDoc({
                         </label>
 
 
-                        {isModelDefault && isChecked && (
+                        {!canRestore &&isModelDefault && isChecked && (
                             <span
                                 className="badge"
                                 style={{
