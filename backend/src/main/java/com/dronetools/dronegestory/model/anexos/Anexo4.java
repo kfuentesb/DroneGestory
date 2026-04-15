@@ -1,17 +1,12 @@
 package com.dronetools.dronegestory.model.anexos;
 
-import com.dronetools.dronegestory.common.CampoDinamico;
-import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.Anexo;
-import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "anexo4")
