@@ -12,21 +12,10 @@ export default function Pagination({
   onPageChange,
 }: PaginationProps) {
   // descomentar para mostrar solo cuando minimo haya 10 items
-  // if (totalItems <= itemsPerPage) return null;
+  if (totalItems <= itemsPerPage) return null;
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const showPageSelect = totalPages >= 1;
-
-  const handleInternalPageChangeInstant = (newPage: number) => {
-    onPageChange(newPage);
-    
-    setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "instant"
-      });
-    }, 0);
-  };
+  const showPageSelect = totalPages >= 3;
 
   const handleInternalPageChangeSmooth = (newPage: number) => {
     onPageChange(newPage);
@@ -47,7 +36,7 @@ export default function Pagination({
           type="button"
           className="btn btn-sm btn-outline-secondary"
           disabled={currentPage === 1}
-          onClick={() => handleInternalPageChangeInstant(currentPage - 1)}
+          onClick={() => handleInternalPageChangeSmooth(currentPage - 1)}
           style={{ borderRadius: "6px" }}
         >
           Anterior
@@ -91,10 +80,6 @@ export default function Pagination({
           </select>
         </div>
       )}
-      <div style={{fontSize: "0.7rem"}}>
-        <b>Nota de testeo:</b> paginacion se mostrará cuando items &gt;= 10 y select pag cuando pag &lt;= 5<br/>
-          Además, [anterior] tiene comportamiento "instant" y [siguiente] tiene comportamiento "smooth". Ya se elegirá a futuro
-      </div>
     </div>
   );
 }
