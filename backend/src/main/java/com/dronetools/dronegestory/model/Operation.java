@@ -30,6 +30,9 @@ public class Operation {
     @Column(name = "nombre_operacion", nullable = false, length = 255)
     private String nombreOperacion;
 
+    @Column(name = "conops")
+    private String conops;
+
     // Usuario que creó la operación
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK a app_user.user_id

@@ -5,6 +5,7 @@ import { createOperation } from "../../operations/operation.api";
 
 const createOperationFields: FieldConfig[] = [
   { name: "nombreOperacion", label: "Nombre de la operación", type: "text", required: true },
+  { name: "conops", label: "CONOPS", type: "text", required: true },
 ];
 
 export default function MultiStepsForm() {
@@ -12,12 +13,12 @@ export default function MultiStepsForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateOperation = async (data: { nombreOperacion: string }) => {
+  const handleCreateOperation = async (data: { nombreOperacion: string, conops: string }) => {
     setSubmitting(true);
     setError(null);
 
     try {
-      const created = await createOperation(data.nombreOperacion.trim());
+      const created = await createOperation(data.nombreOperacion.trim(), data.conops.trim());
 
       if (!created) {
         return;
