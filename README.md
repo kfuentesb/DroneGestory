@@ -99,13 +99,9 @@ VISUAL<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
 -Arreglar la toma de IP en local y en servidor<br>
--La tabla al estar vacía el "No hay x registrados" se muestra a la derecha mal<br>
-
 
 -USUARIO<br>
--Un usuario no admin no puede ver su propio perfil<br>
 -Evitar que un usuario pueda tener el mismo nombre de usuario<br>
--La fecha se muestra con el formato americano, cambiarlo a gregorian<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
