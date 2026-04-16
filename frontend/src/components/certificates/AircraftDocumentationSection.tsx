@@ -257,7 +257,6 @@ export default function AircraftDocumentationSection({
               // --- LÓGICA ESPECIAL PARA "OTRA DOCUMENTACIÓN" ---
               if (field.key === OTHER_AIRCRAFT_DOCUMENTATION_KEY) {
                 return (
-                  <>
                   <MultipleAdditionalsComponent
                     title="Otros"
                     infoText={field.infoLabel}
@@ -270,64 +269,6 @@ export default function AircraftDocumentationSection({
                     onFieldChange={(id, changedField, value) => onAdditionalFieldChange?.(id, changedField as keyof AdditionalDoc, value)}
                     showDateControls={false}
                   />
-                  {false && (
-                  <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
-                    <div className="d-flex align-items-center justify-content-between mb-3">
-                      <div className="d-flex align-items-center">
-                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>Otros</h6>
-                        <InfoBadge text={field.infoLabel} />
-                      </div>
-                      <button type="button" className="btn btn-sm btn-success" 
-                        onClick={onAddAdditionalDoc} 
-                        disabled={additionalDocs.length >= 10}>
-                        + Añadir otro
-                      </button>
-                    </div>
-
-                    {additionalDocs.length === 0 && (
-                      <p className="text-muted small mb-0 ps-1">No se han añadido documentos adicionales.</p>
-                    )}
-
-                    {additionalDocs.map((doc) => (
-                      <div key={doc.id} className="bg-white p-3 border rounded-3 mb-3 shadow-sm">
-                        <div className="d-flex gap-2 mb-3">
-                          <input type="text" className="form-control form-control-sm"
-                            placeholder="Nombre del documento (ej: Certificado de Pesaje)"
-                            value={doc.label}
-                            onChange={(e) => onAdditionalFieldChange?.(doc.id, "label", e.target.value)}
-                          />
-                          <button type="button" className="btn btn-sm d-flex align-items-center justify-content-center shadow-none p-0"
-                            style={{ width: "32px", height: "32px", backgroundColor: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA", borderRadius: "8px" }}
-                            onClick={() => onRemoveAdditionalDoc?.(doc.id)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
-                            </svg>
-                          </button>
-                        </div>
-
-                        <InsertDoc
-                          hideHeader={true}
-                          showAddBtn={true}
-                          checkboxLabel="Documento adjunto"
-                          isChecked={true} 
-                          onToggleCheck={() => {}}
-                          fileInputId={`file-additional-${doc.id}`}
-                          selectedFile={doc.certificate}
-                          existingFileName={existingAdditionalFileNames?.[doc.id]}
-                          onFileChange={(e) => onAdditionalFieldChange?.(doc.id, "certificate", e.target.files?.[0] || null)}
-                          onClearFile={() => onAdditionalFieldChange?.(doc.id, "certificate", null)}
-                          expirationDate={doc.dateExpire || ""}
-                          onExpirationDateChange={(val) => onAdditionalFieldChange?.(doc.id, "dateExpire", val)}
-                          indefiniteId={`indefinite-add-${doc.id}`}
-                          isIndefinite={doc.dateIndefinite || false}
-                          onToggleIndefinite={() => onAdditionalFieldChange?.(doc.id, "dateIndefinite", !doc.dateIndefinite)}
-                          showDateControls={false}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  )}
-                  </>
                 );
               }
 
