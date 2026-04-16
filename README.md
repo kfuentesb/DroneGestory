@@ -109,7 +109,6 @@ VISUAL<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
--A la hora de seleccion de fabricantes y modelos debería ser un select/buscador<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
