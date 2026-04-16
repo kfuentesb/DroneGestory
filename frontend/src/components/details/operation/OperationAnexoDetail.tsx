@@ -46,6 +46,7 @@ import FormOperationAnexo5Detail from "../../forms/FormOperationAnexo5Detail";
 import FormOperationAnexo6Detail from "../../forms/FormOperationAnexo6Detail";
 import FormOperationAnexo7Detail from "../../forms/FormOperationAnexo7Detail";
 import FormOperationAnexo8Detail from "../../forms/FormOperationAnexo8Detail";
+import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
@@ -72,6 +73,17 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const { id, versionId } = useParams();
   const navigate = useNavigate();
   const { role } = useAuth();
+
+  // Barra de pasos superior
+  const ANEXOS_STEPS = [
+    { label: "Anexo 4", anexo: 4, name: "Anexo 4" },
+    { label: "Anexo 5", anexo: 5, name: "Anexo 5" },
+    { label: "Anexo 6", anexo: 6, name: "Anexo 6" },
+    { label: "Anexo 7", anexo: 7, name: "Anexo 7" },
+    { label: "Anexo 8", anexo: 8, name: "Anexo 8" },
+  ];
+
+  const currentStep = Math.max(0, ANEXOS_STEPS.findIndex(s => s.anexo === tipoAnexo));
 
   const [operation, setOperation] = useState<OperationDetailDTO | null>(null);
   const [anexoData, setAnexoData] = useState<AnexoData | null>(null);
@@ -328,6 +340,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         Volver a la operación
       </button>
 
+      <StepProgressBar
+        steps={ANEXOS_STEPS}
+        currentStep={currentStep}
+        onStepClick={(step) => {
+          if (operation) navigate(`/operations/${operation.idOperacion}/anexo${step.anexo}`);
+        }}
+      />
+
       <div className="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
         <div>
           <h2 className="mb-2">{getAnexoLabel(tipoAnexo)}</h2>
@@ -338,7 +358,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               style={getOperationStatusStyle(operation.estadoOperacion)}
             />
             <Badge
-              label={anexo.actual.numeroVersion > 0 ? `v${anexo.actual.numeroVersion}` : "Sin versión"}
+              label={
+                anexo.actual.numeroVersion > 0
+                  ? `v${anexo.actual.numeroVersion}`
+                  : "Sin versión"
+              }
               style={getAnexoColorStyle(anexo.actual.color)}
             />
             <Badge
@@ -357,7 +381,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         <div className="d-flex gap-2 flex-wrap">
           <ButtonProp
             className="btn"
-            style={{ backgroundColor: "#92400E", color: "#FFFFFF", fontWeight: "bold" }}
+            style={{
+              backgroundColor: "#92400E",
+              color: "#FFFFFF",
+              fontWeight: "bold",
+            }}
             onClick={() => setShowRemakeConfirm(true)}
             disabled={!canRemake || remaking}
           >
@@ -365,7 +393,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           </ButtonProp>
           <ButtonProp
             className="btn"
-            style={{ backgroundColor: "#1D4ED8", color: "#FFFFFF", fontWeight: "bold" }}
+            style={{
+              backgroundColor: "#1D4ED8",
+              color: "#FFFFFF",
+              fontWeight: "bold",
+            }}
             onClick={() => setShowSignConfirm(true)}
             disabled={!canSign || signing}
           >
@@ -377,13 +409,17 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       <div className="row mb-4">
         <div className="col-md-6 col-12 mb-3">
           <div className="border rounded p-3 h-100">
-            <small className="text-muted d-block mb-1">Creación operación</small>
+            <small className="text-muted d-block mb-1">
+              Creación operación
+            </small>
             <strong>{formatDateTime(operation.fechaCreacion)}</strong>
           </div>
         </div>
         <div className="col-md-6 col-12 mb-3">
           <div className="border rounded p-3 h-100">
-            <small className="text-muted d-block mb-1">Última actualización</small>
+            <small className="text-muted d-block mb-1">
+              Última actualización
+            </small>
             <strong>{formatDateTime(operation.fechaActualizacion)}</strong>
           </div>
         </div>
@@ -391,29 +427,36 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
       {operation.completada && !canManageCompletedOperation && (
         <div className="alert alert-warning">
-          La operación está completada. Solo un administrador puede modificar anexos.
+          La operación está completada. Solo un administrador puede modificar
+          anexos.
         </div>
       )}
 
       {operation.completada && canManageCompletedOperation && (
         <div className="alert alert-info">
-          La operación está completada, pero tienes permisos de administrador para gestionar versiones del anexo.
+          La operación está completada, pero tienes permisos de administrador
+          para gestionar versiones del anexo.
         </div>
       )}
 
       {actualIsSigned && !isViewingHistoricalVersion && (
         <div className="alert alert-info">
-          La versión actual está firmada. Para editar, crea antes una nueva versión con "Rehacer versión".
+          La versión actual está firmada. Para editar, crea antes una nueva
+          versión con "Rehacer versión".
         </div>
       )}
 
       {isViewingHistoricalVersion && selectedVersion && (
         <div className="alert alert-secondary">
-          Estás consultando la versión histórica v{selectedVersion.numeroVersion}. Esta vista es solo lectura.
+          Estás consultando la versión histórica v
+          {selectedVersion.numeroVersion}. Esta vista es solo lectura.
         </div>
       )}
 
-      <div className="card shadow-sm mb-4" style={{ border: "1px solid #E5E7EB" }}>
+      <div
+        className="card shadow-sm mb-4"
+        style={{ border: "1px solid #E5E7EB" }}
+      >
         <div className="card-body">
           <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
             <h4 className="mb-0">
@@ -422,7 +465,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                 : "Detalle versión actual"}
             </h4>
             {isViewingHistoricalVersion && (
-              <ButtonProp onClick={() => navigate(`/operations/${operation.idOperacion}`)}>
+              <ButtonProp
+                onClick={() => navigate(`/operations/${operation.idOperacion}`)}
+              >
                 Volver a la operación
               </ButtonProp>
             )}
