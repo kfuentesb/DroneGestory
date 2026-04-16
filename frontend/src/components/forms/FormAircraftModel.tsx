@@ -8,6 +8,7 @@ import AircraftDocumentationSection, {
   aircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftModelDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
+import ComboBox from "../commons/ComboBox";
 
 type AircraftDocumentationUploadRequest = {
   documentationType: string;
@@ -273,26 +274,26 @@ export default function FormAircraftModel() {
           <form onSubmit={handleSubmit}>
             <div className="row mb-3">
               <div className="col-12 col-md mb-3 mb-md-0">
-                <label className="form-label">Fabricante</label>
-                <input
-                  type="text"
-                  className="form-control"
+                <ComboBox
+                  label="Fabricante"
+                  endpoint="/api/aircraft-models/manufacturers"
                   value={manufacturer}
-                  onChange={(e) => setManufacturer(e.target.value)}
+                  onChange={(val) => setManufacturer(val)}
                   onBlur={() => setTouched((prev) => ({ ...prev, manufacturer: true }))}
-                  style={{ ...backgroundBorderInputs, border: manufacturerError ? "1px solid red" : "1px solid #D1D5DB" }}
+                  error={manufacturerError}
+                  placeholder="Seleccione o escriba un fabricante"
                 />
                 {manufacturerError && <small className="text-danger">Campo requerido</small>}
               </div>
               <div className="col-12 col-md">
-                <label className="form-label">Modelo</label>
-                <input
-                  type="text"
-                  className="form-control"
+                <ComboBox
+                  label="Modelo"
+                  endpoint={`/api/aircraft-models/models?manufacturer=${encodeURIComponent(manufacturer)}`}
                   value={model}
-                  onChange={(e) => setModel(e.target.value)}
+                  onChange={(val) => setModel(val)}
                   onBlur={() => setTouched((prev) => ({ ...prev, model: true }))}
-                  style={{ ...backgroundBorderInputs, border: modelError ? "1px solid red" : "1px solid #D1D5DB" }}
+                  error={modelError}
+                  placeholder="Seleccione o escriba un modelo"
                 />
                 {modelError && <small className="text-danger">Campo requerido</small>}
               </div>

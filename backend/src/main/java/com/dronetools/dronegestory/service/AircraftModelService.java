@@ -42,6 +42,23 @@ public class AircraftModelService {
         return repository.findAllByOrderByManufacturerAscModelAsc();
     }
 
+    public List<String> getAllManufacturers() {
+        return repository.findDistinctManufacturersOrderByManufacturerAsc();
+    }
+
+    public List<String> getModelsByManufacturer(String manufacturer) {
+        if (manufacturer == null || manufacturer.trim().isEmpty()) {
+            return repository.findAllByOrderByManufacturerAscModelAsc().stream()
+                    .map(AircraftModel::getModel)
+                    .distinct()
+                    .toList();
+        }
+        return repository.findByManufacturerIgnoreCaseOrderByModelAsc(manufacturer.trim()).stream()
+                .map(AircraftModel::getModel)
+                .distinct()
+                .toList();
+    }
+
     public Optional<AircraftModel> getById(Long id) {
         return repository.findById(id);
     }

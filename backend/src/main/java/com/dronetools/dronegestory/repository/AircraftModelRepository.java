@@ -16,5 +16,12 @@ public interface AircraftModelRepository extends JpaRepository<AircraftModel, Lo
      */
     Optional<AircraftModel> findByManufacturerAndModel(String manufacturer, String model);
 
+    @org.springframework.data.jpa.repository.Query(
+            "select distinct am.manufacturer from AircraftModel am order by am.manufacturer asc"
+    )
+    List<String> findDistinctManufacturersOrderByManufacturerAsc();
+
+    List<AircraftModel> findByManufacturerIgnoreCaseOrderByModelAsc(String manufacturer);
+
     List<AircraftModel> findAllByOrderByManufacturerAscModelAsc();
 }
