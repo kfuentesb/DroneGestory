@@ -6,8 +6,10 @@ import { apiFetch } from "../../api";
 import { aircraftClasses, configs, LIMITS } from "../../global-const/aircraft-const";
 import { InfoBadge } from "../commons/InfoBadge";
 import AircraftDocumentationSection, {
+  OTHER_AIRCRAFT_DOCUMENTATION_KEY,
   aircraftDocumentationFields,
   getVisibleAircraftDocumentationFields,
+  type AdditionalDoc,
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 import "../../styles/generic-form.css";
@@ -31,6 +33,14 @@ type InitialDocumentationItem = {
   documentationType: string;
   documentationName: string | null;
   expireDate: string | null;
+  dateIndefinite: boolean | null;
+};
+
+type AdditionalAircraftDocumentation = {
+  id: string;
+  label: string;
+  certificate: File | null;
+  dateExpire: string | null;
   dateIndefinite: boolean | null;
 };
 
@@ -119,6 +129,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
   const modelDefaultByType = Object.fromEntries(
     aircraftDocumentationFields.map((f) => [f.key, Boolean(documentationByType[f.key])])
   ) as Record<string, boolean>;
+  const [additionalDocs, setAdditionalDocs] = useState<AdditionalAircraftDocumentation[]>([]);
+  const [existingAdditionalFileNames, setExistingAdditionalFileNames] = useState<Record<string, string>>({});
 
   const [formValues, setFormValues] = useState({
     manufacturer: initialValues?.manufacturer ?? "",
@@ -318,6 +330,10 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     const visibleDocumentationFields = getVisibleAircraftDocumentationFields("aircraft", isExistingModel, showInsuranceDocumentation, showFTSDocumentation, showParachuteDocumentation);
 
     visibleDocumentationFields.forEach((field) => {
+      if (field.key === OTHER_AIRCRAFT_DOCUMENTATION_KEY) {
+        return;
+      }
+
       const baselineDoc = documentationByType[field.key];
       const enabled = Boolean(documentationChecks[field.enabledKey]);
       const supportsDate = field.key === "seguroResponsabilidadCivil";
@@ -365,6 +381,28 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
 
       if (file && fileFieldKey) {
         files.push({ fileFieldKey, file });
+      }
+    });
+
+    additionalDocs.forEach((doc) => {
+      const label = doc.label.trim();
+      const fileFieldKey = doc.certificate ? `documentation_other_${doc.id}` : null;
+
+      if (!label && !doc.certificate) {
+        return;
+      }
+
+      metadata.push({
+        documentationType: label,
+        documentationLabel: label,
+        fileFieldKey,
+        expireDate: null,
+        dateIndefinite: null,
+        removeDefault: null,
+      });
+
+      if (doc.certificate && fileFieldKey) {
+        files.push({ fileFieldKey, file: doc.certificate });
       }
     });
 
@@ -451,6 +489,13 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       return;
     }
 
+    const invalidAdditionalDoc = additionalDocs.find((doc) => !doc.label.trim());
+    if (invalidAdditionalDoc) {
+      setError("Cada documento en 'Otros' debe tener un nombre.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
       if (formValues.manufacturer) formData.append("manufacturer", formValues.manufacturer);
@@ -495,6 +540,54 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddAdditionalDoc = () => {
+    if (additionalDocs.length >= 10) {
+      return;
+    }
+    setAdditionalDocs((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        label: "",
+        certificate: null,
+        dateExpire: null,
+        dateIndefinite: false,
+      },
+    ]);
+  };
+
+  const handleRemoveAdditionalDoc = (id: string) => {
+    setAdditionalDocs((prev) => prev.filter((doc) => doc.id !== id));
+    setExistingAdditionalFileNames((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const handleAdditionalFieldChange = (
+    id: string,
+    field: keyof AdditionalAircraftDocumentation,
+    value: string | File | boolean | null
+  ) => {
+    if (field === "certificate" && value instanceof File) {
+      const validationError = validateDocumentationFile(value);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setError(null);
+    }
+
+    setAdditionalDocs((prev) =>
+      prev.map((doc) => (doc.id === id ? { ...doc, [field]: value } : doc))
+    );
+
+    if (field === "certificate" && value === null) {
+      setExistingAdditionalFileNames((prev) => ({ ...prev, [id]: "" }));
     }
   };
 
@@ -813,6 +906,13 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
               onClearFile={handleDocumentationClearFile}
               onFormDateChange={handleDocumentationDateChange}
               onRestoreModelDefault={handleRestoreModelDefault}
+              additionalDocs={additionalDocs}
+              existingAdditionalFileNames={existingAdditionalFileNames}
+              onAddAdditionalDoc={handleAddAdditionalDoc}
+              onRemoveAdditionalDoc={handleRemoveAdditionalDoc}
+              onAdditionalFieldChange={
+                handleAdditionalFieldChange as (id: string, field: keyof AdditionalDoc, value: any) => void
+              }
             />
 
             {error && <p className="text-danger text-center">{error}</p>}

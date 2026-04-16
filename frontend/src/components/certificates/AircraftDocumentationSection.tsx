@@ -12,6 +12,8 @@ export type AircraftDocumentationFieldConfig = {
   infoLabel: string;
 };
 
+export const OTHER_AIRCRAFT_DOCUMENTATION_KEY = "otraDocumentacion";
+
 
 export type AircraftSummaryItem = {
   key: string;
@@ -24,12 +26,13 @@ export type AircraftSummaryItem = {
   fileName?: string;
 };
 
-type AdditionalDoc = {
+export type AdditionalDoc = {
   id: string;
+  existingDocumentationId?: number;
   label: string;
   certificate: File | null;
-  dateExpire: string;
-  dateIndefinite: boolean;
+  dateExpire: string | null;
+  dateIndefinite: boolean | null;
 };
 
 export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
@@ -106,7 +109,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
     infoLabel: "Condicional | Modelo",
   },
   {
-    key: "otraDocumentacion",
+    key: OTHER_AIRCRAFT_DOCUMENTATION_KEY,
     label: "Otra documentación",
     enabledKey: "chkOtraDocumentacion",
     fileKey: "fileOtraDocumentacion",
@@ -120,7 +123,7 @@ export const aircraftDocumentationFields: AircraftDocumentationFieldConfig[] = [
 export const AIRCRAFT_SPECIFIC_KEYS = new Set([
   "caracterizacion",
   "seguroResponsabilidadCivil",
-  "otraDocumentacion",
+  OTHER_AIRCRAFT_DOCUMENTATION_KEY,
 ]);
 
 // Fields that ONLY belong to the general drone model
@@ -251,12 +254,12 @@ export default function AircraftDocumentationSection({
           <div className="mt-3 animate__animated animate__fadeIn">
             {visibleFields.map((field) => {
               // --- LÓGICA ESPECIAL PARA "OTRA DOCUMENTACIÓN" ---
-              if (field.key === "otraDocumentacion") {
+              if (field.key === OTHER_AIRCRAFT_DOCUMENTATION_KEY) {
                 return (
                   <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                     <div className="d-flex align-items-center justify-content-between mb-3">
                       <div className="d-flex align-items-center">
-                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>{field.label}</h6>
+                        <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>Otros</h6>
                         <InfoBadge text={field.infoLabel} />
                       </div>
                       <button type="button" className="btn btn-sm btn-success" 
@@ -303,6 +306,7 @@ export default function AircraftDocumentationSection({
                           indefiniteId={`indefinite-add-${doc.id}`}
                           isIndefinite={doc.dateIndefinite || false}
                           onToggleIndefinite={() => onAdditionalFieldChange?.(doc.id, "dateIndefinite", !doc.dateIndefinite)}
+                          showDateControls={false}
                         />
                       </div>
                     ))}
