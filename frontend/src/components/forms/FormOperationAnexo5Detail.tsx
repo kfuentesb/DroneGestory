@@ -3,17 +3,18 @@ import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import OperationConopsField from "../commons/OperationConopsField";
 
 type FormOperationAnexo5DetailProps = {
   operationId: number;
   initialValues?: Anexo5Data | null;
+  operationConops?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo5Data | null) => void | Promise<void>;
 };
 
 const FORM_FIELDS = [
-  "nombreConops",
   "fechaOp",
   "vlos",
   "ubicacionObservadores",
@@ -41,12 +42,6 @@ const FORM_FIELDS = [
 type FormKey = (typeof FORM_FIELDS)[number];
 
 const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
-
-const BOOL_OPTIONS = [
-  { value: "", label: "N/A" },
-  { value: "true", label: "Sí" },
-  { value: "false", label: "No" },
-];
 
 const SECCIONES_CONFIG: {
   seccion1: SectionItem[];
@@ -145,6 +140,7 @@ const SECCIONES_CONFIG: {
 export default function FormOperationAnexo5Detail({
   operationId,
   initialValues,
+  operationConops,
   disabled,
   readOnlyMessage,
   onSaved,
@@ -205,14 +201,7 @@ export default function FormOperationAnexo5Detail({
       <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
-          <input
-            type="text"
-            className="form-control bg-white border"
-            value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
-          />
+          <OperationConopsField value={operationConops} disabled={disabled || saving} />
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

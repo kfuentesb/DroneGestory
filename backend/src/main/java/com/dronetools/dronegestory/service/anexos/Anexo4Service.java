@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,15 +18,19 @@ import java.nio.file.Paths;
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
-    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository) {
-        super(repository, operationRepository);
+    public Anexo4Service(Anexo4Repository repository,
+                         OperationRepository operationRepository,
+                         OperationAccessService operationAccessService) {
+        super(repository, operationRepository, operationAccessService);
     }
 
     @Transactional
     public Anexo4 registrarAnexo4(Long operationId, Anexo4 datosNuevos) {
-        return registrarAnexo(operationId, datosNuevos,
+        Anexo4 saved = registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
+        syncOperationData(saved.getOperation(), saved.getPersonal(), null);
+        return saved;
     }
 
     @Transactional
@@ -155,7 +160,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
             Long operationId,
             Anexo4 anexo4,
             MultipartFile imagenEspacioAereoFile,
-            MultipartFile imagenZonaVueloFile
+            MultipartFile imagenZonaVueloFile,
+            String conops
     ) throws IOException {
         // Validate and reject disallowed file types
         validateImageFile(imagenEspacioAereoFile);
@@ -200,7 +206,25 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         }
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)
-        return registrarAnexo4(operationId, anexo4);
+        Anexo4 saved = registrarAnexo4(operationId, anexo4);
+        syncOperationData(saved.getOperation(), saved.getPersonal(), conops);
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public Anexo4 firmarAnexo(Long idAnexo, String username) {
+        Anexo4 signed = super.firmarAnexo(idAnexo, username);
+        syncOperationData(signed.getOperation(), signed.getPersonal(), null);
+        return signed;
+    }
+
+    private void syncOperationData(Operation operation, String personal, String conops) {
+        operationAccessService.syncAssignedUsersFromPersonal(operation, personal);
+        if (conops != null) {
+            operation.setConops(conops);
+        }
+        operationRepository.save(operation);
     }
 
     private void validateImageFile(MultipartFile file) {

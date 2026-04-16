@@ -18,19 +18,22 @@ import java.util.List;
 public class OperationService {
 
     private final OperationRepository operationRepository;
+    private final OperationAccessService operationAccessService;
 
-    public OperationService(OperationRepository operationRepository) {
+    public OperationService(OperationRepository operationRepository,
+                            OperationAccessService operationAccessService) {
         this.operationRepository = operationRepository;
+        this.operationAccessService = operationAccessService;
     }
 
     @Transactional(readOnly = true)
     public List<Operation> getAllOperations() {
-        return operationRepository.findAll();
+        return operationAccessService.findAccessibleOperationsForCurrentUser();
     }
 
     @Transactional(readOnly = true)
     public List<Operation> findOperationsByUserId(Integer userId) {
-        return operationRepository.findByCreadorId(userId);
+        return operationRepository.findAccessibleByUserId(userId);
     }
 
     @Transactional
@@ -55,8 +58,7 @@ public class OperationService {
 
     @Transactional(readOnly = true)
     public Operation findById(Long operationId) {
-        return operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        return operationAccessService.findAccessibleOperationById(operationId);
     }
 
 //    @Transactional
@@ -83,6 +85,7 @@ public class OperationService {
     }
 
     private void validarOperacionEditable(Operation op) {
+        operationAccessService.assertCanAccess(op);
         if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
             throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
         }
@@ -100,8 +103,7 @@ public class OperationService {
     // DTO
     @Transactional(readOnly = true)
     public OperationDetailDTO findByIdDto(Long operationId) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        Operation op = operationAccessService.findAccessibleOperationById(operationId);
         // La sesión sigue abierta, aquí puedes acceder a cualquier relación (creador, anexos, etc.)
         return new OperationDetailDTO(op);
     }
@@ -109,7 +111,7 @@ public class OperationService {
     // Trae todas las operaciones como DTOs
     @Transactional(readOnly = true)
     public List<OperationListDTO> getAllOperationListDTOs() {
-        return operationRepository.findAll()
+        return operationAccessService.findAccessibleOperationsForCurrentUser()
                 .stream()
                 .map(OperationListDTO::new)
                 .toList();
@@ -118,7 +120,7 @@ public class OperationService {
     // Trae solo las operaciones de un usuario como DTOs
     @Transactional(readOnly = true)
     public List<OperationListDTO> getMyOperationListDTOs(Integer userId) {
-        return operationRepository.findByCreadorId(userId)
+        return operationRepository.findAccessibleByUserId(userId)
                 .stream()
                 .map(OperationListDTO::new)
                 .toList();
@@ -137,8 +139,7 @@ public class OperationService {
 
     @Transactional
     public void deleteOperationWithAnexos(Long idOperacion) {
-        Operation op = operationRepository.findById(idOperacion)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada: " + idOperacion));
+        Operation op = operationAccessService.findAccessibleOperationById(idOperacion);
 
         // Aquí podrías borrar archivos físicos si los anexos incluyen rutas de ficheros
         if (op.getAnexos4() != null) {

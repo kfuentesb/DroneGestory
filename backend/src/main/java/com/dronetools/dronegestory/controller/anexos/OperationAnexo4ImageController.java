@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.controller.anexos;
 
 import jakarta.servlet.http.HttpServletRequest;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,11 @@ import java.nio.file.Paths;
 public class OperationAnexo4ImageController {
 
     private static final String IMAGE_URL_MARKER = "/api/operations/anexo4/images/";
+    private final OperationAccessService operationAccessService;
+
+    public OperationAnexo4ImageController(OperationAccessService operationAccessService) {
+        this.operationAccessService = operationAccessService;
+    }
 
     @GetMapping("/images/**")
     @PreAuthorize("isAuthenticated()")
@@ -47,6 +53,9 @@ public class OperationAnexo4ImageController {
         if (!filename.matches("operations/\\d+/anexo4/[^/]+")) {
             return ResponseEntity.badRequest().build();
         }
+
+        String operationId = filename.split("/")[1];
+        operationAccessService.assertCanAccess(Long.valueOf(operationId));
 
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadsDir.resolve(filename).normalize();

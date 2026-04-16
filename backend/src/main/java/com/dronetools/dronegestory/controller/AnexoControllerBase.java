@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -19,13 +20,16 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     protected final S service;
     protected final OperationRepository operationRepository;
     protected final AnexoBaseRepository<T, Long> repository;
+    protected final OperationAccessService operationAccessService;
 
     public AnexoControllerBase(S service,
                                OperationRepository operationRepository,
-                               AnexoBaseRepository<T, Long> repository) {
+                               AnexoBaseRepository<T, Long> repository,
+                               OperationAccessService operationAccessService) {
         this.service = service;
         this.operationRepository = operationRepository;
         this.repository = repository;
+        this.operationAccessService = operationAccessService;
     }
 
 //    @PostMapping
@@ -39,6 +43,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     public AnexoInfoDTO getActual(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAccessService.assertCanAccess(op);
         return AnexoInfoDTO.from(getAnexoActual(op));
     }
 
@@ -46,6 +51,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     public List<AnexoHistoricoDTO> getHistorico(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAccessService.assertCanAccess(op);
         List<T> anexos = repository.findByOperationOrderByNumeroVersionDesc(op);
         return AnexoHistoricoDTO.fromEntityList(
                 anexos.stream().map(a -> (Anexo) a).collect(Collectors.toList()));

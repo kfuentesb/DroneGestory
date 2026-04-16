@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,9 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
     public Anexo4Controller(Anexo4Service service,
                             OperationRepository operationRepository,
-                            Anexo4Repository repository) {
-        super(service, operationRepository, repository);
+                            Anexo4Repository repository,
+                            OperationAccessService operationAccessService) {
+        super(service, operationRepository, repository, operationAccessService);
         //this.aircraftRepository = aircraftRepository;
     }
 
@@ -34,9 +36,10 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             @PathVariable Long operationId,
             @ModelAttribute Anexo4 anexo4,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
-            @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile
+            @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile,
+            @RequestParam(value = "conops", required = false) String conops
     ) throws IOException {
-        Anexo4 saved = service.createWithFile(operationId, anexo4, imagenEspacioAereoFile, imagenZonaVueloFile);
+        Anexo4 saved = service.createWithFile(operationId, anexo4, imagenEspacioAereoFile, imagenZonaVueloFile, conops);
         return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(saved));
     }
 
@@ -57,6 +60,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     public ResponseEntity<Anexo4ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos4(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAccessService.assertCanAccess(op);
         Anexo4 anexo4 = op.getAnexo4Actual();
         if (anexo4 == null) {
             return ResponseEntity.noContent().build();
@@ -69,8 +73,9 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             @PathVariable Long operationId,
             @PathVariable Long idAnexo
     ) {
-        operationRepository.findById(operationId)
+        Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAccessService.assertCanAccess(operation);
 
         Anexo4 anexo4 = repository.findById(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));

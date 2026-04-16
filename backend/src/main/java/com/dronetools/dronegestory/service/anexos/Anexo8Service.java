@@ -5,14 +5,17 @@ import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class Anexo8Service extends AnexoServiceBase<Anexo8> {
 
-    public Anexo8Service(Anexo8Repository repository, OperationRepository operationRepository) {
-        super(repository, operationRepository);
+    public Anexo8Service(Anexo8Repository repository,
+                         OperationRepository operationRepository,
+                         OperationAccessService operationAccessService) {
+        super(repository, operationRepository, operationAccessService);
     }
 
     @Transactional
@@ -47,4 +50,3 @@ public class Anexo8Service extends AnexoServiceBase<Anexo8> {
         destino.setComunicacionIncidentes(origen.getComunicacionIncidentes());
     }
 }
-

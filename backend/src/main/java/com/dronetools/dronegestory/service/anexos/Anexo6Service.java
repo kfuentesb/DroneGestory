@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,8 +14,10 @@ import java.util.ArrayList;
 @Service
 public class Anexo6Service extends AnexoServiceBase<Anexo6> {
 
-    public Anexo6Service(Anexo6Repository repository, OperationRepository operationRepository) {
-        super(repository, operationRepository);
+    public Anexo6Service(Anexo6Repository repository,
+                         OperationRepository operationRepository,
+                         OperationAccessService operationAccessService) {
+        super(repository, operationRepository, operationAccessService);
     }
 
     @Transactional
@@ -75,4 +78,3 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         destino.setSistemaActivado(origen.getSistemaActivado());
     }
 }
-

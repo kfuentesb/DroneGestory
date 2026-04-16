@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
+import Select from "react-select";
+import { fetchUserNames, saveAnexo4Data, type Anexo4Data, type UserNameOption } from "../operations/operation.api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
+import OperationConopsField from "../commons/OperationConopsField";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
@@ -49,6 +51,7 @@ const SECCIONES_CONFIG: { seccion4: SectionItem[]; seccion6: SectionItem[] } = {
 
 type FormOperationAnexo4DetailProps = {
   operationId: number;
+  operationConops?: string;
   operationTitle?: string;
   initialValues?: Record<string, any>;
   disabled?: boolean;
@@ -57,6 +60,7 @@ type FormOperationAnexo4DetailProps = {
 };
 
 type ErrorsMap = Record<string, string | null>;
+type UserOption = { value: string; label: string };
 
 const BOOL_OPTIONS = [
   { value: "", label: "N/A" },
@@ -66,6 +70,7 @@ const BOOL_OPTIONS = [
 
 export default function FormOperationAnexo4Detail({
   operationId,
+  operationConops,
   //operationTitle,
   initialValues,
   disabled,
@@ -77,6 +82,21 @@ export default function FormOperationAnexo4Detail({
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
+  const [userOptions, setUserOptions] = useState<UserOption[]>([]);
+  const [selectedPersonnel, setSelectedPersonnel] = useState<UserOption[]>([]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      const users = await fetchUserNames();
+      const options = users.map((user: UserNameOption) => ({
+        value: String(user.id),
+        label: `${user.firstName} ${user.lastName}`.trim(),
+      }));
+      setUserOptions(options);
+    };
+
+    void loadUsers();
+  }, []);
 
   useEffect(() => {
   if (!initialValues) return;
@@ -118,6 +138,22 @@ export default function FormOperationAnexo4Detail({
       return {};
     });
   }, [initialValues]);
+
+  useEffect(() => {
+    setFormValues((prev) => ({ ...prev, conops: operationConops ?? "" }));
+  }, [operationConops]);
+
+  useEffect(() => {
+    const selectedIds = String(formValues.personal ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (selectedIds.length === 0) {
+      setSelectedPersonnel([]);
+      return;
+    }
+    setSelectedPersonnel(userOptions.filter((option) => selectedIds.includes(option.value)));
+  }, [formValues.personal, userOptions]);
 
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
@@ -204,7 +240,31 @@ export default function FormOperationAnexo4Detail({
       readOnlyMessage={readOnlyMessage}
       onSubmit={handleSubmit}
     >
-      {/* SECCIÓN 1 */}
+      <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
+      <OperationConopsField
+        value={formValues.conops ?? ""}
+        onChange={(value) => handleChange("conops", value)}
+        disabled={disabled || saving}
+        readOnly={false}
+      />
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">Personal asignado</label>
+        <Select
+          isMulti
+          options={userOptions}
+          value={selectedPersonnel}
+          onChange={(options) => {
+            const nextSelection = (options ?? []) as UserOption[];
+            setSelectedPersonnel(nextSelection);
+            handleChange(
+              "personal",
+              nextSelection.map((option) => option.value).join(","),
+            );
+          }}
+          isDisabled={disabled || saving}
+          placeholder="Selecciona personal con acceso"
+        />
+      </div>
       <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
       <div className="mb-3">
         <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
@@ -215,16 +275,6 @@ export default function FormOperationAnexo4Detail({
           onChange={(e) => handleChange("descripcion", e.target.value)}
           disabled={disabled || saving}
         />
-      </div>
-      <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">Personal necesario</label>
-        <input
-            type="text"
-            className="form-control bg-white border"
-            value={formValues.personal ?? ""}
-            onChange={(e) => handleChange("personal", e.target.value)}
-            disabled={disabled || saving}
-          />
       </div>
       <div className="row">
         <div className="col-md-6 mb-3">
