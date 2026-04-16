@@ -20,6 +20,7 @@ public class OperationDetailDTO {
     private boolean completada;
     private boolean todosAnexosFirmados;
     private List<OperationAnexoDetailDTO> anexos;
+    private String conops;
 
     public OperationDetailDTO(Operation op) {
         this.idOperacion = op.getIdOperacion();
@@ -37,6 +38,7 @@ public class OperationDetailDTO {
                 buildAnexoDetail(7, op.getAnexo7Actual(), op.getAnexos7()),
                 buildAnexoDetail(8, op.getAnexo8Actual(), op.getAnexos8())
         );
+        this.conops = op.getConops();
     }
 
     private OperationAnexoDetailDTO buildAnexoDetail(int tipoAnexo, AnexoVersionado actual, List<? extends Anexo> versiones) {
