@@ -106,15 +106,13 @@ VISUAL<br>
 -Un usuario no admin no puede ver su propio perfil<br>
 -Evitar que un usuario pueda tener el mismo nombre de usuario<br>
 -La fecha se muestra con el formato americano, cambiarlo a gregorian<br>
+-Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
--Documentación otros debe poderse añadir multiples documentos, como con otros certificados<br>
--Sale el nombre en la vista de aeronave mal. <br>
 -A la hora de seleccion de fabricantes y modelos debería ser un select/buscador<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
--Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 -Crear TABLA OTROS
 -UAS asignable
 -Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
@@ -122,8 +120,7 @@ VISUAL<br>
 -Hacer que CONOPS de a4 se autorellene en los demás
 -Meter opción cancelar
 -A5, aptitud para operar. Otros usuarios asignados pueden firmar
--Acceder a una operación siendo un usuario asignado
--Añadir boton atras/siguiente entre anexos
+-Acceder a una operación siendo un usuario asignados
 - A6 es vinculado al a7 por cada aeronave
 -Tiempo de vuelo y ciclos de aterrizaje en a7
 
