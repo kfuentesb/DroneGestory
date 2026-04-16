@@ -14,9 +14,9 @@ export default function OperationConopsField({
   return (
     <div className="mb-3">
       <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
-      <textarea
+      <input
+        type="text"
         className="form-control bg-white border"
-        rows={3}
         value={value ?? ""}
         onChange={(e) => onChange?.(e.target.value)}
         readOnly={readOnly}

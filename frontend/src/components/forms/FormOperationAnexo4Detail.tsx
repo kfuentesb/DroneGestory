@@ -247,6 +247,17 @@ export default function FormOperationAnexo4Detail({
         disabled={disabled || saving}
         readOnly={false}
       />
+      <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
+        <textarea
+          className="form-control bg-white border"
+          rows={3}
+          value={formValues.descripcion ?? ""}
+          onChange={(e) => handleChange("descripcion", e.target.value)}
+          disabled={disabled || saving}
+        />
+      </div>
       <div className="mb-3">
         <label className="form-label fw-bold small text-uppercase text-muted">Personal asignado</label>
         <Select
@@ -263,17 +274,6 @@ export default function FormOperationAnexo4Detail({
           }}
           isDisabled={disabled || saving}
           placeholder="Selecciona personal con acceso"
-        />
-      </div>
-      <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
-      <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
-        <textarea
-          className="form-control bg-white border"
-          rows={3}
-          value={formValues.descripcion ?? ""}
-          onChange={(e) => handleChange("descripcion", e.target.value)}
-          disabled={disabled || saving}
         />
       </div>
       <div className="row">

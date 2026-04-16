@@ -172,4 +172,10 @@ public class OperationService {
         return new OperationDetailDTO(saved);
     }
 
+    @Transactional
+    public Operation getOperationAndUsuarios(Long id) {
+        Operation op = operationRepository.findById(id).orElseThrow();
+        op.getUsuariosConAcceso().size(); // Inicializar la colección
+        return op;
+    }
 }

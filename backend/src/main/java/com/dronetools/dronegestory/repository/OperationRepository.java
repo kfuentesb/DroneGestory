@@ -75,4 +75,7 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
         WHERE o.idOperacion = :id
     """)
     Optional<Operation> findByIdWithAnexos8(@Param("id") Long id);
+
+    @Query("SELECT o FROM Operation o LEFT JOIN FETCH o.usuariosConAcceso WHERE o.id = :id")
+    Operation findByIdWithUsuariosConAcceso(@Param("id") Long id);
 }
