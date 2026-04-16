@@ -32,9 +32,8 @@ const StepProgressBar: React.FC<StepProgressBarProps> = ({ steps, currentStep, o
         }}/>
 
         {/* Línea de progreso rellena */}
-        <div style={{
+        <div className="bg-success"style={{
           height: "5px",
-          background: "#2563eb",
           position: "absolute",
           top: "28px",
           left: "0",
