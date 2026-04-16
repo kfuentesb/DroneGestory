@@ -44,6 +44,11 @@ public class OperationService {
         Operation op = findById(operationId);
         validarOperacionEditable(op);
         op.setNombreOperacion(opActualizada.getNombreOperacion());
+
+        if (opActualizada.getConops() != null) {
+            op.setConops(opActualizada.getConops());
+        }
+
         Operation saved = operationRepository.save(op);
         return new OperationDetailDTO(saved);
     }
@@ -155,6 +160,15 @@ public class OperationService {
         } catch (IOException e) {
             // log y/o manejar error según necesidad
         }
+    }
+
+    @Transactional
+    public OperationDetailDTO updateConops(Long operationId, String conops) {
+        Operation op = findById(operationId);
+        validarOperacionEditable(op);
+        op.setConops(conops);
+        Operation saved = operationRepository.save(op);
+        return new OperationDetailDTO(saved);
     }
 
 }

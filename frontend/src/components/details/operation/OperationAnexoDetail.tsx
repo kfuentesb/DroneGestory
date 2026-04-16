@@ -498,6 +498,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo5Data | null}
+                  operation={operation}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion

@@ -14,6 +14,7 @@ public class OperationListDTO {
     private LocalDateTime fechaCreacion;
     private OperationStatus estado;
     private boolean completada;
+    private String conops;
 
     // Resumen de anexos: solo versión + color (sin ID ni detalles)
     private String anexo4Version;   // "v2" o "-"
@@ -37,6 +38,7 @@ public class OperationListDTO {
         this.fechaCreacion = op.getFechaCreacion();
         this.estado = op.getEstado();
         this.completada = op.getEstado() == OperationStatus.COMPLETADA;
+        this.conops = op.getConops();
 
         // Mapear anexos a strings simples
         this.anexo4Version = getVersionStr(op.getAnexo4Actual());
