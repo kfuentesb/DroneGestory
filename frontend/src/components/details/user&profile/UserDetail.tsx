@@ -163,6 +163,7 @@ export default function UserDetail() {
             onBack={() => navigate("/users")}
             validateForm={validateForm}
             certificateSectionType="user"
+            defaultImage="user"
             />
         </>
     );

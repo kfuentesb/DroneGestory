@@ -10,10 +10,12 @@ import UserCertificatesSection, { UserCertificatesSummarySection } from "../cert
 import { CONOPS_CATEGORIES } from "../certificates/conopsCategories";
 import AircraftDocumentationSection, {
     AircraftDocumentationSummarySection,
+    OTHER_AIRCRAFT_DOCUMENTATION_KEY,
     aircraftDocumentationFields,
     AIRCRAFT_SPECIFIC_KEYS,
     MODEL_SPECIFIC_KEYS,
     getVisibleAircraftDocumentationFields,
+    type AdditionalDoc,
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags,getAircraftModelDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
 import {
@@ -358,13 +360,33 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         const nextChecksModel = { ...MODEL_DOCUMENTATION_DEFAULTS.checks };
         const nextFormModel = { ...MODEL_DOCUMENTATION_DEFAULTS.dates };
         const nextNamesModel: Record<string, string> = {};
+        const nextAdditionalDocs: AdditionalCertificatePayload[] = [];
+        const nextAdditionalNames: Record<string, string> = {};
 
         const fieldMap = new Map(aircraftDocumentationFields.map(f => [f.key, f]));
 
         aircraftDocumentations.forEach((doc) => {
             const type = doc.documentationType;
             const config = fieldMap.get(type);
-            if (!config) return;
+            if (!config) {
+                if (ui.isAircraft) {
+                    const additionalId = `existing-aircraft-doc-${doc.id}`;
+                    nextAdditionalDocs.push({
+                        id: additionalId,
+                        existingCertificateId: doc.id,
+                        label: doc.documentationType || "",
+                        certificate: null,
+                        dateExpire: doc.expireDate ?? null,
+                        dateIndefinite: doc.dateIndefinite ?? false,
+                    });
+
+                    const filename = doc.documentationName?.split("/").pop() ?? "";
+                    if (filename) {
+                        nextAdditionalNames[additionalId] = filename;
+                    }
+                }
+                return;
+            }
 
             const filename = doc.documentationName?.split("/").pop() ?? "";
             
@@ -407,6 +429,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         setAircraftDocumentationRestoreDefaults({});
 
         // --- ACTUALIZACIÓN AGRUPADA DE MODELO ---
+        if (ui.isAircraft) {
+            setAdditionalDocs(nextAdditionalDocs);
+            setExistingAdditionalFileNames(nextAdditionalNames);
+        }
+
         setModelDocState({
             files: { ...MODEL_DOCUMENTATION_DEFAULTS.files },
             checks: nextChecksModel,
@@ -792,6 +819,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
 
     const handleRemoveAdditionalDoc = (idValue: string) => {
         setAdditionalDocs((prev) => prev.filter((doc) => doc.id !== idValue));
+        setExistingAdditionalFileNames((prev) => {
+            const next = { ...prev };
+            delete next[idValue];
+            return next;
+        });
     };
 
     const handleAdditionalFieldChange = (
@@ -799,9 +831,20 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         field: keyof AdditionalCertificatePayload,
         value: any
     ) => {
+        if (field === "certificate" && value instanceof File) {
+            const fileError = validateCertificateFile(value);
+            if (fileError) {
+                alert(fileError);
+                return;
+            }
+        }
+
         setAdditionalDocs((prev) =>
             prev.map((doc) => (doc.id === idValue ? { ...doc, [field]: value } : doc))
         );
+        if (field === "certificate" && value === null) {
+            setExistingAdditionalFileNames((prev) => ({ ...prev, [idValue]: "" }));
+        }
     };
 
     const syncCertificates = async () => {
@@ -908,15 +951,22 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         );
 
         // Mapear documentos actuales
-        const allAircraftDocs = aircraftDocumentations.filter((d) =>
+        const allAircraftDocs = aircraftDocumentations;
+        const staticAircraftDocs = allAircraftDocs.filter((d) =>
             AIRCRAFT_SPECIFIC_KEYS.has(d.documentationType) || MODEL_SPECIFIC_KEYS.has(d.documentationType)
         );
-        const existingByType = new Map(allAircraftDocs.map((d) => [d.documentationType, d]));
+        const customAircraftDocs = allAircraftDocs.filter((d) =>
+            !AIRCRAFT_SPECIFIC_KEYS.has(d.documentationType) && !MODEL_SPECIFIC_KEYS.has(d.documentationType)
+        );
+        const existingByType = new Map(staticAircraftDocs.map((d) => [d.documentationType, d]));
         const desiredTypes = new Set<string>();
+        const desiredAdditionalIds = new Set<number>();
         const tasks: Promise<void>[] = [];
 
         // Procesar cada campo visible
         for (const field of visibleFields) {
+            if (field.key === OTHER_AIRCRAFT_DOCUMENTATION_KEY) continue;
+
             const enabled = Boolean(aircraftDocState.checks[field.enabledKey]);
             if (!enabled) continue;
 
@@ -970,9 +1020,53 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             }
         }
 
+        for (const doc of additionalDocs) {
+            const label = doc.label.trim();
+            const existingId = doc.existingCertificateId;
+            const existing = existingId ? customAircraftDocs.find((item) => item.id === existingId) : undefined;
+
+            if (!label) {
+                throw new Error("Cada documento en 'Otros' debe tener un nombre.");
+            }
+
+            const formData = new FormData();
+            formData.append("documentationType", label);
+            formData.append("documentationLabel", label);
+            if (doc.certificate) {
+                formData.append("file", doc.certificate, doc.certificate.name);
+            }
+
+            const url = existing
+                ? `/api/aircraft-documentation/${existing.id}/upload`
+                : `/api/aircraft-documentation/aircraft/${props.id}/upload`;
+
+            tasks.push(
+                fetch(url, {
+                    method: existing ? "PUT" : "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                }).then(res => { if (!res.ok) throw new Error(`Error sincronizando ${label}`); })
+            );
+
+            if (existingId) {
+                desiredAdditionalIds.add(existingId);
+            }
+        }
+
         // Borrar documentos que ya no se desean
-        for (const doc of allAircraftDocs) {
+        for (const doc of staticAircraftDocs) {
             if (!desiredTypes.has(doc.documentationType)) {
+                tasks.push(
+                    fetch(`/api/aircraft-documentation/${doc.id}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                    }).then(res => { if (!res.ok) throw new Error(`Error borrando ${doc.documentationType}`); })
+                );
+            }
+        }
+
+        for (const doc of customAircraftDocs) {
+            if (!desiredAdditionalIds.has(doc.id)) {
                 tasks.push(
                     fetch(`/api/aircraft-documentation/${doc.id}`, {
                         method: "DELETE",
@@ -1554,6 +1648,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                                             }}
                                             modelDefaultByType={modelDefaults.checks}
                                             onRestoreModelDefault={handleRestoreModelDefault}
+                                            additionalDocs={ui.isAircraft ? additionalDocs : []}
+                                            existingAdditionalFileNames={ui.isAircraft ? existingAdditionalFileNames : {}}
+                                            onAddAdditionalDoc={ui.isAircraft ? handleAddAdditionalDoc : undefined}
+                                            onRemoveAdditionalDoc={ui.isAircraft ? handleRemoveAdditionalDoc : undefined}
+                                            onAdditionalFieldChange={ui.isAircraft ? handleAdditionalFieldChange as (id: string, field: keyof AdditionalDoc, value: any) => void : undefined}
                                         />
                                     )}
                                 </div>
