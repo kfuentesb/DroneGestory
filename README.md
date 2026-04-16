@@ -105,6 +105,10 @@ VISUAL<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
+-Añadir fecha de fabricacion<br>
+-Siempre en mayusculas en nº de serie<br>
+-Añadir fuente de potencia (Híbirido/VTOL, no híbrido)<br>
+-Si selecciona no electrica tiene que salir tipo de fuente: hidrogeno, gasolina, otros.<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
