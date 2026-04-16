@@ -138,6 +138,7 @@ public class AircraftController {
 
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
@@ -184,6 +185,11 @@ public class AircraftController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .body(resource);
+    }
+
+    @GetMapping("/exists/{serialNumber}")
+    public ResponseEntity<Boolean> existsBySerialNumber(@PathVariable String serialNumber) {
+        return ResponseEntity.ok(aircraftService.existsBySerialNumber(serialNumber));
     }
 
     @InitBinder

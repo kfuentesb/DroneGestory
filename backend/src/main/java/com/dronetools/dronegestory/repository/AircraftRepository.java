@@ -14,4 +14,6 @@ public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
     
     // Find by manufacturer through the relationship
     List<Aircraft> findByAircraftModelManufacturerIgnoreCase(String manufacturer);
+
+    boolean existsBySerialNumber(String serialNumber);
 }

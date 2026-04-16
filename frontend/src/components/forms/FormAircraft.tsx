@@ -87,6 +87,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     value ? options.find((option) => option.value === value) ?? null : null;
   const getYesNoOption = (value?: boolean | null) =>
     value === null || value === undefined ? null : yesNoOptions.find((option) => option.value === String(value)) ?? null;
+  const [serialExists, setSerialExists] = useState(false);
+  const [checkingSerial, setCheckingSerial] = useState(false);
 
   const documentationByType = Object.fromEntries(
     initialDocumentation.map((doc) => [doc.documentationType, doc] as const)
@@ -321,6 +323,26 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     }));
   };
 
+  const checkSerialNumber = async (serial: string) => {
+    if (serial.length < 2) return;
+    
+    setCheckingSerial(true);
+    try {
+      const res = await apiFetch(`/api/aircraft/exists/${encodeURIComponent(serial)}`);
+      if (!res) {
+        throw new Error("No se obtuvo respuesta del servidor");
+      }
+      const exists = await res.json();
+      setSerialExists(Boolean(exists));
+    } catch (err) {
+        console.error("Error validando número de serie", err);
+        setSerialExists(true);
+        setError("No se pudo verificar el número de serie con el servidor.");
+    } finally {
+      setCheckingSerial(false);
+    }
+  };
+
   const buildDocumentationPayload = (): {
     metadata: AircraftDocumentationUploadRequest[];
     files: Array<{ fileFieldKey: string; file: File }>;
@@ -496,6 +518,12 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       return;
     }
 
+    if (serialExists) {
+      setError("No se puede registrar: el número de serie ya existe en la base de datos.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
       if (formValues.manufacturer) formData.append("manufacturer", formValues.manufacturer);
@@ -645,10 +673,16 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                   className="form-control"
                   placeholder="Ej: ABC12345 (2-25 carac.)"
                   value={formValues.serialNumber}
-                  onChange={(e) => setFormValues({ ...formValues, serialNumber: e.target.value })}
+                  onChange={(e) => {
+                    setFormValues({ ...formValues, serialNumber: e.target.value });
+                    if (serialExists) setSerialExists(false);
+                  }}
+                  onBlur={(e) => checkSerialNumber(e.target.value)}
                   style={{ ...backgroundBorderInputs, border: errors.serialNumber ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
-                {errors.serialNumber && <div className="text-danger small">Campo requerido</div>}
+                {checkingSerial && <div className="text-muted small">Verificando disponibilidad...</div>}
+                {serialExists && <div className="text-danger small">Este número de serie ya está registrado.</div>}
+                {errors.serialNumber && !serialExists && <div className="text-danger small">Campo requerido</div>}
               </div>
             </div>
 
