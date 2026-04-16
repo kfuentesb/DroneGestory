@@ -9,7 +9,8 @@ interface WriteSelectProps {
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
-  endpoint: string;
+  endpoint?: string;
+  options?: Option[];
   placeholder?: string;
   error?: boolean;
 }
@@ -20,14 +21,26 @@ export default function ComboBox({
   onChange,
   onBlur,
   endpoint,
+  options: optionsProp,
   placeholder,
   error
 }: WriteSelectProps) {
   const [options, setOptions] = useState<Option[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Cargar opciones al montar el componente
+  // Cargar opciones al montar el componente o usar las opciones proporcionadas
   useEffect(() => {
+    if (optionsProp) {
+      setOptions(optionsProp);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!endpoint) {
+      setOptions([]);
+      return;
+    }
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -54,7 +67,7 @@ export default function ComboBox({
       }
     };
     fetchData();
-  }, [endpoint, label]);
+  }, [endpoint, label, optionsProp]);
 
   const customStyles = {
     control: (provided: any) => ({

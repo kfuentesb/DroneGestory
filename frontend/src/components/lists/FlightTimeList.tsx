@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { apiFetch } from "../../api";
 import LoadingSpinner from "../commons/Loading";
@@ -9,18 +9,82 @@ import ButtonProp from "../commons/props/ButtonProp";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import { ReusableTable, type  TableHeader } from "../commons/props/ReusableTable";
 
-type TrackingFlightTime = {
+type FlightTimeDocumentation = {
     id: number;
+    flightTimeId?: number | null;
+    documentationType?: string | null;
+    documentationName?: string | null;
+    filePath?: string | null;
+};
+
+type FlightTimeDetail = {
+    id: number;
+    aircraftId?: number;
+    aircraftManufacturer?: string | null;
+    aircraftModel?: string | null;
+    aircraftSerialNumber?: string | null;
+    operationId?: number | null;
     operationReference?: string | null;
     flightDate: string | Date;
-    flightHours: number;
-    totalFlightHours: number;
-    documentationFlight?: string | null;
-}
+    durationMinutes: number;
+    totalFlightTimeMinutes: number;
+    flightHours?: number | null;
+    totalFlightHours?: number | null;
+    documentation?: FlightTimeDocumentation | null;
+};
+
+const formatMinutes = (minutes: number | null | undefined) => {
+    if (minutes == null || Number.isNaN(minutes)) {
+        return "-";
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainderMinutes = minutes % 60;
+    return `${hours}h ${remainderMinutes.toString().padStart(2, "0")}m`;
+};
+
+const formatDate = (value: string | Date) => {
+    const date = typeof value === "string" ? new Date(value) : value;
+    if (!date || Number.isNaN(date.getTime())) {
+        return "N/A";
+    }
+    return date.toLocaleDateString();
+};
+
+const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation) => {
+    const path = documentation.documentationName || documentation.filePath;
+    if (!path) {
+        return;
+    }
+
+    const encodedPath = path
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/");
+
+    try {
+        const response = await apiFetch(`/api/flight-time-documentation/files/${encodedPath}`);
+        if (!response) {
+            throw new Error("No se obtuvo respuesta del servidor");
+        }
+        const blob = await response.blob();
+        const isPdfByExtension = path.toLowerCase().endsWith(".pdf");
+        const fileBlob =
+            isPdfByExtension && (!blob.type || blob.type === "application/octet-stream")
+                ? new Blob([blob], { type: "application/pdf" })
+                : blob;
+        const objectUrl = URL.createObjectURL(fileBlob);
+        window.open(objectUrl, "_blank", "noopener,noreferrer");
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    } catch (error) {
+        console.error("No se pudo cargar el documento", error);
+        alert("No se pudo abrir el documento. Intenta de nuevo más tarde.");
+    }
+};
 
 export default function FlightTimeList() {
     const navigate = useNavigate();
-    const [flightTimes, setFlightTimes] = useState<any[]>([]);
+    const { aircraftId } = useParams<{ aircraftId: string }>();
+    const [flightTimes, setFlightTimes] = useState<FlightTimeDetail[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -28,42 +92,26 @@ export default function FlightTimeList() {
 
     useEffect(() => {
         const fetchFlights = async () => {
+            setIsLoading(true);
             try {
-                const data = await apiFetch("/flight-times");
+                const endpoint = aircraftId ? `/api/flight-times/aircraft/${aircraftId}` : "/api/flight-times";
+                const response = await apiFetch(endpoint);
+                const data = response ? await response.json() : [];
+                const parsedData = Array.isArray(data) ? data : [];
+                setFlightTimes(parsedData);
 
-                if (data && Array.isArray(data)) {
-                    setFlightTimes(data);
-                } else {
-                    setFlightTimes([]);
-                }
+                console.log("Datos recibidos de la tabla:", parsedData);
+                console.table(parsedData);
+
             } catch (error) {
                 console.error("Error cargando tracking de horas", error);
-                
-                // MOCK DATA: Representando la estructura de TrackingFlightTime
-                setFlightTimes([
-                    {
-                        id: 1,
-                        operationReference: "-",
-                        flightDate: "2026-04-10",
-                        flightHours: 2.00,      // 2h 00min
-                        totalFlightHours: 150.50, // Horas totales de la aeronave en ese momento
-                        documentationFlight: "doc_001.pdf"
-                    },
-                    {
-                        id: 2,
-                        operationReference: "CO22_01",
-                        flightDate: "2026-04-12",
-                        flightHours: 0.75,      // 45min
-                        totalFlightHours: 151.25, // Incremento reflejado
-                        documentationFlight: null
-                    }
-                ]);
+                setFlightTimes([]);
             } finally {
                 setIsLoading(false);
             }
         };
         fetchFlights();
-    }, []);
+    }, [aircraftId]);
 
     if (isLoading) {
         return <LoadingSpinner message="Cargando horas de vuelo..." />;
@@ -72,6 +120,7 @@ export default function FlightTimeList() {
     const filteredFlights = useSearchFilter(flightTimes, search, (flight) => [
         flight.operationReference ?? "",
         flight.flightDate?.toString() ?? "",
+        flight.aircraftSerialNumber ?? ""
     ]);
 
     const paginatedFlights = filteredFlights.slice(
@@ -80,81 +129,105 @@ export default function FlightTimeList() {
     );
 
     const headers: TableHeader[] = [
-        { label: "Ref. Vuelo", key: "operationReference", sortable: true },
+        { label: "Fabricante", key: "aircraftManufacturer", sortable: true },
+        { label: "Modelo", key: "aircraftModel", sortable: true },
+        { label: "Nº Serie", key: "aircraftSerialNumber", sortable: true },
+        { label: "Ref. Operación", key: "operationReference", sortable: true },
         { label: "Fecha vuelo", key: "flightDate", sortable: true },
-        { label: "Horas vuelo", key: "flightHours", sortable: true },
-        { label: "Horas totales", key: "totalFlightHours", sortable: true },
-        { label: "Documentación", key: "documentationFlight", sortable: false },
+        { label: "Duración", key: "durationMinutes", sortable: true },
+        { label: "Total acumulado", key: "totalFlightTimeMinutes", sortable: true },
+        { label: "Documentación", key: "documentation", sortable: false },
     ];
+
+    const heading = aircraftId ? `Horas de vuelo de la aeronave ${aircraftId}` : "Registro de Horas de Vuelo";
 
     return (
         <div className="container py-4">
             <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
                 <div className="card-body">
 
+                    <button
+                        type="button"
+                        className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted"
+                        onClick={() => navigate("/flight-times")}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                        </svg>
+                        <span className="ms-2 fw-medium">Volver</span>
+                    </button>
+
+
                     <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-                        Registro de Horas de Vuelo
+                        {heading}
                     </h2>
 
+                    <style>{`
+                        .flight-time-positive-row td {
+                            background-color: rgba(25, 135, 84, 0.05) !important;
+                        }
+                        .flight-time-negative-row td {
+                            background-color: rgba(220, 53, 69, 0.05) !important;
+                        }
+                        .flight-time-positive-row td:first-child {
+                            border-left: 4px solid #198754 !important;
+                        }
+                        .flight-time-positive-row td:last-child {
+                            border-right: 4px solid #198754 !important;
+                        }
+                        .flight-time-negative-row td:first-child {
+                            border-left: 4px solid #dc3545 !important;
+                        }
+                        .flight-time-negative-row td:last-child {
+                            border-right: 4px solid #dc3545 !important;
+                        }
+                    `}</style>
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        <ButtonProp onClick={() => navigate("/register-flight")}>+ Añadir horas</ButtonProp>
+                        {aircraftId ? (
+                            <ButtonProp onClick={() => navigate(`/flight-times/${aircraftId}/register`)}>
+                                + Añadir horas
+                            </ButtonProp>
+                        ) : (
+                            <ButtonProp onClick={() => {}} disabled>
+                                + Añadir horas
+                            </ButtonProp>
+                        )}
                     </div>
 
                     <ReusableTable
                         headers={headers}
                         rows={paginatedFlights}
-                        renderRow={(row: TrackingFlightTime) => (
+                        renderRow={(row: FlightTimeDetail) => (
                             <>
-                                <td>{row.operationReference || "N/A"}</td>
-                                <td>{new Date(row.flightDate).toLocaleDateString()}</td>
-                                {/* Mostramos los valores directamente del DTO/Entidad */}
-                                <td className="fw-bold">{row.flightHours.toFixed(2)} h</td>
-                                <td className="text-success fw-bold">{row.totalFlightHours.toFixed(2)} h</td>
+                                <td>{row.aircraftManufacturer ?? "N/A"}</td>
+                                <td>{row.aircraftModel ?? "N/A"}</td>
+                                <td>{row.aircraftSerialNumber ?? "N/A"}</td>
+                                <td>{row.operationReference ?? "N/A"}</td>
+                                <td>{formatDate(row.flightDate)}</td>
+                                <td>{formatMinutes(row.durationMinutes)}</td>
+                                <td>{formatMinutes(row.totalFlightTimeMinutes)}</td>
                                 <td>
-                                    {row.documentationFlight ? (
-                                        <div className="d-flex align-items-center justify-content-between">
-                                            <span className="text-success fw-medium">
-                                                <i className="bi bi-check-circle-fill"></i> Disponible
-                                            </span>
-                                            <button 
-                                                className="btn btn-sm btn-outline-secondary ms-2"
-                                                title="Ver documento"
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Evita navegar al detalle de la fila
-                                                    window.open(`${import.meta.env.REACT_APP_API_URL}/uploads/${row.documentationFlight}`, '_blank');
-                                                }}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
-                                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
-                                                </svg>
-                                            </button>
-                                        </div>
+                                    {row.documentation?.documentationName || row.documentation?.filePath ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-primary btn-sm"
+                                            onClick={() => openDocumentationInNewTab(row.documentation as FlightTimeDocumentation)}
+                                        >
+                                            Ver documento
+                                        </button>
                                     ) : (
-                                        <div className="d-flex align-items-center justify-content-between">
-                                            <span className="text-muted small">No adjunta</span>
-                                            <button 
-                                                className="btn btn-sm btn-success d-flex align-items-center"
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // ¡Crucial!
-                                                    // Aquí abrirías tu modal de subida o navegarías al form
-                                                    navigate(`/flight-times/${row.id}/upload`);
-                                                }}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="me-1" viewBox="0 0 16 16">
-                                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                                                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                                                </svg>
-                                                Subir
-                                            </button>
-                                        </div>
+                                        "No"
                                     )}
                                 </td>
                             </>
                         )}
-                        onRowClick={(row) => navigate(`/flight-times/${row.id}`)}
-                        emptyText="No hay registros de tracking para esta aeronave."
+                        rowClassName={(row) => {
+                            if (row.durationMinutes > 0) return "flight-time-positive-row";
+                            if (row.durationMinutes < 0) return "flight-time-negative-row";
+                            return "";
+                        }}
+                        emptyText={aircraftId ? "No hay registros de horas de vuelo para esta aeronave." : "No hay registros de horas de vuelo."}
                     />
 
                     <Pagination

@@ -99,9 +99,10 @@ public class FlightTimeService {
         if (request.durationMinutes() == null) {
             throw new IllegalArgumentException("durationMinutes is required");
         }
-        if (request.durationMinutes() < 0) {
-            throw new IllegalArgumentException("durationMinutes must be greater than or equal to 0");
+        if (request.durationMinutes() == 0) {
+            throw new IllegalArgumentException("durationMinutes must not be zero");
         }
+        // Permitimos duraciones negativas para ajustes de tiempo.
 
         Aircraft aircraft = aircraftRepository.findById(request.aircraftId())
                 .orElseThrow(() -> new EntityNotFoundException("Aircraft not found with id: " + request.aircraftId()));

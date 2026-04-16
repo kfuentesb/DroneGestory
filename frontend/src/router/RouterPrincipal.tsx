@@ -23,9 +23,11 @@ import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
 import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
 import FormAircraftModel from "../components/forms/FormAircraftModel";
+import FormFlightTime from "../components/forms/FormFlightTime";
 import AircraftModelList from "../components/lists/AircraftModelList";
 import FlightTimeList from "../components/lists/FlightTimeList";
 import MaintenanceList from "../components/lists/MaintenanceList";
+import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -98,11 +100,30 @@ export default class RouterPrincipal extends React.Component {
           }
         />
 
+        {/* Summary list of aircraft flight hours. */}
         <Route 
           path="/flight-times" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <AircraftFlightTimeList />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/flight-times/:aircraftId" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <FlightTimeList />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/flight-times/:aircraftId/register" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormFlightTime />
             </ProtectedRoute>
           } 
         />

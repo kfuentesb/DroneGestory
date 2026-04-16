@@ -13,6 +13,8 @@ type ReusableTableProps<T> = {
   renderRow: (row: T) => React.ReactNode;
   emptyText?: string;
   onRowClick?: (row: T) => void;
+  rowStyle?: (row: T) => React.CSSProperties;
+  rowClassName?: (row: T) => string;
 };
 
 export function ReusableTable<T>({
@@ -21,6 +23,8 @@ export function ReusableTable<T>({
   renderRow,
   emptyText = "Sin datos.",
   onRowClick,
+  rowStyle,
+  rowClassName
 }: ReusableTableProps<T>) {
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -95,14 +99,19 @@ export function ReusableTable<T>({
               </td>
             </tr>
           ) : (
-            sortedRows.map((row, idx) => (
-              <tr key={(row as any).id ?? idx}
-                style={{ cursor: onRowClick ? "pointer" : "default" }}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-              >
-                {renderRow(row)}
-              </tr>
-            ))
+            sortedRows.map((row, idx) => {
+              const customStyle = rowStyle ? rowStyle(row) : undefined;
+              const customClass = rowClassName ? rowClassName(row) : undefined;
+              return (
+                <tr key={(row as any).id ?? idx}
+                  className={customClass}
+                  style={{ cursor: onRowClick ? "pointer" : "default", ...customStyle }}
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                >
+                  {renderRow(row)}
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
