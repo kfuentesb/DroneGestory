@@ -7,10 +7,14 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.nio.file.Files;
 import java.util.List;
@@ -216,28 +220,22 @@ public class UserService {
                 });
     }
 
+    @Transactional
     public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile, boolean phoneNumberPresent, boolean removeImage) throws IOException {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        // 1. Actualización de campos básicos
+        // --- LÓGICA DE SEGURIDAD PARA CAMPOS SENSIBLES ---
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdminOrManager = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
+
+        // Campos básicos (Permitidos para el propio usuario y administradores)
         if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
         if (updatedUser.getLastName() != null) user.setLastName(updatedUser.getLastName());
-        if (updatedUser.getUsername() != null) user.setUsername(updatedUser.getUsername());
         if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
-        if (updatedUser.getType() != null) user.setType(updatedUser.getType());
         
-        if (updatedUser.getPhoneNumber() != null) {
-            user.setPhoneNumber(updatedUser.getPhoneNumber());
-        } else if (phoneNumberPresent) {
-            user.setPhoneNumber(null);
-        }
-
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-        }
-
         if (updatedUser.getDocIdentidad() != null) user.setDocIdentidad(updatedUser.getDocIdentidad());
         if (updatedUser.getFechaNac() != null) {
             if (updatedUser.getFechaNac().isAfter(java.time.LocalDate.now())) {
@@ -245,54 +243,58 @@ public class UserService {
             }
             user.setFechaNac(updatedUser.getFechaNac());
         }
-        if (updatedUser != null) {
-            user.setState(updatedUser.isState());
+
+        if (updatedUser.getPhoneNumber() != null) {
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+        } else if (phoneNumberPresent) {
+            user.setPhoneNumber(null);
         }
 
+        // PROTECCIÓN DE CAMPOS SENSIBLES (Solo Admin/Manager)
+        if (isAdminOrManager) {
+            // Solo el jefe puede cambiar el nombre de usuario, el rol o si la cuenta está activa
+            if (updatedUser.getUsername() != null) user.setUsername(updatedUser.getUsername());
+            if (updatedUser.getType() != null) user.setType(updatedUser.getType());
+            user.setState(updatedUser.isState());
+        } else {
+            // Si no es admin, ignoramos silenciosamente los cambios en username, type y state.
+            // El objeto 'user' mantiene los valores que ya tenía en la base de datos.
+        }
 
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank() && isAdminOrManager) {
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+
+        // --- GESTIÓN DE IMAGEN (Tu lógica actual se mantiene igual) ---
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path profileDir = uploadDir.resolve(Paths.get("users", user.getId().toString(), "profile")).normalize();
         String oldImage = user.getImagePath();
 
         if (removeImage) {
-            // CASO: El usuario pulsó la "X" en el frontend
             if (oldImage != null && !oldImage.isBlank()) {
                 Path oldFile = uploadDir.resolve(oldImage).normalize();
                 Files.deleteIfExists(oldFile);
             }
             user.setImagePath(null);
-            
         } else if (imageFile != null && !imageFile.isEmpty()) {
-            // CASO: El usuario subió un archivo nuevo (reemplazo)
             Files.createDirectories(profileDir);
-
-            // Borrar la antigua antes de poner la nueva
             if (oldImage != null && !oldImage.isBlank()) {
                 Path oldFile = uploadDir.resolve(oldImage).normalize();
                 Files.deleteIfExists(oldFile);
             }
-
             String originalName = imageFile.getOriginalFilename();
-            String safeName = (originalName == null || originalName.isBlank())
-                    ? "upload"
-                    : Paths.get(originalName).getFileName().toString();
-
-            // Usamos el username para el nombre del archivo como tenías antes
+            String safeName = (originalName == null || originalName.isBlank()) ? "upload" : Paths.get(originalName).getFileName().toString();
+            
+            // Usamos el username real de la base de datos para el nombre del archivo
             String filename = user.getUsername() + "_" + System.currentTimeMillis() + "_" + safeName;
-
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
 
-            user.setImagePath(
-                    Paths.get("users", user.getId().toString(), "profile", filename)
-                            .toString()
-                            .replace("\\", "/")
-            );
+            user.setImagePath(Paths.get("users", user.getId().toString(), "profile", filename).toString().replace("\\", "/"));
         }
 
         return userRepository.save(user);
     }
-
     @Transactional
     public void updatePassword(Integer id, String actorUsername, String actorPassword, String newPassword) {
         if (actorUsername == null || actorUsername.isBlank()) {

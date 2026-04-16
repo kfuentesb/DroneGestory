@@ -61,11 +61,11 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
-        String username = authentication.getName();
-        return userService.findByUsername(username)
+        return userService.findByUsername(authentication.getName())
                 .map(user -> ResponseEntity.ok(toResponse(user)))
-                .orElse(ResponseEntity.status(401).build());
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -97,7 +97,7 @@ public class UserController {
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
-
+        
         boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
         User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, removeImage);
 

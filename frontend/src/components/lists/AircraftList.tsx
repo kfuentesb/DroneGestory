@@ -123,12 +123,16 @@ export default function AircraftList() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <SearchBar value={search} onChange={setSearch} />
 
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-stretch gap-2">
               <ButtonProp onClick={() => navigate("/aircraft-models")}>
                 Listar modelos
               </ButtonProp>
-              <ButtonProp onClick={() => navigate("/register-aircraft")}>
-                <img src={DronePlusIcon} style={{width: "40px", height:"40px"}}/>
+              
+              <ButtonProp 
+                onClick={() => navigate("/register-aircraft")}
+                className="d-flex align-items-center justify-content-center"
+              >
+                <img src={DronePlusIcon} style={{ width: "30px", height: "30px" }} alt="plus icon" />
               </ButtonProp>
             </div>
           </div>
