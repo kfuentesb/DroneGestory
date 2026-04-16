@@ -77,6 +77,7 @@ export default function ProfileDetail() {
             onBack={() => navigate("/home")}
             validateForm={validateForm}
             certificateSectionType="user"
+            defaultImage="user"
         />
     );
 }
