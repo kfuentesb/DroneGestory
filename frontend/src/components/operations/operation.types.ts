@@ -49,7 +49,6 @@ export type OperationAnexoDetailDTO = {
 export type OperationDetailDTO = {
   idOperacion: number;
   nombreOperacion: string;
-  nombreAsignado?: string;
   nombreCreador: string;
   fechaCreacion: string;
   fechaActualizacion: string | null;

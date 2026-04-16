@@ -4,6 +4,7 @@ import com.dronetools.dronegestory.common.AnexoVersionado;
 import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,6 @@ public class OperationDetailDTO {
     private boolean todosAnexosFirmados;
     private List<OperationAnexoDetailDTO> anexos;
     private String conops;
-    private String nombreAsignado;
 
     public OperationDetailDTO(Operation op) {
         this.idOperacion = op.getIdOperacion();
@@ -40,7 +40,11 @@ public class OperationDetailDTO {
                 buildAnexoDetail(8, op.getAnexo8Actual(), op.getAnexos8())
         );
         this.conops = op.getConops();
-        this.nombreAsignado = op.getNombreOperacion();
+    }
+
+    @JsonProperty("nombreAsignado")
+    public String getNombreAsignado() {
+        return this.nombreOperacion;
     }
 
     private OperationAnexoDetailDTO buildAnexoDetail(int tipoAnexo, AnexoVersionado actual, List<? extends Anexo> versiones) {

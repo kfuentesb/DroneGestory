@@ -145,7 +145,7 @@ export default function OperationsTableView({
 
       navigate(`/operations/${created.idOperacion}`);
     } catch (err: any) {
-      alert(err.message || "No se pudo crear la operación.");
+      alert(err.message || "No se pudo generar el nombre o crear la operación.");
     }
   };
 

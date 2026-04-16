@@ -21,6 +21,7 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
         SELECT COALESCE(MAX(CAST(SUBSTRING(nombre_operacion FROM LENGTH(:prefix) + 1) AS INTEGER)), 0)
         FROM operation
         WHERE nombre_operacion LIKE CONCAT(:prefix, '%')
+          AND nombre_operacion ~ CONCAT('^', :prefix, '[0-9]+$')
     """, nativeQuery = true)
     long findMaxOperationNumberByPrefix(@Param("prefix") String prefix);
 
