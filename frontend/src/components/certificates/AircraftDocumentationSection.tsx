@@ -1,6 +1,7 @@
 import { useState } from "react";
 import InsertDoc from "../commons/InsertDoc";
 import { InfoBadge } from "../commons/InfoBadge";
+import MultipleAdditionalsComponent from "../commons/MultipleAdditionalsComponent";
 
 export type AircraftDocumentationFieldConfig = {
   key: string;
@@ -256,6 +257,20 @@ export default function AircraftDocumentationSection({
               // --- LÓGICA ESPECIAL PARA "OTRA DOCUMENTACIÓN" ---
               if (field.key === OTHER_AIRCRAFT_DOCUMENTATION_KEY) {
                 return (
+                  <>
+                  <MultipleAdditionalsComponent
+                    title="Otros"
+                    infoText={field.infoLabel}
+                    emptyText="No se han añadido documentos adicionales."
+                    inputPlaceholder="Nombre del documento (ej: Certificado de Pesaje)"
+                    items={additionalDocs}
+                    existingFileNames={existingAdditionalFileNames}
+                    onAdd={() => onAddAdditionalDoc?.()}
+                    onRemove={(id) => onRemoveAdditionalDoc?.(id)}
+                    onFieldChange={(id, changedField, value) => onAdditionalFieldChange?.(id, changedField as keyof AdditionalDoc, value)}
+                    showDateControls={false}
+                  />
+                  {false && (
                   <div key={field.key} className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                     <div className="d-flex align-items-center justify-content-between mb-3">
                       <div className="d-flex align-items-center">
@@ -311,6 +326,8 @@ export default function AircraftDocumentationSection({
                       </div>
                     ))}
                   </div>
+                  )}
+                  </>
                 );
               }
 
