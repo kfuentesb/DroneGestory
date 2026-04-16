@@ -52,6 +52,16 @@ public class AircraftModelController {
                 .toList();
     }
 
+    @GetMapping("/manufacturers")
+    public List<String> getManufacturers() {
+        return aircraftModelService.getAllManufacturers();
+    }
+
+    @GetMapping("/models")
+    public List<String> getModels(@RequestParam(required = false) String manufacturer) {
+        return aircraftModelService.getModelsByManufacturer(manufacturer);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<AircraftModelDTO> getById(@PathVariable Long id) {
         return aircraftModelService.getById(id)
