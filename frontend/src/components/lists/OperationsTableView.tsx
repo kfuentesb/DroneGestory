@@ -7,7 +7,7 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import DeleteIcon from "../../assets/commons/delete_white.svg";
-import { fetchOperations } from "../operations/operation.api";
+import { createOperation, fetchNextOperationName, fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
 import { deleteOperation } from "../operations/operation.api";
@@ -122,6 +122,33 @@ export default function OperationsTableView({
   }
 };
 
+  const handleCreate = async () => {
+    try {
+      const nextNameData = await fetchNextOperationName();
+      if (!nextNameData?.nombreAsignado) {
+        alert("No se pudo obtener el nombre de la operación.");
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Se va a crear una nueva operación con el nombre ${nextNameData.nombreAsignado}. ¿Deseas continuar?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      const created = await createOperation();
+      if (!created) {
+        return;
+      }
+
+      navigate(`/operations/${created.idOperacion}`);
+    } catch (err: any) {
+      alert(err.message || "No se pudo crear la operación.");
+    }
+  };
+
   // Encabezados, añade la columna del botón borrar solo si eres admin
   const opHeaders: TableHeader[] = [
     { label: "Nombre", key: "nombreOperacion", sortable: true },
@@ -164,7 +191,7 @@ export default function OperationsTableView({
               placeholder="Buscar por nombre, creador o estado..."
               onChange={setSearch}
             />
-            <ButtonProp onClick={() => navigate("/register-operation")}>
+            <ButtonProp onClick={handleCreate}>
               <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
             </ButtonProp>
           </div>

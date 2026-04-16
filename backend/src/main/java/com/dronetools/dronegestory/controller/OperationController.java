@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/operations")
@@ -35,6 +36,11 @@ public class OperationController {
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return operationService.getMyOperationListDTOs(user.getId());
+    }
+
+    @GetMapping("/next-name")
+    public Map<String, String> getNextOperationName() {
+        return Map.of("nombreAsignado", operationService.previewNextOperationName());
     }
 
     @PostMapping

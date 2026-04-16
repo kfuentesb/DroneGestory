@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Year;
 import java.util.List;
 
 @Service
@@ -35,8 +36,14 @@ public class OperationService {
 
     @Transactional
     public OperationDetailDTO saveOperationDto(Operation op) {
+        op.setNombreOperacion(nextOperationNameForCurrentYear(true));
         Operation saved = operationRepository.save(op);
         return new OperationDetailDTO(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public String previewNextOperationName() {
+        return nextOperationNameForCurrentYear(false);
     }
 
     @Transactional
@@ -169,6 +176,16 @@ public class OperationService {
         op.setConops(conops);
         Operation saved = operationRepository.save(op);
         return new OperationDetailDTO(saved);
+    }
+
+    private String nextOperationNameForCurrentYear(boolean lockSequence) {
+        int year = Year.now().getValue();
+        if (lockSequence) {
+            operationRepository.lockOperationNameSequence(year);
+        }
+        String prefix = String.format("O_%d_", year);
+        long nextNumber = operationRepository.findMaxOperationNumberByPrefix(prefix) + 1;
+        return String.format("%s%03d", prefix, nextNumber);
     }
 
 }

@@ -14,6 +14,16 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
     // @Query("SELECT o FROM Operation o JOIN FETCH o.creador WHERE o.creador.id = :userId")
     List<Operation> findByCreadorId(Integer userId);
 
+    @Query(value = "SELECT pg_advisory_xact_lock(:lockKey)", nativeQuery = true)
+    void lockOperationNameSequence(@Param("lockKey") long lockKey);
+
+    @Query(value = """
+        SELECT COALESCE(MAX(CAST(SUBSTRING(nombre_operacion FROM LENGTH(:prefix) + 1) AS INTEGER)), 0)
+        FROM operation
+        WHERE nombre_operacion LIKE CONCAT(:prefix, '%')
+    """, nativeQuery = true)
+    long findMaxOperationNumberByPrefix(@Param("prefix") String prefix);
+
     @Query("""
         SELECT o
         FROM Operation o

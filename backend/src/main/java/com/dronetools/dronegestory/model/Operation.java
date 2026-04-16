@@ -27,7 +27,7 @@ public class Operation {
     @Column(name="id_operacion")
     private Long idOperacion;
 
-    @Column(name = "nombre_operacion", nullable = false, length = 255)
+    @Column(name = "nombre_operacion", nullable = false, length = 255, unique = true)
     private String nombreOperacion;
 
     @Column(name = "conops")
