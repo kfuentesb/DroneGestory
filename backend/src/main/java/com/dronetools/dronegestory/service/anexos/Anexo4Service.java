@@ -29,7 +29,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         Anexo4 saved = registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
-        syncOperationData(saved.getOperation(), saved.getPersonal(), null);
+        syncPersonnel(saved.getOperation(), saved.getPersonal());
         return saved;
     }
 
@@ -207,7 +207,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)
         Anexo4 saved = registrarAnexo4(operationId, anexo4);
-        syncOperationData(saved.getOperation(), saved.getPersonal(), conops);
+        syncOperationConops(saved.getOperation(), conops);
         return saved;
     }
 
@@ -215,15 +215,20 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
     @Transactional
     public Anexo4 firmarAnexo(Long idAnexo, String username) {
         Anexo4 signed = super.firmarAnexo(idAnexo, username);
-        syncOperationData(signed.getOperation(), signed.getPersonal(), null);
+        syncPersonnel(signed.getOperation(), signed.getPersonal());
         return signed;
     }
 
-    private void syncOperationData(Operation operation, String personal, String conops) {
+    private void syncPersonnel(Operation operation, String personal) {
         operationAccessService.syncAssignedUsersFromPersonal(operation, personal);
-        if (conops != null) {
-            operation.setConops(conops);
+        operationRepository.save(operation);
+    }
+
+    private void syncOperationConops(Operation operation, String conops) {
+        if (conops == null) {
+            return;
         }
+        operation.setConops(conops);
         operationRepository.save(operation);
     }
 

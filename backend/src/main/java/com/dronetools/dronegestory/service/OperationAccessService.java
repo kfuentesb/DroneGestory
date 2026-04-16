@@ -4,6 +4,8 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.Set;
 
 @Service
 public class OperationAccessService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OperationAccessService.class);
 
     private final UserRepository userRepository;
     private final OperationRepository operationRepository;
@@ -74,8 +77,7 @@ public class OperationAccessService {
             assignedUsers.addAll(userRepository.findAllById(assignedUserIds));
         }
 
-        operation.getUsuariosConAcceso().clear();
-        operation.getUsuariosConAcceso().addAll(assignedUsers);
+        operation.setUsuariosConAcceso(new LinkedHashSet<>(assignedUsers));
     }
 
     private Set<Integer> parsePersonalIds(String personalRaw) {
@@ -91,6 +93,7 @@ public class OperationAccessService {
                     try {
                         ids.add(Integer.valueOf(value));
                     } catch (NumberFormatException ignored) {
+                        LOGGER.warn("ID de personal inválido en Anexo4: {}", value);
                     }
                 });
         return ids;

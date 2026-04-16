@@ -54,7 +54,11 @@ public class OperationAnexo4ImageController {
             return ResponseEntity.badRequest().build();
         }
 
-        String operationId = filename.split("/")[1];
+        String[] pathParts = filename.split("/");
+        if (pathParts.length < 4) {
+            return ResponseEntity.badRequest().build();
+        }
+        String operationId = pathParts[1];
         operationAccessService.assertCanAccess(Long.valueOf(operationId));
 
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
