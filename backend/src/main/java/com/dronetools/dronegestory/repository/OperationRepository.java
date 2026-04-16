@@ -15,6 +15,24 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
     List<Operation> findByCreadorId(Integer userId);
 
     @Query("""
+        SELECT DISTINCT o
+        FROM Operation o
+        LEFT JOIN o.usuariosConAcceso ua
+        WHERE o.creador.id = :userId OR ua.id = :userId
+    """)
+    List<Operation> findAccessibleByUserId(@Param("userId") Integer userId);
+
+    @Query("""
+        SELECT DISTINCT o
+        FROM Operation o
+        LEFT JOIN o.usuariosConAcceso ua
+        WHERE o.idOperacion = :operationId
+          AND (o.creador.id = :userId OR ua.id = :userId)
+    """)
+    Optional<Operation> findAccessibleByOperationIdAndUserId(@Param("operationId") Long operationId,
+                                                              @Param("userId") Integer userId);
+
+    @Query("""
         SELECT o
         FROM Operation o
         LEFT JOIN FETCH o.anexos4

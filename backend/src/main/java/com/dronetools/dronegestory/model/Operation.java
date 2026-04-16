@@ -13,7 +13,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "operation")
@@ -37,6 +39,14 @@ public class Operation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK a app_user.user_id
     private User creador;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "operation_access_user",
+            joinColumns = @JoinColumn(name = "operation_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> usuariosConAcceso = new HashSet<>();
 
     // FECHAS AUTOMÁTICAS
     @CreationTimestamp

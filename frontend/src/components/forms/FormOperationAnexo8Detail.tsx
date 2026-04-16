@@ -3,17 +3,18 @@ import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import OperationConopsField from "../commons/OperationConopsField";
 
 type FormOperationAnexo8DetailProps = {
   operationId: number;
   initialValues?: Anexo8Data | null;
+  operationConops?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo8Data | null) => void | Promise<void>;
 };
 
 const FORM_FIELDS = [
-  "nombreConops",
   "fechaOp",
   "condicionesATSP",
   "comunicacion3FinalizacionOperacion",
@@ -63,6 +64,7 @@ const SECCIONES_CONFIG: { seccion1: SectionItem[]; seccion2: SectionItem[] } = {
 export default function FormOperationAnexo8Detail({
   operationId,
   initialValues,
+  operationConops,
   disabled,
   readOnlyMessage,
   onSaved,
@@ -123,14 +125,7 @@ export default function FormOperationAnexo8Detail({
       <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
-          <input
-            type="text"
-            className="form-control bg-white border"
-            value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
-          />
+          <OperationConopsField value={operationConops} disabled={disabled || saving} />
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

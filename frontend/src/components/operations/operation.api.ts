@@ -3,6 +3,11 @@ import type { AnexoStatus, OperationDetailDTO, OperationListDTO } from "./operat
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 export type Anexo4Data = Record<string, any>;
+export type UserNameOption = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
 type AnexoBaseData = {
   id?: number;
   numeroVersion?: number;
@@ -148,10 +153,9 @@ export async function fetchOperationDetail(id: string | number) {
   return (await response.json()) as OperationDetailDTO;
 }
 
-export async function createOperation(nombreOperacion: string, conops: string) {
+export async function createOperation(nombreOperacion: string) {
   const formData = new FormData();
   formData.append("nombreOperacion", nombreOperacion);
-  formData.append("conops", conops);
 
   const response = await apiFetch(`${API_BASE_URL}/api/operations`, {
     method: "POST",
@@ -163,6 +167,18 @@ export async function createOperation(nombreOperacion: string, conops: string) {
   }
 
   return (await response.json()) as OperationDetailDTO;
+}
+
+export async function fetchUserNames() {
+  const response = await apiFetch(`${API_BASE_URL}/api/users/names`, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response) {
+    return [];
+  }
+
+  return (await response.json()) as UserNameOption[];
 }
 
 export async function fetchAnexo4Data(operationId: number): Promise<Anexo4Data | null> {

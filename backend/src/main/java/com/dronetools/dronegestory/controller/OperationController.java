@@ -42,6 +42,7 @@ public class OperationController {
         User user = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         op.setCreador(user);
+        op.setConops(null);
         return operationService.saveOperationDto(op); // Nuevo método
     }
 

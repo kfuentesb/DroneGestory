@@ -14,11 +14,14 @@ public abstract class AnexoServiceBase<T extends Anexo> {
 
     protected final AnexoBaseRepository<T, Long> repository;
     protected final OperationRepository operationRepository;
+    protected final OperationAccessService operationAccessService;
 
     public AnexoServiceBase(AnexoBaseRepository<T, Long> repository,
-                            OperationRepository operationRepository) {
+                            OperationRepository operationRepository,
+                            OperationAccessService operationAccessService) {
         this.repository = repository;
         this.operationRepository = operationRepository;
+        this.operationAccessService = operationAccessService;
     }
 
     @Transactional
@@ -29,6 +32,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
 
+        operationAccessService.assertCanAccess(op);
         validarOperacionEditable(op);
 
         T ultimaVersion = getUltimaVersion.get(op);
@@ -52,6 +56,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         }
 
         Operation op = anexoOrigen.getOperation();
+        operationAccessService.assertCanAccess(op);
         validarOperacionEditable(op);
 
         repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
@@ -74,6 +79,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexo));
 
         validarOperacionEditable(anexo.getOperation());
+        operationAccessService.assertCanAccess(anexo.getOperation());
 
         if (anexo.getEstado() == AnexoStatus.FIRMADO) {
             throw new RuntimeException("Anexo ya está firmado");

@@ -21,6 +21,7 @@ export type OperationListDTO = {
   anexo8Version: string;
   anexo8Color: AnexoColor;
   todosFirmadosPendiente: boolean;
+  conops?: string;
 };
 
 export type AnexoInfoDTO = {
@@ -56,4 +57,5 @@ export type OperationDetailDTO = {
   completada: boolean;
   todosAnexosFirmados: boolean;
   anexos: OperationAnexoDetailDTO[];
+  conops?: string;
 };

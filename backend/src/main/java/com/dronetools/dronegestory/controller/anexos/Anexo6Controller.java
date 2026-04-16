@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.anexos.Anexo6Service;
+import com.dronetools.dronegestory.service.OperationAccessService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,9 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
 
     public Anexo6Controller(Anexo6Service service,
                             OperationRepository operationRepository,
-                            Anexo6Repository repository) {
-        super(service, operationRepository, repository);
+                            Anexo6Repository repository,
+                            OperationAccessService operationAccessService) {
+        super(service, operationRepository, repository, operationAccessService);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,6 +49,7 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos6(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAccessService.assertCanAccess(op);
         Anexo6 anexo6 = op.getAnexo6Actual();
         if (anexo6 == null) {
             return ResponseEntity.noContent().build();
@@ -57,8 +60,9 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     @GetMapping("/{idAnexo}/datos")
     public ResponseEntity<Anexo6ResponseDTO> getDatosVersion(@PathVariable Long operationId,
                                                              @PathVariable Long idAnexo) {
-        operationRepository.findById(operationId)
+        Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAccessService.assertCanAccess(operation);
         Anexo6 anexo6 = repository.findById(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
         if (anexo6.getOperation() == null || !anexo6.getOperation().getIdOperacion().equals(operationId)) {
@@ -82,4 +86,3 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
         return op.getAnexo6Actual();
     }
 }
-
