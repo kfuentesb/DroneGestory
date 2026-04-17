@@ -529,8 +529,10 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       config: !formValues.config,
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
       tooMuchTextAccesories: formValues.accessories.length > 800,
-      powerSource: formValues.powerSource === null || formValues.powerSource === undefined,
-      powerSourceNonHybrid: formValues.powerSource?.value === "NON_HYBRID" && (formValues.powerSourceNonHybrid === null || formValues.powerSourceNonHybrid === undefined),
+      powerSource: false,
+      powerSourceNonHybrid:
+        formValues.powerSource?.value === "NON_HYBRID" &&
+        (formValues.powerSourceNonHybrid === null || formValues.powerSourceNonHybrid === undefined),
     };
 
     setErrors(newErrors);
@@ -538,6 +540,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       let msg = "Por favor complete los campos correctamente.";
       if (newErrors.serialNumber && formValues.serialNumber.trim()) {
         msg = "El número de serie solo permite letras y números (2-25 carac.).";
+      } else if (newErrors.powerSourceNonHybrid) {
+        msg = "Seleccione un tipo de fuente no eléctrica cuando la fuente sea No Híbrido.";
       }
       setError(msg);
       setLoading(false);
@@ -561,7 +565,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       const formData = new FormData();
       if (formValues.manufacturer) formData.append("manufacturer", formValues.manufacturer);
       if (formValues.model) formData.append("model", formValues.model);
-      if (formValues.serialNumber) formData.append("serialNumber", formValues.serialNumber);
+      const normalizedSerial = formValues.serialNumber?.toUpperCase().trim() ?? "";
+      if (normalizedSerial) formData.append("serialNumber", normalizedSerial);
       if (formValues.aircraftClass) formData.append("aircraftClass", formValues.aircraftClass?.value ?? "");
       if (formValues.mtom) formData.append("mtom", String(formValues.mtom));
       if (formValues.wingspan) formData.append("wingspan", String(formValues.wingspan));
@@ -710,10 +715,11 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                   placeholder="Ej: ABC12345 (2-25 carac.)"
                   value={formValues.serialNumber}
                   onChange={(e) => {
-                    setFormValues({ ...formValues, serialNumber: e.target.value });
+                    const upperValue = e.target.value.toUpperCase();
+                    setFormValues({ ...formValues, serialNumber: upperValue });
                     if (serialExists) setSerialExists(false);
                   }}
-                  onBlur={(e) => checkSerialNumber(e.target.value)}
+                  onBlur={(e) => checkSerialNumber(e.target.value.toUpperCase())}
                   style={{ ...backgroundBorderInputs, border: errors.serialNumber ? "1px solid red" : "1px solid #D1D5DB" }}
                 />
                 {checkingSerial && <div className="text-muted small">Verificando disponibilidad...</div>}

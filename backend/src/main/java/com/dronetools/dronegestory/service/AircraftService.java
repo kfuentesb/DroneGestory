@@ -196,6 +196,6 @@ public class AircraftService {
     }
 
     public boolean existsBySerialNumber(String serialNumber) {
-        return aircraftRepository.existsBySerialNumber(serialNumber.trim());
+        return aircraftRepository.existsBySerialNumber(serialNumber == null ? null : serialNumber.trim().toUpperCase());
     }
 }

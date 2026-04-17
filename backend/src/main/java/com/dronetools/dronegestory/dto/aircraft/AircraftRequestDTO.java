@@ -62,7 +62,9 @@ public class AircraftRequestDTO {
         aircraft.setImpactEnergy(impactEnergy);
         aircraft.setHasCamera(hasCamera);
         aircraft.setPrivatelyBuilt(privatelyBuilt);
-        aircraft.setFechaFab(LocalDate.parse(fechaFab));
+        if (fechaFab != null && !fechaFab.isBlank()) {
+            aircraft.setFechaFab(LocalDate.parse(fechaFab));
+        }
         aircraft.setPowerSource(powerSource);
         aircraft.setPowerSourceType(powerSourceType);
 

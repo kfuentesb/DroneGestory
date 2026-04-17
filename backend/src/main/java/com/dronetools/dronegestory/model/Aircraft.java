@@ -37,6 +37,10 @@ public class Aircraft {
     @Pattern(regexp = "^[a-zA-Z0-9]{2,25}$", message = "El número de serie debe ser alfanumérico (2-25 caracteres)")
     private String serialNumber;
 
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber == null ? null : serialNumber.toUpperCase();
+    }
+
     @Column(name = "class", nullable = false)
     @Enumerated(EnumType.STRING)
     private AircraftClass aircraftClass;

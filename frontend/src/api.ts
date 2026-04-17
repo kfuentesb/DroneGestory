@@ -28,17 +28,31 @@ export async function apiFetch(url: string, options?: RequestInit) {
 
     if (!res.ok) {
         // CAPTURA EL TEXTO ANTES DE INTENTAR PARSEARLO COMO JSON
-        const errorText = await res.text(); 
+        const errorText = await res.text();
         console.error("Error del servidor (Cuerpo):", errorText);
 
-        let errorBody;
+        let message = "Error en la petición";
         try {
-            errorBody = JSON.parse(errorText);
+            const errorBody = JSON.parse(errorText);
+            if (errorBody?.message) {
+                message = errorBody.message;
+            } else if (errorBody?.error) {
+                message = errorBody.error;
+            } else if (errorBody?.fields && typeof errorBody.fields === "object") {
+                const fieldMessages = Object.entries(errorBody.fields)
+                    .map(([field, msg]) => `${field}: ${msg}`)
+                    .join("; ");
+                if (fieldMessages) {
+                    message = `Errores de validación: ${fieldMessages}`;
+                }
+            }
         } catch (e) {
-            errorBody = { message: "El servidor no devolvió un JSON válido. Probablemente un error de Apache/Proxy." };
+            if (errorText) {
+                message = errorText;
+            }
         }
 
-        const error: any = new Error(errorBody.message || "Error en la petición");
+        const error: any = new Error(message);
         error.status = res.status;
         throw error;
     }
