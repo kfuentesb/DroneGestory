@@ -102,10 +102,20 @@ VISUAL<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
+-No dejar que el usuario normal modifique su perfil, a escepcion de num de telefono, correo, imagen de perfil y certificados<br>
 
 -DRONES<br>
+-Cambiar fecha de fabricacion a mes y año, sin dia<br>
+-Híbrido/VTOL debería estar en configuración<br>
+-En fuente de potencia quitar Híbrido/VTOL e introducir Eléctrico / No eléctrico<br>
 
--HORAS DE VUELO, MANTENIMIENTO
+-HORAS DE VUELO
+-Añadir comentarios a la hora de vuelo<br>
+
+-MANTENIMIENTO
+-Borrar select de drone, es redundante, elegir el drone previamente seleccionado<br>
+-Borrar columna comentarios de la lista de mantenimientos<br>
+-Cambiar meses requeridos a meses desde ultima revisión<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>

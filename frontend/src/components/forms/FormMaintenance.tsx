@@ -1,71 +1,68 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../api";
 import LoadingSpinner from "../commons/Loading";
 import ButtonProp from "../commons/props/ButtonProp";
 
-type AircraftOption = {
+// Definimos el tipo para una sola aeronave
+type AircraftDetails = {
     id: number;
     manufacturer?: string;
     model?: string;
     serialNumber?: string;
+    aircraftClass?: string;
 };
 
 export default function FormMaintenance() {
     const navigate = useNavigate();
-    const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
-    const [aircraftId, setAircraftId] = useState<number | "">("");
+    const [searchParams] = useSearchParams();
+    const aircraftIdFromUrl = searchParams.get("aircraftId");
+    
+    // Estados para los datos de la aeronave seleccionada
+    const [selectedAircraft, setSelectedAircraft] = useState<AircraftDetails | null>(null);
+    const [aircraftLoading, setAircraftLoading] = useState(true);
+    
+    // Estados del formulario
     const [reviewType, setReviewType] = useState("");
     const [monthsRequired, setMonthsRequired] = useState<number>(0);
     const [hoursFlightRequired, setHoursFlightRequired] = useState<number>(0);
     const [maintenanceDate, setMaintenanceDate] = useState("");
     const [comments, setComments] = useState("");
+    
     const [loading, setLoading] = useState(false);
-    const [aircraftLoading, setAircraftLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const loadAircraft = async () => {
+        const loadAircraftDetails = async () => {
+            if (!aircraftIdFromUrl) {
+                setError("No se proporcionó un ID de aeronave.");
+                setAircraftLoading(false);
+                return;
+            }
+
             try {
-                const response = await apiFetch("/api/aircraft");
-                if (!response) {
-                    throw new Error("No se pudo cargar la lista de aeronaves.");
-                }
+                const response = await apiFetch(`/api/aircraft/${aircraftIdFromUrl}`);
+                if (!response) throw new Error("Aeronave no encontrada.");
+                
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    setAircraftOptions(data);
-                }
+                setSelectedAircraft(data);
             } catch (err) {
                 console.error(err);
-                setError("No se pudieron cargar las aeronaves. Intente de nuevo más tarde.");
+                setError("Error al cargar los detalles de la aeronave.");
             } finally {
                 setAircraftLoading(false);
             }
         };
-        loadAircraft();
-    }, []);
+
+        loadAircraftDetails();
+    }, [aircraftIdFromUrl]);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError(null);
 
-        if (!aircraftId) {
-            setError("Seleccione una aeronave.");
-            return;
-        }
-
-        if (!reviewType.trim()) {
-            setError("Ingrese el tipo de revisión.");
-            return;
-        }
-
-        if (!maintenanceDate) {
-            setError("Ingrese la fecha de mantenimiento.");
-            return;
-        }
-
-        if (monthsRequired < 0 || hoursFlightRequired < 0) {
-            setError("Los valores de meses y horas deben ser mayores o iguales a 0.");
+        if (!selectedAircraft) {
+            setError("Datos de aeronave no disponibles.");
             return;
         }
 
@@ -73,7 +70,7 @@ export default function FormMaintenance() {
 
         try {
             const payload = {
-                aircraftId: Number(aircraftId),
+                aircraftId: selectedAircraft.id,
                 reviewType: reviewType.trim(),
                 monthsRequired,
                 hoursFlightRequired,
@@ -87,24 +84,19 @@ export default function FormMaintenance() {
                 body: JSON.stringify(payload),
             });
 
-            if (!response) {
-                throw new Error("No se pudo registrar el mantenimiento.");
-            }
+            if (!response) throw new Error("No se pudo registrar el mantenimiento.");
 
-            await response.json();
-            navigate("/maintenance");
+            navigate(`/maintenance/aircraft/${selectedAircraft.id}`); // Volvemos a la lista de esa aeronave
         } catch (err: any) {
-            console.error(err);
-            setError(err?.message ?? "No se pudo registrar el mantenimiento. Intente de nuevo.");
+            setError(err?.message ?? "Error al guardar.");
         } finally {
             setLoading(false);
         }
     };
 
-    const renderAircraftLabel = (aircraft: AircraftOption) => {
-        const name = `${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim();
-        return `${name}${aircraft.serialNumber ? ` · ${aircraft.serialNumber}` : ""}`;
-    };
+    const aircraftLabel = selectedAircraft 
+        ? `${selectedAircraft.manufacturer ?? ""} ${selectedAircraft.model ?? ""}`.trim() 
+        : "Aeronave";
 
     return (
         <div className="container py-4">
@@ -113,49 +105,34 @@ export default function FormMaintenance() {
                     <button
                         type="button"
                         className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted"
-                        onClick={() => navigate("/maintenance")}
+                        onClick={() => navigate(-1)} // Mejor usar -1 para volver exactamente de donde vino
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                             <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
                         </svg>
                         <span className="ms-2 fw-medium">Volver</span>
                     </button>
-                    <h2 className="card-title mb-1" style={{ color: "#1E1E1E" }}>Registrar mantenimiento</h2>
+
+                    {/* Mostramos el nombre de la aeronave en el título */}
+                    <h2 className="card-title mb-1" style={{ color: "#1E1E1E" }}>
+                        Registrar mantenimiento: {aircraftLoading ? "Cargando..." : aircraftLabel}
+                    </h2>
+                    
+                    {selectedAircraft?.serialNumber && (
+                        <p className="text-muted mb-0">S/N: {selectedAircraft.serialNumber}</p>
+                    )}
+                    
                     <p className="text-muted mb-4">
-                        Complete los datos para agregar un nuevo registro de mantenimiento.
+                        Complete los datos para la aeronave seleccionada.
                     </p>
 
                     {error && <div className="alert alert-danger">{error}</div>}
 
-                    {aircraftLoading && !error && (
-                        <LoadingSpinner message="Cargando aeronaves..." />
-                    )}
-
-                    {!aircraftLoading && aircraftOptions.length === 0 && (
-                        <div className="alert alert-warning">
-                            No hay aeronaves registradas. Primero registre una aeronave antes de crear un mantenimiento.
-                        </div>
-                    )}
-
-                    {!aircraftLoading && aircraftOptions.length > 0 && (
+                    {aircraftLoading ? (
+                        <LoadingSpinner message="Cargando datos de la aeronave..." />
+                    ) : (
                         <form onSubmit={handleSubmit} className="row g-3">
-                            <div className="col-12 col-md-6">
-                                <label className="form-label">Aeronave</label>
-                                <select
-                                    className="form-select"
-                                    value={aircraftId}
-                                    onChange={(e) => setAircraftId(Number(e.target.value) || "")}
-                                    required
-                                >
-                                    <option value="">Seleccione una aeronave</option>
-                                    {aircraftOptions.map((aircraft) => (
-                                        <option key={aircraft.id} value={aircraft.id}>
-                                            {renderAircraftLabel(aircraft)}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
+                            {/* El input de Aeronave ya no es un Select, puede ser un campo de solo lectura o simplemente no estar */}
                             <div className="col-12 col-md-6">
                                 <label className="form-label">Tipo de revisión</label>
                                 <input
@@ -168,7 +145,18 @@ export default function FormMaintenance() {
                                 />
                             </div>
 
-                            <div className="col-12 col-md-4">
+                            <div className="col-12 col-md-6">
+                                <label className="form-label">Fecha de mantenimiento</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={maintenanceDate}
+                                    onChange={(e) => setMaintenanceDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="col-12 col-md-6">
                                 <label className="form-label">Meses requeridos</label>
                                 <input
                                     type="number"
@@ -180,7 +168,7 @@ export default function FormMaintenance() {
                                 />
                             </div>
 
-                            <div className="col-12 col-md-4">
+                            <div className="col-12 col-md-6">
                                 <label className="form-label">Horas de vuelo requeridas</label>
                                 <input
                                     type="number"
@@ -188,17 +176,6 @@ export default function FormMaintenance() {
                                     value={hoursFlightRequired}
                                     min={0}
                                     onChange={(e) => setHoursFlightRequired(Number(e.target.value))}
-                                    required
-                                />
-                            </div>
-
-                            <div className="col-12 col-md-4">
-                                <label className="form-label">Fecha de mantenimiento</label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={maintenanceDate}
-                                    onChange={(e) => setMaintenanceDate(e.target.value)}
                                     required
                                 />
                             </div>
@@ -214,14 +191,14 @@ export default function FormMaintenance() {
                                 />
                             </div>
 
-                            <div className="col-12 d-flex gap-2">
-                                <ButtonProp type="submit" disabled={loading} onClick={() => {}}>
+                            <div className="col-12 d-flex gap-2 mt-4">
+                                <ButtonProp type="submit" disabled={loading || !selectedAircraft} onClick={() => {}}>
                                     {loading ? "Guardando..." : "Registrar mantenimiento"}
                                 </ButtonProp>
                                 <ButtonProp
                                     type="button"
                                     className="btn btn-secondary"
-                                    onClick={() => navigate("/maintenance")}
+                                    onClick={() => navigate(-1)}
                                     disabled={loading}
                                 >
                                     Cancelar

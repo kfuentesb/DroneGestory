@@ -27,6 +27,7 @@ import FormMaintenance from "../components/forms/FormMaintenance";
 import AircraftModelList from "../components/lists/AircraftModelList";
 import FlightTimeList from "../components/lists/FlightTimeList";
 import MaintenanceList from "../components/lists/MaintenanceList";
+import MaintenanceAircraftList from "../components/lists/MaintenanceAircraftList";
 import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
 
 export default class RouterPrincipal extends React.Component {
@@ -133,6 +134,15 @@ export default class RouterPrincipal extends React.Component {
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <MaintenanceList />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/maintenance/aircraft/:aircraftId" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <MaintenanceAircraftList />
             </ProtectedRoute>
           } 
         />
