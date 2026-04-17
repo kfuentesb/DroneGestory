@@ -355,11 +355,13 @@ function FormUser() {
             if (!res.ok) {
                 const errorData = await res.json();
                 
-                // Si el backend envÃ­a un mensaje especÃ­fico de duplicado
-                if (errorData.message && errorData.message.includes("already exists")) {
-                    setError("El nombre de usuario ya estÃ¡ en uso. Por favor, elige otro.");
+                // Si el backend envía un mensaje específico de duplicado
+                if (errorData.message && errorData.message.toLowerCase().includes("already exists")) {
+                    setError("El nombre de usuario ya está en uso. Por favor, elige otro.");
+                } else if (errorData.message && errorData.message.toLowerCase().includes("nombre de usuario ya existe")) {
+                    setError("El nombre de usuario ya está en uso. Por favor, elige otro.");
                 } else if (res.status === 409 || res.status === 500) {
-                    // Generalmente las violaciones de Constraint devuelven estos cÃ³digos
+                    // Generalmente las violaciones de Constraint devuelven estos códigos
                     setError("Error: El nombre de usuario o el email ya existen.");
                 } else {
                     setError("Ocurrió un error al registrar el usuario.");

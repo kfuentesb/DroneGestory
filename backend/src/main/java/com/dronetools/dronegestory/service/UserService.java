@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.UserCertificateUploadRequest;
+import com.dronetools.dronegestory.exception.ConflictException;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.model.User;
@@ -58,6 +59,17 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
+    private void ensureUniqueUsername(User user) {
+        if (user == null || user.getUsername() == null || user.getUsername().isBlank()) {
+            return;
+        }
+        String username = user.getUsername().trim();
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
+            throw new ConflictException("El nombre de usuario ya existe.");
+        }
+        user.setUsername(username);
+    }
+
     public List<UserNameResponse> findAllNames() {
         return userRepository.findAll().stream()
                 .map(u -> new UserNameResponse(u.getId(), u.getFirstName(), u.getLastName()))
@@ -66,6 +78,7 @@ public class UserService {
 
     // Crear un nuevo usuario
     public User create(User user) {
+        ensureUniqueUsername(user);
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -75,6 +88,7 @@ public class UserService {
     // Crear un nuevo usuario con archivo
     @Transactional
     public User createWithFile(User user, MultipartFile imageFile) throws IOException {
+        ensureUniqueUsername(user);
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -206,7 +220,14 @@ public class UserService {
                 .map(existingUser -> {
                     existingUser.setFirstName(updatedUser.getFirstName());
                     existingUser.setLastName(updatedUser.getLastName());
-                    existingUser.setUsername(updatedUser.getUsername());
+                    if (updatedUser.getUsername() != null && !updatedUser.getUsername().isBlank()) {
+                        String newUsername = updatedUser.getUsername().trim();
+                        if (!newUsername.equalsIgnoreCase(existingUser.getUsername()) &&
+                                userRepository.existsByUsernameIgnoreCase(newUsername)) {
+                            throw new ConflictException("El nombre de usuario ya existe.");
+                        }
+                        existingUser.setUsername(newUsername);
+                    }
                     if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
                         existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                     }
@@ -253,7 +274,13 @@ public class UserService {
         // PROTECCIÓN DE CAMPOS SENSIBLES (Solo Admin/Manager)
         if (isAdminOrManager) {
             // Solo el jefe puede cambiar el nombre de usuario, el rol o si la cuenta está activa
-            if (updatedUser.getUsername() != null) user.setUsername(updatedUser.getUsername());
+            if (updatedUser.getUsername() != null && !updatedUser.getUsername().isBlank()) {
+                String newUsername = updatedUser.getUsername().trim();
+                if (!newUsername.equalsIgnoreCase(user.getUsername()) && userRepository.existsByUsernameIgnoreCase(newUsername)) {
+                    throw new ConflictException("El nombre de usuario ya existe.");
+                }
+                user.setUsername(newUsername);
+            }
             if (updatedUser.getType() != null) user.setType(updatedUser.getType());
             user.setState(updatedUser.isState());
         } else {

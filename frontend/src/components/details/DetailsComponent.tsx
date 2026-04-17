@@ -1323,7 +1323,36 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                 body: formData,
             });
 
-            if (!res.ok) throw new Error(await res.text());
+            if (!res.ok) {
+                const errorText = await res.text();
+                let errorMessage = "Error desconocido";
+                const fieldErrors: Record<string, string | null> = {};
+
+                try {
+                    const json = JSON.parse(errorText);
+                    if (json.message) {
+                        errorMessage = json.message;
+                    }
+                    if (json.fields && typeof json.fields === "object") {
+                        Object.entries(json.fields).forEach(([key, value]) => {
+                            fieldErrors[key] = typeof value === "string" ? value : String(value ?? "");
+                        });
+                    }
+                } catch {
+                    errorMessage = errorText || errorMessage;
+                }
+
+                if (res.status === 409 && /usuario|username/i.test(errorMessage)) {
+                    fieldErrors.username = "El nombre de usuario ya está en uso. Por favor, elige otro.";
+                }
+
+                if (Object.keys(fieldErrors).length > 0) {
+                    setErrors(prev => ({ ...prev, ...fieldErrors }));
+                    return;
+                }
+
+                throw new Error(errorMessage);
+            }
             const updated = await res.json();
 
             const syncTasks = [];

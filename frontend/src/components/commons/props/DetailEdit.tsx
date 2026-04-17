@@ -244,7 +244,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     )}
 
                     {errors[field.key] && (
-                        <div className="text-danger small mt-1">{field.error}</div>
+                        <div className="text-danger small mt-1">{errors[field.key] || field.error}</div>
                     )}
                 </div>
             ))}
