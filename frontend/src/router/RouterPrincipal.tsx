@@ -23,6 +23,7 @@ import FormUserPassword from "../components/forms/FormUserPassword";
 import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
 import FormAircraftModel from "../components/forms/FormAircraftModel";
 import FormFlightTime from "../components/forms/FormFlightTime";
+import FormMaintenance from "../components/forms/FormMaintenance";
 import AircraftModelList from "../components/lists/AircraftModelList";
 import FlightTimeList from "../components/lists/FlightTimeList";
 import MaintenanceList from "../components/lists/MaintenanceList";
@@ -132,6 +133,15 @@ export default class RouterPrincipal extends React.Component {
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <MaintenanceList />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/register-maintenance" 
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <FormMaintenance />
             </ProtectedRoute>
           } 
         />
