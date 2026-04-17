@@ -110,7 +110,7 @@ export default function MaintenanceList() {
                                 <td>{new Date(row.aircraftManufacturedYear).toLocaleDateString()}</td>
                             </>
                         )}
-                        onRowClick={(row) => navigate(`/flight-times/${row.id}`)}
+                        // onRowClick={(row) => navigate(`/flight-times/${row.id}`)}
                         emptyText="No hay registros de mantenimiento para esta aeronave."
                     />
 
