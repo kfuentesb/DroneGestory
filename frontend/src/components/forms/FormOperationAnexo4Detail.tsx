@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
+import { fetchUserNames, saveAnexo4Data, type Anexo4Data, type UserNameData } from "../operations/operation.api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
@@ -52,6 +52,7 @@ type FormOperationAnexo4DetailProps = {
   operationTitle?: string;
   initialValues?: Record<string, any>;
   disabled?: boolean;
+  canEditPersonalSeleccionado?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo4Data | null) => void | Promise<void>;
 };
@@ -69,6 +70,7 @@ export default function FormOperationAnexo4Detail({
   //operationTitle,
   initialValues,
   disabled,
+  canEditPersonalSeleccionado,
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo4DetailProps) {
@@ -77,6 +79,26 @@ export default function FormOperationAnexo4Detail({
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
+  const [allUsers, setAllUsers] = useState<UserNameData[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
+
+  const selectedUsers: UserNameData[] = Array.isArray(formValues.personalSeleccionado)
+    ? formValues.personalSeleccionado
+    : [];
+
+  const canEditPersonalSelection = !disabled && !saving && !!canEditPersonalSeleccionado;
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const users = await fetchUserNames();
+        setAllUsers(users);
+      } catch (error) {
+        console.error("No se pudo cargar la lista de usuarios:", error);
+      }
+    };
+    void loadUsers();
+  }, []);
 
   useEffect(() => {
   if (!initialValues) return;
@@ -93,6 +115,9 @@ export default function FormOperationAnexo4Detail({
 
   const normalized = Object.fromEntries(
       Object.entries(initialValues).map(([k, v]) => {
+        if (k === "personalSeleccionado") {
+          return [k, Array.isArray(v) ? v : []];
+        }
         if (k === "fechaHoraPrevista") {
           return [k, normalizeDateTimeLocal(v)];
         }
@@ -165,12 +190,17 @@ export default function FormOperationAnexo4Detail({
     try {
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
+        if (key === "personalSeleccionado") {
+          return;
+        }
         if (value instanceof File) {
             formData.append(key, value);
         } else if (value !== undefined && value !== null && value !== "") {
             formData.append(key, value);
         }
       });
+      const selectedIds = selectedUsers.map((user) => user.id).join(",");
+      formData.append("personalSeleccionadoIds", selectedIds);
 
       const savedData = await saveAnexo4Data(operationId, formData);
 
@@ -182,6 +212,30 @@ export default function FormOperationAnexo4Detail({
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleAddSelectedUser = () => {
+    if (!selectedUserId) return;
+    const selectedId = Number(selectedUserId);
+    if (Number.isNaN(selectedId)) return;
+
+    const userToAdd = allUsers.find((user) => user.id === selectedId);
+    if (!userToAdd) return;
+
+    if (selectedUsers.some((user) => user.id === selectedId)) {
+      setSelectedUserId("");
+      return;
+    }
+
+    handleChange("personalSeleccionado", [...selectedUsers, userToAdd]);
+    setSelectedUserId("");
+  };
+
+  const handleRemoveSelectedUser = (userId: number) => {
+    handleChange(
+      "personalSeleccionado",
+      selectedUsers.filter((user) => user.id !== userId),
+    );
   };
 
   const renderApartadoRow = (item: SectionItem) => (
@@ -235,6 +289,57 @@ export default function FormOperationAnexo4Detail({
             onChange={(e) => handleChange("personal", e.target.value)}
             disabled={disabled || saving}
           />
+      </div>
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">personalSeleccionado</label>
+        <div className="d-flex gap-2 mb-2">
+          <select
+            className="form-select"
+            value={selectedUserId}
+            onChange={(e) => setSelectedUserId(e.target.value)}
+            disabled={!canEditPersonalSelection}
+            style={{ maxHeight: "180px", overflowY: "auto" }}
+          >
+            <option value="">Selecciona un usuario</option>
+            {allUsers
+              .filter((user) => !selectedUsers.some((selected) => selected.id === user.id))
+              .map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.firstName} {user.lastName}
+                </option>
+              ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={handleAddSelectedUser}
+            disabled={!canEditPersonalSelection || !selectedUserId}
+          >
+            Añadir
+          </button>
+        </div>
+        <div className="border rounded p-2 bg-white" style={{ maxHeight: "180px", overflowY: "auto" }}>
+          <div className="fw-bold small text-uppercase text-muted mb-2">Personal seleccionado</div>
+          {selectedUsers.length === 0 ? (
+            <div className="text-muted small">No hay usuarios seleccionados.</div>
+          ) : (
+            <ul className="list-group list-group-flush">
+              {selectedUsers.map((user) => (
+                <li key={user.id} className="list-group-item d-flex justify-content-between align-items-center px-1">
+                  <span>{user.firstName} {user.lastName}</span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleRemoveSelectedUser(user.id)}
+                    disabled={!canEditPersonalSelection}
+                  >
+                    Quitar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
       <div className="row">
         <div className="col-md-6 mb-3">

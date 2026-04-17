@@ -7,8 +7,6 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,19 +19,26 @@ import java.util.List;
 public class OperationService {
 
     private final OperationRepository operationRepository;
+    private final OperationAuthorizationService authorizationService;
 
-    public OperationService(OperationRepository operationRepository) {
+    public OperationService(OperationRepository operationRepository,
+                            OperationAuthorizationService authorizationService) {
         this.operationRepository = operationRepository;
+        this.authorizationService = authorizationService;
     }
 
     @Transactional(readOnly = true)
     public List<Operation> getAllOperations() {
-        return operationRepository.findAll();
+        if (authorizationService.isCurrentUserAdmin()) {
+            return operationRepository.findAll();
+        }
+        User currentUser = authorizationService.getCurrentUser();
+        return operationRepository.findAccessibleByUserId(currentUser.getId());
     }
 
     @Transactional(readOnly = true)
     public List<Operation> findOperationsByUserId(Integer userId) {
-        return operationRepository.findByCreadorId(userId);
+        return operationRepository.findAccessibleByUserId(userId);
     }
 
     @Transactional(readOnly = true)
@@ -63,12 +68,13 @@ public class OperationService {
         operation.setConops(conops);
 
         Operation saved = operationRepository.save(operation);
-        return new OperationDetailDTO(saved);
+        return toDetailDto(saved);
     }
 
     @Transactional
     public OperationDetailDTO updateOperationDto(Long operationId, Operation opActualizada) {
         Operation op = findById(operationId);
+        authorizationService.ensureCanManageOperation(op);
         validarOperacionEditable(op);
         op.setCodigo(opActualizada.getCodigo());
 
@@ -77,7 +83,7 @@ public class OperationService {
         }
 
         Operation saved = operationRepository.save(op);
-        return new OperationDetailDTO(saved);
+        return toDetailDto(saved);
     }
 
     @Transactional(readOnly = true)
@@ -94,6 +100,7 @@ public class OperationService {
     @Transactional
     public Operation updateOperationBasicData(Long operationId, String nuevoCodigo) {
         Operation op = findById(operationId);
+        authorizationService.ensureCanManageOperation(op);
         validarOperacionEditable(op);
         op.setCodigo(nuevoCodigo);
         return operationRepository.save(op);
@@ -102,6 +109,7 @@ public class OperationService {
     @Transactional
     public Operation completarOperation(Long operationId) {
         Operation op = findById(operationId);
+        authorizationService.ensureCanManageOperation(op);
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
@@ -110,18 +118,9 @@ public class OperationService {
     }
 
     private void validarOperacionEditable(Operation op) {
-        if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
+        if (op.getEstado() == OperationStatus.COMPLETADA && !authorizationService.isCurrentUserAdmin()) {
             throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
         }
-    }
-
-    private boolean esAdminActual() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 
     // DTO
@@ -129,14 +128,14 @@ public class OperationService {
     public OperationDetailDTO findByIdDto(Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        // La sesión sigue abierta, aquí puedes acceder a cualquier relación (creador, anexos, etc.)
-        return new OperationDetailDTO(op);
+        authorizationService.ensureCanManageOperation(op);
+        return toDetailDto(op);
     }
 
     // Trae todas las operaciones como DTOs
     @Transactional(readOnly = true)
     public List<OperationListDTO> getAllOperationListDTOs() {
-        return operationRepository.findAll()
+        return getAllOperations()
                 .stream()
                 .map(OperationListDTO::new)
                 .toList();
@@ -145,7 +144,7 @@ public class OperationService {
     // Trae solo las operaciones de un usuario como DTOs
     @Transactional(readOnly = true)
     public List<OperationListDTO> getMyOperationListDTOs(Integer userId) {
-        return operationRepository.findByCreadorId(userId)
+        return operationRepository.findAccessibleByUserId(userId)
                 .stream()
                 .map(OperationListDTO::new)
                 .toList();
@@ -154,18 +153,20 @@ public class OperationService {
     @Transactional
     public OperationDetailDTO completarOperationDto(Long operationId) {
         Operation op = findById(operationId);
+        authorizationService.ensureCanManageOperation(op);
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
         op.setEstado(OperationStatus.COMPLETADA);
         operationRepository.save(op);
-        return new OperationDetailDTO(op); // El mapping ocurre aquí, en sesión
+        return toDetailDto(op);
     }
 
     @Transactional
     public void deleteOperationWithAnexos(Long idOperacion) {
         Operation op = operationRepository.findById(idOperacion)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada: " + idOperacion));
+        authorizationService.ensureCanManageOperation(op);
 
         // Aquí podrías borrar archivos físicos si los anexos incluyen rutas de ficheros
         if (op.getAnexos4() != null) {
@@ -192,14 +193,21 @@ public class OperationService {
     @Transactional
     public OperationDetailDTO updateConops(Long operationId, String conops) {
         Operation op = findById(operationId);
+        authorizationService.ensureCanManageOperation(op);
         validarOperacionEditable(op);
         op.setConops(conops);
         Operation saved = operationRepository.save(op);
-        return new OperationDetailDTO(saved);
+        return toDetailDto(saved);
     }
 
     private String formatearCodigo(int anio, int correlativo) {
         return "O-" + anio + "-" + String.format("%03d", correlativo);
+    }
+
+    private OperationDetailDTO toDetailDto(Operation operation) {
+        boolean puedeGestionar = authorizationService.canManageOperation(operation);
+        boolean puedeEditarPersonalSeleccionado = authorizationService.canEditPersonalSeleccionado(operation);
+        return new OperationDetailDTO(operation, puedeGestionar, puedeEditarPersonalSeleccionado);
     }
 
 }

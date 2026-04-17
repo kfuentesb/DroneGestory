@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
+import com.dronetools.dronegestory.service.OperationAuthorizationService;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,17 +16,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
 public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service> {
 
+    private final OperationAuthorizationService authorizationService;
+    private final Anexo4Repository anexo4Repository;
+
     //private final AircraftRepository aircraftRepository;
 
     public Anexo4Controller(Anexo4Service service,
                             OperationRepository operationRepository,
-                            Anexo4Repository repository) {
+                            Anexo4Repository repository,
+                            OperationAuthorizationService authorizationService) {
         super(service, operationRepository, repository);
+        this.authorizationService = authorizationService;
+        this.anexo4Repository = repository;
         //this.aircraftRepository = aircraftRepository;
     }
 
@@ -34,10 +43,12 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             @PathVariable Long operationId,
             @ModelAttribute Anexo4 anexo4,
             @RequestParam(value = "conops", required = false) String conops,
+            @RequestParam(value = "personalSeleccionadoIds", required = false) String personalSeleccionadoIds,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
             @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile
     ) throws IOException {
-        Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
+        List<Integer> selectedIds = parsePersonalSeleccionadoIds(personalSeleccionadoIds);
+        Anexo4 saved = service.createWithFile(operationId, anexo4, conops, selectedIds, imagenEspacioAereoFile, imagenZonaVueloFile);
         return ResponseEntity.ok(toResponse(saved, operationId));
     }
 
@@ -58,6 +69,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     public ResponseEntity<Anexo4ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos4(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        authorizationService.ensureCanManageOperation(op);
         Anexo4 anexo4 = op.getAnexo4Actual();
         if (anexo4 == null) {
             return ResponseEntity.noContent().build();
@@ -73,19 +85,20 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
 
-        Anexo4 anexo4 = repository.findById(idAnexo)
+        Anexo4 anexo4 = anexo4Repository.findByIdWithPersonalSeleccionado(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
 
         if (anexo4.getOperation() == null || !anexo4.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
+        authorizationService.ensureCanManageOperation(anexo4.getOperation());
 
         return ResponseEntity.ok(toResponse(anexo4, operationId));
     }
 
     @Override
     protected Anexo4 registrar(Long operationId, Anexo4 input) {
-        return service.registrarAnexo4(operationId, input);
+        return service.registrarAnexo4(operationId, input, null);
     }
 
     @Override
@@ -159,8 +172,25 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
     private Anexo4ResponseDTO toResponse(Anexo4 anexo, Long operationId) {
         Anexo4ResponseDTO dto = Anexo4ResponseDTO.fromEntity(anexo);
-        operationRepository.findById(operationId).ifPresent(operation -> dto.setConops(operation.getConops()));
+        operationRepository.findById(operationId).ifPresent(operation -> {
+            dto.setConops(operation.getConops());
+            dto.setPuedeEditarPersonalSeleccionado(authorizationService.canEditPersonalSeleccionado(operation));
+        });
         return dto;
+    }
+
+    private List<Integer> parsePersonalSeleccionadoIds(String rawIds) {
+        if (rawIds == null) {
+            return null;
+        }
+        if (rawIds.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(rawIds.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(Integer::valueOf)
+                .toList();
     }
 
 }

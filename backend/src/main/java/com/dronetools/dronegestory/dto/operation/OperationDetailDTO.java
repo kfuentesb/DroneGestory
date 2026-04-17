@@ -19,10 +19,12 @@ public class OperationDetailDTO {
     private OperationStatus estadoOperacion;
     private boolean completada;
     private boolean todosAnexosFirmados;
+    private boolean puedeGestionar;
+    private boolean puedeEditarPersonalSeleccionado;
     private List<OperationAnexoDetailDTO> anexos;
     private String conops;
 
-    public OperationDetailDTO(Operation op) {
+    public OperationDetailDTO(Operation op, boolean puedeGestionar, boolean puedeEditarPersonalSeleccionado) {
         this.idOperacion = op.getIdOperacion();
         this.codigo = op.getCodigo();
         this.nombreCreador = op.getCreador().getFirstName() + " " + op.getCreador().getLastName();
@@ -39,6 +41,8 @@ public class OperationDetailDTO {
                 buildAnexoDetail(8, op.getAnexo8Actual(), op.getAnexos8())
         );
         this.conops = op.getConops();
+        this.puedeGestionar = puedeGestionar;
+        this.puedeEditarPersonalSeleccionado = puedeEditarPersonalSeleccionado;
     }
 
     private OperationAnexoDetailDTO buildAnexoDetail(int tipoAnexo, AnexoVersionado actual, List<? extends Anexo> versiones) {

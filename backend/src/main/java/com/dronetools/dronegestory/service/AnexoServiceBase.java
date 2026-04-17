@@ -7,18 +7,19 @@ import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class AnexoServiceBase<T extends Anexo> {
 
     protected final AnexoBaseRepository<T, Long> repository;
     protected final OperationRepository operationRepository;
+    protected final OperationAuthorizationService authorizationService;
 
     public AnexoServiceBase(AnexoBaseRepository<T, Long> repository,
-                            OperationRepository operationRepository) {
+                            OperationRepository operationRepository,
+                            OperationAuthorizationService authorizationService) {
         this.repository = repository;
         this.operationRepository = operationRepository;
+        this.authorizationService = authorizationService;
     }
 
     @Transactional
@@ -29,6 +30,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
 
+        authorizationService.ensureCanManageOperation(op);
         validarOperacionEditable(op);
 
         T ultimaVersion = getUltimaVersion.get(op);
@@ -52,6 +54,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         }
 
         Operation op = anexoOrigen.getOperation();
+        authorizationService.ensureCanManageOperation(op);
         validarOperacionEditable(op);
 
         repository.findByOperationAndEstado(op, AnexoStatus.BORRADOR)
@@ -73,6 +76,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         T anexo = repository.findById(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexo));
 
+        authorizationService.ensureCanManageOperation(anexo.getOperation());
         validarOperacionEditable(anexo.getOperation());
 
         if (anexo.getEstado() == AnexoStatus.FIRMADO) {
@@ -93,18 +97,9 @@ public abstract class AnexoServiceBase<T extends Anexo> {
     }
 
     private void validarOperacionEditable(Operation op) {
-        if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
+        if (op.getEstado() == OperationStatus.COMPLETADA && !authorizationService.isCurrentUserAdmin()) {
             throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
         }
-    }
-
-    private boolean esAdminActual() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 
     protected abstract T crearCopia(T origen);

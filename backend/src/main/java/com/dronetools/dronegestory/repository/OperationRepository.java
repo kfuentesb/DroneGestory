@@ -34,12 +34,22 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
     List<Integer> findTopCorrelativoByAnioForUpdate(@Param("anio") int anio, Pageable pageable);
 
     @Query("""
-        SELECT o
+        SELECT DISTINCT o
         FROM Operation o
-        LEFT JOIN FETCH o.anexos4
+        LEFT JOIN FETCH o.anexos4 a4
+        LEFT JOIN FETCH a4.personalSeleccionado
         WHERE o.idOperacion = :id
     """)
     Optional<Operation> findByIdWithAnexos4(@Param("id") Long id);
+
+    @Query("""
+        SELECT DISTINCT o
+        FROM Operation o
+        LEFT JOIN o.anexos4 a4
+        LEFT JOIN a4.personalSeleccionado ps
+        WHERE o.creador.id = :userId OR ps.id = :userId
+    """)
+    List<Operation> findAccessibleByUserId(@Param("userId") Integer userId);
 
     // SOLO FETCH ANEXOS5
     @Query("""

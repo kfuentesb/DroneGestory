@@ -6,6 +6,7 @@ import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.service.OperationAuthorizationService;
 import com.dronetools.dronegestory.service.anexos.Anexo6Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,14 @@ import java.security.Principal;
 @RequestMapping("/api/operations/{operationId}/anexo6")
 public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service> {
 
+    private final OperationAuthorizationService authorizationService;
+
     public Anexo6Controller(Anexo6Service service,
                             OperationRepository operationRepository,
-                            Anexo6Repository repository) {
+                            Anexo6Repository repository,
+                            OperationAuthorizationService authorizationService) {
         super(service, operationRepository, repository);
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,6 +52,7 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos6(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        authorizationService.ensureCanManageOperation(op);
         Anexo6 anexo6 = op.getAnexo6Actual();
         if (anexo6 == null) {
             return ResponseEntity.noContent().build();
@@ -64,6 +70,7 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
         if (anexo6.getOperation() == null || !anexo6.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
+        authorizationService.ensureCanManageOperation(anexo6.getOperation());
         return ResponseEntity.ok(toResponse(anexo6, operationId));
     }
 
@@ -88,4 +95,3 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
         return dto;
     }
 }
-

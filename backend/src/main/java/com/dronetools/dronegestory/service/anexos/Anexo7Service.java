@@ -5,14 +5,17 @@ import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.service.OperationAuthorizationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class Anexo7Service extends AnexoServiceBase<Anexo7> {
 
-    public Anexo7Service(Anexo7Repository repository, OperationRepository operationRepository) {
-        super(repository, operationRepository);
+    public Anexo7Service(Anexo7Repository repository,
+                         OperationRepository operationRepository,
+                         OperationAuthorizationService authorizationService) {
+        super(repository, operationRepository, authorizationService);
     }
 
     @Transactional
@@ -84,4 +87,3 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         destino.setOtrosRecogidaObservaciones(origen.getOtrosRecogidaObservaciones());
     }
 }
-

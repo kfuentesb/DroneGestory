@@ -57,5 +57,7 @@ export type OperationDetailDTO = {
   estadoOperacion: OperationStatus;
   completada: boolean;
   todosAnexosFirmados: boolean;
+  puedeGestionar: boolean;
+  puedeEditarPersonalSeleccionado: boolean;
   anexos: OperationAnexoDetailDTO[];
 };

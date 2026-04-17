@@ -1,11 +1,13 @@
 package com.dronetools.dronegestory.controller.anexos;
 
 import com.dronetools.dronegestory.controller.AnexoControllerBase;
+import com.dronetools.dronegestory.dto.operation.Anexo5AptitudSectionDTO;
 import com.dronetools.dronegestory.dto.operation.Anexo5ResponseDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo5;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo5Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.service.OperationAuthorizationService;
 import com.dronetools.dronegestory.service.anexos.Anexo5Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,14 @@ import java.security.Principal;
 @RequestMapping("/api/operations/{operationId}/anexo5")
 public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service> {
 
+    private final OperationAuthorizationService authorizationService;
+
     public Anexo5Controller(Anexo5Service service,
                             OperationRepository operationRepository,
-                            Anexo5Repository repository) {
+                            Anexo5Repository repository,
+                            OperationAuthorizationService authorizationService) {
         super(service, operationRepository, repository);
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,6 +53,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
     public ResponseEntity<Anexo5ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos5(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        authorizationService.ensureCanManageOperation(op);
         Anexo5 anexo5 = op.getAnexo5Actual();
         if (anexo5 == null) {
             return ResponseEntity.noContent().build();
@@ -64,7 +71,27 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
         if (anexo5.getOperation() == null || !anexo5.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
+        authorizationService.ensureCanManageOperation(anexo5.getOperation());
         return ResponseEntity.ok(toResponse(anexo5, operationId));
+    }
+
+    @GetMapping("/{idAnexo}/aptitud")
+    public ResponseEntity<Anexo5AptitudSectionDTO> getAptitud(@PathVariable Long operationId,
+                                                              @PathVariable Long idAnexo) {
+        return ResponseEntity.ok(service.getAptitudSection(operationId, idAnexo));
+    }
+
+    @PostMapping("/{idAnexo}/aptitud/firmar")
+    public ResponseEntity<Anexo5AptitudSectionDTO> firmarAptitud(@PathVariable Long operationId,
+                                                                 @PathVariable Long idAnexo) {
+        return ResponseEntity.ok(service.firmarAptitud(operationId, idAnexo));
+    }
+
+    @DeleteMapping("/{idAnexo}/aptitud/firmas/{firmaId}")
+    public ResponseEntity<Anexo5AptitudSectionDTO> eliminarFirmaAptitud(@PathVariable Long operationId,
+                                                                         @PathVariable Long idAnexo,
+                                                                         @PathVariable Long firmaId) {
+        return ResponseEntity.ok(service.eliminarFirmaAptitud(operationId, idAnexo, firmaId));
     }
 
     @Override
@@ -88,4 +115,3 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
         return dto;
     }
 }
-

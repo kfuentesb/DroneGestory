@@ -157,12 +157,18 @@ export default function OperationDetail() {
             className="btn"
             style={{ backgroundColor: "#166534", color: "#FFFFFF", fontWeight: "bold" }}
             onClick={() => setShowCompleteConfirm(true)}
-            disabled={operation.completada || !operation.todosAnexosFirmados || completing}
+            disabled={!operation.puedeGestionar || operation.completada || !operation.todosAnexosFirmados || completing}
           >
             {completing ? "Completando..." : "Completar operación"}
           </ButtonProp>
         </div>
       </div>
+
+      {!operation.puedeGestionar && (
+        <div className="alert alert-danger">
+          No tienes permisos para gestionar esta operación y sus anexos.
+        </div>
+      )}
 
       {operation.todosAnexosFirmados && !operation.completada && (
         <div className="alert alert-warning">

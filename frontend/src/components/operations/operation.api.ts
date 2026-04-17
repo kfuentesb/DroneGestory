@@ -8,9 +8,32 @@ type AnexoBaseData = {
   estado?: AnexoStatus | null;
 };
 
+export type UserNameData = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
+  personalSeleccionado?: UserNameData[];
+  personalSeleccionadoIds?: number[];
+  puedeEditarPersonalSeleccionado?: boolean;
   [key: string]: any;
+};
+
+export type Anexo5AptitudFirmaData = {
+  id: number;
+  userId: number;
+  nombreCompleto: string;
+  fechaFirma: string;
+  puedeEliminar: boolean;
+};
+
+export type Anexo5AptitudSectionData = {
+  puedeFirmar: boolean;
+  yaFirmado: boolean;
+  firmas: Anexo5AptitudFirmaData[];
 };
 
 export type Anexo5Data = AnexoBaseData & {
@@ -163,6 +186,18 @@ export async function fetchNextOperationCodigo() {
 
   const payload = (await response.json()) as { codigo: string };
   return payload.codigo;
+}
+
+export async function fetchUserNames() {
+  const response = await apiFetch(`${API_BASE_URL}/api/users/names`, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response) {
+    return [];
+  }
+
+  return (await response.json()) as UserNameData[];
 }
 
 export async function createOperation(conops = "") {
@@ -565,4 +600,48 @@ export async function deleteOperation(operationId: number) {
     throw new Error("Error al borrar la operación");
   }
   return true;
+}
+
+export async function fetchAnexo5AptitudSection(
+  operationId: number,
+  anexoId: number,
+): Promise<Anexo5AptitudSectionData | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/aptitud`);
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo5AptitudSectionData;
+}
+
+export async function signAnexo5AptitudSection(
+  operationId: number,
+  anexoId: number,
+): Promise<Anexo5AptitudSectionData | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/aptitud/firmar`, {
+    method: "POST",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo5AptitudSectionData;
+}
+
+export async function deleteAnexo5AptitudSignature(
+  operationId: number,
+  anexoId: number,
+  firmaId: number,
+): Promise<Anexo5AptitudSectionData | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/aptitud/firmas/${firmaId}`, {
+    method: "DELETE",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo5AptitudSectionData;
 }

@@ -6,6 +6,7 @@ import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo8Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.service.OperationAuthorizationService;
 import com.dronetools.dronegestory.service.anexos.Anexo8Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,14 @@ import java.security.Principal;
 @RequestMapping("/api/operations/{operationId}/anexo8")
 public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service> {
 
+    private final OperationAuthorizationService authorizationService;
+
     public Anexo8Controller(Anexo8Service service,
                             OperationRepository operationRepository,
-                            Anexo8Repository repository) {
+                            Anexo8Repository repository,
+                            OperationAuthorizationService authorizationService) {
         super(service, operationRepository, repository);
+        this.authorizationService = authorizationService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,6 +52,7 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
     public ResponseEntity<Anexo8ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos8(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        authorizationService.ensureCanManageOperation(op);
         Anexo8 anexo8 = op.getAnexo8Actual();
         if (anexo8 == null) {
             return ResponseEntity.noContent().build();
@@ -64,6 +70,7 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
         if (anexo8.getOperation() == null || !anexo8.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
+        authorizationService.ensureCanManageOperation(anexo8.getOperation());
         return ResponseEntity.ok(toResponse(anexo8, operationId));
     }
 
@@ -88,4 +95,3 @@ public class Anexo8Controller extends AnexoControllerBase<Anexo8, Anexo8Service>
         return dto;
     }
 }
-

@@ -120,7 +120,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const isViewingHistoricalVersion = selectedVersion !== null;
   const actualIsSigned = anexo?.actual.estado === "FIRMADO";
   const canManageCompletedOperation = role === "ADMIN";
-  const canCreate = !operation?.completada || canManageCompletedOperation;
+  const canOperate = operation?.puedeGestionar ?? false;
+  const canCreate = canOperate && (!operation?.completada || canManageCompletedOperation);
   const canEditDraft =
     !isViewingHistoricalVersion &&
     canCreate &&
@@ -453,6 +454,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
       )}
 
+      {!canOperate && (
+        <div className="alert alert-danger">
+          No tienes permisos para gestionar esta operación y sus anexos.
+        </div>
+      )}
+
       <div
         className="card shadow-sm mb-4"
         style={{ border: "1px solid #E5E7EB" }}
@@ -483,6 +490,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={(anexoData as Anexo4Data | null) ?? {}}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
+                  canEditPersonalSeleccionado={operation.puedeEditarPersonalSeleccionado}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."

@@ -1,8 +1,17 @@
-import { saveAnexo5Data, type Anexo5Data } from "../operations/operation.api";
+import { useEffect, useState } from "react";
+import {
+  deleteAnexo5AptitudSignature,
+  fetchAnexo5AptitudSection,
+  saveAnexo5Data,
+  signAnexo5AptitudSection,
+  type Anexo5AptitudSectionData,
+  type Anexo5Data,
+} from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import ConfirmModal from "../commons/ConfirmModal";
 
 type FormOperationAnexo5DetailProps = {
   operationId: number;
@@ -41,12 +50,6 @@ const FORM_FIELDS = [
 type FormKey = (typeof FORM_FIELDS)[number];
 
 const DEFAULT_VALUES = FORM_FIELDS.reduce((acc, key) => ({ ...acc, [key]: "" }), {} as Record<FormKey, string>);
-
-const BOOL_OPTIONS = [
-  { value: "", label: "N/A" },
-  { value: "true", label: "Sí" },
-  { value: "false", label: "No" },
-];
 
 const SECCIONES_CONFIG: {
   seccion1: SectionItem[];
@@ -155,6 +158,29 @@ export default function FormOperationAnexo5Detail({
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
+  const [aptitudData, setAptitudData] = useState<Anexo5AptitudSectionData | null>(null);
+  const [showSignConfirmModal, setShowSignConfirmModal] = useState(false);
+  const [firmaToDelete, setFirmaToDelete] = useState<number | null>(null);
+
+  const canManageAptitud = !disabled && !!initialValues?.id;
+
+  const loadAptitudSection = async () => {
+    if (!initialValues?.id) {
+      setAptitudData(null);
+      return;
+    }
+    try {
+      const data = await fetchAnexo5AptitudSection(operationId, initialValues.id);
+      setAptitudData(data);
+    } catch (error) {
+      console.error("Error cargando firmas de aptitud:", error);
+      setAptitudData(null);
+    }
+  };
+
+  useEffect(() => {
+    void loadAptitudSection();
+  }, [operationId, initialValues?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,6 +199,7 @@ export default function FormOperationAnexo5Detail({
       const savedData = await saveAnexo5Data(operationId, formData);
       alert("Anexo 5 guardado correctamente");
       await onSaved?.(savedData);
+      await loadAptitudSection();
     } catch (err: unknown) {
       if (err instanceof Error) {
         alert(err.message || "Error al guardar el anexo.");
@@ -181,6 +208,30 @@ export default function FormOperationAnexo5Detail({
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleConfirmSign = async () => {
+    if (!initialValues?.id) return;
+    try {
+      const data = await signAnexo5AptitudSection(operationId, initialValues.id);
+      setAptitudData(data);
+      setShowSignConfirmModal(false);
+    } catch (error) {
+      console.error("Error firmando aptitud para operar:", error);
+      alert("No se pudo registrar la firma.");
+    }
+  };
+
+  const handleDeleteSignature = async () => {
+    if (!initialValues?.id || firmaToDelete == null) return;
+    try {
+      const data = await deleteAnexo5AptitudSignature(operationId, initialValues.id, firmaToDelete);
+      setAptitudData(data);
+      setFirmaToDelete(null);
+    } catch (error) {
+      console.error("Error eliminando firma:", error);
+      alert("No se pudo eliminar la firma.");
     }
   };
 
@@ -278,6 +329,68 @@ export default function FormOperationAnexo5Detail({
       <div className="bg-white border rounded p-3 mb-4 text-start">{SECCIONES_CONFIG.seccion7.map(renderApartadoRow)}</div>
 
       <SectionTitle>SECCIÓN 8: Aptitud para operar</SectionTitle>
+      {!initialValues?.id && (
+        <div className="alert alert-warning">
+          Guarda primero el Anexo 5 para habilitar las firmas de aptitud para operar.
+        </div>
+      )}
+      {initialValues?.id && (
+        <div className="bg-white border rounded p-3 mb-4 text-start">
+          <div className="d-flex gap-2 mb-3">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowSignConfirmModal(true)}
+              disabled={!canManageAptitud || !aptitudData?.puedeFirmar || !!aptitudData?.yaFirmado}
+            >
+              Firmar
+            </button>
+          </div>
+          <div>
+            <div className="fw-bold small text-uppercase text-muted mb-2">Firmas registradas</div>
+            {aptitudData?.firmas?.length ? (
+              <ul className="list-group list-group-flush">
+                {aptitudData.firmas.map((firma) => (
+                  <li key={firma.id} className="list-group-item d-flex justify-content-between align-items-center px-1">
+                    <span>
+                      {firma.nombreCompleto} — {new Date(firma.fechaFirma).toLocaleString()}
+                    </span>
+                    {firma.puedeEliminar && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => setFirmaToDelete(firma.id)}
+                        disabled={!canManageAptitud}
+                      >
+                        Quitar firma
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-muted small">No hay firmas registradas.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        show={showSignConfirmModal}
+        title="Firmar aptitud para operar"
+        message="¿Seguro que quiere firmar?"
+        onConfirm={() => void handleConfirmSign()}
+        onCancel={() => setShowSignConfirmModal(false)}
+        variant="primary"
+      />
+      <ConfirmModal
+        show={firmaToDelete != null}
+        title="Quitar firma"
+        message="¿Seguro que quiere eliminar la firma?"
+        onConfirm={() => void handleDeleteSignature()}
+        onCancel={() => setFirmaToDelete(null)}
+        variant="danger"
+      />
     </AnexoFormLayout>
   );
 }

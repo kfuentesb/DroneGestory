@@ -1,11 +1,14 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Getter @Setter
 public class Anexo4ResponseDTO {
@@ -21,6 +24,9 @@ public class Anexo4ResponseDTO {
 
     // Si tienes personal como String, deja String. Si algún día es List<User>, cambia a List<UserLightDTO>
     private String personal;
+    private List<Integer> personalSeleccionadoIds;
+    private List<UserNameResponse> personalSeleccionado;
+    private boolean puedeEditarPersonalSeleccionado;
 
     //private List<AircraftLightDTO> drones;
 
@@ -70,6 +76,20 @@ public class Anexo4ResponseDTO {
         dto.setCoords(anexo.getCoords());
 
         dto.setPersonal(anexo.getPersonal());
+        dto.setPersonalSeleccionadoIds(
+                anexo.getPersonalSeleccionado() == null
+                        ? Collections.emptyList()
+                        : anexo.getPersonalSeleccionado().stream()
+                        .map(user -> user.getId())
+                        .toList()
+        );
+        dto.setPersonalSeleccionado(
+                anexo.getPersonalSeleccionado() == null
+                        ? Collections.emptyList()
+                        : anexo.getPersonalSeleccionado().stream()
+                        .map(user -> new UserNameResponse(user.getId(), user.getFirstName(), user.getLastName()))
+                        .toList()
+        );
 
 //        if (anexo.getDrones() != null) {
 //            dto.setDrones(anexo.getDrones().stream()
