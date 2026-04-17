@@ -18,6 +18,15 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
     List<Operation> findByCreadorId(Integer userId);
 
     @Query("""
+        SELECT DISTINCT o
+        FROM Operation o
+        LEFT JOIN o.anexos4 a4
+        LEFT JOIN a4.personalSeleccionado ps
+        WHERE o.creador.id = :userId OR ps.id = :userId
+    """)
+    List<Operation> findByUserAccess(@Param("userId") Integer userId);
+
+    @Query("""
         SELECT MAX(o.correlativoAnual)
         FROM Operation o
         WHERE o.anioCorrelativo = :anio

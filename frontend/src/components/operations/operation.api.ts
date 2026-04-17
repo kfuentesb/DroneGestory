@@ -8,8 +8,25 @@ type AnexoBaseData = {
   estado?: AnexoStatus | null;
 };
 
+export type AuthorizedUser = {
+  id: number;
+  username?: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+};
+
+export type Anexo5AptitudFirma = {
+  userId: number;
+  username: string;
+  fullName: string;
+  fechaFirma: string;
+};
+
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
+  personalSeleccionado?: AuthorizedUser[];
+  creadorUsername?: string;
   [key: string]: any;
 };
 
@@ -37,6 +54,9 @@ export type Anexo5Data = AnexoBaseData & {
   atenuacionesGRC?: boolean | null;
   atenuacionesARC?: boolean | null;
   comprobacionesUasVuelo?: boolean | null;
+  personalSeleccionado?: AuthorizedUser[];
+  aptitudFirmas?: Anexo5AptitudFirma[];
+  creadorUsername?: string;
 };
 
 export type Anexo6Data = AnexoBaseData & {
@@ -393,6 +413,30 @@ export async function signAnexo4Data(operationId: number, anexoId: number): Prom
 export async function signAnexo5Data(operationId: number, anexoId: number): Promise<Anexo5Data | null> {
   const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/firmar/datos`, {
     method: "PUT",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo5Data;
+}
+
+export async function signAnexo5AptitudData(operationId: number, anexoId: number): Promise<Anexo5Data | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/aptitud/firmar`, {
+    method: "PUT",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo5Data;
+}
+
+export async function unsignAnexo5AptitudData(operationId: number, anexoId: number, userId: number): Promise<Anexo5Data | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/aptitud/firmas/${userId}`, {
+    method: "DELETE",
   });
 
   if (!response) {

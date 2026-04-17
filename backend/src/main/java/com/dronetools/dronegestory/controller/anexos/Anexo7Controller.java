@@ -47,6 +47,7 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     public ResponseEntity<Anexo7ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos7(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        service.assertCanAccessOperation(op);
         Anexo7 anexo7 = op.getAnexo7Actual();
         if (anexo7 == null) {
             return ResponseEntity.noContent().build();
@@ -61,6 +62,7 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         Anexo7 anexo7 = repository.findById(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+        service.assertCanAccessOperation(anexo7.getOperation());
         if (anexo7.getOperation() == null || !anexo7.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
@@ -88,4 +90,3 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
         return dto;
     }
 }
-

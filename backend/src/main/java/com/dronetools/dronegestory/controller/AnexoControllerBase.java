@@ -39,6 +39,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     public AnexoInfoDTO getActual(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        service.assertCanAccessOperation(op);
         return AnexoInfoDTO.from(getAnexoActual(op));
     }
 
@@ -46,6 +47,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     public List<AnexoHistoricoDTO> getHistorico(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        service.assertCanAccessOperation(op);
         List<T> anexos = repository.findByOperationOrderByNumeroVersionDesc(op);
         return AnexoHistoricoDTO.fromEntityList(
                 anexos.stream().map(a -> (Anexo) a).collect(Collectors.toList()));

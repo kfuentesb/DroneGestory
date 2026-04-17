@@ -3,22 +3,22 @@ package com.dronetools.dronegestory.service;
 import com.dronetools.dronegestory.model.Anexo;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
-import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class AnexoServiceBase<T extends Anexo> {
 
     protected final AnexoBaseRepository<T, Long> repository;
     protected final OperationRepository operationRepository;
+    protected final OperationAuthorizationService operationAuthorizationService;
 
     public AnexoServiceBase(AnexoBaseRepository<T, Long> repository,
-                            OperationRepository operationRepository) {
+                            OperationRepository operationRepository,
+                            OperationAuthorizationService operationAuthorizationService) {
         this.repository = repository;
         this.operationRepository = operationRepository;
+        this.operationAuthorizationService = operationAuthorizationService;
     }
 
     @Transactional
@@ -93,18 +93,11 @@ public abstract class AnexoServiceBase<T extends Anexo> {
     }
 
     private void validarOperacionEditable(Operation op) {
-        if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
-            throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
-        }
+        operationAuthorizationService.assertCanOperateOperation(op);
     }
 
-    private boolean esAdminActual() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    public void assertCanAccessOperation(Operation operation) {
+        operationAuthorizationService.assertCanAccessOperation(operation);
     }
 
     protected abstract T crearCopia(T origen);

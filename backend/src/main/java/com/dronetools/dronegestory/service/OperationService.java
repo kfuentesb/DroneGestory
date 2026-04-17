@@ -7,8 +7,6 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +19,12 @@ import java.util.List;
 public class OperationService {
 
     private final OperationRepository operationRepository;
+    private final OperationAuthorizationService operationAuthorizationService;
 
-    public OperationService(OperationRepository operationRepository) {
+    public OperationService(OperationRepository operationRepository,
+                            OperationAuthorizationService operationAuthorizationService) {
         this.operationRepository = operationRepository;
+        this.operationAuthorizationService = operationAuthorizationService;
     }
 
     @Transactional(readOnly = true)
@@ -82,8 +83,10 @@ public class OperationService {
 
     @Transactional(readOnly = true)
     public Operation findById(Long operationId) {
-        return operationRepository.findById(operationId)
+        Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        operationAuthorizationService.assertCanAccessOperation(operation);
+        return operation;
     }
 
 //    @Transactional
@@ -102,6 +105,7 @@ public class OperationService {
     @Transactional
     public Operation completarOperation(Long operationId) {
         Operation op = findById(operationId);
+        operationAuthorizationService.assertCanOperateOperation(op);
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
@@ -110,26 +114,13 @@ public class OperationService {
     }
 
     private void validarOperacionEditable(Operation op) {
-        if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
-            throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
-        }
-    }
-
-    private boolean esAdminActual() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        operationAuthorizationService.assertCanOperateOperation(op);
     }
 
     // DTO
     @Transactional(readOnly = true)
     public OperationDetailDTO findByIdDto(Long operationId) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        // La sesión sigue abierta, aquí puedes acceder a cualquier relación (creador, anexos, etc.)
+        Operation op = findById(operationId);
         return new OperationDetailDTO(op);
     }
 
@@ -145,8 +136,14 @@ public class OperationService {
     // Trae solo las operaciones de un usuario como DTOs
     @Transactional(readOnly = true)
     public List<OperationListDTO> getMyOperationListDTOs(Integer userId) {
-        return operationRepository.findByCreadorId(userId)
+        User currentUser = operationAuthorizationService.getCurrentUser();
+        return operationRepository.findAll()
                 .stream()
+                .filter(operation ->
+                        operation.getCreador() != null
+                                && operation.getCreador().getId().equals(currentUser.getId())
+                                || operationAuthorizationService.isAssigned(operation, currentUser)
+                )
                 .map(OperationListDTO::new)
                 .toList();
     }
@@ -154,6 +151,7 @@ public class OperationService {
     @Transactional
     public OperationDetailDTO completarOperationDto(Long operationId) {
         Operation op = findById(operationId);
+        operationAuthorizationService.assertCanOperateOperation(op);
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }

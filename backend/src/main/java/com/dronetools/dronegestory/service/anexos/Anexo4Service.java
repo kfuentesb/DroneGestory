@@ -1,10 +1,13 @@
 package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.service.OperationAuthorizationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,22 +16,52 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
-    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository) {
-        super(repository, operationRepository);
+    private final UserRepository userRepository;
+
+    public Anexo4Service(Anexo4Repository repository,
+                         OperationRepository operationRepository,
+                         UserRepository userRepository,
+                         OperationAuthorizationService operationAuthorizationService) {
+        super(repository, operationRepository, operationAuthorizationService);
+        this.userRepository = userRepository;
     }
 
     @Transactional
-    public Anexo4 registrarAnexo4(Long operationId, Anexo4 datosNuevos) {
+    public Anexo4 registrarAnexo4(Long operationId, Anexo4 datosNuevos, List<Integer> personalSeleccionadoIds) {
         Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+
+        operationAuthorizationService.assertCanOperateOperation(operation);
+
         if (datosNuevos.getOperation() != null) {
             operation.setConops(datosNuevos.getOperation().getConops());
             operationRepository.save(operation);
         }
+
+        Set<User> existingSelection = operation.getAnexo4Actual() != null
+                ? new LinkedHashSet<>(operation.getAnexo4Actual().getPersonalSeleccionado())
+                : new LinkedHashSet<>();
+
+        boolean currentUserIsCreator = operationAuthorizationService.isCreator(operation, operationAuthorizationService.getCurrentUser());
+        if (currentUserIsCreator) {
+            operationAuthorizationService.assertCanManageSelectedPersonnel(operation);
+            if (personalSeleccionadoIds == null && operation.getAnexo4Actual() != null) {
+                existingSelection.add(operation.getCreador());
+                datosNuevos.setPersonalSeleccionado(existingSelection);
+            } else {
+                datosNuevos.setPersonalSeleccionado(resolveSelectedUsers(operation, personalSeleccionadoIds));
+            }
+        } else {
+            datosNuevos.setPersonalSeleccionado(existingSelection);
+        }
+
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
@@ -54,6 +87,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Personal y Drones
         destino.setPersonal(origen.getPersonal());
+        destino.setPersonalSeleccionado(new LinkedHashSet<>(origen.getPersonalSeleccionado()));
 
 //        destino.getDrones().clear();
 //        if (origen.getDrones() != null) {
@@ -115,6 +149,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Relaciones (copiar referencias, no clonar entidades)
         copia.setPersonal(origen.getPersonal());
+        copia.setPersonalSeleccionado(new LinkedHashSet<>(origen.getPersonalSeleccionado()));
 
 //        if (origen.getDrones() != null) {
 //            copia.getDrones().addAll(origen.getDrones());
@@ -162,7 +197,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
             Anexo4 anexo4,
             String conops,
             MultipartFile imagenEspacioAereoFile,
-            MultipartFile imagenZonaVueloFile
+            MultipartFile imagenZonaVueloFile,
+            List<Integer> personalSeleccionadoIds
     ) throws IOException {
         if (conops != null) {
             Operation operation = operationRepository.findById(operationId)
@@ -214,7 +250,22 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         }
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)
-        return registrarAnexo4(operationId, anexo4);
+        return registrarAnexo4(operationId, anexo4, personalSeleccionadoIds);
+    }
+
+    private Set<User> resolveSelectedUsers(Operation operation, List<Integer> selectedIds) {
+        LinkedHashSet<Integer> ids = new LinkedHashSet<>();
+        if (selectedIds != null) {
+            ids.addAll(selectedIds);
+        }
+        if (operation.getCreador() != null && operation.getCreador().getId() != null) {
+            ids.add(operation.getCreador().getId());
+        }
+        if (ids.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        List<User> selectedUsers = userRepository.findAllById(ids);
+        return new LinkedHashSet<>(selectedUsers);
     }
 
     private void validateImageFile(MultipartFile file) {

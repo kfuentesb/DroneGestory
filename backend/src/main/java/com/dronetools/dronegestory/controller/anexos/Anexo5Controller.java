@@ -37,6 +37,23 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
         return toResponse(anexo, operationId);
     }
 
+    @PutMapping("/{idAnexo}/aptitud/firmar")
+    public Anexo5ResponseDTO firmarAptitudParaOperar(@PathVariable Long operationId,
+                                                      @PathVariable Long idAnexo,
+                                                      Principal principal) {
+        String username = (principal != null) ? principal.getName() : "Sistema";
+        Anexo5 anexo = service.firmarAptitudParaOperar(operationId, idAnexo, username);
+        return toResponse(anexo, operationId);
+    }
+
+    @DeleteMapping("/{idAnexo}/aptitud/firmas/{userId}")
+    public Anexo5ResponseDTO desfirmarAptitudParaOperar(@PathVariable Long operationId,
+                                                         @PathVariable Long idAnexo,
+                                                         @PathVariable Integer userId) {
+        Anexo5 anexo = service.desfirmarAptitudParaOperar(operationId, idAnexo, userId);
+        return toResponse(anexo, operationId);
+    }
+
     @PostMapping("/{idAnexo}/rehacer/datos")
     public Anexo5ResponseDTO rehacerConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo) {
         Anexo5 anexoRehecho = service.rehacerAnexo5(idAnexo);
@@ -47,6 +64,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
     public ResponseEntity<Anexo5ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos5(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        service.assertCanAccessOperation(op);
         Anexo5 anexo5 = op.getAnexo5Actual();
         if (anexo5 == null) {
             return ResponseEntity.noContent().build();
@@ -61,6 +79,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         Anexo5 anexo5 = repository.findById(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+        service.assertCanAccessOperation(anexo5.getOperation());
         if (anexo5.getOperation() == null || !anexo5.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
@@ -88,4 +107,3 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
         return dto;
     }
 }
-

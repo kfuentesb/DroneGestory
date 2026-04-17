@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter
 public class Anexo4ResponseDTO {
@@ -21,6 +22,8 @@ public class Anexo4ResponseDTO {
 
     // Si tienes personal como String, deja String. Si algún día es List<User>, cambia a List<UserLightDTO>
     private String personal;
+    private List<AuthorizedUserDTO> personalSeleccionado;
+    private String creadorUsername;
 
     //private List<AircraftLightDTO> drones;
 
@@ -70,6 +73,12 @@ public class Anexo4ResponseDTO {
         dto.setCoords(anexo.getCoords());
 
         dto.setPersonal(anexo.getPersonal());
+        dto.setPersonalSeleccionado(
+                anexo.getPersonalSeleccionado().stream()
+                        .map(AuthorizedUserDTO::fromEntity)
+                        .toList()
+        );
+        dto.setCreadorUsername(anexo.getOperation() != null ? anexo.getOperation().getCreador().getUsername() : null);
 
 //        if (anexo.getDrones() != null) {
 //            dto.setDrones(anexo.getDrones().stream()

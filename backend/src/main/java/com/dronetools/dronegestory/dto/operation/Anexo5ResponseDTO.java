@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -47,6 +48,9 @@ public class Anexo5ResponseDTO {
     private Boolean atenuacionesARC;
     // 7
     private Boolean comprobacionesUasVuelo;
+    private List<AuthorizedUserDTO> personalSeleccionado;
+    private List<Anexo5AptitudFirmaDTO> aptitudFirmas;
+    private String creadorUsername;
 
     public static Anexo5ResponseDTO fromEntity(Anexo5 anexo) {
         Anexo5ResponseDTO dto = new Anexo5ResponseDTO();
@@ -76,6 +80,19 @@ public class Anexo5ResponseDTO {
         dto.setAtenuacionesGRC(anexo.getAtenuacionesGRC());
         dto.setAtenuacionesARC(anexo.getAtenuacionesARC());
         dto.setComprobacionesUasVuelo(anexo.getComprobacionesUasVuelo());
+        dto.setPersonalSeleccionado(
+                anexo.getOperation() != null && anexo.getOperation().getAnexo4Actual() != null
+                        ? anexo.getOperation().getAnexo4Actual().getPersonalSeleccionado().stream()
+                        .map(AuthorizedUserDTO::fromEntity)
+                        .toList()
+                        : List.of()
+        );
+        dto.setAptitudFirmas(
+                anexo.getAptitudFirmas().stream()
+                        .map(Anexo5AptitudFirmaDTO::fromEntity)
+                        .toList()
+        );
+        dto.setCreadorUsername(anexo.getOperation() != null ? anexo.getOperation().getCreador().getUsername() : null);
         return dto;
     }
 }

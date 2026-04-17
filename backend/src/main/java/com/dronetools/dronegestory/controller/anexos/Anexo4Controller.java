@@ -35,9 +35,10 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             @ModelAttribute Anexo4 anexo4,
             @RequestParam(value = "conops", required = false) String conops,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
-            @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile
+            @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile,
+            @RequestParam(value = "personalSeleccionadoIds", required = false) java.util.List<Integer> personalSeleccionadoIds
     ) throws IOException {
-        Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
+        Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile, personalSeleccionadoIds);
         return ResponseEntity.ok(toResponse(saved, operationId));
     }
 
@@ -58,6 +59,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     public ResponseEntity<Anexo4ResponseDTO> getDatos(@PathVariable Long operationId) {
         Operation op = operationRepository.findByIdWithAnexos4(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
+        service.assertCanAccessOperation(op);
         Anexo4 anexo4 = op.getAnexo4Actual();
         if (anexo4 == null) {
             return ResponseEntity.noContent().build();
@@ -75,6 +77,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
         Anexo4 anexo4 = repository.findById(idAnexo)
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
+        service.assertCanAccessOperation(anexo4.getOperation());
 
         if (anexo4.getOperation() == null || !anexo4.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
@@ -85,7 +88,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
     @Override
     protected Anexo4 registrar(Long operationId, Anexo4 input) {
-        return service.registrarAnexo4(operationId, input);
+        return service.registrarAnexo4(operationId, input, null);
     }
 
     @Override

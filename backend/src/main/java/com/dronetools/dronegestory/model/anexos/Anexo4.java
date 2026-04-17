@@ -1,12 +1,15 @@
 package com.dronetools.dronegestory.model.anexos;
 
 import com.dronetools.dronegestory.model.Anexo;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashSet;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "anexo4")
@@ -27,6 +30,14 @@ public class Anexo4 extends Anexo {
 
     // Texto personal
     private String personal;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "anexo4_personal_seleccionado",
+            joinColumns = @JoinColumn(name = "anexo4_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> personalSeleccionado = new LinkedHashSet<>();
 
     // ---- RELACIÓN CON DRONES (UAS) ----
 //    @ManyToMany

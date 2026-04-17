@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "anexo5")
@@ -58,6 +60,9 @@ public class Anexo5 extends Anexo {
     // 7. El uas esta en condiciones adecuadas para operar
     private Boolean comprobacionesUasVuelo;
     // 8. Aptitud para operar TODO
+    @OneToMany(mappedBy = "anexo5", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("fechaFirma ASC")
+    private List<Anexo5AptitudFirma> aptitudFirmas = new ArrayList<>();
 
 
     public Anexo5() {

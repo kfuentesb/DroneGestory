@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
+import { apiFetch } from "../../api";
+import { useAuth } from "../commons/hooks/useAuth";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
@@ -57,6 +59,7 @@ type FormOperationAnexo4DetailProps = {
 };
 
 type ErrorsMap = Record<string, string | null>;
+type UserNameOption = { id: number; firstName: string; lastName: string };
 
 const BOOL_OPTIONS = [
   { value: "", label: "N/A" },
@@ -72,11 +75,32 @@ export default function FormOperationAnexo4Detail({
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo4DetailProps) {
+  const { username } = useAuth();
   const fields = useMemo<FieldConfig[]>(() => operationAnexo4DetailFields, []);
   const [formValues, setFormValues] = useState<Record<string, any>>(initialValues ?? {});
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
+  const [allUsers, setAllUsers] = useState<UserNameOption[]>([]);
+  const canEditSelectedUsers =
+    !disabled &&
+    !!username &&
+    (formValues.creadorUsername == null || formValues.creadorUsername === username);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await apiFetch("/api/users/names");
+        if (!response) return;
+        const users = (await response.json()) as UserNameOption[];
+        setAllUsers(users);
+      } catch (error) {
+        console.error("No se pudieron cargar usuarios para personalSeleccionado:", error);
+        setAllUsers([]);
+      }
+    };
+    void loadUsers();
+  }, []);
 
   useEffect(() => {
   if (!initialValues) return;
@@ -95,6 +119,12 @@ export default function FormOperationAnexo4Detail({
       Object.entries(initialValues).map(([k, v]) => {
         if (k === "fechaHoraPrevista") {
           return [k, normalizeDateTimeLocal(v)];
+        }
+        if (k === "personalSeleccionado" && Array.isArray(v)) {
+          const ids = v
+            .map((user) => (typeof user === "object" && user !== null ? (user as { id?: number }).id : null))
+            .filter((id): id is number => typeof id === "number");
+          return ["personalSeleccionadoIds", ids];
         }
         return [
           k,
@@ -165,6 +195,10 @@ export default function FormOperationAnexo4Detail({
     try {
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
+        if (key === "personalSeleccionadoIds" && Array.isArray(value)) {
+          value.forEach((userId) => formData.append("personalSeleccionadoIds", String(userId)));
+          return;
+        }
         if (value instanceof File) {
             formData.append(key, value);
         } else if (value !== undefined && value !== null && value !== "") {
@@ -235,6 +269,46 @@ export default function FormOperationAnexo4Detail({
             onChange={(e) => handleChange("personal", e.target.value)}
             disabled={disabled || saving}
           />
+      </div>
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">Personal seleccionado</label>
+        <div className="border rounded p-2 bg-white" style={{ maxHeight: "220px", overflowY: "auto" }}>
+          {allUsers.length === 0 ? (
+            <div className="text-muted small">No hay usuarios disponibles.</div>
+          ) : (
+            allUsers.map((user) => {
+              const selectedIds = Array.isArray(formValues.personalSeleccionadoIds)
+                ? (formValues.personalSeleccionadoIds as number[])
+                : [];
+              const checked = selectedIds.includes(user.id);
+              return (
+                <div className="form-check" key={user.id}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`personal-seleccionado-${user.id}`}
+                    checked={checked}
+                    disabled={disabled || saving || !canEditSelectedUsers}
+                    onChange={(e) => {
+                      const nextIds = e.target.checked
+                        ? [...selectedIds, user.id]
+                        : selectedIds.filter((id) => id !== user.id);
+                      handleChange("personalSeleccionadoIds", nextIds);
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor={`personal-seleccionado-${user.id}`}>
+                    {user.firstName} {user.lastName}
+                  </label>
+                </div>
+              );
+            })
+          )}
+        </div>
+        {!canEditSelectedUsers && (
+          <div className="form-text mt-1">
+            Solo el responsable de la operación puede modificar el personal seleccionado.
+          </div>
+        )}
       </div>
       <div className="row">
         <div className="col-md-6 mb-3">

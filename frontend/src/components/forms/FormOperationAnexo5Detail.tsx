@@ -1,8 +1,16 @@
-import { saveAnexo5Data, type Anexo5Data } from "../operations/operation.api";
+import { useState } from "react";
+import {
+  saveAnexo5Data,
+  signAnexo5AptitudData,
+  unsignAnexo5AptitudData,
+  type Anexo5Data,
+} from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import { useAuth } from "../commons/hooks/useAuth";
+import ConfirmModal from "../commons/ConfirmModal";
 
 type FormOperationAnexo5DetailProps = {
   operationId: number;
@@ -150,11 +158,18 @@ export default function FormOperationAnexo5Detail({
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo5DetailProps) {
+  const { username } = useAuth();
   const { formValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
+  const [pendingSignConfirm, setPendingSignConfirm] = useState(false);
+  const [pendingUnsignUserId, setPendingUnsignUserId] = useState<number | null>(null);
+
+  const personalSeleccionado = initialValues?.personalSeleccionado ?? [];
+  const aptitudFirmas = initialValues?.aptitudFirmas ?? [];
+  const creadorUsername = initialValues?.creadorUsername ?? null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,6 +209,39 @@ export default function FormOperationAnexo5Detail({
       boolLabels={{ unspecified: "N/A"}}
     />
   );
+
+  const handleConfirmSignAptitud = async () => {
+    if (!initialValues?.id) {
+      alert("No existe una versión de Anexo 5 para firmar.");
+      setPendingSignConfirm(false);
+      return;
+    }
+    try {
+      const savedData = await signAnexo5AptitudData(operationId, initialValues.id);
+      await onSaved?.(savedData);
+    } catch (error) {
+      console.error("Error firmando aptitud para operar:", error);
+      alert("No se pudo firmar la aptitud para operar.");
+    } finally {
+      setPendingSignConfirm(false);
+    }
+  };
+
+  const handleConfirmUnsignAptitud = async () => {
+    if (!initialValues?.id || pendingUnsignUserId == null) {
+      setPendingUnsignUserId(null);
+      return;
+    }
+    try {
+      const savedData = await unsignAnexo5AptitudData(operationId, initialValues.id, pendingUnsignUserId);
+      await onSaved?.(savedData);
+    } catch (error) {
+      console.error("Error cancelando firma de aptitud para operar:", error);
+      alert("No se pudo cancelar la firma.");
+    } finally {
+      setPendingUnsignUserId(null);
+    }
+  };
 
   return (
     <AnexoFormLayout
@@ -278,6 +326,90 @@ export default function FormOperationAnexo5Detail({
       <div className="bg-white border rounded p-3 mb-4 text-start">{SECCIONES_CONFIG.seccion7.map(renderApartadoRow)}</div>
 
       <SectionTitle>SECCIÓN 8: Aptitud para operar</SectionTitle>
+      <div className="bg-white border rounded p-3 mb-4 text-start">
+        {personalSeleccionado.length === 0 ? (
+          <p className="text-muted mb-0">No hay personal seleccionado en Anexo 4.</p>
+        ) : (
+          <>
+            <div className="table-responsive">
+              <table className="table table-sm align-middle mb-2">
+                <thead>
+                  <tr>
+                    <th>Usuario autorizado</th>
+                    <th>Estado firma</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {personalSeleccionado.map((user) => {
+                    const firma = aptitudFirmas.find((item) => item.userId === user.id);
+                    const isCurrentUser = !!username && user.username === username;
+                    const isCreator = !!username && creadorUsername === username;
+                    const canSign = !firma && isCurrentUser && !disabled && !saving;
+                    const canUnsign = !!firma && (isCurrentUser || isCreator) && !disabled && !saving;
+                    return (
+                      <tr key={user.id}>
+                        <td>{user.fullName}</td>
+                        <td>{firma ? "Firmado" : "Pendiente"}</td>
+                        <td>
+                          {canSign && (
+                            <button type="button" className="btn btn-primary btn-sm" onClick={() => setPendingSignConfirm(true)}>
+                              Firmar
+                            </button>
+                          )}
+                          {canUnsign && (
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() => setPendingUnsignUserId(user.id)}
+                            >
+                              Quitar firma
+                            </button>
+                          )}
+                          {!canSign && !canUnsign && <span className="text-muted">Sin acción</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <strong>Firmas registradas:</strong>
+              {aptitudFirmas.length === 0 ? (
+                <span className="text-muted"> Ninguna</span>
+              ) : (
+                <ul className="mb-0 mt-2">
+                  {aptitudFirmas.map((firma) => (
+                    <li key={`${firma.userId}-${firma.fechaFirma}`}>
+                      {firma.fullName}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      <ConfirmModal
+        show={pendingSignConfirm}
+        title="Firma de aptitud para operar"
+        message="¿Seguro que quiere firmar?"
+        onConfirm={() => void handleConfirmSignAptitud()}
+        onCancel={() => setPendingSignConfirm(false)}
+        variant="primary"
+      />
+
+      <ConfirmModal
+        show={pendingUnsignUserId !== null}
+        title="Cancelar firma"
+        message="¿Seguro que quiere cancelar la firma?"
+        onConfirm={() => void handleConfirmUnsignAptitud()}
+        onCancel={() => setPendingUnsignUserId(null)}
+        variant="danger"
+      />
     </AnexoFormLayout>
   );
 }
