@@ -27,20 +27,20 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     public ResponseEntity<Anexo7ResponseDTO> createAnexo7(@PathVariable Long operationId,
                                                           @ModelAttribute Anexo7 anexo7) {
         Anexo7 saved = service.registrarAnexo7(operationId, anexo7);
-        return ResponseEntity.ok(Anexo7ResponseDTO.fromEntity(saved));
+        return ResponseEntity.ok(toResponse(saved, operationId));
     }
 
     @PutMapping("/{idAnexo}/firmar/datos")
-    public Anexo7ResponseDTO firmarConDatos(@PathVariable Long idAnexo, Principal principal) {
+    public Anexo7ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
         Anexo7 anexo = service.firmarAnexo(idAnexo, username);
-        return Anexo7ResponseDTO.fromEntity(anexo);
+        return toResponse(anexo, operationId);
     }
 
     @PostMapping("/{idAnexo}/rehacer/datos")
-    public Anexo7ResponseDTO rehacerConDatos(@PathVariable Long idAnexo) {
+    public Anexo7ResponseDTO rehacerConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo) {
         Anexo7 anexoRehecho = service.rehacerAnexo7(idAnexo);
-        return Anexo7ResponseDTO.fromEntity(anexoRehecho);
+        return toResponse(anexoRehecho, operationId);
     }
 
     @GetMapping("/datos")
@@ -51,7 +51,7 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
         if (anexo7 == null) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(Anexo7ResponseDTO.fromEntity(anexo7));
+        return ResponseEntity.ok(toResponse(anexo7, operationId));
     }
 
     @GetMapping("/{idAnexo}/datos")
@@ -64,7 +64,7 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
         if (anexo7.getOperation() == null || !anexo7.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
-        return ResponseEntity.ok(Anexo7ResponseDTO.fromEntity(anexo7));
+        return ResponseEntity.ok(toResponse(anexo7, operationId));
     }
 
     @Override
@@ -80,6 +80,12 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     @Override
     protected Anexo7 getAnexoActual(Operation op) {
         return op.getAnexo7Actual();
+    }
+
+    private Anexo7ResponseDTO toResponse(Anexo7 anexo, Long operationId) {
+        Anexo7ResponseDTO dto = Anexo7ResponseDTO.fromEntity(anexo);
+        operationRepository.findById(operationId).ifPresent(operation -> dto.setNombreConops(operation.getConops()));
+        return dto;
     }
 }
 

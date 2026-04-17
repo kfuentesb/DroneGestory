@@ -12,6 +12,7 @@ public class Anexo4ResponseDTO {
     private Long id;
     private int numeroVersion;
     private AnexoStatus estado;
+    private String conops;
     private String descripcion;
     private LocalDateTime fechaHoraPrevista;
     private String mediosMateriales;

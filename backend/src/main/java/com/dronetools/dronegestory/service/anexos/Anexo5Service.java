@@ -17,6 +17,9 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
 
     @Transactional
     public Anexo5 registrarAnexo5(Long operationId, Anexo5 datosNuevos) {
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        datosNuevos.setNombreConops(operation.getConops());
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo5Actual,
                 Operation::getNextVersionAnexo5);
@@ -31,12 +34,17 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
     protected Anexo5 crearCopia(Anexo5 origen) {
         Anexo5 copia = new Anexo5();
         actualizarCampos(copia, origen);
+        if (origen.getOperation() != null) {
+            copia.setNombreConops(origen.getOperation().getConops());
+        }
         return copia;
     }
 
     @Override
     protected void actualizarCampos(Anexo5 destino, Anexo5 origen) {
-        destino.setNombreConops(origen.getNombreConops());
+        if (destino.getOperation() != null) {
+            destino.setNombreConops(destino.getOperation().getConops());
+        }
         destino.setFechaOp(origen.getFechaOp());
         destino.setVlos(origen.getVlos());
         destino.setUbicacionObservadores(origen.getUbicacionObservadores());

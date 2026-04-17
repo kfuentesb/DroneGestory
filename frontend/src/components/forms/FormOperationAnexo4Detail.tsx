@@ -203,9 +203,19 @@ export default function FormOperationAnexo4Detail({
       saving={saving}
       readOnlyMessage={readOnlyMessage}
       onSubmit={handleSubmit}
-    >
+      >
       {/* SECCIÓN 1 */}
       <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
+        <input
+          type="text"
+          className="form-control bg-white border"
+          value={formValues.conops ?? ""}
+          onChange={(e) => handleChange("conops", e.target.value)}
+          disabled={disabled || saving}
+        />
+      </div>
       <div className="mb-3">
         <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
         <textarea
