@@ -17,6 +17,13 @@ type AircraftFlightHours = {
   totalMinutes?: number;
 };
 
+const formatTotalHours = (minutes?: number | null) => {
+  if (minutes == null || Number.isNaN(minutes)) {
+    return "-";
+  }
+  return `${(minutes / 60).toFixed(1)}h`;
+};
+
 export default function AircraftFlightTimeList() {
   const [aircraftsFlightHours, setAircraftsFlightHours] = useState<AircraftFlightHours[]>([]);
   const [search, setSearch] = useState("");
@@ -137,7 +144,7 @@ export default function AircraftFlightTimeList() {
                 <td>{a.model || "N/A"}</td>
                 <td>{a.serialNumber ?? "-"}</td>
                 <td>{a.lastFlightDate ? new Date(a.lastFlightDate).toLocaleDateString() : "N/A"}</td>
-                <td>{a.totalMinutes ?? "-"} <b>m</b></td>
+                <td>{formatTotalHours(a.totalMinutes)}</td>
               </>
             )}
             onRowClick={(a) => navigate(`/flight-times/${a.id}`)}

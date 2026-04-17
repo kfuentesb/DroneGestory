@@ -79,12 +79,8 @@ public class AircraftController {
             );
         }
 
-        // We use the manufacturer/model from DTO to handle the relationship in Service
-        // Note: dto.toEntity() now likely returns an Aircraft without the model set, 
-        // or you can adjust your service to handle the dto directly.
-        
         Aircraft createdAircraft = aircraftService.createWithFileAndDocumentation(
-                dto.toEntity(null), // Pass null model initially, service will link it
+                dto.toEntity(null),
                 dto.getManufacturer(),
                 dto.getModel(),
                 imageFile,

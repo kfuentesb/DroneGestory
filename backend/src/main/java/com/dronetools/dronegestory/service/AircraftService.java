@@ -89,6 +89,9 @@ public class AircraftService {
         if (updatedData.getAircraftClass() != null) aircraft.setAircraftClass(updatedData.getAircraftClass());
         if (updatedData.getConfig() != null) aircraft.setConfig(updatedData.getConfig());
         if (updatedData.getHasCamera() != null) aircraft.setHasCamera(updatedData.getHasCamera());
+        if (updatedData.getFechaFab() != null) aircraft.setFechaFab(updatedData.getFechaFab());
+        if (updatedData.getPowerSource() != null) aircraft.setPowerSource(updatedData.getPowerSource());
+        if (updatedData.getPowerSourceType() != null) aircraft.setPowerSourceType(updatedData.getPowerSourceType());
 
         // Logic for nullable numeric/boolean fields (MTOM, Wingspan, etc.)
         updateNullableFields(aircraft, updatedData, mtomPresent, wingspanPresent, maxSpeedPresent, 

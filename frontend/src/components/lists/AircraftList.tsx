@@ -15,10 +15,6 @@ type Aircraft = {
   id: number;
   manufacturer: string;
   model: string;
-  // aircraftModel?: {
-  //   manufacturer: string;
-  //   model: string;
-  // };
   serialNumber?: string;
   aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "Legacy";
   mtom?: number;                 // Peso máximo, kg (BigDecimal)
@@ -26,23 +22,11 @@ type Aircraft = {
   maxSpeed?: number;             // En m/s (BigDecimal)
   config: "Avion" | "Multirrotor" | "Helicoptero" | "Hibrido" | "Ligero" | "Otro";
   impactEnergy?: number;         // En Julios (BigDecimal)
+  fechaFab?: string;             // En formato 'YYYY-MM-DD'
   hasCamera: boolean;
-  
-  // Opcionales -> Más detalles
-  applicantType: "Manufacturer" | "Operator" | "To_the_Manufacturer";
-  applicantName: string;
-  operadorName?: string;         // Sólo si ApplicantType es Operator o To_the_Manufacturer
-  operatorNumber?: number;       // Sólo si ApplicantType es Operator
-  privatelyBuilt: boolean;
-  maxAutonomy?: number;          // En minutos
-  tether: boolean;
-  cableLenght?: number;          // En metros (BigDecimal)
+
   powerSource: "Electric" | "Non_Electric";
   powerSourceType?: "Hydrogen" | "Gasoline";
-  accessories?: string;
-  observations?: string;
-  imagePath?: string;
-  purchaseDate?: string;         // En formato 'YYYY-MM-DD'
 };
 
 export default function AircraftList() {
@@ -81,6 +65,7 @@ export default function AircraftList() {
     a.serialNumber ?? "",
     a.aircraftClass,
     a.config,
+    a.fechaFab ?? "",
   ]);
 
   useEffect(() => {
@@ -106,6 +91,7 @@ export default function AircraftList() {
     { label: "Velocidad", key: "maxSpeed", sortable: true},
     { label: "Configuración", key: "config", sortable: true },
     { label: "Energía impacto", key: "impactEnergy", sortable: true},
+    { label: "Fecha fabricación", key: "fechaFab", sortable: true },
     { label: "Cámara", key: "hasCamera", sortable: true },
   ];
 
@@ -154,6 +140,7 @@ export default function AircraftList() {
                 <td>{a.maxSpeed ?? "-"} <b>m/s</b></td>
                 <td>{a.config}</td>
                 <td>{a.impactEnergy ?? "-"} <b>J</b></td>
+                <td>{a.fechaFab ? new Date(a.fechaFab).toLocaleDateString() : "-"}</td>
                 <td className = "text-center">
                   <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
                     {a.hasCamera ? "Sí" : "No"}

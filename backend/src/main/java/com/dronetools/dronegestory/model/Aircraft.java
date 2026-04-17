@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "aircraft")
@@ -61,6 +62,18 @@ public class Aircraft {
 
     @Column(name = "image_path")
     private String imagePath;
+
+    @Column(name = "fecha_fab")
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+    private LocalDate fechaFab;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "power_source")
+    private AircraftPowersSource.PowerSource powerSource;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "power_source_type")
+    private AircraftPowersSource.PowerSourceType powerSourceType;
 
     // campos añadidos en la segunda tanda de aircraft
 

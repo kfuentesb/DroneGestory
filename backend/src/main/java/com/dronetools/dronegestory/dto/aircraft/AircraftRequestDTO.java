@@ -4,12 +4,14 @@ import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
+import com.dronetools.dronegestory.model.enums.AircraftPowersSource;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -26,6 +28,9 @@ public class AircraftRequestDTO {
     private AircraftConfig config;
     private BigDecimal impactEnergy;
     private Boolean hasCamera;
+    private String fechaFab;
+    private AircraftPowersSource.PowerSource powerSource;
+    private AircraftPowersSource.PowerSourceType powerSourceType;
 
     private Boolean privatelyBuilt;
     private Boolean hasParachute;
@@ -57,6 +62,9 @@ public class AircraftRequestDTO {
         aircraft.setImpactEnergy(impactEnergy);
         aircraft.setHasCamera(hasCamera);
         aircraft.setPrivatelyBuilt(privatelyBuilt);
+        aircraft.setFechaFab(LocalDate.parse(fechaFab));
+        aircraft.setPowerSource(powerSource);
+        aircraft.setPowerSourceType(powerSourceType);
 
         aircraft.setHasParachute(resolveBoolean(hasParachute, parachute));
         aircraft.setHasEnsurance(resolveBoolean(hasEnsurance, hasInsurance));

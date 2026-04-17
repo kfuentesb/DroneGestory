@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Select from "react-select";
+import Select, { type StylesConfig } from "react-select";
 import { useNavigate } from "react-router-dom";
 
 import { apiFetch } from "../../api";
@@ -62,6 +62,8 @@ interface FormAircraftProps {
     hasFTSDefault?: boolean;
     cautiveDefault?: string;
     accessoriesDefault?: string;
+    powerSourcesDefault?: string;
+    powerSourceNonHybridDefault?: string;
   };
   initialDocumentation?: InitialDocumentationItem[];
 }
@@ -76,6 +78,17 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     { value: "YES", label: "Sí" },
     { value: "NO", label: "No" },
     { value: "OPTIONAL", label: "Opcional" },
+  ];
+
+  const powerSources: SelectOption[] = [
+    { value: "HYBRID_VTOL", label: "Híbrido/VTOL" },
+    { value: "NON_HYBRID", label: "No Híbrido" },
+  ];
+
+  const powerSourcesNonHybrid: SelectOption[] = [
+    { value: "HYDROGEN", label: "Hidrógeno" },
+    { value: "GASOLINE", label: "Gasolina" },
+    { value: "OTHERS", label: "Otros" },
   ];
 
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +166,9 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     cautive: getOptionByValue(cautiveOptions, initialValues?.cautiveDefault) as SelectOption | null,
     accessories: initialValues?.accessoriesDefault ?? "",
     image: null as File | null,
+    fechaFab: "",
+    powerSource: getOptionByValue(powerSources, initialValues?.powerSourcesDefault) as SelectOption | null,
+    powerSourceNonHybrid: getOptionByValue(powerSourcesNonHybrid, initialValues?.powerSourceNonHybridDefault) as SelectOption | null,
   });
 
   const [errors, setErrors] = useState<any>({
@@ -181,11 +197,25 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
   const allowedImageTypes = ["image/jpeg", "image/png"];
   const allowedDocumentationTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-  const backgroundBorderInputsSelect = {
-    control: (provided: any) => ({
+  const backgroundBorderInputsSelect: StylesConfig<any, false> = {
+    control: (provided, state) => ({
       ...provided,
       backgroundColor: "#F3F4F6",
       borderColor: "#D1D5DB",
+      cursor: state.isDisabled ? "not-allowed" : "default",
+      opacity: state.isDisabled ? 0.7 : 1,
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: "#D1D5DB",
+      },
+    }),
+    placeholder: (provided, state) => ({
+      ...provided,
+      color: state.isDisabled ? "#9CA3AF" : "#6B7280",
+    }),
+    singleValue: (provided, state) => ({
+      ...provided,
+      color: state.isDisabled ? "#6B7280" : "#1E1E1E",
     }),
   };
 
@@ -193,6 +223,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     backgroundColor: "#F3F4F6",
     borderColor: "#D1D5DB",
   };
+
 
   const infoText = (
     <>
@@ -498,6 +529,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       config: !formValues.config,
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
       tooMuchTextAccesories: formValues.accessories.length > 800,
+      powerSource: formValues.powerSource === null || formValues.powerSource === undefined,
+      powerSourceNonHybrid: formValues.powerSource?.value === "NON_HYBRID" && (formValues.powerSourceNonHybrid === null || formValues.powerSourceNonHybrid === undefined),
     };
 
     setErrors(newErrors);
@@ -537,6 +570,9 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       if (formValues.impactEnergy) formData.append("impactEnergy", String(formValues.impactEnergy));
       formData.append("flightMinutes", String(formValues.flightMinutes));
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
+      if (formValues.powerSource) formData.append("powerSource", formValues.powerSource.value);
+      if (formValues.powerSourceNonHybrid) formData.append("powerSourceNonHybrid", formValues.powerSourceNonHybrid.value);
+      if (formValues.fechaFab) formData.append("fechaFab", formValues.fechaFab);
 
       if (formValues.privatelyBuilt) formData.append("privatelyBuilt", formValues.privatelyBuilt.value);
       if (formValues.hasParachute) formData.append("hasParachute", formValues.hasParachute.value);
@@ -779,6 +815,52 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                   <div className="text-danger small">Máximo permitido: {LIMITS.MAX_ENERGY} Julios</div>
                 )}
               </div>
+            </div>
+
+            <div className="row mb-3">
+
+                <div className="col-12 col-md mb-3 mb-md-0">
+                  <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
+                    Fecha de fabricación{" "}
+                  </label>
+                  <input
+                      type="date"
+                      className="form-control"
+                      value={formValues.fechaFab}
+                      onChange={(e) => setFormValues({ ...formValues, fechaFab: e.target.value })}
+                      style={{ ...backgroundBorderInputs }}
+                  />
+                </div>
+              
+                <div className="col-12 col-md mb-3 mb-md-0">
+                  <label className="form-label d-block text-start ps-1">Fuente de potencia</label>
+                  <Select
+                    options={powerSources}
+                    styles={backgroundBorderInputsSelect}
+                    placeholder="Seleccione fuente de potencia"
+                    value={formValues.powerSource}
+                    onChange={(val) => {
+                      setFormValues({ 
+                        ...formValues, 
+                        powerSource: val,
+                        powerSourceNonHybrid: val?.value === 'NON_ELECTRIC' ? formValues.powerSourceNonHybrid : null 
+                      });
+                    }}
+                    isClearable
+                  />
+                </div>
+                <div className="col-12 col-md mb-3 mb-md-0">
+                  <label className="form-label d-block text-start ps-1">Fuente no eléctrica</label>
+                  <Select
+                    options={powerSourcesNonHybrid}
+                    styles={backgroundBorderInputsSelect}
+                    placeholder="Seleccione fuente no eléctrica"
+                    value={formValues.powerSourceNonHybrid}
+                    onChange={(val) => setFormValues({ ...formValues, powerSourceNonHybrid: val })}
+                    isClearable
+                    isDisabled={formValues.powerSource?.value !== 'NON_HYBRID'}
+                  />
+                </div>
             </div>
 
             <div className="row mb-4">

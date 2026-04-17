@@ -4,11 +4,13 @@ import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
+import com.dronetools.dronegestory.model.enums.AircraftPowersSource;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -35,6 +37,9 @@ public class AircraftResponseDTO {
     private SelectionStatus cautive;
     private String accessories;
     private Integer flightMinutes;
+    private LocalDate fechaFab;
+    private AircraftPowersSource.PowerSource powerSource;
+    private AircraftPowersSource.PowerSourceType powerSourceType;
 
     public static AircraftResponseDTO fromEntity(Aircraft aircraft) {
         AircraftResponseDTO dto = new AircraftResponseDTO();
@@ -48,6 +53,9 @@ public class AircraftResponseDTO {
         }
 
         dto.setSerialNumber(aircraft.getSerialNumber());
+        dto.setFechaFab(aircraft.getFechaFab());
+        dto.setPowerSource(aircraft.getPowerSource());
+        dto.setPowerSourceType(aircraft.getPowerSourceType());
         dto.setAircraftClass(aircraft.getAircraftClass());
         dto.setMtom(aircraft.getMtom());
         dto.setWingspan(aircraft.getWingspan());
