@@ -137,13 +137,8 @@ public class OperationService {
     @Transactional(readOnly = true)
     public List<OperationListDTO> getMyOperationListDTOs(Integer userId) {
         User currentUser = operationAuthorizationService.getCurrentUser();
-        return operationRepository.findAll()
+        return operationRepository.findByUserAccess(currentUser.getId())
                 .stream()
-                .filter(operation ->
-                        operation.getCreador() != null
-                                && operation.getCreador().getId().equals(currentUser.getId())
-                                || operationAuthorizationService.isAssigned(operation, currentUser)
-                )
                 .map(OperationListDTO::new)
                 .toList();
     }

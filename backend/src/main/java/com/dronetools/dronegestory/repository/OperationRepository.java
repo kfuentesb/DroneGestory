@@ -22,7 +22,15 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
         FROM Operation o
         LEFT JOIN o.anexos4 a4
         LEFT JOIN a4.personalSeleccionado ps
-        WHERE o.creador.id = :userId OR ps.id = :userId
+        WHERE o.creador.id = :userId
+           OR (
+               a4.numeroVersion = (
+                   SELECT MAX(a4b.numeroVersion)
+                   FROM Anexo4 a4b
+                   WHERE a4b.operation = o
+               )
+               AND ps.id = :userId
+           )
     """)
     List<Operation> findByUserAccess(@Param("userId") Integer userId);
 

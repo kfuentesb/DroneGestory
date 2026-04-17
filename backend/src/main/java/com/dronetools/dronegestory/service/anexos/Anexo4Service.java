@@ -49,11 +49,13 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 ? new LinkedHashSet<>(operation.getAnexo4Actual().getPersonalSeleccionado())
                 : new LinkedHashSet<>();
 
-        boolean currentUserIsCreator = operationAuthorizationService.isCreator(operation, operationAuthorizationService.getCurrentUser());
-        if (currentUserIsCreator) {
+        boolean isCreator = operationAuthorizationService.isCreator(operation, operationAuthorizationService.getCurrentUser());
+        if (isCreator) {
             operationAuthorizationService.assertCanManageSelectedPersonnel(operation);
             if (personalSeleccionadoIds == null && operation.getAnexo4Actual() != null) {
-                existingSelection.add(operation.getCreador());
+                if (operation.getCreador() != null) {
+                    existingSelection.add(operation.getCreador());
+                }
                 datosNuevos.setPersonalSeleccionado(existingSelection);
             } else {
                 datosNuevos.setPersonalSeleccionado(resolveSelectedUsers(operation, personalSeleccionadoIds));
