@@ -55,6 +55,8 @@ export default function AircraftModelDetail() {
         "privatelyBuiltDefault",
         "hasParachuteDefault",
         "hasFTSDefault",
+        "powerSourceDefault",
+        "powerSourceTypeDefault",
         "cautiveDefault",
         "accessoriesDefault",
       ]}

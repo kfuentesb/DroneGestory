@@ -62,8 +62,8 @@ interface FormAircraftProps {
     hasFTSDefault?: boolean;
     cautiveDefault?: string;
     accessoriesDefault?: string;
-    powerSourcesDefault?: string;
-    powerSourceNonHybridDefault?: string;
+    powerSourceDefault?: string;
+    powerSourceTypeDefault?: string;
   };
   initialDocumentation?: InitialDocumentationItem[];
 }
@@ -167,8 +167,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     accessories: initialValues?.accessoriesDefault ?? "",
     image: null as File | null,
     fechaFab: "",
-    powerSource: getOptionByValue(powerSources, initialValues?.powerSourcesDefault) as SelectOption | null,
-    powerSourceNonHybrid: getOptionByValue(powerSourcesNonHybrid, initialValues?.powerSourceNonHybridDefault) as SelectOption | null,
+    powerSource: getOptionByValue(powerSources, initialValues?.powerSourceDefault) as SelectOption | null,
+    powerSourceNonHybrid: getOptionByValue(powerSourcesNonHybrid, initialValues?.powerSourceTypeDefault) as SelectOption | null,
   });
 
   const [errors, setErrors] = useState<any>({
@@ -843,7 +843,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                       setFormValues({ 
                         ...formValues, 
                         powerSource: val,
-                        powerSourceNonHybrid: val?.value === 'NON_ELECTRIC' ? formValues.powerSourceNonHybrid : null 
+                        powerSourceNonHybrid: val?.value === 'NON_HYBRID' ? formValues.powerSourceNonHybrid : null 
                       });
                     }}
                     isClearable

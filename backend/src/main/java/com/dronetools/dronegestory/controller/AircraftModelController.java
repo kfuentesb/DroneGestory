@@ -169,6 +169,8 @@ public class AircraftModelController {
                 model.getPrivatelyBuiltDefault(),
                 model.getHasParachuteDefault(),
                 model.getHasFTSDefault(),
+                model.getPowerSourceDefault(),
+                model.getPowerSourceTypeDefault(),
                 model.getCautiveDefault(),
                 model.getAccessoriesDefault()
         );

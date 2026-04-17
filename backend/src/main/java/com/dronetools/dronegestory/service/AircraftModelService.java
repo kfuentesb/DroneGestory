@@ -85,6 +85,8 @@ public class AircraftModelService {
         newModel.setPrivatelyBuiltDefault(request.getPrivatelyBuiltDefault());
         newModel.setHasParachuteDefault(request.getHasParachuteDefault());
         newModel.setHasFTSDefault(request.getHasFTSDefault());
+        newModel.setPowerSourceDefault(request.getPowerSourceDefault());
+        newModel.setPowerSourceTypeDefault(request.getPowerSourceTypeDefault());
         newModel.setCautiveDefault(request.getCautiveDefault());
         newModel.setAccessoriesDefault(request.getAccessoriesDefault());
         AircraftModel savedModel = repository.save(newModel);
@@ -147,6 +149,8 @@ public class AircraftModelService {
         applyIfPresent(parameterMap, "privatelyBuiltDefault", dto.getPrivatelyBuiltDefault(), model::setPrivatelyBuiltDefault);
         applyIfPresent(parameterMap, "hasParachuteDefault", dto.getHasParachuteDefault(), model::setHasParachuteDefault);
         applyIfPresent(parameterMap, "hasFTSDefault", dto.getHasFTSDefault(), model::setHasFTSDefault);
+        applyIfPresent(parameterMap, "powerSourceDefault", dto.getPowerSourceDefault(), model::setPowerSourceDefault);
+        applyIfPresent(parameterMap, "powerSourceTypeDefault", dto.getPowerSourceTypeDefault(), model::setPowerSourceTypeDefault);
         applyIfPresent(parameterMap, "cautiveDefault", dto.getCautiveDefault(), model::setCautiveDefault);
         applyIfPresent(parameterMap, "accessoriesDefault", normalizeNullableText(dto.getAccessoriesDefault()), model::setAccessoriesDefault);
 

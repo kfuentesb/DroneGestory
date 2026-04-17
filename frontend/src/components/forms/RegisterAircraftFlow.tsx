@@ -24,6 +24,8 @@ type AircraftModelApiItem = {
   hasParachuteDefault?: boolean;
   hasEnsuranceDefault?: boolean;
   hasFTSDefault?: boolean;
+  powerSourceDefault?: string;
+  powerSourceTypeDefault?: string;
   cautiveDefault?: string;
   accessoriesDefault?: string;
 };
@@ -46,6 +48,8 @@ type AircraftModelOption = {
   hasParachuteDefault?: boolean;
   hasEnsuranceDefault?: boolean;
   hasFTSDefault?: boolean;
+  powerSourceDefault?: string;
+  powerSourceTypeDefault?: string;
   cautiveDefault?: string;
   accessoriesDefault?: string;
 };
@@ -108,6 +112,8 @@ export default function RegisterAircraftFlow() {
               hasParachuteDefault: modelItem.hasParachuteDefault,
               hasEnsuranceDefault: modelItem.hasEnsuranceDefault,
               hasFTSDefault: modelItem.hasFTSDefault,
+              powerSourceDefault: modelItem.powerSourceDefault,
+              powerSourceTypeDefault: modelItem.powerSourceTypeDefault,
               cautiveDefault: modelItem.cautiveDefault,
               accessoriesDefault: modelItem.accessoriesDefault,
             });
@@ -185,6 +191,8 @@ export default function RegisterAircraftFlow() {
                   hasParachuteDefault: selectedOption.hasParachuteDefault,
                   hasEnsuranceDefault: selectedOption.hasEnsuranceDefault,
                   hasFTSDefault: selectedOption.hasFTSDefault,
+                  powerSourceDefault: selectedOption.powerSourceDefault,
+                  powerSourceTypeDefault: selectedOption.powerSourceTypeDefault,
                   cautiveDefault: selectedOption.cautiveDefault,
                   accessoriesDefault: selectedOption.accessoriesDefault,
                 }

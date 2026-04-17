@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.dto.aircraft;
 
 import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
+import com.dronetools.dronegestory.model.enums.AircraftPowersSource;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,8 @@ public class AircraftModelRequestDTO {
     private Boolean hasParachuteDefault;
     private Boolean hasEnsuranceDefault;
     private Boolean hasFTSDefault;
+    private AircraftPowersSource.PowerSource powerSourceDefault;
+    private AircraftPowersSource.PowerSourceType powerSourceTypeDefault;
     private SelectionStatus cautiveDefault;
     private String accessoriesDefault;
 }

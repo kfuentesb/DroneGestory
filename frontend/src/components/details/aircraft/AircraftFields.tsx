@@ -27,6 +27,44 @@ export const aircraftFields: FieldConfig[] = [
     error: "El número de serie debe ser alfanumérico, entre 2 y 25 caracteres",
   },
   {
+    label: "Fecha Fabricación",
+    key: "fechaFab",
+    type: "date",
+    validate: (v: any) => {
+      if (v === null || v === undefined || String(v).trim() === "") return true;
+      return !Number.isNaN(Date.parse(String(v)));
+    },
+    error: "Fecha de fabricación inválida",
+    format: (v: any) => {
+      if (!v) return "No especificado";
+      const parsed = new Date(String(v));
+      return Number.isNaN(parsed.getTime()) ? "No especificado" : parsed.toLocaleDateString("es-ES");
+    },
+  },
+  {
+    label: "Fuente de potencia",
+    key: "powerSource",
+    type: "select",
+    options: ["HYBRID_VTOL", "NON_HYBRID"],
+    format: (v: any) => {
+      if (v === "HYBRID_VTOL") return "Híbrido/VTOL";
+      if (v === "NON_HYBRID") return "No Híbrido";
+      return v ? String(v) : "No especificado";
+    },
+  },
+  {
+    label: "Tipo de fuente no eléctrica",
+    key: "powerSourceType",
+    type: "select",
+    options: ["HYDROGEN", "GASOLINE", "OTHERS"],
+    format: (v: any) => {
+      if (v === "HYDROGEN") return "Hidrógeno";
+      if (v === "GASOLINE") return "Gasolina";
+      if (v === "OTHERS") return "Otros";
+      return v ? String(v) : "No especificado";
+    },
+  },
+  {
     label: "Clase",
     key: "aircraftClass",
     type: "select",

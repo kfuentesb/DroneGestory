@@ -44,6 +44,17 @@ export default function FormAircraftModel() {
     { value: "OPTIONAL", label: "Opcional" },
   ];
 
+    const powerSources: SelectOption[] = [
+    { value: "HYBRID_VTOL", label: "Híbrido/VTOL" },
+    { value: "NON_HYBRID", label: "No Híbrido" },
+  ];
+
+  const powerSourcesNonHybrid: SelectOption[] = [
+    { value: "HYDROGEN", label: "Hidrógeno" },
+    { value: "GASOLINE", label: "Gasolina" },
+    { value: "OTHERS", label: "Otros" },
+  ];
+
   const backgroundBorderInputsSelect = {
     control: (provided: any) => ({
       ...provided,
@@ -71,6 +82,8 @@ export default function FormAircraftModel() {
     hasFTSDefault: null as SelectOption | null,
     cautiveDefault: null as SelectOption | null,
     accessoriesDefault: "",
+    powerSourceDefault: null as SelectOption | null,
+    powerSourceNonHybrid: null as SelectOption | null,
   });
   const [documentationFiles, setDocumentationFiles] = useState<Record<string, File | null>>(
     Object.fromEntries(aircraftDocumentationFields.map((f) => [f.fileKey, null]))
@@ -227,6 +240,8 @@ export default function FormAircraftModel() {
       if (defaultValues.hasFTSDefault) formData.append("hasFTSDefault", defaultValues.hasFTSDefault.value);
       if (defaultValues.cautiveDefault?.value) formData.append("cautiveDefault", defaultValues.cautiveDefault.value);
       if (defaultValues.accessoriesDefault.trim()) formData.append("accessoriesDefault", defaultValues.accessoriesDefault.trim());
+      if (defaultValues.powerSourceDefault?.value) formData.append("powerSourceDefault", defaultValues.powerSourceDefault.value);
+      if (defaultValues.powerSourceNonHybrid?.value) formData.append("powerSourceTypeDefault", defaultValues.powerSourceNonHybrid.value);
     }
     if (selectedFile) formData.append("imageFile", selectedFile, selectedFile.name);
     const documentationPayload = buildDocumentationPayload();
@@ -412,6 +427,38 @@ export default function FormAircraftModel() {
                       onChange={(value) => setDefaultValues((prev) => ({ ...prev, hasParachuteDefault: value }))}
                       isClearable
                     />
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <div className="row mb-3">
+                      <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="form-label d-block text-start ps-1">Fuente de potencia</label>
+                        <Select
+                          options={powerSources}
+                          styles={backgroundBorderInputsSelect}
+                          placeholder="Seleccione fuente de potencia"
+                          onChange={(val) => {
+                            setDefaultValues((prev) => ({ 
+                              ...prev, 
+                              powerSourceDefault: val,
+                              powerSourceNonHybrid: val?.value === 'NON_HYBRID' ? prev.powerSourceNonHybrid : null 
+                            }));
+                          }}
+                          isClearable
+                        />
+                      </div>
+                      <div className="col-12 col-md mb-3 mb-md-0">
+                        <label className="form-label d-block text-start ps-1">Fuente no eléctrica</label>
+                        <Select
+                          options={powerSourcesNonHybrid}
+                          styles={backgroundBorderInputsSelect}
+                          placeholder="Seleccione fuente no eléctrica"
+                          onChange={(value) => setDefaultValues((prev) => ({ ...prev, powerSourceNonHybrid: value }))}
+                          isClearable
+                          isDisabled={defaultValues.powerSourceDefault?.value !== 'NON_HYBRID'}
+                        />
+                      </div>
                   </div>
                 </div>
 

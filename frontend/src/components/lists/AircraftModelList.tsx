@@ -26,6 +26,8 @@ type AircraftModel = {
   hasFTSDefault?: boolean | null;
   cautiveDefault?: string | null;
   accessoriesDefault?: string | null;
+  powerSourceDefault?: string | null;
+  powerSourceTypeDefault?: string | null;
 };
 
 export default function AircraftModelList() {
@@ -94,6 +96,8 @@ export default function AircraftModelList() {
     row.hasEnsuranceDefault != null ||
     row.hasFTSDefault != null ||
     row.cautiveDefault != null ||
+    row.powerSourceDefault != null ||
+    row.powerSourceTypeDefault != null ||
     (row.accessoriesDefault != null && row.accessoriesDefault.trim() !== "");
 
   return (

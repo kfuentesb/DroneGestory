@@ -128,6 +128,29 @@ export const aircraftModelFields: FieldConfig[] = [
     },
   },
   {
+    label: "Fuente de potencia (valor por defecto)",
+    key: "powerSourceDefault",
+    type: "select",
+    options: ["HYBRID_VTOL", "NON_HYBRID"],
+    format: (v: any) => {
+      if (v === "HYBRID_VTOL") return "Híbrido/VTOL";
+      if (v === "NON_HYBRID") return "No Híbrido";
+      return v ? String(v) : "No especificado";
+    },
+  },
+  {
+    label: "Fuente no eléctrica (valor por defecto)",
+    key: "powerSourceTypeDefault",
+    type: "select",
+    options: ["HYDROGEN", "GASOLINE", "OTHERS"],
+    format: (v: any) => {
+      if (v === "HYDROGEN") return "Hidrógeno";
+      if (v === "GASOLINE") return "Gasolina";
+      if (v === "OTHERS") return "Otros";
+      return v ? String(v) : "No especificado";
+    },
+  },
+  {
     label: "Cautivo (valor por defecto)",
     key: "cautiveDefault",
     type: "select",

@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
+import com.dronetools.dronegestory.model.enums.AircraftPowersSource;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
 
 import java.math.BigDecimal;
@@ -64,6 +65,14 @@ public class AircraftModel {
     @Enumerated(EnumType.STRING)
     @Column(name = "cautive_default", length = 20)
     private SelectionStatus cautiveDefault;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "power_source_default", length = 20)
+    private AircraftPowersSource.PowerSource powerSourceDefault;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "power_source_type_default", length = 20)
+    private AircraftPowersSource.PowerSourceType powerSourceTypeDefault;
 
     @Column(name = "accessories_default", length = 800)
     private String accessoriesDefault;
