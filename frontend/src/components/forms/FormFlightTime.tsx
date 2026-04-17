@@ -11,8 +11,8 @@ export default function FormFlightTime() {
     const { aircraftId } = useParams<{ aircraftId: string }>();
 
     const [aircraft, setAircraft] = useState<{ id: number; manufacturer?: string; model?: string; serialNumber?: string } | null>(null);
-    const [operations, setOperations] = useState<Array<{ idOperacion: number; nombreOperacion: string }>>([]);
-    const [selectedOperationName, setSelectedOperationName] = useState("");
+    const [operations, setOperations] = useState<Array<{ idOperacion: number; codigo: string }>>([]);
+    const [selectedOperationCodigo, setSelectedOperationCodigo] = useState("");
     const [flightDate, setFlightDate] = useState("");
     const [hours, setHours] = useState<number>(1);
     const [minutes, setMinutes] = useState<number>(0);
@@ -71,25 +71,16 @@ export default function FormFlightTime() {
         setLoading(true);
         try {
             let operationId: number | null = null;
-            const enteredOperationName = selectedOperationName.trim();
+            const enteredOperationCodigo = selectedOperationCodigo.trim();
             const existing = operations.find(
-                (op) => op.nombreOperacion?.toLowerCase() === enteredOperationName.toLowerCase()
+                (op) => op.codigo?.toLowerCase() === enteredOperationCodigo.toLowerCase()
             );
 
-            if (enteredOperationName) {
-                if (existing) {
-                    operationId = existing.idOperacion;
-                } else {
-                    const formData = new FormData();
-                    formData.append("nombreOperacion", enteredOperationName);
-                    const operationResponse = await apiFetch("/api/operations", {
-                        method: "POST",
-                        body: formData,
-                    });
-                    if (!operationResponse) throw new Error("No se pudo crear la operación.");
-                    const createdOperation = await operationResponse.json();
-                    operationId = createdOperation?.idOperacion ?? null;
+            if (enteredOperationCodigo) {
+                if (!existing) {
+                    throw new Error("Seleccione una operación válida de la lista.");
                 }
+                operationId = existing.idOperacion;
             }
 
             const payload = {
@@ -166,9 +157,9 @@ export default function FormFlightTime() {
                             <div className="col-12 col-md-6">
                                 <ComboBox
                                     label="Ref. operación (opcional)"
-                                    value={selectedOperationName}
-                                    onChange={setSelectedOperationName}
-                                    options={operations.map((op) => ({ value: op.nombreOperacion, label: op.nombreOperacion }))}
+                                    value={selectedOperationCodigo}
+                                    onChange={setSelectedOperationCodigo}
+                                    options={operations.map((op) => ({ value: op.codigo, label: op.codigo }))}
                                     placeholder="Seleccione o escriba una operación"
                                 />
                             </div>
