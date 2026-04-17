@@ -291,7 +291,7 @@ export default function FormOperationAnexo4Detail({
           />
       </div>
       <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">personalSeleccionado</label>
+        <label className="form-label fw-bold small text-uppercase text-muted">Personal seleccionado</label>
         <div className="d-flex gap-2 mb-2">
           <select
             className="form-select"

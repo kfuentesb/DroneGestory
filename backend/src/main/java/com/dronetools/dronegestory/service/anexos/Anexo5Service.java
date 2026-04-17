@@ -114,7 +114,7 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
 
         aptitudFirmaRepository.findByAnexo5IdAndFirmanteId(anexo5.getId(), currentUser.getId())
                 .ifPresent(firmaExistente -> {
-                    throw new RuntimeException("Ya has firmado esta sección");
+                    throw new IllegalStateException("Ya has firmado la sección 8: Aptitud para operar");
                 });
 
         Anexo5AptitudFirma firma = new Anexo5AptitudFirma();
@@ -132,7 +132,7 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
         User currentUser = authorizationService.getCurrentUser();
 
         Anexo5AptitudFirma firma = aptitudFirmaRepository.findByIdAndAnexo5Id(firmaId, anexo5Id)
-                .orElseThrow(() -> new RuntimeException("Firma no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Firma no encontrada"));
 
         boolean esPropiaFirma = firma.getFirmante().getId().equals(currentUser.getId());
         boolean esCreadorOperacion = anexo5.getOperation().getCreador().getId().equals(currentUser.getId());
