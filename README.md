@@ -105,10 +105,8 @@ VISUAL<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
--Siempre en mayusculas en nº de serie<br>
 
 -HORAS DE VUELO, MANTENIMIENTO
--Cuando se registra fabrcante, modelo y nº de serie, que sean datos propios de la tabla y no sean alterables<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
