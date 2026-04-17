@@ -110,6 +110,9 @@ VISUAL<br>
 -Añadir fuente de potencia (Híbirido/VTOL, no híbrido)<br>
 -Si selecciona no electrica tiene que salir tipo de fuente: hidrogeno, gasolina, otros.<br>
 
+-HORAS DE VUELO, MANTENIMIENTO
+-Cuando se registra fabrcante, modelo y nº de serie, que sean datos propios de la tabla y no sean alterables<br>
+
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
 -Crear TABLA OTROS
