@@ -351,7 +351,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       <div className="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
         <div>
           <h2 className="mb-2">{getAnexoLabel(tipoAnexo)}</h2>
-          <p className="text-muted mb-2">{operation.nombreOperacion}</p>
+          <p className="text-muted mb-2">{operation.codigo}</p>
           <div className="d-flex gap-2 flex-wrap">
             <Badge
               label={operation.estadoOperacion}
@@ -498,7 +498,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo5Data | null}
-                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -515,7 +514,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
-                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -532,7 +530,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
-                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -549,7 +546,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo8Data | null}
-                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion

@@ -133,7 +133,6 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         <MenuItem onClick={() => { navigate("/operations"); setToggled(false); }}>Listar operaciones (admin)</MenuItem>
                     )}
                     <MenuItem onClick={() => { navigate("/operations/details/mine"); setToggled(false); }}>Mis operaciones</MenuItem>
-                    <MenuItem onClick={() => { navigate("/register-operation"); setToggled(false); }}>Registrar operacion</MenuItem>
                 </SubMenu>
                 
                 {/* 5. Docs Section */}

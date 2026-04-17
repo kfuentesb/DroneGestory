@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class OperationDetailDTO {
     private Long idOperacion;
-    private String nombreOperacion;
+    private String codigo;
     private String nombreCreador;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
@@ -24,7 +24,7 @@ public class OperationDetailDTO {
 
     public OperationDetailDTO(Operation op) {
         this.idOperacion = op.getIdOperacion();
-        this.nombreOperacion = op.getNombreOperacion();
+        this.codigo = op.getCodigo();
         this.nombreCreador = op.getCreador().getFirstName() + " " + op.getCreador().getLastName();
         this.fechaCreacion = op.getFechaCreacion();
         this.fechaActualizacion = op.getFechaActualizacion();

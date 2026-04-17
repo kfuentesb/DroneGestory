@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class OperationListDTO {
     private Long idOperacion;
-    private String nombreOperacion;
+    private String codigo;
     private String nombreCreador;
     private LocalDateTime fechaCreacion;
     private OperationStatus estado;
@@ -33,7 +33,7 @@ public class OperationListDTO {
 
     public OperationListDTO(Operation op) {
         this.idOperacion = op.getIdOperacion();
-        this.nombreOperacion = op.getNombreOperacion();
+        this.codigo = op.getCodigo();
         this.nombreCreador = op.getCreador().getFirstName() + " " + op.getCreador().getLastName();
         this.fechaCreacion = op.getFechaCreacion();
         this.estado = op.getEstado();
