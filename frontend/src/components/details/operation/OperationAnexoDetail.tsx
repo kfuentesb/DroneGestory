@@ -498,7 +498,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo5Data | null}
-                  operation={operation}
+                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -515,6 +515,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
+                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -531,6 +532,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
+                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -547,6 +549,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo8Data | null}
+                  sharedConops={operation.conops}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion

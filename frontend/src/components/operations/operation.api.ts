@@ -2,11 +2,15 @@ import { apiFetch } from "../../api";
 import type { AnexoStatus, OperationDetailDTO, OperationListDTO } from "./operation.types";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
-export type Anexo4Data = Record<string, any>;
 type AnexoBaseData = {
   id?: number;
   numeroVersion?: number;
   estado?: AnexoStatus | null;
+};
+
+export type Anexo4Data = AnexoBaseData & {
+  conops?: string;
+  [key: string]: any;
 };
 
 export type Anexo5Data = AnexoBaseData & {

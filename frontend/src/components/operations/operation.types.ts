@@ -6,6 +6,7 @@ export type AnexoStatus = "BORRADOR" | "FIRMADO" | null;
 export type OperationListDTO = {
   idOperacion: number;
   nombreOperacion: string;
+  conops: string;
   nombreCreador: string;
   fechaCreacion: string;
   estado: OperationStatus;
@@ -49,6 +50,7 @@ export type OperationAnexoDetailDTO = {
 export type OperationDetailDTO = {
   idOperacion: number;
   nombreOperacion: string;
+  conops: string;
   nombreCreador: string;
   fechaCreacion: string;
   fechaActualizacion: string | null;

@@ -5,7 +5,6 @@ import { createOperation } from "../../operations/operation.api";
 
 const createOperationFields: FieldConfig[] = [
   { name: "nombreOperacion", label: "Nombre de la operación", type: "text", required: true },
-  { name: "conops", label: "CONOPS", type: "text", required: true },
 ];
 
 export default function MultiStepsForm() {

@@ -23,6 +23,12 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
     @Transactional
     public Anexo4 registrarAnexo4(Long operationId, Anexo4 datosNuevos) {
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        if (datosNuevos.getOperation() != null) {
+            operation.setConops(datosNuevos.getOperation().getConops());
+            operationRepository.save(operation);
+        }
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
@@ -154,9 +160,17 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
     public Anexo4 createWithFile(
             Long operationId,
             Anexo4 anexo4,
+            String conops,
             MultipartFile imagenEspacioAereoFile,
             MultipartFile imagenZonaVueloFile
     ) throws IOException {
+        if (conops != null) {
+            Operation operation = operationRepository.findById(operationId)
+                    .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+            operation.setConops(conops);
+            operationRepository.save(operation);
+        }
+
         // Validate and reject disallowed file types
         validateImageFile(imagenEspacioAereoFile);
         validateImageFile(imagenZonaVueloFile);
