@@ -5,72 +5,125 @@ import { apiFetch } from "../../api";
 import LoadingSpinner from "../commons/Loading";
 import Pagination from "../commons/props/Pagination";
 import SearchBar from "../commons/props/SearchBar";
-import ButtonProp from "../commons/props/ButtonProp";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import { ReusableTable, type  TableHeader } from "../commons/props/ReusableTable";
 
-type Maintenance = {
+type MaintenanceSummary = {
+    aircraftId: number;
+    manufacturer?: string | null;
+    model?: string | null;
+    serialNumber?: string | null;
+    maintenanceCount: number;
+    lastMaintenanceDate?: string | null;
+};
+
+type AircraftItem = {
     id: number;
-    aircraftType: string;
-    aicraftModel: string;
-    aicraftSerialNumber: string;
-    aircraftManufacturedYear: string | Date;
-}
+    manufacturer?: string | null;
+    model?: string | null;
+    serialNumber?: string | null;
+};
+
+type MaintenanceRecord = {
+    aircraftId: number;
+    maintenanceDate?: string | null;
+};
 
 export default function MaintenanceList() {
     const navigate = useNavigate();
-    const [maintenance, setMaintenance] = useState<any[]>([]);
+    const [maintenanceSummaries, setMaintenanceSummaries] = useState<MaintenanceSummary[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
     useEffect(() => {
-        const fetchMaintenance = async () => {
+        const fetchData = async () => {
             try {
-                const data = await apiFetch("/maintenance");
+                const [aircraftResponse, maintenanceResponse] = await Promise.all([
+                    apiFetch("/api/aircraft"),
+                    apiFetch("/api/maintenance"),
+                ]);
 
-                if (data && Array.isArray(data)) {
-                    setMaintenance(data);
-                } else {
-                    setMaintenance([]);
+                if (!aircraftResponse || !maintenanceResponse) {
+                    throw new Error("No se pudieron cargar los datos de mantenimiento.");
                 }
+
+                const [aircraftData, maintenanceData] = await Promise.all([
+                    aircraftResponse.json(),
+                    maintenanceResponse.json(),
+                ]);
+
+                const aircraftItems: AircraftItem[] = Array.isArray(aircraftData) ? aircraftData : [];
+                const maintenanceItems: MaintenanceRecord[] = Array.isArray(maintenanceData) ? maintenanceData : [];
+
+                const maintenanceMap = new Map<number, { count: number; lastMaintenanceDate?: string | null }>();
+
+                maintenanceItems.forEach((item) => {
+                    const aircraftId = Number(item.aircraftId);
+                    if (!aircraftId) {
+                        return;
+                    }
+
+                    const maintenanceDate = item.maintenanceDate ? String(item.maintenanceDate) : null;
+                    const existing = maintenanceMap.get(aircraftId);
+
+                    if (!existing) {
+                        maintenanceMap.set(aircraftId, {
+                            count: 1,
+                            lastMaintenanceDate: maintenanceDate,
+                        });
+                    } else {
+                        existing.count += 1;
+                        if (maintenanceDate) {
+                            if (!existing.lastMaintenanceDate || new Date(maintenanceDate) > new Date(existing.lastMaintenanceDate)) {
+                                existing.lastMaintenanceDate = maintenanceDate;
+                            }
+                        }
+                    }
+                });
+
+                const summaries = aircraftItems.map((aircraft) => {
+                    const aircraftId = Number(aircraft.id);
+                    const maintenanceData = maintenanceMap.get(aircraftId);
+
+                    return {
+                        aircraftId,
+                        manufacturer: aircraft.manufacturer,
+                        model: aircraft.model,
+                        serialNumber: aircraft.serialNumber,
+                        maintenanceCount: maintenanceData?.count ?? 0,
+                        lastMaintenanceDate: maintenanceData?.lastMaintenanceDate ?? null,
+                    };
+                });
+
+                summaries.sort((a, b) => {
+                    const dateA = a.lastMaintenanceDate ? new Date(a.lastMaintenanceDate).getTime() : 0;
+                    const dateB = b.lastMaintenanceDate ? new Date(b.lastMaintenanceDate).getTime() : 0;
+                    return dateB - dateA;
+                });
+
+                setMaintenanceSummaries(summaries);
             } catch (error) {
                 console.error("Error cargando mantenimiento", error);
-                
-                // MOCK DATA: Representando la estructura de TrackingFlightTime
-                setMaintenance([
-                    {
-                        id: 1,
-                        aircraftType: "Multirotor",
-                        aicraftModel: "Model X",
-                        aicraftSerialNumber: "SN-001",
-                        aircraftManufacturedYear: "2020",
-                    },
-                    {
-                        id: 2,
-                        aircraftType: "Fixed-wing",
-                        aicraftModel: "Model Y",
-                        aicraftSerialNumber: "SN-002",
-                        aircraftManufacturedYear: "2019",
-                    }
-                ]);
+                setMaintenanceSummaries([]);
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchMaintenance();
+        fetchData();
     }, []);
 
     if (isLoading) {
         return <LoadingSpinner message="Cargando mantenimiento..." />;
     }
 
-    const filteredMaintenance = useSearchFilter(maintenance, search, (maintenance) => [
-        maintenance.aircraftType ?? "",
-        maintenance.aicraftModel ?? "",
-        maintenance.aicraftSerialNumber ?? "",
-        maintenance.aircraftManufacturedYear?.toString() ?? "",
+    const filteredMaintenance = useSearchFilter(maintenanceSummaries, search, (summary) => [
+        summary.manufacturer ?? "",
+        summary.model ?? "",
+        summary.serialNumber ?? "",
+        summary.maintenanceCount.toString(),
+        summary.lastMaintenanceDate ? new Date(summary.lastMaintenanceDate).toLocaleDateString() : "",
     ]);
 
     const paginatedMaintenance = filteredMaintenance.slice(
@@ -79,10 +132,11 @@ export default function MaintenanceList() {
     );
 
     const headers: TableHeader[] = [
-        { label: "Tipo de aeronave", key: "aircraftType", sortable: true },
-        { label: "Modelo", key: "aicraftModel", sortable: true },
-        { label: "Número de serie", key: "aicraftSerialNumber", sortable: true },
-        { label: "Año de fabricación", key: "aircraftManufacturedYear", sortable: true },
+        { label: "Fabricante", key: "manufacturer", sortable: true },
+        { label: "Modelo", key: "model", sortable: true },
+        { label: "Nº serie", key: "serialNumber", sortable: true },
+        { label: "Mantenimientos", key: "maintenanceCount", sortable: true },
+        { label: "Último mantenimiento", key: "lastMaintenanceDate", sortable: true },
     ];
 
     return (
@@ -96,22 +150,22 @@ export default function MaintenanceList() {
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        <ButtonProp onClick={() => navigate("/register-maintenance")}>+ Añadir mantenimiento</ButtonProp>
                     </div>
 
                     <ReusableTable
                         headers={headers}
                         rows={paginatedMaintenance}
-                        renderRow={(row: Maintenance) => (
+                        renderRow={(row: MaintenanceSummary) => (
                             <>
-                                <td>{row.aircraftType || "N/A"}</td>
-                                <td>{row.aicraftModel}</td>
-                                <td >{row.aicraftSerialNumber || "N/A"}</td>
-                                <td>{new Date(row.aircraftManufacturedYear).toLocaleDateString()}</td>
+                                <td>{row.manufacturer || "N/A"}</td>
+                                <td>{row.model || "N/A"}</td>
+                                <td>{row.serialNumber || "N/A"}</td>
+                                <td>{row.maintenanceCount}</td>
+                                <td>{row.lastMaintenanceDate ? new Date(row.lastMaintenanceDate).toLocaleDateString() : "N/A"}</td>
                             </>
                         )}
-                        // onRowClick={(row) => navigate(`/flight-times/${row.id}`)}
-                        emptyText="No hay registros de mantenimiento para esta aeronave."
+                        onRowClick={(row: MaintenanceSummary) => navigate(`/maintenance/aircraft/${row.aircraftId}`)}
+                        emptyText="No hay aeronaves registradas."
                     />
 
                     <Pagination
