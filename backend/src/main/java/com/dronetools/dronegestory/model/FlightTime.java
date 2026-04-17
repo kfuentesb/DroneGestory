@@ -23,6 +23,15 @@ public class FlightTime {
     @JoinColumn(name = "aircraft_id", nullable = false)
     private Aircraft aircraft;
 
+    @Column(name = "aircraft_manufacturer")
+    private String aircraftManufacturer;
+
+    @Column(name = "aircraft_model")
+    private String aircraftModel;
+
+    @Column(name = "aircraft_serial_number")
+    private String aircraftSerialNumber;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "operation_id", nullable = true)
     private Operation operation;

@@ -23,7 +23,6 @@ export default function FormFlightTime() {
     const [isIndefinite, setIsIndefinite] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,7 +47,6 @@ export default function FormFlightTime() {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError(null);
-        setSuccess(null);
 
         if (!aircraftId) {
             setError("Aeronave no seleccionada.");
@@ -123,7 +121,6 @@ export default function FormFlightTime() {
                 });
             }
 
-            setSuccess("Horas registradas correctamente.");
             navigate(`/flight-times/${aircraftId}`);
         } catch (err: any) {
             console.error(err);

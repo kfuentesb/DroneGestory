@@ -114,6 +114,9 @@ public class FlightTimeService {
         }
 
         flightTime.setAircraft(aircraft);
+        flightTime.setAircraftManufacturer(aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getManufacturer());
+        flightTime.setAircraftModel(aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel());
+        flightTime.setAircraftSerialNumber(aircraft.getSerialNumber());
         flightTime.setOperation(operation);
         flightTime.setFlightDate(Date.valueOf(request.flightDate()));
         flightTime.setDurationMinutes(request.durationMinutes());
@@ -142,9 +145,9 @@ public class FlightTimeService {
         return new FlightTimeDTO(
                 flightTime.getFlightTimeId(),
                 flightTime.getAircraft().getAircraftId(),
-                flightTime.getAircraft().getAircraftModel() == null ? null : flightTime.getAircraft().getAircraftModel().getManufacturer(),
-                flightTime.getAircraft().getAircraftModel() == null ? null : flightTime.getAircraft().getAircraftModel().getModel(),
-                flightTime.getAircraft().getSerialNumber(),
+                flightTime.getAircraftManufacturer(),
+                flightTime.getAircraftModel(),
+                flightTime.getAircraftSerialNumber(),
                 flightTime.getOperation() == null ? null : flightTime.getOperation().getIdOperacion(),
                 flightTime.getOperation() == null ? null : flightTime.getOperation().getNombreOperacion(),
                 flightTime.getFlightDate() == null ? null : flightTime.getFlightDate().toLocalDate(),
