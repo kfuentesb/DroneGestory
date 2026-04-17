@@ -33,24 +33,25 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     public ResponseEntity<Anexo4ResponseDTO> createAnexo4WithImagen(
             @PathVariable Long operationId,
             @ModelAttribute Anexo4 anexo4,
+            @RequestParam(value = "conops", required = false) String conops,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
             @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile
     ) throws IOException {
-        Anexo4 saved = service.createWithFile(operationId, anexo4, imagenEspacioAereoFile, imagenZonaVueloFile);
-        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(saved));
+        Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
+        return ResponseEntity.ok(toResponse(saved, operationId));
     }
 
     @PutMapping("/{idAnexo}/firmar/datos")
-    public Anexo4ResponseDTO firmarConDatos(@PathVariable Long idAnexo, Principal principal) {
+    public Anexo4ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
         Anexo4 anexo = service.firmarAnexo(idAnexo, username);
-        return Anexo4ResponseDTO.fromEntity(anexo);
+        return toResponse(anexo, operationId);
     }
 
     @PostMapping("/{idAnexo}/rehacer/datos")
-    public Anexo4ResponseDTO rehacerConDatos(@PathVariable Long idAnexo) {
+    public Anexo4ResponseDTO rehacerConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo) {
         Anexo4 anexoRehecho = service.rehacerAnexo4(idAnexo);
-        return Anexo4ResponseDTO.fromEntity(anexoRehecho);
+        return toResponse(anexoRehecho, operationId);
     }
 
     @GetMapping("/datos")
@@ -61,7 +62,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         if (anexo4 == null) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
+        return ResponseEntity.ok(toResponse(anexo4, operationId));
     }
 
     @GetMapping("/{idAnexo}/datos")
@@ -79,7 +80,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
         }
 
-        return ResponseEntity.ok(Anexo4ResponseDTO.fromEntity(anexo4));
+        return ResponseEntity.ok(toResponse(anexo4, operationId));
     }
 
     @Override
@@ -154,6 +155,12 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         anexo.setOtrasLimitaciones(dto.getOtrasLimitaciones());
 
         return anexo;
+    }
+
+    private Anexo4ResponseDTO toResponse(Anexo4 anexo, Long operationId) {
+        Anexo4ResponseDTO dto = Anexo4ResponseDTO.fromEntity(anexo);
+        operationRepository.findById(operationId).ifPresent(operation -> dto.setConops(operation.getConops()));
+        return dto;
     }
 
 }

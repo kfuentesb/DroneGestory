@@ -3,15 +3,18 @@ package com.dronetools.dronegestory.service;
 import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
 import com.dronetools.dronegestory.dto.operation.OperationListDTO;
 import com.dronetools.dronegestory.model.Operation;
-import com.dronetools.dronegestory.model.anexos.Anexo4;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -33,9 +36,33 @@ public class OperationService {
         return operationRepository.findByCreadorId(userId);
     }
 
-    @Transactional
-    public OperationDetailDTO saveOperationDto(Operation op) {
-        Operation saved = operationRepository.save(op);
+    @Transactional(readOnly = true)
+    public String previewNextCodigo() {
+        int anioActual = LocalDate.now().getYear();
+        Integer ultimoCorrelativo = operationRepository.findMaxCorrelativoByAnio(anioActual);
+        int siguienteCorrelativo = (ultimoCorrelativo == null ? 0 : ultimoCorrelativo) + 1;
+        return formatearCodigo(anioActual, siguienteCorrelativo);
+    }
+
+    /**
+     * Crea una operacion con codigo O-YYYY-NNN generado en backend.
+     * Isolation.SERIALIZABLE protege el correlativo anual ante concurrencia.
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public OperationDetailDTO createOperationDto(User creador, String conops) {
+        int anioActual = LocalDate.now().getYear();
+        List<Integer> correlativos = operationRepository.findTopCorrelativoByAnioForUpdate(anioActual, PageRequest.of(0, 1));
+        int ultimoCorrelativo = correlativos.isEmpty() ? 0 : correlativos.getFirst();
+        int siguienteCorrelativo = ultimoCorrelativo + 1;
+
+        Operation operation = new Operation();
+        operation.setCreador(creador);
+        operation.setAnioCorrelativo(anioActual);
+        operation.setCorrelativoAnual(siguienteCorrelativo);
+        operation.setCodigo(formatearCodigo(anioActual, siguienteCorrelativo));
+        operation.setConops(conops);
+
+        Operation saved = operationRepository.save(operation);
         return new OperationDetailDTO(saved);
     }
 
@@ -43,7 +70,7 @@ public class OperationService {
     public OperationDetailDTO updateOperationDto(Long operationId, Operation opActualizada) {
         Operation op = findById(operationId);
         validarOperacionEditable(op);
-        op.setNombreOperacion(opActualizada.getNombreOperacion());
+        op.setCodigo(opActualizada.getCodigo());
 
         if (opActualizada.getConops() != null) {
             op.setConops(opActualizada.getConops());
@@ -65,10 +92,10 @@ public class OperationService {
 //    }
 
     @Transactional
-    public Operation updateOperationBasicData(Long operationId, String nuevoNombre) {
+    public Operation updateOperationBasicData(Long operationId, String nuevoCodigo) {
         Operation op = findById(operationId);
         validarOperacionEditable(op);
-        op.setNombreOperacion(nuevoNombre);
+        op.setCodigo(nuevoCodigo);
         return operationRepository.save(op);
     }
 
@@ -169,6 +196,10 @@ public class OperationService {
         op.setConops(conops);
         Operation saved = operationRepository.save(op);
         return new OperationDetailDTO(saved);
+    }
+
+    private String formatearCodigo(int anio, int correlativo) {
+        return "O-" + anio + "-" + String.format("%03d", correlativo);
     }
 
 }

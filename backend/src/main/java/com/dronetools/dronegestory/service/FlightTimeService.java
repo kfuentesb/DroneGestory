@@ -149,7 +149,7 @@ public class FlightTimeService {
                 flightTime.getAircraftModel(),
                 flightTime.getAircraftSerialNumber(),
                 flightTime.getOperation() == null ? null : flightTime.getOperation().getIdOperacion(),
-                flightTime.getOperation() == null ? null : flightTime.getOperation().getNombreOperacion(),
+                flightTime.getOperation() == null ? null : flightTime.getOperation().getCodigo(),
                 flightTime.getFlightDate() == null ? null : flightTime.getFlightDate().toLocalDate(),
                 flightTime.getDurationMinutes(),
                 minutesToHours(flightTime.getDurationMinutes()),

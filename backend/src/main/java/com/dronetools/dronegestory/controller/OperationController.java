@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.dto.operation.OperationCodePreviewDTO;
 import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
 import com.dronetools.dronegestory.dto.operation.OperationListDTO;
 import com.dronetools.dronegestory.model.Operation;
@@ -37,12 +38,20 @@ public class OperationController {
         return operationService.getMyOperationListDTOs(user.getId());
     }
 
+    // Endpoint para mostrar en frontend el codigo real sugerido por backend.
+    @GetMapping("/next-codigo")
+    public OperationCodePreviewDTO getNextCodigo() {
+        return new OperationCodePreviewDTO(operationService.previewNextCodigo());
+    }
+
     @PostMapping
-    public OperationDetailDTO create(@ModelAttribute Operation op, Principal principal) {
+    public OperationDetailDTO create(
+            @RequestParam(value = "conops", required = false, defaultValue = "") String conops,
+            Principal principal
+    ) {
         User user = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        op.setCreador(user);
-        return operationService.saveOperationDto(op); // Nuevo método
+        return operationService.createOperationDto(user, conops);
     }
 
     @PutMapping("/{operationId}")

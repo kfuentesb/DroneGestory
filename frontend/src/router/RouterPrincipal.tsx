@@ -15,7 +15,6 @@ import ProfileDetail from "../components/details/user&profile/ProfileDetail";
 import AircraftDetail from "../components/details/aircraft/AircraftDetail";
 import AircraftModelDetail from "../components/details/aircraft/AircraftModelDetail";
 import OperationList from "../components/lists/OperationList";
-import MultiStepsForm from "../components/commons/MultiStepForm/MultiStepsForm";
 import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/operation/OperationDetail";
 import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
@@ -151,7 +150,6 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/operations/:id/anexo7/version/:versionId" element={<OperationAnexoDetail tipoAnexo={7} />} />
         <Route path="/operations/:id/anexo8" element={<OperationAnexoDetail tipoAnexo={8} />} />
         <Route path="/operations/:id/anexo8/version/:versionId" element={<OperationAnexoDetail tipoAnexo={8} />} />
-        <Route path="/register-operation" element={<MultiStepsForm />} />
 
         <Route 
           path="/docs" 

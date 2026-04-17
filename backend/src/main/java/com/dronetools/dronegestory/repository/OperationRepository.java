@@ -1,7 +1,10 @@
 package com.dronetools.dronegestory.repository;
 
 import com.dronetools.dronegestory.model.Operation;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,6 +16,22 @@ import java.util.Optional;
 public interface OperationRepository extends JpaRepository<Operation, Long> {
     // @Query("SELECT o FROM Operation o JOIN FETCH o.creador WHERE o.creador.id = :userId")
     List<Operation> findByCreadorId(Integer userId);
+
+    @Query("""
+        SELECT MAX(o.correlativoAnual)
+        FROM Operation o
+        WHERE o.anioCorrelativo = :anio
+    """)
+    Integer findMaxCorrelativoByAnio(@Param("anio") int anio);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT o.correlativoAnual
+        FROM Operation o
+        WHERE o.anioCorrelativo = :anio
+        ORDER BY o.correlativoAnual DESC
+    """)
+    List<Integer> findTopCorrelativoByAnioForUpdate(@Param("anio") int anio, Pageable pageable);
 
     @Query("""
         SELECT o

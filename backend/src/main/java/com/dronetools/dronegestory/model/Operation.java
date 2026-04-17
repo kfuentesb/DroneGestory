@@ -16,7 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "operation")
+@Table(
+        name = "operation",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_operation_codigo", columnNames = "codigo"),
+                @UniqueConstraint(name = "uk_operation_anio_correlativo", columnNames = {"anio_correlativo", "correlativo_anual"})
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,8 +33,17 @@ public class Operation {
     @Column(name="id_operacion")
     private Long idOperacion;
 
-    @Column(name = "nombre_operacion", nullable = false, length = 255)
-    private String nombreOperacion;
+    // Código funcional visible de la operación, p.ej. O-2026-001
+    @Column(name = "codigo", nullable = false, length = 20, unique = true)
+    private String codigo;
+
+    // Año usado para reiniciar el correlativo anual.
+    @Column(name = "anio_correlativo", nullable = false)
+    private Integer anioCorrelativo;
+
+    // Correlativo dentro del año.
+    @Column(name = "correlativo_anual", nullable = false)
+    private Integer correlativoAnual;
 
     @Column(name = "conops")
     private String conops;

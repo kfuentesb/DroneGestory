@@ -7,13 +7,13 @@ import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 type FormOperationAnexo5DetailProps = {
   operationId: number;
   initialValues?: Anexo5Data | null;
+  sharedConops?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo5Data | null) => void | Promise<void>;
 };
 
 const FORM_FIELDS = [
-  "nombreConops",
   "fechaOp",
   "vlos",
   "ubicacionObservadores",
@@ -145,6 +145,7 @@ const SECCIONES_CONFIG: {
 export default function FormOperationAnexo5Detail({
   operationId,
   initialValues,
+  sharedConops,
   disabled,
   readOnlyMessage,
   onSaved,
@@ -206,13 +207,42 @@ export default function FormOperationAnexo5Detail({
       <div className="row">
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
-          <input
+          <div style={{ position: "relative" }}>
+          <input /** PARA VISUALIZAR QUE NO SE PUEDE EDITAR */
             type="text"
-            className="form-control bg-white border"
-            value={formValues.nombreConops}
-            onChange={(e) => handleChange("nombreConops", e.target.value)}
-            disabled={disabled || saving}
+            className="form-control"
+            value={sharedConops ?? initialValues?.nombreConops ?? ""}
+            disabled
+            readOnly
+            style={{
+              background: "#f5f6fa",           // Gris muy claro
+              color: "#888",                   // Texto gris
+              fontStyle: "italic",             // Opcional: cursiva para más claridad
+              border: "1px solid #e0e0e0",     // Borde suavizado
+              boxShadow: "none",               // Sin shadow
+              paddingRight: "2.2em",           // Espacio para el candado
+            }}
           />
+          <span
+            style={{
+              position: "absolute",
+              top: "50%",
+              right: "14px",
+              transform: "translateY(-50%)",
+              color: "#bcbcbc",
+              pointerEvents: "none",
+              display: "flex",
+              alignItems: "center"
+            }}
+            title="Campo solo lectura"
+            aria-label="Campo solo lectura"
+          >
+            {/* Ícono candado en SVG, 18x18 */}
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 1.5A3.5 3.5 0 0 0 4.5 5v3H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2h-.5V5A3.5 3.5 0 0 0 8 1.5Zm-2 3.5A2 2 0 0 1 8 3a2 2 0 0 1 2 2v3H6V5Zm-2 5h8a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1Z"/>
+            </svg>
+          </span>
+        </div>
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>
