@@ -152,10 +152,24 @@ export async function fetchOperationDetail(id: string | number) {
   return (await response.json()) as OperationDetailDTO;
 }
 
-export async function createOperation(nombreOperacion: string, conops: string) {
+export async function fetchNextOperationCodigo() {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/next-codigo`, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  const payload = (await response.json()) as { codigo: string };
+  return payload.codigo;
+}
+
+export async function createOperation(conops = "") {
   const formData = new FormData();
-  formData.append("nombreOperacion", nombreOperacion);
-  formData.append("conops", conops);
+  if (conops.trim()) {
+    formData.append("conops", conops.trim());
+  }
 
   const response = await apiFetch(`${API_BASE_URL}/api/operations`, {
     method: "POST",

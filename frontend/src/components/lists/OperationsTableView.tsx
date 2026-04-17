@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../commons/hooks/useAuth";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
+import ConfirmModal from "../commons/ConfirmModal";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import DeleteIcon from "../../assets/commons/delete_white.svg";
-import { fetchOperations } from "../operations/operation.api";
+import { createOperation, fetchNextOperationCodigo, fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
 import { deleteOperation } from "../operations/operation.api";
@@ -64,10 +65,13 @@ export default function OperationsTableView({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCreateConfirm, setShowCreateConfirm] = useState(false);
+  const [nextCodigo, setNextCodigo] = useState<string | null>(null);
+  const [creatingOperation, setCreatingOperation] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   const filteredOperations = useSearchFilter(operations, search, (op) => [
-    op.nombreOperacion,
+    op.codigo,
     op.nombreCreador,
     op.todosFirmadosPendiente ? "CIERRE PENDIENTE" : op.estado,
     op.anexo4Version,
@@ -77,21 +81,22 @@ export default function OperationsTableView({
     op.anexo8Version,
   ]);
 
+  const loadOperations = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await fetchOperations(endpoint);
+      setOperations(data);
+    } catch (err) {
+      console.error("Error cargando operaciones:", err);
+      setError("No se pudieron cargar las operaciones.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadOperations = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await fetchOperations(endpoint);
-        setOperations(data);
-      } catch (err) {
-        console.error("Error cargando operaciones:", err);
-        setError("No se pudieron cargar las operaciones.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadOperations();
+    void loadOperations();
   }, [endpoint]);
 
   // Resetear página al buscar o cambiar datos
@@ -122,9 +127,44 @@ export default function OperationsTableView({
   }
 };
 
+  const handleOpenCreateModal = async () => {
+    try {
+      const codigo = await fetchNextOperationCodigo();
+      if (!codigo) {
+        alert("No se pudo obtener el código de operación.");
+        return;
+      }
+      setNextCodigo(codigo);
+      setShowCreateConfirm(true);
+    } catch (err) {
+      console.error("Error obteniendo código de operación:", err);
+      alert("No se pudo obtener el código de operación.");
+    }
+  };
+
+  const handleConfirmCreate = async () => {
+    try {
+      setCreatingOperation(true);
+      const created = await createOperation();
+      if (!created) {
+        alert("No se pudo crear la operación.");
+        return;
+      }
+
+      await loadOperations();
+      setShowCreateConfirm(false);
+      setNextCodigo(null);
+    } catch (err) {
+      console.error("Error creando operación:", err);
+      alert("No se pudo crear la operación.");
+    } finally {
+      setCreatingOperation(false);
+    }
+  };
+
   // Encabezados, añade la columna del botón borrar solo si eres admin
   const opHeaders: TableHeader[] = [
-    { label: "Nombre", key: "nombreOperacion", sortable: true },
+    { label: "Código", key: "codigo", sortable: true },
     { label: "Creador", key: "nombreCreador", sortable: true },
     { label: "Creación", key: "fechaCreacion", sortable: true },
     { label: "Anexo 4", key: "anexo4Version", sortable: false },
@@ -161,10 +201,10 @@ export default function OperationsTableView({
           <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
             <SearchBar
               value={search}
-              placeholder="Buscar por nombre, creador o estado..."
+              placeholder="Buscar por código, creador o estado..."
               onChange={setSearch}
             />
-            <ButtonProp onClick={() => navigate("/register-operation")}>
+            <ButtonProp onClick={() => void handleOpenCreateModal()}>
               <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
             </ButtonProp>
           </div>
@@ -173,7 +213,7 @@ export default function OperationsTableView({
             rows={paginatedOperations}
             renderRow={(operation) => (
               <>
-                <td>{operation.nombreOperacion}</td>
+                <td>{operation.codigo}</td>
                 <td>{operation.nombreCreador}</td>
                 <td>{formatDateTime(operation.fechaCreacion)}</td>
                 <td className="text-center"><AnexoBadge version={operation.anexo4Version} color={operation.anexo4Color} /></td>
@@ -228,6 +268,19 @@ export default function OperationsTableView({
           />
         </div>
       </div>
+      <ConfirmModal
+        show={showCreateConfirm}
+        title="Crear operación"
+        message={`Se va a crear una operación con el código asignado: ${nextCodigo ?? "-"}. ¿Está seguro?`}
+        onConfirm={() => void handleConfirmCreate()}
+        onCancel={() => {
+          if (!creatingOperation) {
+            setShowCreateConfirm(false);
+            setNextCodigo(null);
+          }
+        }}
+        variant="primary"
+      />
     </div>
   );
 }

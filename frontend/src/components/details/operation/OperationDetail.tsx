@@ -131,7 +131,7 @@ export default function OperationDetail() {
           <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(`/operations/details/mine`)}>
             Volver
           </button>
-          <h2 className="mb-2">{operation.nombreOperacion}</h2>
+          <h2 className="mb-2">{operation.codigo}</h2>
           <div className="d-flex gap-2 flex-wrap">
             <Badge
                 label={
