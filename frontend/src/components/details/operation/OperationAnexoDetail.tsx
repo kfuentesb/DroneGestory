@@ -521,7 +521,13 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             <select
               className="form-select"
               value={selectedAircraftId ?? ""}
-              onChange={(e) => setSelectedAircraftId(e.target.value ? Number(e.target.value) : null)}
+              onChange={(e) => {
+                if (e.target.value === "") {
+                  setSelectedAircraftId(null);
+                  return;
+                }
+                setSelectedAircraftId(Number(e.target.value));
+              }}
               disabled={isViewingHistoricalVersion}
             >
               {anexoAircraftOptions.length === 0 && (

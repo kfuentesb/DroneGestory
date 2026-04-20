@@ -242,8 +242,13 @@ export default function FormOperationAnexo7Detail({
             type="number"
             min={0}
             className="form-control bg-white border"
-            value={formValues.tiempoVueloMinutos}
-            onChange={(e) => handleChange("tiempoVueloMinutos", e.target.value)}
+            value={formValues.tiempoVueloMinutos ?? ""}
+            onChange={(e) =>
+              handleChange(
+                "tiempoVueloMinutos",
+                e.target.value === "" ? null : Number(e.target.value),
+              )
+            }
             disabled={disabled || saving}
           />
         </div>
