@@ -47,6 +47,13 @@ export function normalizeFormValues<K extends string>(
   return normalized;
 }
 
+export function createDefaultFormValues<K extends string>(fields: readonly K[]): Record<K, string> {
+  return fields.reduce((acc, key) => {
+    acc[key] = "";
+    return acc;
+  }, {} as Record<K, string>);
+}
+
 type UseAnexoFormOptions<K extends string> = {
   /** List of form field keys */
   fields: readonly K[];
