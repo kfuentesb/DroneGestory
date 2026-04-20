@@ -7,18 +7,17 @@ type FormOperationAnexo7DetailProps = {
   operationId: number;
   initialValues?: Anexo7Data | null;
   sharedConops?: string;
+  selectedAircraftSerial?: string;
+  aircraftOptions?: Array<{ id: number; serialNumber: string; label: string }>;
+  onAircraftChange?: (serial: string) => void;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo7Data | null) => void | Promise<void>;
-  aircraftSerial?: string;
-  aircraftOptions?: string[];
-  onAircraftSerialChange?: (serial: string) => void;
 };
 
 const FORM_FIELDS = [
   "fechaOp",
-  "tiempoDeVuelo",
-  "ciclosDeAterrizaje",
+  "minutosVuelo",
   "estructuraCorrecto",
   "estructuraObservaciones",
   "bateriasCorrecto",
@@ -100,12 +99,12 @@ export default function FormOperationAnexo7Detail({
   operationId,
   initialValues,
   sharedConops,
+  selectedAircraftSerial,
+  aircraftOptions = [],
+  onAircraftChange,
   disabled,
   readOnlyMessage,
   onSaved,
-  aircraftSerial,
-  aircraftOptions = [],
-  onAircraftSerialChange,
 }: FormOperationAnexo7DetailProps) {
   const { formValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
@@ -116,29 +115,19 @@ export default function FormOperationAnexo7Detail({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
-    if (!aircraftSerial) {
-      alert("Debes seleccionar una aeronave para gestionar el Anexo 7.");
-      return;
-    }
-    if (!/^\d+$/.test(String(formValues.tiempoDeVuelo ?? ""))) {
-      alert("El campo tiempo de vuelo es obligatorio y debe ser un número entero.");
-      return;
-    }
-    if (!/^\d+$/.test(String(formValues.ciclosDeAterrizaje ?? ""))) {
-      alert("El campo ciclos de aterrizaje es obligatorio y debe ser un número entero.");
-      return;
-    }
 
     setSaving(true);
     try {
       const formData = new FormData();
-      formData.append("serialAeronave", aircraftSerial);
       FORM_FIELDS.forEach((key) => {
         const value = formValues[key];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, value);
         }
       });
+      if (selectedAircraftSerial) {
+        formData.append("serialAeronave", selectedAircraftSerial);
+      }
 
       const savedData = await saveAnexo7Data(operationId, formData);
       alert("Anexo 7 guardado correctamente");
@@ -200,23 +189,6 @@ export default function FormOperationAnexo7Detail({
     >
       <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
       <div className="row">
-        <div className="col-md-12 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Aeronave (serial)</label>
-          <select
-            className="form-select"
-            value={aircraftSerial ?? ""}
-            onChange={(e) => onAircraftSerialChange?.(e.target.value)}
-            disabled={disabled || saving}
-            required
-          >
-            <option value="">Seleccionar aeronave</option>
-            {aircraftOptions.map((serial) => (
-              <option key={serial} value={serial}>
-                {serial}
-              </option>
-            ))}
-          </select>
-        </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
           <div style={{ position: "relative" }}>
@@ -257,6 +229,21 @@ export default function FormOperationAnexo7Detail({
         </div>
         </div>
         <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Aeronave</label>
+          <select
+            className="form-select"
+            value={selectedAircraftSerial ?? ""}
+            onChange={(e) => onAircraftChange?.(e.target.value)}
+          >
+            <option value="">Selecciona una aeronave</option>
+            {aircraftOptions.map((aircraft) => (
+              <option key={aircraft.id} value={aircraft.serialNumber}>
+                {aircraft.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-3 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>
           <input
             type="datetime-local"
@@ -266,28 +253,15 @@ export default function FormOperationAnexo7Detail({
             disabled={disabled || saving}
           />
         </div>
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Tiempo de vuelo (minutos)</label>
+        <div className="col-md-3 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Minutos vuelo</label>
           <input
             type="number"
             min={0}
             className="form-control bg-white border"
-            value={formValues.tiempoDeVuelo}
-            onChange={(e) => handleChange("tiempoDeVuelo", e.target.value)}
+            value={formValues.minutosVuelo ?? ""}
+            onChange={(e) => handleChange("minutosVuelo", e.target.value)}
             disabled={disabled || saving}
-            required
-          />
-        </div>
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Ciclos de aterrizaje</label>
-          <input
-            type="number"
-            min={0}
-            className="form-control bg-white border"
-            value={formValues.ciclosDeAterrizaje}
-            onChange={(e) => handleChange("ciclosDeAterrizaje", e.target.value)}
-            disabled={disabled || saving}
-            required
           />
         </div>
       </div>

@@ -3,15 +3,14 @@ package com.dronetools.dronegestory.service.anexos;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.model.anexos.Anexo7;
-import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.Locale;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class Anexo7Service extends AnexoServiceBase<Anexo7> {
@@ -24,56 +23,69 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
     public Anexo7 registrarAnexo7(Long operationId, Anexo7 datosNuevos) {
         Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
-        String serialAeronave = validarYNormalizarSerial(operation, datosNuevos.getSerialAeronave());
-        datosNuevos.setSerialAeronave(serialAeronave);
-        validarCamposOperacion(datosNuevos);
         datosNuevos.setNombreConops(operation.getConops());
-        return registrarAnexo(operationId, datosNuevos,
-                op -> op.getAnexos7().stream()
-                        .filter(anexo -> serialAeronave.equals(normalizarSerial(anexo.getSerialAeronave())))
-                        .max(Comparator.comparingInt(Anexo7::getNumeroVersion))
-                        .orElse(null),
-                op -> op.getAnexos7().stream()
-                        .filter(anexo -> serialAeronave.equals(normalizarSerial(anexo.getSerialAeronave())))
-                        .mapToInt(Anexo7::getNumeroVersion)
-                        .max()
-                        .orElse(0) + 1
-        );
+
+        Anexo7 ultimaVersion = operation.getAnexo7Actual();
+        if (ultimaVersion != null && ultimaVersion.getEstado() == AnexoStatus.FIRMADO) {
+            throw new RuntimeException("El anexo actual está firmado. Usa rehacer para crear una nueva versión.");
+        }
+
+        int numeroVersion = (ultimaVersion == null) ? operation.getNextVersionAnexo7() : ultimaVersion.getNumeroVersion();
+        String serialAeronave = normalizarSerial(datosNuevos.getSerialAeronave());
+        Optional<Anexo7> existente = obtenerPorVersionYSerial(operation, numeroVersion, serialAeronave);
+
+        Anexo7 destino = existente.orElseGet(() -> {
+            Anexo7 nuevo = new Anexo7();
+            nuevo.setOperation(operation);
+            nuevo.setNumeroVersion(numeroVersion);
+            nuevo.setEstado(AnexoStatus.BORRADOR);
+            return nuevo;
+        });
+
+        destino.setSerialAeronave(serialAeronave);
+        actualizarCampos(destino, datosNuevos);
+        return repository.save(destino);
     }
 
     @Transactional
     public Anexo7 rehacerAnexo7(Long idAnexoOrigen) {
-        Anexo7 anexoOrigen = repository.findById(idAnexoOrigen)
-                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexoOrigen));
+        return rehacerAnexo(idAnexoOrigen, Operation::getNextVersionAnexo7);
+    }
 
-        if (anexoOrigen.getEstado() != AnexoStatus.FIRMADO) {
-            throw new RuntimeException("Solo se puede rehacer desde una versión firmada");
+    @Transactional
+    public Anexo7 firmarVersionAnexo7(Long idAnexo, String username) {
+        Anexo7 anexo = repository.findById(idAnexo)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexo));
+        Anexo7 firmado = firmarAnexo(idAnexo, username);
+        List<Anexo7> anexosMismaVersion = ((Anexo7Repository) repository)
+                .findByOperationAndNumeroVersion(anexo.getOperation(), anexo.getNumeroVersion());
+        anexosMismaVersion.stream()
+                .filter(item -> !item.getId().equals(firmado.getId()))
+                .forEach(item -> {
+                    item.setEstado(AnexoStatus.FIRMADO);
+                    item.setFirmadoPor(username);
+                    item.setFechaFirma(firmado.getFechaFirma());
+                });
+        repository.saveAll(anexosMismaVersion);
+        return ((Anexo7Repository) repository)
+                .findFirstByOperationAndSerialAeronaveIgnoreCaseOrderByNumeroVersionDesc(
+                        anexo.getOperation(),
+                        anexo.getSerialAeronave()
+                )
+                .orElse(firmado);
+    }
+
+    @Transactional(readOnly = true)
+    public Anexo7 buscarPorOperacionYSerial(Long operationId, String serialAeronave) {
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        String serialNormalizado = normalizarSerial(serialAeronave);
+        if (serialNormalizado == null) {
+            return operation.getAnexo7Actual();
         }
-
-        Operation operation = anexoOrigen.getOperation();
-        String serialAeronave = validarYNormalizarSerial(operation, anexoOrigen.getSerialAeronave());
-
-        Anexo7 borradorMismaAeronave = operation.getAnexos7().stream()
-                .filter(anexo -> serialAeronave.equals(normalizarSerial(anexo.getSerialAeronave())))
-                .filter(anexo -> anexo.getEstado() == AnexoStatus.BORRADOR)
-                .findFirst()
+        return ((Anexo7Repository) repository)
+                .findFirstByOperationAndSerialAeronaveIgnoreCaseOrderByNumeroVersionDesc(operation, serialNormalizado)
                 .orElse(null);
-        if (borradorMismaAeronave != null) {
-            throw new RuntimeException("Ya existe un borrador para esta aeronave en Anexo 7.");
-        }
-
-        Anexo7 nuevaVersion = crearCopia(anexoOrigen);
-        nuevaVersion.setOperation(operation);
-        nuevaVersion.setSerialAeronave(serialAeronave);
-        nuevaVersion.setNumeroVersion(operation.getAnexos7().stream()
-                .filter(anexo -> serialAeronave.equals(normalizarSerial(anexo.getSerialAeronave())))
-                .mapToInt(Anexo7::getNumeroVersion)
-                .max()
-                .orElse(0) + 1);
-        nuevaVersion.setEstado(AnexoStatus.BORRADOR);
-        nuevaVersion.setFirmadoPor(null);
-        nuevaVersion.setFechaFirma(null);
-        return repository.save(nuevaVersion);
     }
 
     @Override
@@ -91,10 +103,9 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         if (destino.getOperation() != null) {
             destino.setNombreConops(destino.getOperation().getConops());
         }
-        destino.setSerialAeronave(normalizarSerial(origen.getSerialAeronave()));
+        destino.setSerialAeronave(origen.getSerialAeronave());
         destino.setFechaOp(origen.getFechaOp());
-        destino.setTiempoDeVuelo(origen.getTiempoDeVuelo());
-        destino.setCiclosDeAterrizaje(origen.getCiclosDeAterrizaje());
+        destino.setMinutosVuelo(origen.getMinutosVuelo());
         destino.setEstructuraCorrecto(origen.getEstructuraCorrecto());
         destino.setEstructuraObservaciones(origen.getEstructuraObservaciones());
         destino.setBateriasCorrecto(origen.getBateriasCorrecto());
@@ -133,37 +144,26 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         destino.setOtrosRecogidaObservaciones(origen.getOtrosRecogidaObservaciones());
     }
 
-    private void validarCamposOperacion(Anexo7 anexo7) {
-        if (anexo7.getTiempoDeVuelo() == null || anexo7.getTiempoDeVuelo() < 0) {
-            throw new RuntimeException("El campo tiempo de vuelo es obligatorio y debe ser un entero válido.");
-        }
-        if (anexo7.getCiclosDeAterrizaje() == null || anexo7.getCiclosDeAterrizaje() < 0) {
-            throw new RuntimeException("El campo ciclos de aterrizaje es obligatorio y debe ser un entero válido.");
-        }
+    @Transactional(readOnly = true)
+    public List<Anexo7> obtenerEntradasConMinutos(Long operationId, int numeroVersion) {
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        return ((Anexo7Repository) repository)
+                .findByOperationAndNumeroVersionAndMinutosVueloIsNotNull(operation, numeroVersion);
     }
 
-    private String validarYNormalizarSerial(Operation operation, String serialAeronave) {
-        String serialNormalizado = normalizarSerial(serialAeronave);
-        if (serialNormalizado.isBlank()) {
-            throw new RuntimeException("Debe seleccionar una aeronave para gestionar el Anexo 7.");
+    private Optional<Anexo7> obtenerPorVersionYSerial(Operation operation, int numeroVersion, String serialAeronave) {
+        if (serialAeronave == null) {
+            return repository.findByOperationAndEstado(operation, AnexoStatus.BORRADOR);
         }
-
-        Anexo4 anexo4Actual = operation.getAnexo4Actual();
-        if (anexo4Actual == null || anexo4Actual.getSerialesAeronaves() == null || anexo4Actual.getSerialesAeronaves().isEmpty()) {
-            throw new RuntimeException("Debe asignar aeronaves en Anexo 4 antes de gestionar el Anexo 7.");
-        }
-
-        boolean serialAsignado = anexo4Actual.getSerialesAeronaves().stream()
-                .map(this::normalizarSerial)
-                .anyMatch(serialNormalizado::equals);
-        if (!serialAsignado) {
-            throw new RuntimeException("La aeronave seleccionada no está asignada en Anexo 4.");
-        }
-
-        return serialNormalizado;
+        return ((Anexo7Repository) repository)
+                .findFirstByOperationAndNumeroVersionAndSerialAeronaveIgnoreCase(operation, numeroVersion, serialAeronave);
     }
 
-    private String normalizarSerial(String serial) {
-        return serial == null ? "" : serial.trim().toUpperCase(Locale.ROOT);
+    private String normalizarSerial(String serialAeronave) {
+        if (serialAeronave == null || serialAeronave.isBlank()) {
+            return null;
+        }
+        return serialAeronave.trim().toUpperCase();
     }
 }

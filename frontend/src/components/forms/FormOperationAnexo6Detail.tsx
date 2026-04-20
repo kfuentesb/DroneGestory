@@ -10,6 +10,9 @@ type FormOperationAnexo6DetailProps = {
   operationId: number;
   initialValues?: Anexo6Data | null;
   sharedConops?: string;
+  selectedAircraftSerial?: string;
+  aircraftOptions?: Array<{ id: number; serialNumber: string; label: string }>;
+  onAircraftChange?: (serial: string) => void;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
@@ -138,6 +141,9 @@ export default function FormOperationAnexo6Detail({
   operationId,
   initialValues,
   sharedConops,
+  selectedAircraftSerial,
+  aircraftOptions = [],
+  onAircraftChange,
   disabled,
   readOnlyMessage,
   onSaved,
@@ -196,6 +202,9 @@ export default function FormOperationAnexo6Detail({
           formData.append(key, value);
         }
       });
+      if (selectedAircraftSerial) {
+        formData.append("serialAeronave", selectedAircraftSerial);
+      }
 
       const savedData = await saveAnexo6Data(operationId, formData);
       alert("Anexo 6 guardado correctamente");
@@ -287,6 +296,21 @@ export default function FormOperationAnexo6Detail({
             </svg>
           </span>
         </div>
+        </div>
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Aeronave</label>
+          <select
+            className="form-select"
+            value={selectedAircraftSerial ?? ""}
+            onChange={(e) => onAircraftChange?.(e.target.value)}
+          >
+            <option value="">Selecciona una aeronave</option>
+            {aircraftOptions.map((aircraft) => (
+              <option key={aircraft.id} value={aircraft.serialNumber}>
+                {aircraft.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>

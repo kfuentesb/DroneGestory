@@ -23,11 +23,8 @@ public class Anexo7 extends Anexo {
     @Column(name = "serial_aeronave")
     private String serialAeronave;
 
-    @Column(name = "tiempo_de_vuelo")
-    private Integer tiempoDeVuelo;
-
-    @Column(name = "ciclos_de_aterrizaje")
-    private Integer ciclosDeAterrizaje;
+    @Column(name = "minutos_vuelo")
+    private Integer minutosVuelo;
 
     // 1. Verificación - 13 elementos
     private Boolean estructuraCorrecto;

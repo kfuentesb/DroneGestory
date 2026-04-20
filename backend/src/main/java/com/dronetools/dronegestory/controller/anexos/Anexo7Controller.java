@@ -7,20 +7,15 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.anexos.Anexo7Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo7")
 public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service> {
-
-    @Autowired
-    private Anexo7Repository repository;
 
     public Anexo7Controller(Anexo7Service service,
                             OperationRepository operationRepository,
@@ -38,7 +33,7 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     @PutMapping("/{idAnexo}/firmar/datos")
     public Anexo7ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
-        Anexo7 anexo = service.firmarAnexo(idAnexo, username);
+        Anexo7 anexo = service.firmarVersionAnexo7(idAnexo, username);
         return toResponse(anexo, operationId);
     }
 
@@ -50,15 +45,8 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
 
     @GetMapping("/datos")
     public ResponseEntity<Anexo7ResponseDTO> getDatos(@PathVariable Long operationId,
-                                                      @RequestParam(value = "serialAeronave", required = true) String serialAeronave) {
-        Operation op = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        String serialNormalizado = serialAeronave == null ? "" : serialAeronave.trim().toUpperCase(Locale.ROOT);
-        if (serialNormalizado.isBlank()) {
-            throw new RuntimeException("Debe indicar un serial de aeronave.");
-        }
-        Anexo7 anexo7 = repository.findFirstByOperationAndSerialAeronaveOrderByNumeroVersionDesc(op, serialNormalizado)
-                .orElse(null);
+                                                      @RequestParam(required = false) String serialAeronave) {
+        Anexo7 anexo7 = service.buscarPorOperacionYSerial(operationId, serialAeronave);
         if (anexo7 == null) {
             return ResponseEntity.noContent().build();
         }

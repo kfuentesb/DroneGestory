@@ -18,5 +18,5 @@ public interface AircraftRepository extends JpaRepository<Aircraft, Long> {
 
     boolean existsBySerialNumber(String serialNumber);
 
-    Optional<Aircraft> findBySerialNumber(String serialNumber);
+    Optional<Aircraft> findBySerialNumberIgnoreCase(String serialNumber);
 }

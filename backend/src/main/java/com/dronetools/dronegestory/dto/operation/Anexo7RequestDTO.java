@@ -11,8 +11,7 @@ public class Anexo7RequestDTO {
     private String nombreConops;
     private LocalDateTime fechaOp;
     private String serialAeronave;
-    private Integer tiempoDeVuelo;
-    private Integer ciclosDeAterrizaje;
+    private Integer minutosVuelo;
 
     // 1. Verificación
     private Boolean estructuraCorrecto;

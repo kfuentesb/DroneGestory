@@ -10,7 +10,6 @@ type AnexoBaseData = {
 
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
-  serialesAeronaves?: string[];
   [key: string]: any;
 };
 
@@ -81,8 +80,7 @@ export type Anexo7Data = AnexoBaseData & {
   nombreConops?: string;
   fechaOp?: string;
   serialAeronave?: string;
-  tiempoDeVuelo?: number | null;
-  ciclosDeAterrizaje?: number | null;
+  minutosVuelo?: number | null;
   estructuraCorrecto?: boolean | null;
   estructuraObservaciones?: string;
   bateriasCorrecto?: boolean | null;
@@ -222,10 +220,8 @@ export async function fetchAnexo5VersionData(
 }
 
 export async function fetchAnexo6Data(operationId: number, serialAeronave?: string): Promise<Anexo6Data | null> {
-  const params = new URLSearchParams();
-  if (serialAeronave) params.set("serialAeronave", serialAeronave);
-  const query = params.toString();
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/datos${query ? `?${query}` : ""}`);
+  const params = serialAeronave ? `?serialAeronave=${encodeURIComponent(serialAeronave)}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/datos${params}`);
 
   if (!response || response.status === 204) {
     return null;
@@ -248,10 +244,8 @@ export async function fetchAnexo6VersionData(
 }
 
 export async function fetchAnexo7Data(operationId: number, serialAeronave?: string): Promise<Anexo7Data | null> {
-  const params = new URLSearchParams();
-  if (serialAeronave) params.set("serialAeronave", serialAeronave);
-  const query = params.toString();
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/datos${query ? `?${query}` : ""}`);
+  const params = serialAeronave ? `?serialAeronave=${encodeURIComponent(serialAeronave)}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/datos${params}`);
 
   if (!response || response.status === 204) {
     return null;

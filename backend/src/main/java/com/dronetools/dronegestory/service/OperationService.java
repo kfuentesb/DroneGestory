@@ -3,12 +3,15 @@ package com.dronetools.dronegestory.service;
 import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
 import com.dronetools.dronegestory.dto.operation.OperationListDTO;
 import com.dronetools.dronegestory.model.Aircraft;
+import com.dronetools.dronegestory.model.FlightTime;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.repository.AircraftRepository;
+import com.dronetools.dronegestory.repository.FlightTimeRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,23 +20,26 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class OperationService {
 
     private final OperationRepository operationRepository;
+    private final Anexo7Repository anexo7Repository;
     private final AircraftRepository aircraftRepository;
+    private final FlightTimeRepository flightTimeRepository;
 
     public OperationService(OperationRepository operationRepository,
-                            AircraftRepository aircraftRepository) {
+                            Anexo7Repository anexo7Repository,
+                            AircraftRepository aircraftRepository,
+                            FlightTimeRepository flightTimeRepository) {
         this.operationRepository = operationRepository;
+        this.anexo7Repository = anexo7Repository;
         this.aircraftRepository = aircraftRepository;
+        this.flightTimeRepository = flightTimeRepository;
     }
 
     @Transactional(readOnly = true)
@@ -112,13 +118,10 @@ public class OperationService {
     @Transactional
     public Operation completarOperation(Long operationId) {
         Operation op = findById(operationId);
-        if (op.getEstado() == OperationStatus.COMPLETADA) {
-            return op;
-        }
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
-        acumularTiempoYCiclosPorAeronave(op);
+        registrarHorasVueloDesdeAnexo7(op);
         op.setEstado(OperationStatus.COMPLETADA);
         return operationRepository.save(op);
     }
@@ -168,16 +171,72 @@ public class OperationService {
     @Transactional
     public OperationDetailDTO completarOperationDto(Long operationId) {
         Operation op = findById(operationId);
-        if (op.getEstado() == OperationStatus.COMPLETADA) {
-            return new OperationDetailDTO(op);
-        }
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
-        acumularTiempoYCiclosPorAeronave(op);
+        registrarHorasVueloDesdeAnexo7(op);
         op.setEstado(OperationStatus.COMPLETADA);
         operationRepository.save(op);
         return new OperationDetailDTO(op); // El mapping ocurre aquí, en sesión
+    }
+
+    private void registrarHorasVueloDesdeAnexo7(Operation operation) {
+        Anexo7 anexo7Actual = operation.getAnexo7Actual();
+        if (anexo7Actual == null) {
+            return;
+        }
+
+        List<Anexo7> entradas = anexo7Repository.findByOperationAndNumeroVersionAndMinutosVueloIsNotNull(
+                operation,
+                anexo7Actual.getNumeroVersion()
+        );
+
+        for (Anexo7 entrada : entradas) {
+            Integer minutosVuelo = entrada.getMinutosVuelo();
+            if (minutosVuelo == null || minutosVuelo <= 0) {
+                continue;
+            }
+            if (entrada.getSerialAeronave() == null || entrada.getSerialAeronave().isBlank()) {
+                continue;
+            }
+
+            Aircraft aircraft = aircraftRepository.findBySerialNumberIgnoreCase(entrada.getSerialAeronave())
+                    .orElse(null);
+            if (aircraft == null) {
+                continue;
+            }
+
+            boolean yaRegistrado = flightTimeRepository
+                    .existsByOperation_IdOperacionAndAircraft_AircraftId(operation.getIdOperacion(), aircraft.getAircraftId());
+            if (yaRegistrado) {
+                continue;
+            }
+
+            FlightTime flightTime = new FlightTime();
+            flightTime.setAircraft(aircraft);
+            flightTime.setAircraftManufacturer(
+                    aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getManufacturer()
+            );
+            flightTime.setAircraftModel(
+                    aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel()
+            );
+            flightTime.setAircraftSerialNumber(aircraft.getSerialNumber());
+            flightTime.setOperation(operation);
+            LocalDate fechaVuelo = entrada.getFechaOp() != null
+                    ? entrada.getFechaOp().toLocalDate()
+                    : LocalDate.now();
+            flightTime.setFlightDate(Date.valueOf(fechaVuelo));
+            flightTime.setDurationMinutes(minutosVuelo);
+            int totalPrevio = flightTimeRepository
+                    .findFirstByAircraft_AircraftIdOrderByFlightDateDescFlightTimeIdDesc(aircraft.getAircraftId())
+                    .map(item -> item.getTotalFlightTimeMinutes() == null ? 0 : item.getTotalFlightTimeMinutes())
+                    .orElse(aircraft.getFlightMinutes() == null ? 0 : aircraft.getFlightMinutes());
+            flightTime.setTotalFlightTimeMinutes(totalPrevio + minutosVuelo);
+            flightTimeRepository.save(flightTime);
+
+            aircraft.setFlightMinutes(totalPrevio + minutosVuelo);
+            aircraftRepository.save(aircraft);
+        }
     }
 
     @Transactional
@@ -218,36 +277,6 @@ public class OperationService {
 
     private String formatearCodigo(int anio, int correlativo) {
         return "O-" + anio + "-" + String.format("%03d", correlativo);
-    }
-
-    private void acumularTiempoYCiclosPorAeronave(Operation operation) {
-        Map<String, Anexo7> ultimoAnexo7PorSerial = operation.getAnexos7().stream()
-                .filter(anexo -> anexo.getSerialAeronave() != null && !anexo.getSerialAeronave().isBlank())
-                .collect(Collectors.toMap(
-                        anexo -> anexo.getSerialAeronave().trim().toUpperCase(Locale.ROOT),
-                        anexo -> anexo,
-                        (a, b) -> a.getNumeroVersion() >= b.getNumeroVersion() ? a : b
-                ));
-
-        for (Map.Entry<String, Anexo7> entry : ultimoAnexo7PorSerial.entrySet()) {
-            String serial = entry.getKey();
-            Anexo7 anexo7 = entry.getValue();
-
-            Aircraft aircraft = aircraftRepository.findBySerialNumber(serial)
-                    .orElse(null);
-            if (aircraft == null) {
-                continue;
-            }
-
-            int minutosActuales = Objects.requireNonNullElse(aircraft.getFlightMinutes(), 0);
-            int minutosAnexo = Objects.requireNonNullElse(anexo7.getTiempoDeVuelo(), 0);
-            aircraft.setFlightMinutes(minutosActuales + minutosAnexo);
-
-            int ciclosActuales = Objects.requireNonNullElse(aircraft.getLandingCycles(), 0);
-            int ciclosAnexo = Objects.requireNonNullElse(anexo7.getCiclosDeAterrizaje(), 0);
-            aircraft.setLandingCycles(ciclosActuales + ciclosAnexo);
-            aircraftRepository.save(aircraft);
-        }
     }
 
 }
