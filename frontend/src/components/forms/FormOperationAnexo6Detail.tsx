@@ -142,7 +142,6 @@ export default function FormOperationAnexo6Detail({
   initialValues,
   sharedConops,
   selectedAircraftSerial,
-  aircraftOptions = [],
   onAircraftChange,
   disabled,
   readOnlyMessage,

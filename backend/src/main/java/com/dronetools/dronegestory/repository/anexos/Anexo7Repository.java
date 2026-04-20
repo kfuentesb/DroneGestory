@@ -19,4 +19,5 @@ public interface Anexo7Repository extends AnexoBaseRepository<Anexo7, Long> {
     );
     List<Anexo7> findByOperationAndNumeroVersion(Operation operation, int numeroVersion);
     List<Anexo7> findByOperationAndNumeroVersionAndMinutosVueloIsNotNull(Operation operation, int numeroVersion);
+    void deleteByOperationAndSerialAeronaveIn(Operation operation, List<String> serialAeronaveList);
 }

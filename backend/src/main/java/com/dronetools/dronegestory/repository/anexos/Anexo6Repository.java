@@ -18,4 +18,5 @@ public interface Anexo6Repository extends AnexoBaseRepository<Anexo6, Long> {
             String serialAeronave
     );
     List<Anexo6> findByOperationAndNumeroVersion(Operation operation, int numeroVersion);
+    void deleteByOperationAndSerialAeronaveIn(Operation operation, List<String> serialAeronaveList);
 }
