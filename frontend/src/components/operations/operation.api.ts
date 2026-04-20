@@ -133,6 +133,35 @@ export type Anexo8Data = AnexoBaseData & {
   comunicacionIncidentes?: boolean | null;
 };
 
+async function responseToJsonOrNull<T>(response: Response | null | undefined): Promise<T | null> {
+  if (!response) {
+    return null;
+  }
+  return (await response.json()) as T;
+}
+
+async function saveAnexoData<T>(operationId: number, anexo: 4 | 5 | 6 | 7 | 8, formData: FormData): Promise<T | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo${anexo}`, {
+    method: "POST",
+    body: formData,
+  });
+  return responseToJsonOrNull<T>(response);
+}
+
+async function signAnexoData<T>(operationId: number, anexo: 4 | 5 | 6 | 7 | 8, anexoId: number): Promise<T | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo${anexo}/${anexoId}/firmar/datos`, {
+    method: "PUT",
+  });
+  return responseToJsonOrNull<T>(response);
+}
+
+async function remakeAnexoData<T>(operationId: number, anexo: 4 | 5 | 6 | 7 | 8, anexoId: number): Promise<T | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo${anexo}/${anexoId}/rehacer/datos`, {
+    method: "POST",
+  });
+  return responseToJsonOrNull<T>(response);
+}
+
 export async function fetchOperations(path: string) {
   const response = await apiFetch(path, {
     headers: { "Content-Type": "application/json" },
@@ -313,200 +342,75 @@ export async function saveAnexo4Data(
   operationId: number,
   formData: FormData,
 ): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo4Data;
+  return saveAnexoData<Anexo4Data>(operationId, 4, formData);
 }
 
 export async function saveAnexo5Data(
   operationId: number,
   formData: FormData,
 ): Promise<Anexo5Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo5Data;
+  return saveAnexoData<Anexo5Data>(operationId, 5, formData);
 }
 
 export async function saveAnexo6Data(
   operationId: number,
   formData: FormData,
 ): Promise<Anexo6Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo6Data;
+  return saveAnexoData<Anexo6Data>(operationId, 6, formData);
 }
 
 export async function saveAnexo7Data(
   operationId: number,
   formData: FormData,
 ): Promise<Anexo7Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo7Data;
+  return saveAnexoData<Anexo7Data>(operationId, 7, formData);
 }
 
 export async function saveAnexo8Data(
   operationId: number,
   formData: FormData,
 ): Promise<Anexo8Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo8`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo8Data;
+  return saveAnexoData<Anexo8Data>(operationId, 8, formData);
 }
 
 export async function signAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4/${anexoId}/firmar/datos`, {
-    method: "PUT",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo4Data;
+  return signAnexoData<Anexo4Data>(operationId, 4, anexoId);
 }
 
 export async function signAnexo5Data(operationId: number, anexoId: number): Promise<Anexo5Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/firmar/datos`, {
-    method: "PUT",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo5Data;
+  return signAnexoData<Anexo5Data>(operationId, 5, anexoId);
 }
 
 export async function signAnexo6Data(operationId: number, anexoId: number): Promise<Anexo6Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/${anexoId}/firmar/datos`, {
-    method: "PUT",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo6Data;
+  return signAnexoData<Anexo6Data>(operationId, 6, anexoId);
 }
 
 export async function signAnexo7Data(operationId: number, anexoId: number): Promise<Anexo7Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/${anexoId}/firmar/datos`, {
-    method: "PUT",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo7Data;
+  return signAnexoData<Anexo7Data>(operationId, 7, anexoId);
 }
 
 export async function signAnexo8Data(operationId: number, anexoId: number): Promise<Anexo8Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo8/${anexoId}/firmar/datos`, {
-    method: "PUT",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo8Data;
+  return signAnexoData<Anexo8Data>(operationId, 8, anexoId);
 }
 
 export async function remakeAnexo4Data(operationId: number, anexoId: number): Promise<Anexo4Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo4/${anexoId}/rehacer/datos`, {
-    method: "POST",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo4Data;
+  return remakeAnexoData<Anexo4Data>(operationId, 4, anexoId);
 }
 
 export async function remakeAnexo5Data(operationId: number, anexoId: number): Promise<Anexo5Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/rehacer/datos`, {
-    method: "POST",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo5Data;
+  return remakeAnexoData<Anexo5Data>(operationId, 5, anexoId);
 }
 
 export async function remakeAnexo6Data(operationId: number, anexoId: number): Promise<Anexo6Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/${anexoId}/rehacer/datos`, {
-    method: "POST",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo6Data;
+  return remakeAnexoData<Anexo6Data>(operationId, 6, anexoId);
 }
 
 export async function remakeAnexo7Data(operationId: number, anexoId: number): Promise<Anexo7Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/${anexoId}/rehacer/datos`, {
-    method: "POST",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo7Data;
+  return remakeAnexoData<Anexo7Data>(operationId, 7, anexoId);
 }
 
 export async function remakeAnexo8Data(operationId: number, anexoId: number): Promise<Anexo8Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo8/${anexoId}/rehacer/datos`, {
-    method: "POST",
-  });
-
-  if (!response) {
-    return null;
-  }
-
-  return (await response.json()) as Anexo8Data;
+  return remakeAnexoData<Anexo8Data>(operationId, 8, anexoId);
 }
 
 export async function saveAnexo(operationId: number, tipoAnexo: number, textoPrueba: string) {

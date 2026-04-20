@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom"
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+import { apiFetch, API_BASE_URL } from "../../../api";
 import DetailsComponent from "../DetailsComponent"
 
 import { aircraftFields } from "./AircraftFields"
@@ -17,41 +17,12 @@ export default function AircraftDetail() {
 
     const handleDelete = async () => {
         try {
-            const token = localStorage.getItem("token");
-            console.log("Token found:", token ? "Yes" : "No");
-            const headers: HeadersInit = {};
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-                console.log("Authorization header set");
-            }
-
-            console.log("Deleting aircraft with ID:", id);
-            const response = await fetch(`${API_BASE_URL}/api/aircraft/${id}`, {
+            const response = await apiFetch(`/api/aircraft/${id}`, {
                 method: "DELETE",
-                headers
-            })
-            
-            console.log("DELETE response status:", response.status);
-            
-            if (response.status === 403) {
-                alert("No tienes permisos para eliminar este dron. Verifica tu rol de usuario.");
+            });
+
+            if (!response) {
                 return;
-            }
-            
-            if (!response.ok) {
-                let errorMessage = `Error ${response.status}`;
-                try {
-                    const errorJson = await response.json();
-                    if (errorJson.error) {
-                        errorMessage += `: ${errorJson.error}`;
-                    }
-                } catch (e) {
-                    const errorText = await response.text();
-                    if (errorText) {
-                        errorMessage += `: ${errorText}`;
-                    }
-                }
-                throw new Error(errorMessage);
             }
             
             navigate("/aircrafts");

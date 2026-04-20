@@ -2,24 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import { Filemanager, Material } from "@svar-ui/react-filemanager";
 import type { IApi, IEntity } from "@svar-ui/filemanager-store";
 import "@svar-ui/react-filemanager/all.css";
-import { API_BASE_URL } from "../../api";
+import { apiFetch } from "../../api";
 
 export default function FileBrowserView() {
     const [data, setData] = useState<IEntity[]>([]);
 
-    const authHeaders = () => {
-        const token = localStorage.getItem("token");
-        return { Authorization: `Bearer ${token}` };
-    };
-
     const loadRoot = useCallback(async () => {
-        const res = await fetch(`${API_BASE_URL}/api/files/list`, {
-            headers: authHeaders()
-        });
-        if (!res.ok) {
-            throw new Error(`Failed root load (${res.status})`);
+        const response = await apiFetch("/api/files/list");
+        if (!response) {
+            return;
         }
-        const items = (await res.json()) as IEntity[];
+        const items = (await response.json()) as IEntity[];
         setData(items);
     }, []);
 
@@ -31,14 +24,13 @@ export default function FileBrowserView() {
     }, [loadRoot]);
 
     const openFileInTab = useCallback(async (id: string) => {
-        const res = await fetch(
-            `${API_BASE_URL}/api/files/content?path=${encodeURIComponent(id)}`,
-            { headers: authHeaders() }
+        const response = await apiFetch(
+            `/api/files/content?path=${encodeURIComponent(id)}`
         );
-        if (!res.ok) {
-            throw new Error(`Failed file open (${res.status})`);
+        if (!response) {
+            return;
         }
-        const blob = await res.blob();
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank", "noopener,noreferrer");
         setTimeout(() => URL.revokeObjectURL(url), 60000);
