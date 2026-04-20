@@ -5,6 +5,7 @@ import { operationAnexo4DetailFields } from "../details/operation/OperationsAnex
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
+import { apiFetch } from "../../api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
@@ -57,6 +58,7 @@ type FormOperationAnexo4DetailProps = {
 };
 
 type ErrorsMap = Record<string, string | null>;
+type AircraftOption = { id: number; manufacturer?: string; model?: string; serialNumber?: string };
 
 const BOOL_OPTIONS = [
   { value: "", label: "N/A" },
@@ -77,6 +79,7 @@ export default function FormOperationAnexo4Detail({
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
+  const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
 
   useEffect(() => {
   if (!initialValues) return;
@@ -118,6 +121,24 @@ export default function FormOperationAnexo4Detail({
       return {};
     });
   }, [initialValues]);
+
+  useEffect(() => {
+    const loadAircraft = async () => {
+      try {
+        const response = await apiFetch(`${API_BASE_URL}/api/aircraft`);
+        if (!response) {
+          setAircraftOptions([]);
+          return;
+        }
+        const data = (await response.json()) as AircraftOption[];
+        setAircraftOptions(data);
+      } catch (error) {
+        console.error("Error cargando aeronaves para Anexo 4", error);
+        setAircraftOptions([]);
+      }
+    };
+    void loadAircraft();
+  }, []);
 
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
@@ -165,6 +186,10 @@ export default function FormOperationAnexo4Detail({
     try {
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
+        if (key === "aircraftIds" && Array.isArray(value)) {
+          value.forEach((aircraftId) => formData.append("aircraftIds", String(aircraftId)));
+          return;
+        }
         if (value instanceof File) {
             formData.append(key, value);
         } else if (value !== undefined && value !== null && value !== "") {
@@ -235,6 +260,27 @@ export default function FormOperationAnexo4Detail({
             onChange={(e) => handleChange("personal", e.target.value)}
             disabled={disabled || saving}
           />
+      </div>
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">Aeronaves seleccionadas (Anexo 4)</label>
+        <select
+          className="form-select"
+          multiple
+          value={Array.isArray(formValues.aircraftIds) ? formValues.aircraftIds.map(String) : []}
+          onChange={(e) => {
+            const ids = Array.from(e.target.selectedOptions)
+              .map((option) => Number(option.value))
+              .filter((id) => !Number.isNaN(id));
+            handleChange("aircraftIds", ids);
+          }}
+          disabled={disabled || saving}
+        >
+          {aircraftOptions.map((aircraft) => (
+            <option key={aircraft.id} value={aircraft.id}>
+              {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()} {aircraft.serialNumber ? `(${aircraft.serialNumber})` : ""}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="row">
         <div className="col-md-6 mb-3">

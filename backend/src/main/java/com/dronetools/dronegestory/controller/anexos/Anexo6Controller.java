@@ -44,7 +44,16 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     }
 
     @GetMapping("/datos")
-    public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId) {
+    public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId,
+                                                      @RequestParam(value = "aircraftId", required = false) Long aircraftId) {
+        if (aircraftId != null) {
+            Anexo6 anexo6 = service.getDatosPorAeronave(operationId, aircraftId);
+            if (anexo6 == null) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(toResponse(anexo6, operationId));
+        }
+
         Operation op = operationRepository.findByIdWithAnexos6(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         Anexo6 anexo6 = op.getAnexo6Actual();
@@ -63,6 +72,17 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado"));
         if (anexo6.getOperation() == null || !anexo6.getOperation().getIdOperacion().equals(operationId)) {
             throw new RuntimeException("El anexo no pertenece a la operación indicada");
+        }
+        return ResponseEntity.ok(toResponse(anexo6, operationId));
+    }
+
+    @GetMapping("/versiones/{numeroVersion}/datos")
+    public ResponseEntity<Anexo6ResponseDTO> getDatosVersionPorNumero(@PathVariable Long operationId,
+                                                                      @PathVariable Integer numeroVersion,
+                                                                      @RequestParam Long aircraftId) {
+        Anexo6 anexo6 = service.getDatosVersionPorAeronave(operationId, numeroVersion, aircraftId);
+        if (anexo6 == null) {
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(toResponse(anexo6, operationId));
     }
@@ -88,4 +108,3 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
         return dto;
     }
 }
-

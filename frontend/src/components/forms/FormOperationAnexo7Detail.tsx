@@ -6,6 +6,7 @@ import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 type FormOperationAnexo7DetailProps = {
   operationId: number;
   initialValues?: Anexo7Data | null;
+  selectedAircraftId?: number | null;
   sharedConops?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
@@ -14,6 +15,7 @@ type FormOperationAnexo7DetailProps = {
 
 const FORM_FIELDS = [
   "fechaOp",
+  "tiempoVueloMinutos",
   "estructuraCorrecto",
   "estructuraObservaciones",
   "bateriasCorrecto",
@@ -94,6 +96,7 @@ const RECOGIDA_CONFIG: CheckItem[] = [
 export default function FormOperationAnexo7Detail({
   operationId,
   initialValues,
+  selectedAircraftId,
   sharedConops,
   disabled,
   readOnlyMessage,
@@ -108,10 +111,15 @@ export default function FormOperationAnexo7Detail({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
+    if (!selectedAircraftId) {
+      alert("Selecciona una aeronave de Anexo 4 antes de guardar.");
+      return;
+    }
 
     setSaving(true);
     try {
       const formData = new FormData();
+      formData.append("aircraftId", String(selectedAircraftId));
       FORM_FIELDS.forEach((key) => {
         const value = formValues[key];
         if (value !== undefined && value !== null && value !== "") {
@@ -225,6 +233,17 @@ export default function FormOperationAnexo7Detail({
             className="form-control bg-white border"
             value={formValues.fechaOp}
             onChange={(e) => handleChange("fechaOp", e.target.value)}
+            disabled={disabled || saving}
+          />
+        </div>
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Tiempo de vuelo (minutos)</label>
+          <input
+            type="number"
+            min={0}
+            className="form-control bg-white border"
+            value={formValues.tiempoVueloMinutos}
+            onChange={(e) => handleChange("tiempoVueloMinutos", e.target.value)}
             disabled={disabled || saving}
           />
         </div>

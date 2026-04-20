@@ -92,13 +92,13 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         return repository.save(datos);
     }
 
-    private void validarOperacionEditable(Operation op) {
+    protected void validarOperacionEditable(Operation op) {
         if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
             throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
         }
     }
 
-    private boolean esAdminActual() {
+    protected boolean esAdminActual() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             return false;

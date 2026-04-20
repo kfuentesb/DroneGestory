@@ -10,6 +10,7 @@ type AnexoBaseData = {
 
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
+  aircraftIds?: number[];
   [key: string]: any;
 };
 
@@ -42,6 +43,7 @@ export type Anexo5Data = AnexoBaseData & {
 export type Anexo6Data = AnexoBaseData & {
   nombreConops?: string;
   fechaOp?: string;
+  aircraftId?: number;
   materialesAuxiliares?: string[];
   sinImpacto?: boolean | null;
   centroGravedad?: boolean | null;
@@ -78,6 +80,8 @@ export type Anexo6Data = AnexoBaseData & {
 export type Anexo7Data = AnexoBaseData & {
   nombreConops?: string;
   fechaOp?: string;
+  aircraftId?: number;
+  tiempoVueloMinutos?: number | null;
   estructuraCorrecto?: boolean | null;
   estructuraObservaciones?: string;
   bateriasCorrecto?: boolean | null;
@@ -126,6 +130,13 @@ export type Anexo8Data = AnexoBaseData & {
   anotacionTIempoActividadPersonal?: boolean | null;
   anotacionEventosOcurridosOperacion?: boolean | null;
   comunicacionIncidentes?: boolean | null;
+};
+
+export type AircraftOption = {
+  id: number;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
 };
 
 export async function fetchOperations(path: string) {
@@ -216,8 +227,9 @@ export async function fetchAnexo5VersionData(
   return (await response.json()) as Anexo5Data;
 }
 
-export async function fetchAnexo6Data(operationId: number): Promise<Anexo6Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/datos`);
+export async function fetchAnexo6Data(operationId: number, aircraftId?: number): Promise<Anexo6Data | null> {
+  const query = aircraftId ? `?aircraftId=${aircraftId}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/datos${query}`);
 
   if (!response || response.status === 204) {
     return null;
@@ -229,8 +241,10 @@ export async function fetchAnexo6Data(operationId: number): Promise<Anexo6Data |
 export async function fetchAnexo6VersionData(
   operationId: number,
   anexoId: number,
+  aircraftId?: number,
 ): Promise<Anexo6Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/${anexoId}/datos`);
+  const query = aircraftId ? `?aircraftId=${aircraftId}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/${anexoId}/datos${query}`);
 
   if (!response || response.status === 204) {
     return null;
@@ -239,8 +253,9 @@ export async function fetchAnexo6VersionData(
   return (await response.json()) as Anexo6Data;
 }
 
-export async function fetchAnexo7Data(operationId: number): Promise<Anexo7Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/datos`);
+export async function fetchAnexo7Data(operationId: number, aircraftId?: number): Promise<Anexo7Data | null> {
+  const query = aircraftId ? `?aircraftId=${aircraftId}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/datos${query}`);
 
   if (!response || response.status === 204) {
     return null;
@@ -252,8 +267,10 @@ export async function fetchAnexo7Data(operationId: number): Promise<Anexo7Data |
 export async function fetchAnexo7VersionData(
   operationId: number,
   anexoId: number,
+  aircraftId?: number,
 ): Promise<Anexo7Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/${anexoId}/datos`);
+  const query = aircraftId ? `?aircraftId=${aircraftId}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/${anexoId}/datos${query}`);
 
   if (!response || response.status === 204) {
     return null;
@@ -296,6 +313,46 @@ export async function fetchAnexo4VersionData(
   }
 
   return (await response.json()) as Anexo4Data;
+}
+
+export async function fetchAnexo6VersionByNumero(
+  operationId: number,
+  numeroVersion: number,
+  aircraftId: number,
+): Promise<Anexo6Data | null> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/operations/${operationId}/anexo6/versiones/${numeroVersion}/datos?aircraftId=${aircraftId}`,
+  );
+
+  if (!response || response.status === 204) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo6Data;
+}
+
+export async function fetchAnexo7VersionByNumero(
+  operationId: number,
+  numeroVersion: number,
+  aircraftId: number,
+): Promise<Anexo7Data | null> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/operations/${operationId}/anexo7/versiones/${numeroVersion}/datos?aircraftId=${aircraftId}`,
+  );
+
+  if (!response || response.status === 204) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo7Data;
+}
+
+export async function fetchAircraftOptions(): Promise<AircraftOption[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/aircraft`);
+  if (!response) {
+    return [];
+  }
+  return (await response.json()) as AircraftOption[];
 }
 
 export async function saveAnexo4Data(

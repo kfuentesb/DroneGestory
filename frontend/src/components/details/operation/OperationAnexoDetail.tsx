@@ -9,11 +9,12 @@ import {
   fetchAnexo5Data,
   fetchAnexo5VersionData,
   fetchAnexo6Data,
-  fetchAnexo6VersionData,
+  fetchAnexo6VersionByNumero,
   fetchAnexo7Data,
-  fetchAnexo7VersionData,
+  fetchAnexo7VersionByNumero,
   fetchAnexo8Data,
   fetchAnexo8VersionData,
+  fetchAircraftOptions,
   fetchOperationDetail,
   remakeAnexo4Data,
   remakeAnexo5Data,
@@ -26,6 +27,7 @@ import {
   signAnexo7Data,
   signAnexo8Data,
   type Anexo4Data,
+  type AircraftOption,
   type Anexo5Data,
   type Anexo6Data,
   type Anexo7Data,
@@ -94,6 +96,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
+  const [anexoAircraftOptions, setAnexoAircraftOptions] = useState<AircraftOption[]>([]);
+  const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -118,19 +122,25 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, [anexo, selectedVersionId]);
 
   const isViewingHistoricalVersion = selectedVersion !== null;
-  const actualIsSigned = anexo?.actual.estado === "FIRMADO";
+  const requiresAircraftSelection = tipoAnexo === 6 || tipoAnexo === 7;
+  const currentAnexoId = anexoData?.id ?? anexo?.actual.id ?? null;
+  const currentAnexoVersion = anexoData?.numeroVersion ?? anexo?.actual.numeroVersion ?? 0;
+  const currentAnexoStatus = anexoData?.estado ?? anexo?.actual.estado ?? null;
+  const actualIsSigned = currentAnexoStatus === "FIRMADO";
   const canManageCompletedOperation = role === "ADMIN";
   const canCreate = !operation?.completada || canManageCompletedOperation;
   const canEditDraft =
     !isViewingHistoricalVersion &&
     canCreate &&
-    (!actualIsSigned || (anexo?.actual.numeroVersion ?? 0) === 0);
-  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned && !!anexo?.actual.id;
+    (!actualIsSigned || currentAnexoVersion === 0) &&
+    (!requiresAircraftSelection || !!selectedAircraftId);
+  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned && !!currentAnexoId;
   const canSign =
     !isViewingHistoricalVersion &&
     canCreate &&
-    !!anexo?.actual.id &&
-    anexo?.actual.estado === "BORRADOR";
+    !!currentAnexoId &&
+    currentAnexoStatus === "BORRADOR" &&
+    (!requiresAircraftSelection || !!selectedAircraftId);
 
   const loadOperation = async () => {
     if (!id) {
@@ -164,6 +174,39 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, [id, tipoAnexo, versionId]);
 
   useEffect(() => {
+    if (!operation || !requiresAircraftSelection) {
+      setAnexoAircraftOptions([]);
+      setSelectedAircraftId(null);
+      return;
+    }
+
+    const loadAircraftFromAnexo4 = async () => {
+      try {
+        const [anexo4, aircraftOptions] = await Promise.all([
+          fetchAnexo4Data(operation.idOperacion),
+          fetchAircraftOptions(),
+        ]);
+
+        const selectedIds = new Set(anexo4?.aircraftIds ?? []);
+        const filtered = aircraftOptions.filter((aircraft) => selectedIds.has(aircraft.id));
+        setAnexoAircraftOptions(filtered);
+        setSelectedAircraftId((prev) => {
+          if (prev && filtered.some((aircraft) => aircraft.id === prev)) {
+            return prev;
+          }
+          return filtered[0]?.id ?? null;
+        });
+      } catch (err) {
+        console.error("Error cargando aeronaves de Anexo 4:", err);
+        setAnexoAircraftOptions([]);
+        setSelectedAircraftId(null);
+      }
+    };
+
+    void loadAircraftFromAnexo4();
+  }, [operation, requiresAircraftSelection]);
+
+  useEffect(() => {
     if (!operation) {
       return;
     }
@@ -182,10 +225,26 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               data = await fetchAnexo5VersionData(operation.idOperacion, selectedVersionId);
               break;
             case 6:
-              data = await fetchAnexo6VersionData(operation.idOperacion, selectedVersionId);
+              if (!selectedAircraftId || !selectedVersion) {
+                data = null;
+              } else {
+                data = await fetchAnexo6VersionByNumero(
+                  operation.idOperacion,
+                  selectedVersion.numeroVersion,
+                  selectedAircraftId,
+                );
+              }
               break;
             case 7:
-              data = await fetchAnexo7VersionData(operation.idOperacion, selectedVersionId);
+              if (!selectedAircraftId || !selectedVersion) {
+                data = null;
+              } else {
+                data = await fetchAnexo7VersionByNumero(
+                  operation.idOperacion,
+                  selectedVersion.numeroVersion,
+                  selectedAircraftId,
+                );
+              }
               break;
             case 8:
               data = await fetchAnexo8VersionData(operation.idOperacion, selectedVersionId);
@@ -202,10 +261,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               data = await fetchAnexo5Data(operation.idOperacion);
               break;
             case 6:
-              data = await fetchAnexo6Data(operation.idOperacion);
+              data = selectedAircraftId ? await fetchAnexo6Data(operation.idOperacion, selectedAircraftId) : null;
               break;
             case 7:
-              data = await fetchAnexo7Data(operation.idOperacion);
+              data = selectedAircraftId ? await fetchAnexo7Data(operation.idOperacion, selectedAircraftId) : null;
               break;
             case 8:
               data = await fetchAnexo8Data(operation.idOperacion);
@@ -225,10 +284,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     };
 
     void loadSelectedAnexoData();
-  }, [operation, selectedVersionId, tipoAnexo]);
+  }, [operation, selectedVersion, selectedVersionId, selectedAircraftId, tipoAnexo]);
 
   const handleSign = async () => {
-    if (!operation || !anexo?.actual.id) {
+    if (!operation || !currentAnexoId) {
       return;
     }
 
@@ -237,19 +296,19 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       let signedData: AnexoData | null = null;
       switch (tipoAnexo) {
         case 4:
-          signedData = await signAnexo4Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo4Data(operation.idOperacion, currentAnexoId);
           break;
         case 5:
-          signedData = await signAnexo5Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo5Data(operation.idOperacion, currentAnexoId);
           break;
         case 6:
-          signedData = await signAnexo6Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo6Data(operation.idOperacion, currentAnexoId);
           break;
         case 7:
-          signedData = await signAnexo7Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo7Data(operation.idOperacion, currentAnexoId);
           break;
         case 8:
-          signedData = await signAnexo8Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo8Data(operation.idOperacion, currentAnexoId);
           break;
         default:
           signedData = null;
@@ -269,7 +328,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   };
 
   const handleRemake = async () => {
-    if (!operation || !anexo?.actual.id) {
+    if (!operation || !currentAnexoId) {
       return;
     }
 
@@ -278,19 +337,19 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       let remadeData: AnexoData | null = null;
       switch (tipoAnexo) {
         case 4:
-          remadeData = await remakeAnexo4Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo4Data(operation.idOperacion, currentAnexoId);
           break;
         case 5:
-          remadeData = await remakeAnexo5Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo5Data(operation.idOperacion, currentAnexoId);
           break;
         case 6:
-          remadeData = await remakeAnexo6Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo6Data(operation.idOperacion, currentAnexoId);
           break;
         case 7:
-          remadeData = await remakeAnexo7Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo7Data(operation.idOperacion, currentAnexoId);
           break;
         case 8:
-          remadeData = await remakeAnexo8Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo8Data(operation.idOperacion, currentAnexoId);
           break;
         default:
           remadeData = null;
@@ -359,14 +418,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             />
             <Badge
               label={
-                anexo.actual.numeroVersion > 0
-                  ? `v${anexo.actual.numeroVersion}`
+                currentAnexoVersion > 0
+                  ? `v${currentAnexoVersion}`
                   : "Sin versión"
               }
               style={getAnexoColorStyle(anexo.actual.color)}
             />
             <Badge
-              label={anexo.actual.estado ?? "SIN DATOS"}
+              label={currentAnexoStatus ?? "SIN DATOS"}
               style={getAnexoColorStyle(anexo.actual.color)}
             />
             {isViewingHistoricalVersion && selectedVersion && (
@@ -453,6 +512,34 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
       )}
 
+      {requiresAircraftSelection && (
+        <div className="card shadow-sm mb-4" style={{ border: "1px solid #E5E7EB" }}>
+          <div className="card-body">
+            <label className="form-label fw-bold small text-uppercase text-muted">
+              Aeronave seleccionada desde Anexo 4
+            </label>
+            <select
+              className="form-select"
+              value={selectedAircraftId ?? ""}
+              onChange={(e) => setSelectedAircraftId(e.target.value ? Number(e.target.value) : null)}
+              disabled={isViewingHistoricalVersion}
+            >
+              {anexoAircraftOptions.length === 0 && (
+                <option value="">
+                  No hay aeronaves seleccionadas en Anexo 4
+                </option>
+              )}
+              {anexoAircraftOptions.map((aircraft) => (
+                <option key={aircraft.id} value={aircraft.id}>
+                  {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()}
+                  {aircraft.serialNumber ? ` (${aircraft.serialNumber})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       <div
         className="card shadow-sm mb-4"
         style={{ border: "1px solid #E5E7EB" }}
@@ -514,7 +601,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  selectedAircraftId={selectedAircraftId}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || !selectedAircraftId}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."
@@ -530,7 +618,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  selectedAircraftId={selectedAircraftId}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || !selectedAircraftId}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."

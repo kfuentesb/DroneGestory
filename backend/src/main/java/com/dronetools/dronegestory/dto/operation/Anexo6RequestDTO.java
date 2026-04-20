@@ -11,6 +11,7 @@ import java.util.List;
 public class Anexo6RequestDTO {
     private String nombreConops;
     private LocalDateTime fechaOp;
+    private Long aircraftId;
     private List<String> materialesAuxiliares;
 
     // 2. Estructura

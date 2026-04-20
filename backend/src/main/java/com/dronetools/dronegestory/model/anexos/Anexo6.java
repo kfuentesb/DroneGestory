@@ -23,7 +23,8 @@ public class Anexo6 extends Anexo {
     @Column(name = "fechaOp")
     private LocalDateTime fechaOp;
 
-    // TODO insertar aeronave
+    @Column(name = "aircraft_id")
+    private Long aircraftId;
 
     // 1. Material auxiliar
     @ElementCollection(fetch = FetchType.EAGER)

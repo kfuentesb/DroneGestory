@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter @Setter
 public class Anexo4ResponseDTO {
@@ -23,6 +25,7 @@ public class Anexo4ResponseDTO {
     private String personal;
 
     //private List<AircraftLightDTO> drones;
+    private List<Long> aircraftIds;
 
     private String imagenEspacioAereo;
     private String imagenZonaVuelo;
@@ -70,6 +73,9 @@ public class Anexo4ResponseDTO {
         dto.setCoords(anexo.getCoords());
 
         dto.setPersonal(anexo.getPersonal());
+        dto.setAircraftIds(
+                anexo.getAircraftIds() == null ? List.of() : new ArrayList<>(anexo.getAircraftIds())
+        );
 
 //        if (anexo.getDrones() != null) {
 //            dto.setDrones(anexo.getDrones().stream()

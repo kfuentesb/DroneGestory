@@ -9,6 +9,7 @@ import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 type FormOperationAnexo6DetailProps = {
   operationId: number;
   initialValues?: Anexo6Data | null;
+  selectedAircraftId?: number | null;
   sharedConops?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
@@ -134,6 +135,7 @@ const SECCIONES_CONFIG: {
 export default function FormOperationAnexo6Detail({
   operationId,
   initialValues,
+  selectedAircraftId,
   sharedConops,
   disabled,
   readOnlyMessage,
@@ -165,10 +167,15 @@ export default function FormOperationAnexo6Detail({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
+    if (!selectedAircraftId) {
+      alert("Selecciona una aeronave de Anexo 4 antes de guardar.");
+      return;
+    }
 
     setSaving(true);
     try {
       const formData = new FormData();
+      formData.append("aircraftId", String(selectedAircraftId));
 
       // Materiales auxiliares como array de strings
       materialesAuxiliares

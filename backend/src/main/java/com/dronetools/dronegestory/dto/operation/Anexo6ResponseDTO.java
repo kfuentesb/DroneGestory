@@ -17,6 +17,7 @@ public class Anexo6ResponseDTO {
     private AnexoStatus estado;
     private String nombreConops;
     private LocalDateTime fechaOp;
+    private Long aircraftId;
     private List<String> materialesAuxiliares;
 
     // 2. Estructura
@@ -68,6 +69,7 @@ public class Anexo6ResponseDTO {
         dto.setEstado(anexo.getEstado());
         dto.setNombreConops(anexo.getNombreConops());
         dto.setFechaOp(anexo.getFechaOp());
+        dto.setAircraftId(anexo.getAircraftId());
         dto.setMaterialesAuxiliares(
                 anexo.getMaterialesAuxiliares() == null ? List.of() : new ArrayList<>(anexo.getMaterialesAuxiliares())
         );

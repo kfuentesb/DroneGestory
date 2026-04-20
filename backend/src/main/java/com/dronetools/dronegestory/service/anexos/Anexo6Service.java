@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.anexos.Anexo6;
+import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
@@ -12,24 +13,89 @@ import java.util.ArrayList;
 
 @Service
 public class Anexo6Service extends AnexoServiceBase<Anexo6> {
+    private final Anexo6Repository anexo6Repository;
 
     public Anexo6Service(Anexo6Repository repository, OperationRepository operationRepository) {
         super(repository, operationRepository);
+        this.anexo6Repository = repository;
     }
 
     @Transactional
     public Anexo6 registrarAnexo6(Long operationId, Anexo6 datosNuevos) {
+        if (datosNuevos.getAircraftId() == null) {
+            throw new RuntimeException("Debes seleccionar una aeronave de Anexo 4");
+        }
+
         Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        validarOperacionEditable(operation);
+
+        int currentVersion = anexo6Repository.findMaxNumeroVersionByOperation(operation);
         datosNuevos.setNombreConops(operation.getConops());
-        return registrarAnexo(operationId, datosNuevos,
-                Operation::getAnexo6Actual,
-                Operation::getNextVersionAnexo6);
+
+        if (currentVersion == 0) {
+            return crearRegistro(operation, datosNuevos, 1);
+        }
+
+        return anexo6Repository
+                .findByOperationAndNumeroVersionAndAircraftId(operation, currentVersion, datosNuevos.getAircraftId())
+                .map(existing -> {
+                    if (existing.getEstado() == AnexoStatus.FIRMADO) {
+                        throw new RuntimeException("El formulario actual de esta aeronave está firmado. Usa rehacer para crear una nueva versión.");
+                    }
+                    actualizarCampos(existing, datosNuevos);
+                    return anexo6Repository.save(existing);
+                })
+                .orElseGet(() -> crearRegistro(operation, datosNuevos, currentVersion));
     }
 
     @Transactional
     public Anexo6 rehacerAnexo6(Long idAnexoOrigen) {
-        return rehacerAnexo(idAnexoOrigen, Operation::getNextVersionAnexo6);
+        Anexo6 anexoOrigen = anexo6Repository.findById(idAnexoOrigen)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexoOrigen));
+
+        if (anexoOrigen.getEstado() != AnexoStatus.FIRMADO) {
+            throw new RuntimeException("Solo se puede rehacer desde una versión firmada");
+        }
+
+        Operation operation = anexoOrigen.getOperation();
+        validarOperacionEditable(operation);
+
+        Anexo6 nuevaVersion = new Anexo6();
+        nuevaVersion.setOperation(operation);
+        nuevaVersion.setNumeroVersion(anexo6Repository.findMaxNumeroVersionByOperation(operation) + 1);
+        nuevaVersion.setEstado(AnexoStatus.BORRADOR);
+        nuevaVersion.setNombreConops(operation.getConops());
+        nuevaVersion.setAircraftId(anexoOrigen.getAircraftId());
+        return anexo6Repository.save(nuevaVersion);
+    }
+
+    @Transactional(readOnly = true)
+    public Anexo6 getDatosPorAeronave(Long operationId, Long aircraftId) {
+        if (aircraftId == null) {
+            throw new RuntimeException("Debes indicar la aeronave seleccionada");
+        }
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        int currentVersion = anexo6Repository.findMaxNumeroVersionByOperation(operation);
+        if (currentVersion == 0) {
+            return null;
+        }
+        return anexo6Repository
+                .findByOperationAndNumeroVersionAndAircraftId(operation, currentVersion, aircraftId)
+                .orElseGet(() -> buildEmptyDraft(operation, aircraftId, currentVersion));
+    }
+
+    @Transactional(readOnly = true)
+    public Anexo6 getDatosVersionPorAeronave(Long operationId, int version, Long aircraftId) {
+        if (aircraftId == null) {
+            throw new RuntimeException("Debes indicar la aeronave seleccionada");
+        }
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        return anexo6Repository
+                .findByOperationAndNumeroVersionAndAircraftId(operation, version, aircraftId)
+                .orElse(null);
     }
 
     @Override
@@ -47,6 +113,7 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         if (destino.getOperation() != null) {
             destino.setNombreConops(destino.getOperation().getConops());
         }
+        destino.setAircraftId(origen.getAircraftId());
         destino.setFechaOp(origen.getFechaOp());
         destino.setMaterialesAuxiliares(
                 origen.getMaterialesAuxiliares() == null ? new ArrayList<>() : new ArrayList<>(origen.getMaterialesAuxiliares())
@@ -82,5 +149,23 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         destino.setInformacionActualizada(origen.getInformacionActualizada());
         destino.setSistemaActivado(origen.getSistemaActivado());
     }
-}
 
+    private Anexo6 crearRegistro(Operation operation, Anexo6 datosNuevos, int version) {
+        Anexo6 nuevo = new Anexo6();
+        nuevo.setOperation(operation);
+        nuevo.setNumeroVersion(version);
+        nuevo.setEstado(AnexoStatus.BORRADOR);
+        actualizarCampos(nuevo, datosNuevos);
+        return anexo6Repository.save(nuevo);
+    }
+
+    private Anexo6 buildEmptyDraft(Operation operation, Long aircraftId, int version) {
+        Anexo6 emptyDraft = new Anexo6();
+        emptyDraft.setOperation(operation);
+        emptyDraft.setNumeroVersion(version);
+        emptyDraft.setEstado(AnexoStatus.BORRADOR);
+        emptyDraft.setNombreConops(operation.getConops());
+        emptyDraft.setAircraftId(aircraftId);
+        return emptyDraft;
+    }
+}

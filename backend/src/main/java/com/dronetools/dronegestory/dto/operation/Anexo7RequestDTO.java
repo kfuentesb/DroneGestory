@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 public class Anexo7RequestDTO {
     private String nombreConops;
     private LocalDateTime fechaOp;
+    private Long aircraftId;
+    private Integer tiempoVueloMinutos;
 
     // 1. Verificación
     private Boolean estructuraCorrecto;

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,6 +19,7 @@ public class Anexo4RequestDTO {
     // RELACIONES
     private String personal;   // IDs de usuarios
 //    private List<Integer> dronesIds;     // IDs de drones
+    private List<Long> aircraftIds;
 
     // IMÁGENES
     private String imagenEspacioAereo;

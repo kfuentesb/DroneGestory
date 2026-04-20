@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
@@ -54,6 +56,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Personal y Drones
         destino.setPersonal(origen.getPersonal());
+        destino.setAircraftIds(copyAircraftIds(origen.getAircraftIds()));
 
 //        destino.getDrones().clear();
 //        if (origen.getDrones() != null) {
@@ -115,6 +118,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Relaciones (copiar referencias, no clonar entidades)
         copia.setPersonal(origen.getPersonal());
+        copia.setAircraftIds(copyAircraftIds(origen.getAircraftIds()));
 
 //        if (origen.getDrones() != null) {
 //            copia.getDrones().addAll(origen.getDrones());
@@ -231,6 +235,10 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("La imagen no puede superar los 5 MB");
         }
+    }
+
+    private List<Long> copyAircraftIds(List<Long> aircraftIds) {
+        return aircraftIds == null ? new ArrayList<>() : new ArrayList<>(aircraftIds);
     }
 
 }

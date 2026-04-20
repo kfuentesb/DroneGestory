@@ -15,6 +15,8 @@ public class Anexo7ResponseDTO {
     private AnexoStatus estado;
     private String nombreConops;
     private LocalDateTime fechaOp;
+    private Long aircraftId;
+    private Integer tiempoVueloMinutos;
 
     // 1. Verificación
     private Boolean estructuraCorrecto;
@@ -79,6 +81,8 @@ public class Anexo7ResponseDTO {
         dto.setEstado(anexo.getEstado());
         dto.setNombreConops(anexo.getNombreConops());
         dto.setFechaOp(anexo.getFechaOp());
+        dto.setAircraftId(anexo.getAircraftId());
+        dto.setTiempoVueloMinutos(anexo.getTiempoVueloMinutos());
         dto.setEstructuraCorrecto(anexo.getEstructuraCorrecto());
         dto.setEstructuraObservaciones(anexo.getEstructuraObservaciones());
         dto.setBateriasCorrecto(anexo.getBateriasCorrecto());
