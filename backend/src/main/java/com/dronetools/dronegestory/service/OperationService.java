@@ -222,7 +222,10 @@ public class OperationService {
             );
             flightTime.setAircraftSerialNumber(aircraft.getSerialNumber());
             flightTime.setOperation(operation);
-            flightTime.setFlightDate(Date.valueOf(LocalDate.now()));
+            LocalDate fechaVuelo = entrada.getFechaOp() != null
+                    ? entrada.getFechaOp().toLocalDate()
+                    : LocalDate.now();
+            flightTime.setFlightDate(Date.valueOf(fechaVuelo));
             flightTime.setDurationMinutes(minutosVuelo);
             int totalPrevio = flightTimeRepository
                     .findFirstByAircraft_AircraftIdOrderByFlightDateDescFlightTimeIdDesc(aircraft.getAircraftId())

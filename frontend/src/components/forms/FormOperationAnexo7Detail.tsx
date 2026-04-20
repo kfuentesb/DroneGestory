@@ -259,7 +259,7 @@ export default function FormOperationAnexo7Detail({
             type="number"
             min={0}
             className="form-control bg-white border"
-            value={formValues.minutosVuelo}
+            value={formValues.minutosVuelo ?? ""}
             onChange={(e) => handleChange("minutosVuelo", e.target.value)}
             disabled={disabled || saving}
           />
