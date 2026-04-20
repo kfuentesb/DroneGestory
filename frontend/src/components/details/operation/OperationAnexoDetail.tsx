@@ -94,6 +94,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
+  const [aircraftSerials, setAircraftSerials] = useState<string[]>([]);
+  const [selectedAircraftSerial, setSelectedAircraftSerial] = useState<string>("");
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -118,19 +120,28 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, [anexo, selectedVersionId]);
 
   const isViewingHistoricalVersion = selectedVersion !== null;
-  const actualIsSigned = anexo?.actual.estado === "FIRMADO";
+  const currentAnexoId = (tipoAnexo === 6 || tipoAnexo === 7)
+    ? ((anexoData as Anexo6Data | Anexo7Data | null)?.id ?? null)
+    : anexo?.actual.id;
+  const currentAnexoStatus = (tipoAnexo === 6 || tipoAnexo === 7)
+    ? ((anexoData as Anexo6Data | Anexo7Data | null)?.estado ?? null)
+    : anexo?.actual.estado;
+  const currentAnexoVersion = (tipoAnexo === 6 || tipoAnexo === 7)
+    ? ((anexoData as Anexo6Data | Anexo7Data | null)?.numeroVersion ?? 0)
+    : (anexo?.actual.numeroVersion ?? 0);
+  const actualIsSigned = currentAnexoStatus === "FIRMADO";
   const canManageCompletedOperation = role === "ADMIN";
   const canCreate = !operation?.completada || canManageCompletedOperation;
   const canEditDraft =
     !isViewingHistoricalVersion &&
     canCreate &&
     (!actualIsSigned || (anexo?.actual.numeroVersion ?? 0) === 0);
-  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned && !!anexo?.actual.id;
+  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned && !!currentAnexoId;
   const canSign =
     !isViewingHistoricalVersion &&
     canCreate &&
-    !!anexo?.actual.id &&
-    anexo?.actual.estado === "BORRADOR";
+    !!currentAnexoId &&
+    currentAnexoStatus === "BORRADOR";
 
   const loadOperation = async () => {
     if (!id) {
@@ -151,6 +162,16 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       }
 
       setOperation(data);
+
+      const anexo4Actual = await fetchAnexo4Data(data.idOperacion);
+      const seriales = Array.isArray(anexo4Actual?.serialesAeronaves)
+        ? anexo4Actual.serialesAeronaves
+        : [];
+      setAircraftSerials(seriales);
+      setSelectedAircraftSerial((prev) => {
+        if (prev && seriales.includes(prev)) return prev;
+        return seriales[0] ?? "";
+      });
     } catch (err) {
       console.error("Error cargando anexo:", err);
       setError("No se pudo cargar el anexo.");
@@ -172,6 +193,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       setLoadingVersionData(true);
       try {
         let data: AnexoData | null = null;
+
+        if ((tipoAnexo === 6 || tipoAnexo === 7) && !selectedAircraftSerial && !selectedVersionId) {
+          setAnexoData(null);
+          return;
+        }
 
         if (selectedVersionId) {
           switch (tipoAnexo) {
@@ -202,10 +228,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               data = await fetchAnexo5Data(operation.idOperacion);
               break;
             case 6:
-              data = await fetchAnexo6Data(operation.idOperacion);
+              data = await fetchAnexo6Data(operation.idOperacion, selectedAircraftSerial);
               break;
             case 7:
-              data = await fetchAnexo7Data(operation.idOperacion);
+              data = await fetchAnexo7Data(operation.idOperacion, selectedAircraftSerial);
               break;
             case 8:
               data = await fetchAnexo8Data(operation.idOperacion);
@@ -225,10 +251,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     };
 
     void loadSelectedAnexoData();
-  }, [operation, selectedVersionId, tipoAnexo]);
+  }, [operation, selectedVersionId, tipoAnexo, selectedAircraftSerial]);
 
   const handleSign = async () => {
-    if (!operation || !anexo?.actual.id) {
+    if (!operation || !currentAnexoId) {
       return;
     }
 
@@ -243,10 +269,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           signedData = await signAnexo5Data(operation.idOperacion, anexo.actual.id);
           break;
         case 6:
-          signedData = await signAnexo6Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo6Data(operation.idOperacion, currentAnexoId);
           break;
         case 7:
-          signedData = await signAnexo7Data(operation.idOperacion, anexo.actual.id);
+          signedData = await signAnexo7Data(operation.idOperacion, currentAnexoId);
           break;
         case 8:
           signedData = await signAnexo8Data(operation.idOperacion, anexo.actual.id);
@@ -269,7 +295,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   };
 
   const handleRemake = async () => {
-    if (!operation || !anexo?.actual.id) {
+    if (!operation || !currentAnexoId) {
       return;
     }
 
@@ -284,10 +310,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           remadeData = await remakeAnexo5Data(operation.idOperacion, anexo.actual.id);
           break;
         case 6:
-          remadeData = await remakeAnexo6Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo6Data(operation.idOperacion, currentAnexoId);
           break;
         case 7:
-          remadeData = await remakeAnexo7Data(operation.idOperacion, anexo.actual.id);
+          remadeData = await remakeAnexo7Data(operation.idOperacion, currentAnexoId);
           break;
         case 8:
           remadeData = await remakeAnexo8Data(operation.idOperacion, anexo.actual.id);
@@ -357,18 +383,18 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               label={operation.estadoOperacion}
               style={getOperationStatusStyle(operation.estadoOperacion)}
             />
-            <Badge
-              label={
-                anexo.actual.numeroVersion > 0
-                  ? `v${anexo.actual.numeroVersion}`
-                  : "Sin versión"
-              }
-              style={getAnexoColorStyle(anexo.actual.color)}
-            />
-            <Badge
-              label={anexo.actual.estado ?? "SIN DATOS"}
-              style={getAnexoColorStyle(anexo.actual.color)}
-            />
+              <Badge
+                label={
+                  currentAnexoVersion > 0
+                    ? `v${currentAnexoVersion}`
+                    : "Sin versión"
+                }
+                style={getAnexoColorStyle(anexo.actual.color)}
+              />
+              <Badge
+                label={currentAnexoStatus ?? "SIN DATOS"}
+                style={getAnexoColorStyle(anexo.actual.color)}
+              />
             {isViewingHistoricalVersion && selectedVersion && (
               <Badge
                 label={`Consultando v${selectedVersion.numeroVersion}`}
@@ -458,6 +484,16 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         style={{ border: "1px solid #E5E7EB" }}
       >
         <div className="card-body">
+          {(tipoAnexo === 6 || tipoAnexo === 7) && aircraftSerials.length === 0 && (
+            <div className="alert alert-warning mb-3">
+              Debes asignar al menos una aeronave en el Anexo 4 antes de gestionar este anexo.
+              <div className="mt-2">
+                <ButtonProp onClick={() => navigate(`/operations/${operation.idOperacion}/anexo4`)}>
+                  Ir a Anexo 4
+                </ButtonProp>
+              </div>
+            </div>
+          )}
           <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
             <h4 className="mb-0">
               {isViewingHistoricalVersion && selectedVersion
@@ -475,7 +511,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
           {loadingVersionData ? (
             <div className="text-center py-4">Cargando versión...</div>
-          ) : (
+          ) : ((tipoAnexo === 6 || tipoAnexo === 7) && aircraftSerials.length === 0) ? null : (
             <>
               {tipoAnexo === 4 && (
                 <FormOperationAnexo4Detail
@@ -511,9 +547,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               )}
               {tipoAnexo === 6 && (
                 <FormOperationAnexo6Detail
-                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  key={`${selectedVersionId ?? "current"}-${selectedAircraftSerial || "no-aircraft"}-a6`}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
+                  aircraftSerial={selectedAircraftSerial}
+                  aircraftOptions={aircraftSerials}
+                  onAircraftSerialChange={setSelectedAircraftSerial}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -527,9 +566,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               )}
               {tipoAnexo === 7 && (
                 <FormOperationAnexo7Detail
-                  key={selectedVersionId ?? anexo.actual.id ?? "current"}
+                  key={`${selectedVersionId ?? "current"}-${selectedAircraftSerial || "no-aircraft"}-a7`}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
+                  aircraftSerial={selectedAircraftSerial}
+                  aircraftOptions={aircraftSerials}
+                  onAircraftSerialChange={setSelectedAircraftSerial}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion

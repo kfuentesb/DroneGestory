@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo6")
@@ -44,10 +45,16 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
     }
 
     @GetMapping("/datos")
-    public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId) {
-        Operation op = operationRepository.findByIdWithAnexos6(operationId)
+    public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId,
+                                                      @RequestParam(value = "serialAeronave") String serialAeronave) {
+        Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        Anexo6 anexo6 = op.getAnexo6Actual();
+        String serialNormalizado = serialAeronave == null ? "" : serialAeronave.trim().toUpperCase(Locale.ROOT);
+        if (serialNormalizado.isBlank()) {
+            throw new RuntimeException("Debe indicar un serial de aeronave.");
+        }
+        Anexo6 anexo6 = repository.findFirstByOperationAndSerialAeronaveOrderByNumeroVersionDesc(op, serialNormalizado)
+                .orElse(null);
         if (anexo6 == null) {
             return ResponseEntity.noContent().build();
         }
@@ -88,4 +95,3 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
         return dto;
     }
 }
-

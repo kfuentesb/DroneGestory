@@ -2,9 +2,12 @@ package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.operation.OperationDetailDTO;
 import com.dronetools.dronegestory.dto.operation.OperationListDTO;
+import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
+import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
+import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -16,14 +19,21 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class OperationService {
 
     private final OperationRepository operationRepository;
+    private final AircraftRepository aircraftRepository;
 
-    public OperationService(OperationRepository operationRepository) {
+    public OperationService(OperationRepository operationRepository,
+                            AircraftRepository aircraftRepository) {
         this.operationRepository = operationRepository;
+        this.aircraftRepository = aircraftRepository;
     }
 
     @Transactional(readOnly = true)
@@ -102,9 +112,13 @@ public class OperationService {
     @Transactional
     public Operation completarOperation(Long operationId) {
         Operation op = findById(operationId);
+        if (op.getEstado() == OperationStatus.COMPLETADA) {
+            return op;
+        }
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
+        acumularTiempoYCiclosPorAeronave(op);
         op.setEstado(OperationStatus.COMPLETADA);
         return operationRepository.save(op);
     }
@@ -154,9 +168,13 @@ public class OperationService {
     @Transactional
     public OperationDetailDTO completarOperationDto(Long operationId) {
         Operation op = findById(operationId);
+        if (op.getEstado() == OperationStatus.COMPLETADA) {
+            return new OperationDetailDTO(op);
+        }
         if (!op.todosAnexosFirmados()) {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
+        acumularTiempoYCiclosPorAeronave(op);
         op.setEstado(OperationStatus.COMPLETADA);
         operationRepository.save(op);
         return new OperationDetailDTO(op); // El mapping ocurre aquí, en sesión
@@ -200,6 +218,36 @@ public class OperationService {
 
     private String formatearCodigo(int anio, int correlativo) {
         return "O-" + anio + "-" + String.format("%03d", correlativo);
+    }
+
+    private void acumularTiempoYCiclosPorAeronave(Operation operation) {
+        Map<String, Anexo7> ultimoAnexo7PorSerial = operation.getAnexos7().stream()
+                .filter(anexo -> anexo.getSerialAeronave() != null && !anexo.getSerialAeronave().isBlank())
+                .collect(Collectors.toMap(
+                        anexo -> anexo.getSerialAeronave().trim().toUpperCase(Locale.ROOT),
+                        anexo -> anexo,
+                        (a, b) -> a.getNumeroVersion() >= b.getNumeroVersion() ? a : b
+                ));
+
+        for (Map.Entry<String, Anexo7> entry : ultimoAnexo7PorSerial.entrySet()) {
+            String serial = entry.getKey();
+            Anexo7 anexo7 = entry.getValue();
+
+            Aircraft aircraft = aircraftRepository.findBySerialNumber(serial)
+                    .orElse(null);
+            if (aircraft == null) {
+                continue;
+            }
+
+            int minutosActuales = Objects.requireNonNullElse(aircraft.getFlightMinutes(), 0);
+            int minutosAnexo = Objects.requireNonNullElse(anexo7.getTiempoDeVuelo(), 0);
+            aircraft.setFlightMinutes(minutosActuales + minutosAnexo);
+
+            int ciclosActuales = Objects.requireNonNullElse(aircraft.getLandingCycles(), 0);
+            int ciclosAnexo = Objects.requireNonNullElse(anexo7.getCiclosDeAterrizaje(), 0);
+            aircraft.setLandingCycles(ciclosActuales + ciclosAnexo);
+            aircraftRepository.save(aircraft);
+        }
     }
 
 }

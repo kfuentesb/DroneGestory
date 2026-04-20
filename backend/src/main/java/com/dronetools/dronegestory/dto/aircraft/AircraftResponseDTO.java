@@ -37,6 +37,7 @@ public class AircraftResponseDTO {
     private SelectionStatus cautive;
     private String accessories;
     private Integer flightMinutes;
+    private Integer landingCycles;
     private LocalDate fechaFab;
     private AircraftPowersSource.PowerSource powerSource;
     private AircraftPowersSource.PowerSourceType powerSourceType;
@@ -71,6 +72,7 @@ public class AircraftResponseDTO {
         dto.setCautive(aircraft.getCautive());
         dto.setAccessories(aircraft.getAccessories());
         dto.setFlightMinutes(aircraft.getFlightMinutes());
+        dto.setLandingCycles(aircraft.getLandingCycles());
         return dto;
     }
 }

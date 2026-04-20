@@ -103,12 +103,17 @@ public class Aircraft {
     @Column(name = "flight_minutes", nullable = false, columnDefinition = "integer default 0")
     private Integer flightMinutes = 0;
 
+    @Column(name = "landing_cycles", nullable = false, columnDefinition = "integer default 0")
+    private Integer landingCycles = 0;
+
     @PrePersist
     public void ensureDefaults() {
         if (flightMinutes == null) {
             flightMinutes = 0;
         }
+        if (landingCycles == null) {
+            landingCycles = 0;
+        }
     }
 
 }
-

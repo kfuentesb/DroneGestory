@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "anexo4")
@@ -28,14 +30,13 @@ public class Anexo4 extends Anexo {
     // Texto personal
     private String personal;
 
-    // ---- RELACIÓN CON DRONES (UAS) ----
-//    @ManyToMany
-//    @JoinTable(
-//            name = "anexo4_aircrafts",
-//            joinColumns = @JoinColumn(name = "anexo4_id"),
-//            inverseJoinColumns = @JoinColumn(name = "aircraft_id")
-//    )
-//    private List<Aircraft> drones = new ArrayList<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "anexo4_aeronaves",
+            joinColumns = @JoinColumn(name = "anexo4_id")
+    )
+    @Column(name = "serial_aeronave")
+    private List<String> serialesAeronaves = new ArrayList<>();
 
     // --- Imágenes ---
     @Column(name = "imagen_espacio_aereo")

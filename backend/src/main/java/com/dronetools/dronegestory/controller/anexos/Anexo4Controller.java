@@ -110,6 +110,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
         // Personal como String
         anexo.setPersonal(dto.getPersonal());
+        anexo.setSerialesAeronaves(dto.getSerialesAeronaves());
 
         // Imágenes
         anexo.setImagenEspacioAereo(dto.getImagenEspacioAereo());

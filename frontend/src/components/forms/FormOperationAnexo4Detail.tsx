@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
+import { apiFetch } from "../../api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
@@ -57,6 +58,12 @@ type FormOperationAnexo4DetailProps = {
 };
 
 type ErrorsMap = Record<string, string | null>;
+type AircraftOption = {
+  id: number;
+  serialNumber: string;
+  manufacturer?: string;
+  model?: string;
+};
 
 const BOOL_OPTIONS = [
   { value: "", label: "N/A" },
@@ -77,6 +84,8 @@ export default function FormOperationAnexo4Detail({
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
+  const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
+  const [selectedAircraftSerial, setSelectedAircraftSerial] = useState("");
 
   useEffect(() => {
   if (!initialValues) return;
@@ -118,6 +127,20 @@ export default function FormOperationAnexo4Detail({
       return {};
     });
   }, [initialValues]);
+
+  useEffect(() => {
+    const loadAircraft = async () => {
+      try {
+        const response = await apiFetch(`${API_BASE_URL}/api/aircraft`);
+        if (!response) return;
+        const data = (await response.json()) as AircraftOption[];
+        setAircraftOptions(data);
+      } catch (err) {
+        console.error("Error cargando aeronaves:", err);
+      }
+    };
+    void loadAircraft();
+  }, []);
 
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
@@ -165,6 +188,10 @@ export default function FormOperationAnexo4Detail({
     try {
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
+        if (key === "serialesAeronaves" && Array.isArray(value)) {
+          value.forEach((serial) => formData.append("serialesAeronaves", serial));
+          return;
+        }
         if (value instanceof File) {
             formData.append(key, value);
         } else if (value !== undefined && value !== null && value !== "") {
@@ -195,6 +222,25 @@ export default function FormOperationAnexo4Detail({
       opciones={BOOL_OPTIONS}
     />
   );
+
+  const serialesAeronaves = Array.isArray(formValues.serialesAeronaves)
+    ? (formValues.serialesAeronaves as string[])
+    : [];
+
+  const agregarAeronave = () => {
+    const serial = selectedAircraftSerial.trim().toUpperCase();
+    if (!serial) return;
+    if (serialesAeronaves.includes(serial)) return;
+    handleChange("serialesAeronaves", [...serialesAeronaves, serial]);
+    setSelectedAircraftSerial("");
+  };
+
+  const eliminarAeronave = (serial: string) => {
+    handleChange(
+      "serialesAeronaves",
+      serialesAeronaves.filter((value) => value !== serial),
+    );
+  };
 
   return (
     <AnexoFormLayout
@@ -235,6 +281,68 @@ export default function FormOperationAnexo4Detail({
             onChange={(e) => handleChange("personal", e.target.value)}
             disabled={disabled || saving}
           />
+      </div>
+      <div className="mb-4">
+        <label className="form-label fw-bold small text-uppercase text-muted">Aeronaves participantes</label>
+        <div className="d-flex gap-2 align-items-center">
+          <select
+            className="form-select"
+            value={selectedAircraftSerial}
+            onChange={(e) => setSelectedAircraftSerial(e.target.value)}
+            disabled={disabled || saving}
+          >
+            <option value="">Seleccionar aeronave por serial</option>
+            {aircraftOptions.map((aircraft) => (
+              <option key={aircraft.id} value={aircraft.serialNumber}>
+                {aircraft.serialNumber}
+                {aircraft.manufacturer || aircraft.model ? ` - ${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}` : ""}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={agregarAeronave}
+            disabled={disabled || saving || !selectedAircraftSerial}
+          >
+            Añadir
+          </button>
+        </div>
+        <div className="table-responsive mt-3">
+          <table className="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Serial</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {serialesAeronaves.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className="text-muted">
+                    No hay aeronaves asignadas.
+                  </td>
+                </tr>
+              ) : (
+                serialesAeronaves.map((serial) => (
+                  <tr key={serial}>
+                    <td>{serial}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => eliminarAeronave(serial)}
+                        disabled={disabled || saving}
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="row">
         <div className="col-md-6 mb-3">

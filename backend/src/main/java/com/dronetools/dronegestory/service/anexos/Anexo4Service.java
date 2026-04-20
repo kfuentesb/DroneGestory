@@ -4,6 +4,8 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
+import com.dronetools.dronegestory.repository.anexos.Anexo7Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,25 +15,62 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
-    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository) {
+    private final Anexo6Repository anexo6Repository;
+    private final Anexo7Repository anexo7Repository;
+
+    public Anexo4Service(Anexo4Repository repository,
+                         OperationRepository operationRepository,
+                         Anexo6Repository anexo6Repository,
+                         Anexo7Repository anexo7Repository) {
         super(repository, operationRepository);
+        this.anexo6Repository = anexo6Repository;
+        this.anexo7Repository = anexo7Repository;
     }
 
     @Transactional
     public Anexo4 registrarAnexo4(Long operationId, Anexo4 datosNuevos) {
         Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        normalizarSeriales(datosNuevos);
+
+        Set<String> serialesPrevios = operation.getAnexo4Actual() == null
+                ? Set.of()
+                : operation.getAnexo4Actual().getSerialesAeronaves().stream()
+                        .map(this::normalizarSerial)
+                        .collect(Collectors.toSet());
+
         if (datosNuevos.getOperation() != null) {
             operation.setConops(datosNuevos.getOperation().getConops());
             operationRepository.save(operation);
         }
-        return registrarAnexo(operationId, datosNuevos,
+
+        Anexo4 guardado = registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
+
+        Set<String> serialesActuales = guardado.getSerialesAeronaves().stream()
+                .map(this::normalizarSerial)
+                .collect(Collectors.toSet());
+
+        List<String> serialesEliminados = serialesPrevios.stream()
+                .filter(serial -> !serialesActuales.contains(serial))
+                .toList();
+
+        if (!serialesEliminados.isEmpty()) {
+            anexo6Repository.deleteByOperationAndSerialAeronaveIn(operation, serialesEliminados);
+            anexo7Repository.deleteByOperationAndSerialAeronaveIn(operation, serialesEliminados);
+        }
+
+        return guardado;
     }
 
     @Transactional
@@ -54,6 +93,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Personal y Drones
         destino.setPersonal(origen.getPersonal());
+        normalizarSeriales(origen);
+        destino.setSerialesAeronaves(new ArrayList<>(origen.getSerialesAeronaves()));
 
 //        destino.getDrones().clear();
 //        if (origen.getDrones() != null) {
@@ -115,6 +156,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
         // Relaciones (copiar referencias, no clonar entidades)
         copia.setPersonal(origen.getPersonal());
+        normalizarSeriales(origen);
+        copia.setSerialesAeronaves(new ArrayList<>(origen.getSerialesAeronaves()));
 
 //        if (origen.getDrones() != null) {
 //            copia.getDrones().addAll(origen.getDrones());
@@ -231,6 +274,23 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("La imagen no puede superar los 5 MB");
         }
+    }
+
+    private void normalizarSeriales(Anexo4 anexo4) {
+        if (anexo4.getSerialesAeronaves() == null) {
+            anexo4.setSerialesAeronaves(new ArrayList<>());
+            return;
+        }
+        List<String> normalizados = anexo4.getSerialesAeronaves().stream()
+                .map(this::normalizarSerial)
+                .filter(serial -> !serial.isBlank())
+                .distinct()
+                .toList();
+        anexo4.setSerialesAeronaves(new ArrayList<>(normalizados));
+    }
+
+    private String normalizarSerial(String serial) {
+        return serial == null ? "" : serial.trim().toUpperCase(Locale.ROOT);
     }
 
 }

@@ -13,6 +13,9 @@ type FormOperationAnexo6DetailProps = {
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
+  aircraftSerial?: string;
+  aircraftOptions?: string[];
+  onAircraftSerialChange?: (serial: string) => void;
 };
 
 // Ojo: materialesAuxiliares lo gestionamos a parte como array.
@@ -138,6 +141,9 @@ export default function FormOperationAnexo6Detail({
   disabled,
   readOnlyMessage,
   onSaved,
+  aircraftSerial,
+  aircraftOptions = [],
+  onAircraftSerialChange,
 }: FormOperationAnexo6DetailProps) {
   const { formValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
@@ -165,6 +171,10 @@ export default function FormOperationAnexo6Detail({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
+    if (!aircraftSerial) {
+      alert("Debes seleccionar una aeronave para gestionar el Anexo 6.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -177,6 +187,9 @@ export default function FormOperationAnexo6Detail({
         .forEach(m => formData.append("materialesAuxiliares", m));
 
       // resto de campos
+      if (aircraftSerial) {
+        formData.append("serialAeronave", aircraftSerial);
+      }
       FORM_FIELDS.forEach((key) => {
         const value = formValues[key];
         if (value !== undefined && value !== null && value !== "") {
@@ -219,6 +232,23 @@ export default function FormOperationAnexo6Detail({
     >
       <SectionTitle>SECCIÓN 0: Información general</SectionTitle>
       <div className="row">
+        <div className="col-md-12 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Aeronave (serial)</label>
+          <select
+            className="form-select"
+            value={aircraftSerial ?? ""}
+            onChange={(e) => onAircraftSerialChange?.(e.target.value)}
+            disabled={disabled || saving}
+            required
+          >
+            <option value="">Seleccionar aeronave</option>
+            {aircraftOptions.map((serial) => (
+              <option key={serial} value={serial}>
+                {serial}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
           <div style={{ position: "relative" }}>
