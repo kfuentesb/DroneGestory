@@ -135,10 +135,10 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
 
     private void validarCamposOperacion(Anexo7 anexo7) {
         if (anexo7.getTiempoDeVuelo() == null || anexo7.getTiempoDeVuelo() < 0) {
-            throw new RuntimeException("El campo tiempo_de_vuelo es obligatorio y debe ser un entero válido.");
+            throw new RuntimeException("El campo tiempo de vuelo es obligatorio y debe ser un entero válido.");
         }
         if (anexo7.getCiclosDeAterrizaje() == null || anexo7.getCiclosDeAterrizaje() < 0) {
-            throw new RuntimeException("El campo ciclos_de_aterrizaje es obligatorio y debe ser un entero válido.");
+            throw new RuntimeException("El campo ciclos de aterrizaje es obligatorio y debe ser un entero válido.");
         }
     }
 

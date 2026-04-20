@@ -46,7 +46,7 @@ public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service>
 
     @GetMapping("/datos")
     public ResponseEntity<Anexo6ResponseDTO> getDatos(@PathVariable Long operationId,
-                                                      @RequestParam(value = "serialAeronave") String serialAeronave) {
+                                                      @RequestParam(value = "serialAeronave", required = true) String serialAeronave) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
         String serialNormalizado = serialAeronave == null ? "" : serialAeronave.trim().toUpperCase(Locale.ROOT);
