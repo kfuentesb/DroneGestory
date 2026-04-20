@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.anexos.Anexo6Repository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.anexos.Anexo6Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,9 @@ import java.util.Locale;
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo6")
 public class Anexo6Controller extends AnexoControllerBase<Anexo6, Anexo6Service> {
+
+    @Autowired
+    private Anexo6Repository repository;  // Debe ser el repositorio específico
 
     public Anexo6Controller(Anexo6Service service,
                             OperationRepository operationRepository,
