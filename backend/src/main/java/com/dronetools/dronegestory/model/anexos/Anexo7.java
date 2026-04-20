@@ -20,7 +20,11 @@ public class Anexo7 extends Anexo {
     @Column(name = "fechaOp")
     private LocalDateTime fechaOp;
 
-    // TODO asignar aeronave
+    @Column(name = "serial_aeronave")
+    private String serialAeronave;
+
+    @Column(name = "minutos_vuelo")
+    private Integer minutosVuelo;
 
     // 1. Verificación - 13 elementos
     private Boolean estructuraCorrecto;

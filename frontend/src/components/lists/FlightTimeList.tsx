@@ -217,7 +217,7 @@ export default function FlightTimeList() {
                                             Ver documento
                                         </button>
                                     ) : (
-                                        "No"
+                                        row.operationId ? "sin rellenar" : "No"
                                     )}
                                 </td>
                             </>

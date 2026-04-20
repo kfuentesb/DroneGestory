@@ -7,6 +7,9 @@ type FormOperationAnexo7DetailProps = {
   operationId: number;
   initialValues?: Anexo7Data | null;
   sharedConops?: string;
+  selectedAircraftSerial?: string;
+  aircraftOptions?: Array<{ id: number; serialNumber: string; label: string }>;
+  onAircraftChange?: (serial: string) => void;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo7Data | null) => void | Promise<void>;
@@ -14,6 +17,7 @@ type FormOperationAnexo7DetailProps = {
 
 const FORM_FIELDS = [
   "fechaOp",
+  "minutosVuelo",
   "estructuraCorrecto",
   "estructuraObservaciones",
   "bateriasCorrecto",
@@ -95,6 +99,9 @@ export default function FormOperationAnexo7Detail({
   operationId,
   initialValues,
   sharedConops,
+  selectedAircraftSerial,
+  aircraftOptions = [],
+  onAircraftChange,
   disabled,
   readOnlyMessage,
   onSaved,
@@ -118,6 +125,9 @@ export default function FormOperationAnexo7Detail({
           formData.append(key, value);
         }
       });
+      if (selectedAircraftSerial) {
+        formData.append("serialAeronave", selectedAircraftSerial);
+      }
 
       const savedData = await saveAnexo7Data(operationId, formData);
       alert("Anexo 7 guardado correctamente");
@@ -219,12 +229,38 @@ export default function FormOperationAnexo7Detail({
         </div>
         </div>
         <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Aeronave</label>
+          <select
+            className="form-select"
+            value={selectedAircraftSerial ?? ""}
+            onChange={(e) => onAircraftChange?.(e.target.value)}
+          >
+            <option value="">Selecciona una aeronave</option>
+            {aircraftOptions.map((aircraft) => (
+              <option key={aircraft.id} value={aircraft.serialNumber}>
+                {aircraft.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-3 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>
           <input
             type="datetime-local"
             className="form-control bg-white border"
             value={formValues.fechaOp}
             onChange={(e) => handleChange("fechaOp", e.target.value)}
+            disabled={disabled || saving}
+          />
+        </div>
+        <div className="col-md-3 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Minutos vuelo</label>
+          <input
+            type="number"
+            min={0}
+            className="form-control bg-white border"
+            value={formValues.minutosVuelo}
+            onChange={(e) => handleChange("minutosVuelo", e.target.value)}
             disabled={disabled || saving}
           />
         </div>

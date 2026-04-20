@@ -33,7 +33,7 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     @PutMapping("/{idAnexo}/firmar/datos")
     public Anexo7ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
-        Anexo7 anexo = service.firmarAnexo(idAnexo, username);
+        Anexo7 anexo = service.firmarVersionAnexo7(idAnexo, username);
         return toResponse(anexo, operationId);
     }
 
@@ -44,10 +44,9 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
     }
 
     @GetMapping("/datos")
-    public ResponseEntity<Anexo7ResponseDTO> getDatos(@PathVariable Long operationId) {
-        Operation op = operationRepository.findByIdWithAnexos7(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
-        Anexo7 anexo7 = op.getAnexo7Actual();
+    public ResponseEntity<Anexo7ResponseDTO> getDatos(@PathVariable Long operationId,
+                                                      @RequestParam(required = false) String serialAeronave) {
+        Anexo7 anexo7 = service.buscarPorOperacionYSerial(operationId, serialAeronave);
         if (anexo7 == null) {
             return ResponseEntity.noContent().build();
         }
@@ -88,4 +87,3 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
         return dto;
     }
 }
-

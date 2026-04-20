@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { apiFetch } from "../../../api";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
 import { useAuth } from "../../commons/hooks/useAuth";
@@ -53,6 +54,7 @@ type OperationAnexoDetailProps = {
 };
 
 type AnexoData = Anexo4Data | Anexo5Data | Anexo6Data | Anexo7Data | Anexo8Data;
+type AircraftOption = { id: number; serialNumber: string; label: string };
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -94,6 +96,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
+  const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
+  const [selectedAircraftSerial, setSelectedAircraftSerial] = useState<string>("");
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -168,6 +172,44 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       return;
     }
 
+    if (tipoAnexo !== 6 && tipoAnexo !== 7) {
+      return;
+    }
+
+    const loadAircraftOptions = async () => {
+      try {
+        const response = await apiFetch("/api/aircraft");
+        const data = response ? await response.json() : [];
+        const options = Array.isArray(data)
+          ? data
+              .filter((item) => typeof item?.serialNumber === "string" && item.serialNumber.trim() !== "")
+              .map((item) => ({
+                id: Number(item.id),
+                serialNumber: String(item.serialNumber),
+                label: `${item.manufacturer ?? ""} ${item.model ?? ""} · ${item.serialNumber}`.trim(),
+              }))
+          : [];
+        setAircraftOptions(options);
+        setSelectedAircraftSerial((current) => {
+          if (current) {
+            return current;
+          }
+          return options.length > 0 ? options[0].serialNumber : "";
+        });
+      } catch (err) {
+        console.error("Error cargando aeronaves:", err);
+        setAircraftOptions([]);
+      }
+    };
+
+    void loadAircraftOptions();
+  }, [operation, tipoAnexo]);
+
+  useEffect(() => {
+    if (!operation) {
+      return;
+    }
+
     const loadSelectedAnexoData = async () => {
       setLoadingVersionData(true);
       try {
@@ -202,10 +244,10 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               data = await fetchAnexo5Data(operation.idOperacion);
               break;
             case 6:
-              data = await fetchAnexo6Data(operation.idOperacion);
+              data = await fetchAnexo6Data(operation.idOperacion, selectedAircraftSerial || undefined);
               break;
             case 7:
-              data = await fetchAnexo7Data(operation.idOperacion);
+              data = await fetchAnexo7Data(operation.idOperacion, selectedAircraftSerial || undefined);
               break;
             case 8:
               data = await fetchAnexo8Data(operation.idOperacion);
@@ -216,6 +258,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         }
 
         setAnexoData(data);
+        if ((tipoAnexo === 6 || tipoAnexo === 7) && data && "serialAeronave" in data && data.serialAeronave) {
+          setSelectedAircraftSerial(String(data.serialAeronave));
+        }
       } catch (err) {
         console.error(`Error cargando datos del Anexo ${tipoAnexo}:`, err);
         setAnexoData(null);
@@ -225,7 +270,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     };
 
     void loadSelectedAnexoData();
-  }, [operation, selectedVersionId, tipoAnexo]);
+  }, [operation, selectedVersionId, tipoAnexo, selectedAircraftSerial]);
 
   const handleSign = async () => {
     if (!operation || !anexo?.actual.id) {
@@ -514,6 +559,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
+                  selectedAircraftSerial={selectedAircraftSerial}
+                  aircraftOptions={aircraftOptions}
+                  onAircraftChange={(serial) => setSelectedAircraftSerial(serial)}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -530,6 +578,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
+                  selectedAircraftSerial={selectedAircraftSerial}
+                  aircraftOptions={aircraftOptions}
+                  onAircraftChange={(serial) => setSelectedAircraftSerial(serial)}
                   disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion

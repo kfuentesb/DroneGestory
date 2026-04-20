@@ -42,6 +42,7 @@ export type Anexo5Data = AnexoBaseData & {
 export type Anexo6Data = AnexoBaseData & {
   nombreConops?: string;
   fechaOp?: string;
+  serialAeronave?: string;
   materialesAuxiliares?: string[];
   sinImpacto?: boolean | null;
   centroGravedad?: boolean | null;
@@ -78,6 +79,8 @@ export type Anexo6Data = AnexoBaseData & {
 export type Anexo7Data = AnexoBaseData & {
   nombreConops?: string;
   fechaOp?: string;
+  serialAeronave?: string;
+  minutosVuelo?: number | null;
   estructuraCorrecto?: boolean | null;
   estructuraObservaciones?: string;
   bateriasCorrecto?: boolean | null;
@@ -216,8 +219,9 @@ export async function fetchAnexo5VersionData(
   return (await response.json()) as Anexo5Data;
 }
 
-export async function fetchAnexo6Data(operationId: number): Promise<Anexo6Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/datos`);
+export async function fetchAnexo6Data(operationId: number, serialAeronave?: string): Promise<Anexo6Data | null> {
+  const params = serialAeronave ? `?serialAeronave=${encodeURIComponent(serialAeronave)}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/datos${params}`);
 
   if (!response || response.status === 204) {
     return null;
@@ -239,8 +243,9 @@ export async function fetchAnexo6VersionData(
   return (await response.json()) as Anexo6Data;
 }
 
-export async function fetchAnexo7Data(operationId: number): Promise<Anexo7Data | null> {
-  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/datos`);
+export async function fetchAnexo7Data(operationId: number, serialAeronave?: string): Promise<Anexo7Data | null> {
+  const params = serialAeronave ? `?serialAeronave=${encodeURIComponent(serialAeronave)}` : "";
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo7/datos${params}`);
 
   if (!response || response.status === 204) {
     return null;
