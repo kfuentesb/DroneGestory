@@ -30,7 +30,7 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
         validarOperacionEditable(operation);
 
-        int currentVersion = anexo6Repository.findMaxNumeroVersionByOperation(operation);
+        int currentVersion = anexo6Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, datosNuevos.getAircraftId());
         datosNuevos.setNombreConops(operation.getConops());
 
         if (currentVersion == 0) {
@@ -63,10 +63,13 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
 
         Anexo6 nuevaVersion = new Anexo6();
         nuevaVersion.setOperation(operation);
-        nuevaVersion.setNumeroVersion(anexo6Repository.findMaxNumeroVersionByOperation(operation) + 1);
+        nuevaVersion.setNumeroVersion(
+            anexo6Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, anexoOrigen.getAircraftId()) + 1
+        );
         nuevaVersion.setEstado(AnexoStatus.BORRADOR);
-        nuevaVersion.setNombreConops(operation.getConops());
-        nuevaVersion.setAircraftId(anexoOrigen.getAircraftId());
+        nuevaVersion.setFirmadoPor(null);
+        nuevaVersion.setFechaFirma(null);
+        actualizarCampos(nuevaVersion, anexoOrigen);
         return anexo6Repository.save(nuevaVersion);
     }
 
@@ -77,13 +80,13 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         }
         Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
-        int currentVersion = anexo6Repository.findMaxNumeroVersionByOperation(operation);
+        int currentVersion = anexo6Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, aircraftId);
         if (currentVersion == 0) {
             return null;
         }
         return anexo6Repository
                 .findByOperationAndNumeroVersionAndAircraftId(operation, currentVersion, aircraftId)
-                .orElseGet(() -> buildEmptyDraft(operation, aircraftId, currentVersion));
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -187,13 +190,4 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         return anexo6Repository.save(nuevo);
     }
 
-    private Anexo6 buildEmptyDraft(Operation operation, Long aircraftId, int version) {
-        Anexo6 emptyDraft = new Anexo6();
-        emptyDraft.setOperation(operation);
-        emptyDraft.setNumeroVersion(version);
-        emptyDraft.setEstado(AnexoStatus.BORRADOR);
-        emptyDraft.setNombreConops(operation.getConops());
-        emptyDraft.setAircraftId(aircraftId);
-        return emptyDraft;
-    }
 }

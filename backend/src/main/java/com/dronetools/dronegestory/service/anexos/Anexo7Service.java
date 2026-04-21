@@ -28,7 +28,7 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
         validarOperacionEditable(operation);
 
-        int currentVersion = anexo7Repository.findMaxNumeroVersionByOperation(operation);
+        int currentVersion = anexo7Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, datosNuevos.getAircraftId());
         datosNuevos.setNombreConops(operation.getConops());
 
         if (currentVersion == 0) {
@@ -61,10 +61,13 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
 
         Anexo7 nuevaVersion = new Anexo7();
         nuevaVersion.setOperation(operation);
-        nuevaVersion.setNumeroVersion(anexo7Repository.findMaxNumeroVersionByOperation(operation) + 1);
+        nuevaVersion.setNumeroVersion(
+            anexo7Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, anexoOrigen.getAircraftId()) + 1
+        );
         nuevaVersion.setEstado(AnexoStatus.BORRADOR);
-        nuevaVersion.setNombreConops(operation.getConops());
-        nuevaVersion.setAircraftId(anexoOrigen.getAircraftId());
+        nuevaVersion.setFirmadoPor(null);
+        nuevaVersion.setFechaFirma(null);
+        actualizarCampos(nuevaVersion, anexoOrigen);
         return anexo7Repository.save(nuevaVersion);
     }
 
@@ -75,13 +78,13 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         }
         Operation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
-        int currentVersion = anexo7Repository.findMaxNumeroVersionByOperation(operation);
+        int currentVersion = anexo7Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, aircraftId);
         if (currentVersion == 0) {
             return null;
         }
         return anexo7Repository
                 .findByOperationAndNumeroVersionAndAircraftId(operation, currentVersion, aircraftId)
-                .orElseGet(() -> buildEmptyDraft(operation, aircraftId, currentVersion));
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -190,13 +193,4 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         return anexo7Repository.save(nuevo);
     }
 
-    private Anexo7 buildEmptyDraft(Operation operation, Long aircraftId, int version) {
-        Anexo7 emptyDraft = new Anexo7();
-        emptyDraft.setOperation(operation);
-        emptyDraft.setNumeroVersion(version);
-        emptyDraft.setEstado(AnexoStatus.BORRADOR);
-        emptyDraft.setNombreConops(operation.getConops());
-        emptyDraft.setAircraftId(aircraftId);
-        return emptyDraft;
-    }
 }

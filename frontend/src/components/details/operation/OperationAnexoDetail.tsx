@@ -9,11 +9,9 @@ import {
   fetchAnexo5Data,
   fetchAnexo5VersionData,
   fetchAnexo6Data,
-  fetchAnexo6VersionByNumero,
-  fetchAnexo6AircraftsInVersion,
+  fetchAnexo6VersionData,
   fetchAnexo7Data,
-  fetchAnexo7VersionByNumero,
-  fetchAnexo7AircraftsInVersion,
+  fetchAnexo7VersionData,
   fetchAnexo8Data,
   fetchAnexo8VersionData,
   fetchAircraftOptions,
@@ -28,8 +26,6 @@ import {
   signAnexo6Data,
   signAnexo7Data,
   signAnexo8Data,
-  signAnexo6Version,
-  signAnexo7Version,
   saveAnexo6Data,
   saveAnexo7Data,
   type Anexo4Data,
@@ -132,10 +128,15 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const isViewingHistoricalVersion = selectedVersion !== null;
   const requiresAircraftSelection = tipoAnexo === 6 || tipoAnexo === 7;
   
-  // Para anexos 6 y 7, el estado se determina por la versión completa, no por aeronave individual
-  const currentAnexoId = anexoData?.id ?? anexo?.actual.id ?? null;
-  const currentAnexoVersion = anexoData?.numeroVersion ?? anexo?.actual.numeroVersion ?? 0;
-  const currentAnexoStatus = anexoData?.estado ?? anexo?.actual.estado ?? null;
+  const currentAnexoId = requiresAircraftSelection
+    ? (anexoData?.id ?? null)
+    : (anexoData?.id ?? anexo?.actual.id ?? null);
+  const currentAnexoVersion = requiresAircraftSelection
+    ? (anexoData?.numeroVersion ?? 0)
+    : (anexoData?.numeroVersion ?? anexo?.actual.numeroVersion ?? 0);
+  const currentAnexoStatus = requiresAircraftSelection
+    ? (anexoData?.estado ?? null)
+    : (anexoData?.estado ?? anexo?.actual.estado ?? null);
   const actualIsSigned = currentAnexoStatus === "FIRMADO";
   const canManageCompletedOperation = role === "ADMIN";
   const canCreate = !operation?.completada || canManageCompletedOperation;
@@ -210,6 +211,16 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, [operation, requiresAircraftSelection]);
 
   useEffect(() => {
+    if (!requiresAircraftSelection || !selectedVersion) {
+      return;
+    }
+
+    if (selectedVersion.aircraftId) {
+      setSelectedAircraftId(selectedVersion.aircraftId);
+    }
+  }, [requiresAircraftSelection, selectedVersion]);
+
+  useEffect(() => {
     if (!operation) {
       return;
     }
@@ -228,25 +239,17 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               data = await fetchAnexo5VersionData(operation.idOperacion, selectedVersionId);
               break;
             case 6:
-              if (!selectedAircraftId || !selectedVersion) {
+              if (!selectedVersion) {
                 data = null;
               } else {
-                data = await fetchAnexo6VersionByNumero(
-                  operation.idOperacion,
-                  selectedVersion.numeroVersion,
-                  selectedAircraftId,
-                );
+                data = await fetchAnexo6VersionData(operation.idOperacion, selectedVersion.id);
               }
               break;
             case 7:
-              if (!selectedAircraftId || !selectedVersion) {
+              if (!selectedVersion) {
                 data = null;
               } else {
-                data = await fetchAnexo7VersionByNumero(
-                  operation.idOperacion,
-                  selectedVersion.numeroVersion,
-                  selectedAircraftId,
-                );
+                data = await fetchAnexo7VersionData(operation.idOperacion, selectedVersion.id);
               }
               break;
             case 8:
@@ -297,13 +300,19 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     try {
       setSigning(true);
       
-      // Para anexos 6 y 7, firmar toda la versión completa
+      // Para anexos 6 y 7, firmar solo la aeronave seleccionada
       if (tipoAnexo === 6 || tipoAnexo === 7) {
-        const success = tipoAnexo === 6 
-          ? await signAnexo6Version(operation.idOperacion, currentAnexoVersion)
-          : await signAnexo7Version(operation.idOperacion, currentAnexoVersion);
-        
-        if (success) {
+        if (!currentAnexoId) {
+          alert("No hay borrador para la aeronave seleccionada.");
+          return;
+        }
+
+        const signedData = tipoAnexo === 6
+          ? await signAnexo6Data(operation.idOperacion, currentAnexoId)
+          : await signAnexo7Data(operation.idOperacion, currentAnexoId);
+
+        if (signedData) {
+          setAnexoData(signedData);
           setShowSignConfirm(false);
           navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
           await loadOperation();
@@ -401,6 +410,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     setAutoSaving(true);
     try {
       const formData = new FormData(currentForm);
+      formData.set("aircraftId", String(selectedAircraftId));
       
       if (tipoAnexo === 6) {
         await saveAnexo6Data(operation.idOperacion, formData);
@@ -590,13 +600,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               <select
                 className="form-select"
                 value={selectedAircraftId ?? ""}
-                onChange={(e) => {
-                  if (e.target.value === "") {
-                    setSelectedAircraftId(null);
-                    return;
-                  }
-                  setSelectedAircraftId(Number(e.target.value));
-                }}
+                onChange={(e) => void handleAircraftChange(e)}
                 disabled={isViewingHistoricalVersion}
               >
                 {anexoAircraftOptions.map((aircraft) => (

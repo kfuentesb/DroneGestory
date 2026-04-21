@@ -34,6 +34,7 @@ export type AnexoInfoDTO = {
 export type AnexoHistoricoDTO = {
   id: number;
   numeroVersion: number;
+  aircraftId: number | null;
   estado: Exclude<AnexoStatus, null>;
   color: Exclude<AnexoColor, "GRIS">;
   firmadoPor: string | null;

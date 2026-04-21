@@ -223,7 +223,12 @@ export default function FormOperationAnexo4Detail({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (disabled || !validate()) return;
+    if (disabled) return;
+
+    if (!validate()) {
+      alert("Revisa los campos obligatorios antes de guardar.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -301,6 +306,9 @@ export default function FormOperationAnexo4Detail({
           onChange={(e) => handleChange("descripcion", e.target.value)}
           disabled={disabled || saving}
         />
+        {errors.descripcion && (
+          <div className="text-danger small mt-1">{errors.descripcion}</div>
+        )}
       </div>
       <div className="mb-3">
         <label className="form-label fw-bold small text-uppercase text-muted">

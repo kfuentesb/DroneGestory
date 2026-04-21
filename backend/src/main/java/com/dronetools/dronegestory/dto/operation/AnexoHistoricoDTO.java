@@ -9,7 +9,6 @@ import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +16,7 @@ import java.util.List;
 public class AnexoHistoricoDTO {
     private Long id;
     private int numeroVersion;
+    private Long aircraftId;
     private AnexoStatus estado;
     private String color;
     private String firmadoPor;
@@ -27,6 +27,7 @@ public class AnexoHistoricoDTO {
         AnexoHistoricoDTO dto = new AnexoHistoricoDTO();
         dto.id = anexo.getId();
         dto.numeroVersion = anexo.getNumeroVersion();
+        dto.aircraftId = extractAircraftId(anexo);
         dto.estado = anexo.getEstado();
         dto.color = anexo.getEstado() == AnexoStatus.BORRADOR ? "AMARILLO" : "VERDE";
         dto.firmadoPor = anexo.getFirmadoPor();
@@ -56,6 +57,16 @@ public class AnexoHistoricoDTO {
         }
         if (anexo instanceof Anexo8 anexo8) {
             return anexo8.getNombreConops();
+        }
+        return null;
+    }
+
+    private static Long extractAircraftId(Anexo anexo) {
+        if (anexo instanceof Anexo6 anexo6) {
+            return anexo6.getAircraftId();
+        }
+        if (anexo instanceof Anexo7 anexo7) {
+            return anexo7.getAircraftId();
         }
         return null;
     }

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
-import { completeOperation, fetchOperationDetail } from "../../operations/operation.api";
+import { completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
+import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
 import {
   formatDateTime,
@@ -43,6 +44,7 @@ export default function OperationDetail() {
   const navigate = useNavigate();
 
   const [operation, setOperation] = useState<OperationDetailDTO | null>(null);
+  const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
@@ -77,6 +79,29 @@ export default function OperationDetail() {
   useEffect(() => {
     void loadOperation();
   }, [id]);
+
+  useEffect(() => {
+    const loadAircraftOptions = async () => {
+      try {
+        const options = await fetchAircraftOptions();
+        setAircraftOptions(options);
+      } catch (err) {
+        console.error("Error cargando aeronaves:", err);
+      }
+    };
+
+    void loadAircraftOptions();
+  }, []);
+
+  const aircraftLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    aircraftOptions.forEach((aircraft) => {
+      const base = `${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim();
+      const label = aircraft.serialNumber ? `${base} (${aircraft.serialNumber})` : base;
+      map.set(aircraft.id, label || `Aeronave ${aircraft.id}`);
+    });
+    return map;
+  }, [aircraftOptions]);
 
   const resumen = useMemo(() => {
     if (!operation) {
@@ -217,6 +242,7 @@ export default function OperationDetail() {
                           <tr>
                             <th>Versión</th>
                             <th>Estado</th>
+                            {(tipoAnexo === 6 || tipoAnexo === 7) && <th>Aeronave</th>}
                             <th>Firmado por</th>
                             <th>Fecha firma</th>
                             <th>Acción</th>
@@ -229,6 +255,11 @@ export default function OperationDetail() {
                               <td>
                                 <Badge label={version.estado} style={getAnexoColorStyle(version.color)} />
                               </td>
+                              {(tipoAnexo === 6 || tipoAnexo === 7) && (
+                                <td>
+                                  {version.aircraftId ? (aircraftLabelById.get(version.aircraftId) ?? `Aeronave ${version.aircraftId}`) : "-"}
+                                </td>
+                              )}
                               <td>{version.firmadoPor ?? "-"}</td>
                               <td>{formatDateTime(version.fechaFirma)}</td>
                               <td>
