@@ -266,6 +266,8 @@ export default function FormOperationAnexo4Detail({
     />
   );
 
+  const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
+
   return (
     <AnexoFormLayout
       title="APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL"
@@ -332,7 +334,7 @@ export default function FormOperationAnexo4Detail({
             {aircraftOptions
               .filter(
                 (a) =>
-                  !normalizeAircraftIds(formValues.aircraftIds).includes(a.id)
+                  !aircraftIds.includes(a.id)
               )
               .map((aircraft) => (
                 <option key={aircraft.id} value={aircraft.id}>
@@ -349,16 +351,16 @@ export default function FormOperationAnexo4Detail({
               disabled ||
               saving ||
               selectedAircraftId === "" ||
-              normalizeAircraftIds(formValues.aircraftIds).includes(selectedAircraftId)
+              aircraftIds.includes(selectedAircraftId)
             }
           >
             Añadir
           </button>
         </div>
 
-        {normalizeAircraftIds(formValues.aircraftIds).length > 0 && (
+        {aircraftIds.length > 0 && (
           <ul className="list-group">
-            {normalizeAircraftIds(formValues.aircraftIds).map((id: number) => {
+            {aircraftIds.map((id: number) => {
               const aircraft = aircraftOptions.find((a) => a.id === id);
               if (!aircraft) return null;
               return (

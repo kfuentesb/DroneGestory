@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -24,6 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
 public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Anexo4Controller.class);
 
     //private final AircraftRepository aircraftRepository;
 
@@ -214,6 +217,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
                 try {
                     target.add(Long.parseLong(trimmed));
                 } catch (NumberFormatException ignored) {
+                    LOGGER.warn("Valor de aircraftId inválido recibido en Anexo 4: {}", trimmed);
                 }
             }
         }
