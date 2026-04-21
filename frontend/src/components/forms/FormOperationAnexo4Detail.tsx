@@ -61,6 +61,24 @@ type FormOperationAnexo4DetailProps = {
 type ErrorsMap = Record<string, string | null>;
 type AircraftOption = { id: number; manufacturer?: string; model?: string; serialNumber?: string };
 
+const normalizeAircraftIds = (value: unknown): number[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => Number(item))
+      .filter((item) => Number.isFinite(item));
+  }
+
+  if (typeof value === "string") {
+    if (!value.trim()) return [];
+    return value
+      .split(",")
+      .map((item) => Number(item.trim()))
+      .filter((item) => Number.isFinite(item));
+  }
+
+  return [];
+};
+
 const BOOL_OPTIONS = [
   { value: "", label: "N/A" },
   { value: "true", label: "Sí" },
@@ -100,6 +118,9 @@ export default function FormOperationAnexo4Detail({
       Object.entries(initialValues).map(([k, v]) => {
         if (k === "fechaHoraPrevista") {
           return [k, normalizeDateTimeLocal(v)];
+        }
+        if (k === "aircraftIds") {
+          return [k, normalizeAircraftIds(v)];
         }
         return [
           k,
@@ -159,19 +180,20 @@ export default function FormOperationAnexo4Detail({
 
   // Añadir aeronave a la lista
   const handleAddAircraft = () => {
+    const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
     if (
       selectedAircraftId === "" ||
-      (formValues.aircraftIds || []).includes(selectedAircraftId)
+      aircraftIds.includes(selectedAircraftId)
     )
       return;
-    const newIds = [...(formValues.aircraftIds || []), selectedAircraftId];
+    const newIds = [...aircraftIds, selectedAircraftId];
     handleChange("aircraftIds", newIds);
     setSelectedAircraftId("");
   };
 
   // Quitar aeronave de la lista
   const handleRemoveAircraft = (id: number) => {
-    const filtered = (formValues.aircraftIds || []).filter(
+    const filtered = normalizeAircraftIds(formValues.aircraftIds).filter(
       (aircraftId: number) => aircraftId !== id
     );
     handleChange("aircraftIds", filtered);
@@ -208,8 +230,8 @@ export default function FormOperationAnexo4Detail({
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
         if (key === "aircraftIds" && Array.isArray(value)) {
-          value.forEach((aircraftId) =>
-            formData.append("aircraftIds", String(aircraftId))
+          normalizeAircraftIds(value).forEach((aircraftId, index) =>
+            formData.append(`aircraftIds[${index}]`, String(aircraftId))
           );
           return;
         }
@@ -310,7 +332,7 @@ export default function FormOperationAnexo4Detail({
             {aircraftOptions
               .filter(
                 (a) =>
-                  !(formValues.aircraftIds || []).includes(a.id)
+                  !normalizeAircraftIds(formValues.aircraftIds).includes(a.id)
               )
               .map((aircraft) => (
                 <option key={aircraft.id} value={aircraft.id}>
@@ -327,16 +349,16 @@ export default function FormOperationAnexo4Detail({
               disabled ||
               saving ||
               selectedAircraftId === "" ||
-              (formValues.aircraftIds || []).includes(selectedAircraftId)
+              normalizeAircraftIds(formValues.aircraftIds).includes(selectedAircraftId)
             }
           >
             Añadir
           </button>
         </div>
 
-        {(formValues.aircraftIds || []).length > 0 && (
+        {normalizeAircraftIds(formValues.aircraftIds).length > 0 && (
           <ul className="list-group">
-            {(formValues.aircraftIds || []).map((id: number) => {
+            {normalizeAircraftIds(formValues.aircraftIds).map((id: number) => {
               const aircraft = aircraftOptions.find((a) => a.id === id);
               if (!aircraft) return null;
               return (

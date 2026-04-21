@@ -13,8 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
@@ -35,8 +40,10 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             @ModelAttribute Anexo4 anexo4,
             @RequestParam(value = "conops", required = false) String conops,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
-            @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile
+            @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile,
+            HttpServletRequest request
     ) throws IOException {
+        anexo4.setAircraftIds(resolveAircraftIds(anexo4, request));
         Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
         return ResponseEntity.ok(toResponse(saved, operationId));
     }
@@ -162,6 +169,54 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         Anexo4ResponseDTO dto = Anexo4ResponseDTO.fromEntity(anexo);
         operationRepository.findById(operationId).ifPresent(operation -> dto.setConops(operation.getConops()));
         return dto;
+    }
+
+    private List<Long> resolveAircraftIds(Anexo4 anexo4, HttpServletRequest request) {
+        LinkedHashSet<Long> aircraftIds = new LinkedHashSet<>();
+        addAircraftIds(aircraftIds, anexo4.getAircraftIds());
+        addAircraftIds(aircraftIds, request.getParameterValues("aircraftIds"));
+        addAircraftIds(aircraftIds, request.getParameterValues("aircraftIds[]"));
+
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            if (entry.getKey() != null && entry.getKey().startsWith("aircraftIds[")) {
+                addAircraftIds(aircraftIds, entry.getValue());
+            }
+        }
+
+        return new ArrayList<>(aircraftIds);
+    }
+
+    private void addAircraftIds(LinkedHashSet<Long> target, List<Long> values) {
+        if (values == null) {
+            return;
+        }
+        for (Long value : values) {
+            if (value != null) {
+                target.add(value);
+            }
+        }
+    }
+
+    private void addAircraftIds(LinkedHashSet<Long> target, String[] values) {
+        if (values == null) {
+            return;
+        }
+        for (String value : values) {
+            if (value == null || value.isBlank()) {
+                continue;
+            }
+            String[] splitValues = value.split(",");
+            for (String raw : splitValues) {
+                String trimmed = raw.trim();
+                if (trimmed.isBlank()) {
+                    continue;
+                }
+                try {
+                    target.add(Long.parseLong(trimmed));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
     }
 
 }
