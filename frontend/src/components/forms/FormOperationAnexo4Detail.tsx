@@ -7,7 +7,8 @@ import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { apiFetch } from "../../api";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 /** * CONFIGURACIÓN DE TEXTOS:
  * Modifica solo este objeto para cambiar los nombres de los puntos en el futuro.
@@ -80,21 +81,22 @@ export default function FormOperationAnexo4Detail({
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
   const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
+  const [selectedAircraftId, setSelectedAircraftId] = useState<number | "">("");
 
   useEffect(() => {
-  if (!initialValues) return;
+    if (!initialValues) return;
 
-  const normalizeDateTimeLocal = (value: any) => {
-    if (!value) return "";
-    if (typeof value !== "string") return value;
+    const normalizeDateTimeLocal = (value: any) => {
+      if (!value) return "";
+      if (typeof value !== "string") return value;
 
-    // Si viene como "2026-04-09T10:30:00" -> "2026-04-09T10:30"
-    // Si viene como "2026-04-09T10:30" lo deja igual.
-    const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
-    return match ? match[1] : value;
-  };
+      // Si viene como "2026-04-09T10:30:00" -> "2026-04-09T10:30"
+      // Si viene como "2026-04-09T10:30" lo deja igual.
+      const match = value.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+      return match ? match[1] : value;
+    };
 
-  const normalized = Object.fromEntries(
+    const normalized = Object.fromEntries(
       Object.entries(initialValues).map(([k, v]) => {
         if (k === "fechaHoraPrevista") {
           return [k, normalizeDateTimeLocal(v)];
@@ -112,8 +114,7 @@ export default function FormOperationAnexo4Detail({
 
     setFormValues(normalized);
 
-    // Limpiar las URLs de previsualización previas para que se muestre
-    // la imagen guardada en BD después de guardar, firmar o rehacer versión.
+    // Limpiar las URLs de previsualización previas
     setPreviewUrls((prev) => {
       Object.values(prev).forEach((url) => {
         if (url) URL.revokeObjectURL(url);
@@ -156,6 +157,26 @@ export default function FormOperationAnexo4Detail({
     }
   };
 
+  // Añadir aeronave a la lista
+  const handleAddAircraft = () => {
+    if (
+      selectedAircraftId === "" ||
+      (formValues.aircraftIds || []).includes(selectedAircraftId)
+    )
+      return;
+    const newIds = [...(formValues.aircraftIds || []), selectedAircraftId];
+    handleChange("aircraftIds", newIds);
+    setSelectedAircraftId("");
+  };
+
+  // Quitar aeronave de la lista
+  const handleRemoveAircraft = (id: number) => {
+    const filtered = (formValues.aircraftIds || []).filter(
+      (aircraftId: number) => aircraftId !== id
+    );
+    handleChange("aircraftIds", filtered);
+  };
+
   // Revoke all object URLs when the component unmounts to prevent memory leaks
   useEffect(() => {
     return () => {
@@ -187,13 +208,15 @@ export default function FormOperationAnexo4Detail({
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
         if (key === "aircraftIds" && Array.isArray(value)) {
-          value.forEach((aircraftId) => formData.append("aircraftIds", String(aircraftId)));
+          value.forEach((aircraftId) =>
+            formData.append("aircraftIds", String(aircraftId))
+          );
           return;
         }
         if (value instanceof File) {
-            formData.append(key, value);
+          formData.append(key, value);
         } else if (value !== undefined && value !== null && value !== "") {
-            formData.append(key, value);
+          formData.append(key, value);
         }
       });
 
@@ -228,11 +251,13 @@ export default function FormOperationAnexo4Detail({
       saving={saving}
       readOnlyMessage={readOnlyMessage}
       onSubmit={handleSubmit}
-      >
+    >
       {/* SECCIÓN 1 */}
       <SectionTitle>SECCIÓN 1: Información sobre las operaciones</SectionTitle>
       <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">CONOPS</label>
+        <label className="form-label fw-bold small text-uppercase text-muted">
+          CONOPS
+        </label>
         <input
           type="text"
           className="form-control bg-white border"
@@ -242,7 +267,9 @@ export default function FormOperationAnexo4Detail({
         />
       </div>
       <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">Descripción de objetivos</label>
+        <label className="form-label fw-bold small text-uppercase text-muted">
+          Descripción de objetivos
+        </label>
         <textarea
           className="form-control bg-white border"
           rows={3}
@@ -252,39 +279,91 @@ export default function FormOperationAnexo4Detail({
         />
       </div>
       <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">Personal necesario</label>
+        <label className="form-label fw-bold small text-uppercase text-muted">
+          Personal necesario
+        </label>
         <input
-            type="text"
-            className="form-control bg-white border"
-            value={formValues.personal ?? ""}
-            onChange={(e) => handleChange("personal", e.target.value)}
-            disabled={disabled || saving}
-          />
-      </div>
-      <div className="mb-3">
-        <label className="form-label fw-bold small text-uppercase text-muted">Aeronaves seleccionadas (Anexo 4)</label>
-        <select
-          className="form-select"
-          multiple
-          value={Array.isArray(formValues.aircraftIds) ? formValues.aircraftIds.map(String) : []}
-          onChange={(e) => {
-            const ids = Array.from(e.target.selectedOptions)
-              .map((option) => Number(option.value))
-              .filter((id) => !Number.isNaN(id));
-            handleChange("aircraftIds", ids);
-          }}
+          type="text"
+          className="form-control bg-white border"
+          value={formValues.personal ?? ""}
+          onChange={(e) => handleChange("personal", e.target.value)}
           disabled={disabled || saving}
-        >
-          {aircraftOptions.map((aircraft) => (
-            <option key={aircraft.id} value={aircraft.id}>
-              {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()} {aircraft.serialNumber ? `(${aircraft.serialNumber})` : ""}
-            </option>
-          ))}
-        </select>
+        />
+      </div>
+      {/* NUEVA SECCIÓN SELECCIÓN DE AERONAVES */}
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">
+          Aeronaves seleccionadas (Anexo 4)
+        </label>
+        <div className="d-flex align-items-center mb-2">
+          <select
+            className="form-select me-2"
+            value={selectedAircraftId}
+            onChange={(e) =>
+              setSelectedAircraftId(
+                e.target.value === "" ? "" : Number(e.target.value)
+              )
+            }
+            disabled={disabled || saving}
+          >
+            <option value="">Selecciona una aeronave...</option>
+            {aircraftOptions
+              .filter(
+                (a) =>
+                  !(formValues.aircraftIds || []).includes(a.id)
+              )
+              .map((aircraft) => (
+                <option key={aircraft.id} value={aircraft.id}>
+                  {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()}{" "}
+                  {aircraft.serialNumber ? `(${aircraft.serialNumber})` : ""}
+                </option>
+              ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleAddAircraft}
+            disabled={
+              disabled ||
+              saving ||
+              selectedAircraftId === "" ||
+              (formValues.aircraftIds || []).includes(selectedAircraftId)
+            }
+          >
+            Añadir
+          </button>
+        </div>
+
+        {(formValues.aircraftIds || []).length > 0 && (
+          <ul className="list-group">
+            {(formValues.aircraftIds || []).map((id: number) => {
+              const aircraft = aircraftOptions.find((a) => a.id === id);
+              if (!aircraft) return null;
+              return (
+                <li key={id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <span>
+                    {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()}{" "}
+                    {aircraft.serialNumber ? `(${aircraft.serialNumber})` : ""}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleRemoveAircraft(id)}
+                    disabled={disabled || saving}
+                  >
+                    Quitar
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Fechas y horas previstas</label>
+          <label className="form-label fw-bold small text-uppercase text-muted">
+            Fechas y horas previstas
+          </label>
           <input
             type="datetime-local"
             className="form-control bg-white border"
@@ -294,7 +373,9 @@ export default function FormOperationAnexo4Detail({
           />
         </div>
         <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Medios materiales</label>
+          <label className="form-label fw-bold small text-uppercase text-muted">
+            Medios materiales
+          </label>
           <input
             type="text"
             className="form-control bg-white border"
@@ -306,10 +387,14 @@ export default function FormOperationAnexo4Detail({
       </div>
 
       {/* SECCIÓN 2 */}
-      <SectionTitle>SECCIÓN 2: Evaluación del escenario de operaciones</SectionTitle>
+      <SectionTitle>
+        SECCIÓN 2: Evaluación del escenario de operaciones
+      </SectionTitle>
       <div className="row">
         <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Dirección</label>
+          <label className="form-label fw-bold small text-uppercase text-muted">
+            Dirección
+          </label>
           <input
             type="text"
             className="form-control bg-white border"
@@ -319,7 +404,9 @@ export default function FormOperationAnexo4Detail({
           />
         </div>
         <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold small text-uppercase text-muted">Coordenadas</label>
+          <label className="form-label fw-bold small text-uppercase text-muted">
+            Coordenadas
+          </label>
           <input
             type="text"
             className="form-control bg-white border"
@@ -333,16 +420,22 @@ export default function FormOperationAnexo4Detail({
       {/* SECCIÓN 3 */}
       <SectionTitle>SECCIÓN 3: Espacio aéreo</SectionTitle>
       <div className="mb-3 border rounded p-3 bg-white">
-        <label className="form-label fw-bold small text-uppercase text-muted">Imagen del espacio aéreo</label>
+        <label className="form-label fw-bold small text-uppercase text-muted">
+          Imagen del espacio aéreo
+        </label>
         <input
           type="file"
           accept="image/jpeg,image/jpg,image/png"
           className="form-control"
-          onChange={(e) => handleChange("imagenEspacioAereoFile", e.target.files?.[0] ?? null)}
+          onChange={(e) =>
+            handleChange("imagenEspacioAereoFile", e.target.files?.[0] ?? null)
+          }
           disabled={disabled || saving}
         />
         {errors.imagenEspacioAereoFile && (
-          <div className="text-danger small mt-1">{errors.imagenEspacioAereoFile}</div>
+          <div className="text-danger small mt-1">
+            {errors.imagenEspacioAereoFile}
+          </div>
         )}
         {/* Preview: newly selected file */}
         {previewUrls.imagenEspacioAereoFile && (
@@ -378,18 +471,26 @@ export default function FormOperationAnexo4Detail({
       {/* SECCIÓN 5 */}
       <SectionTitle>SECCIÓN 5: Zona de vuelo</SectionTitle>
       <div className="mb-3 p-3 bg-white rounded border shadow-none">
-        <label className="form-label fw-bold text-uppercase small text-muted">Imagen zona de vuelo</label>
+        <label className="form-label fw-bold text-uppercase small text-muted">
+          Imagen zona de vuelo
+        </label>
         <input
           type="file"
           accept="image/jpeg,image/jpg,image/png"
           className="form-control"
-          onChange={(e) => handleChange("imagenZonaVueloFile", e.target.files?.[0] ?? null)}
+          onChange={(e) =>
+            handleChange("imagenZonaVueloFile", e.target.files?.[0] ?? null)
+          }
           disabled={disabled || saving}
         />
         {errors.imagenZonaVueloFile && (
-          <div className="text-danger small mt-1">{errors.imagenZonaVueloFile}</div>
+          <div className="text-danger small mt-1">
+            {errors.imagenZonaVueloFile}
+          </div>
         )}
-        <div className="form-text mt-2">Adjunte el mapa detallado de la zona de operación.</div>
+        <div className="form-text mt-2">
+          Adjunte el mapa detallado de la zona de operación.
+        </div>
         {/* Preview: newly selected file */}
         {previewUrls.imagenZonaVueloFile && (
           <div className="mt-2">
@@ -416,7 +517,9 @@ export default function FormOperationAnexo4Detail({
       </div>
 
       {/* SECCIÓN 6 */}
-      <SectionTitle>SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo</SectionTitle>
+      <SectionTitle>
+        SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo
+      </SectionTitle>
       <div className="bg-white border rounded p-3 mb-4 text-start">
         {SECCIONES_CONFIG.seccion6.map(renderApartadoRow)}
       </div>
