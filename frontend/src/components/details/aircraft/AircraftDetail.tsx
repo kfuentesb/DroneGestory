@@ -94,6 +94,7 @@ export default function AircraftDetail() {
 
             validateForm={validateForm}
             certificateSectionType="aircraft"
+            clearableFieldKeys={["fechaFab", "powerSourceType"]}
         />
     )
 }

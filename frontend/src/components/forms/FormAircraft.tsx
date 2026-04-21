@@ -6,6 +6,7 @@ import { apiFetch } from "../../api";
 import { aircraftClasses, configs, LIMITS, yesNoOptions,
   cautiveOptions, powerSources, powerSourcesNonElectric } from "../../global-const/aircraft-const";
 import { InfoBadge } from "../commons/InfoBadge";
+import MonthYearInput from "../commons/MonthYearInput";
 import AircraftDocumentationSection, {
   OTHER_AIRCRAFT_DOCUMENTATION_KEY,
   aircraftDocumentationFields,
@@ -18,6 +19,11 @@ import "../../styles/generic-form.css";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 type SelectOption = { value: string; label: string };
+
+const normalizeMonthValue = (value?: string | null) => {
+  if (!value) return "";
+  return value.length >= 7 ? value.slice(0, 7) : "";
+};
 
 type AircraftDocumentationUploadRequest = {
   documentationType: string;
@@ -146,7 +152,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     cautive: getOptionByValue(cautiveOptions, initialValues?.cautiveDefault) as SelectOption | null,
     accessories: initialValues?.accessoriesDefault ?? "",
     image: null as File | null,
-    fechaFab: "",
+    fechaFab: normalizeMonthValue(),
     powerSource: getOptionByValue(powerSources, initialValues?.powerSourceDefault) as SelectOption | null,
     powerSourceNonElectric: getOptionByValue(powerSourcesNonElectric, initialValues?.powerSourceTypeDefault) as SelectOption | null,
   });
@@ -556,7 +562,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       formData.append("flightMinutes", String(formValues.flightMinutes));
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
       if (formValues.powerSource) formData.append("powerSource", formValues.powerSource.value);
-      if (formValues.powerSourceNonElectric) formData.append("powerSourceNonElectric", formValues.powerSourceNonElectric.value);
+      if (formValues.powerSourceNonElectric) formData.append("powerSourceType", formValues.powerSourceNonElectric.value);
       if (formValues.fechaFab) formData.append("fechaFab", formValues.fechaFab);
 
       if (formValues.privatelyBuilt) formData.append("privatelyBuilt", formValues.privatelyBuilt.value);
@@ -809,12 +815,12 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                   <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>
                     Fecha de fabricación{" "}
                   </label>
-                  <input
-                      type="date"
-                      className="form-control"
-                      value={formValues.fechaFab}
-                      onChange={(e) => setFormValues({ ...formValues, fechaFab: e.target.value })}
-                      style={{ ...backgroundBorderInputs }}
+                  <MonthYearInput
+                    value={formValues.fechaFab}
+                    onChange={(value) => setFormValues({ ...formValues, fechaFab: value })}
+                    style={{
+                    ...backgroundBorderInputs,
+                  }}
                   />
                 </div>
               

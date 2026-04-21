@@ -105,10 +105,14 @@ VISUAL<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
--Añadir fecha de fabricacion<br>
--Siempre en mayusculas en nº de serie<br>
--Añadir fuente de potencia (Híbirido/VTOL, no híbrido)<br>
--Si selecciona no electrica tiene que salir tipo de fuente: hidrogeno, gasolina, otros.<br>
+
+-HORAS DE VUELO
+-Añadir comentarios a la hora de vuelo<br>
+
+-MANTENIMIENTO
+-Borrar select de drone, es redundante, elegir el drone previamente seleccionado<br>
+-Borrar columna comentarios de la lista de mantenimientos<br>
+-Cambiar meses requeridos a meses desde ultima revisión<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
@@ -127,7 +131,6 @@ VISUAL<br>
 -DOCUMENTACIONES<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
-
 
 
 COSAS DE MIGRACION DE LA BASE DE DATOS<br>
