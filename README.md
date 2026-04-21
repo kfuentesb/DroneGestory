@@ -105,7 +105,6 @@ VISUAL<br>
 -No dejar que el usuario normal modifique su perfil, a escepcion de num de telefono, correo, imagen de perfil y certificados<br>
 
 -DRONES<br>
--Cambiar fecha de fabricacion a mes y año, sin dia<br>
 
 -HORAS DE VUELO
 -Añadir comentarios a la hora de vuelo<br>
