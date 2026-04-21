@@ -80,8 +80,8 @@ export default function MaintenanceAircraftList() {
     const headers: TableHeader[] = [
         { label: "Fecha", key: "maintenanceDate", sortable: true },
         { label: "Revisión", key: "reviewType", sortable: true },
-        { label: "Meses requeridos", key: "monthsRequired", sortable: true },
-        { label: "Horas requeridas", key: "hoursFlightRequired", sortable: true },
+        { label: "Meses", key: "monthsRequired", sortable: true },
+        { label: "Horas de vuelo", key: "hoursFlightRequired", sortable: true },
         { label: "Comentarios", key: "comments", sortable: false },
     ];
 
