@@ -6,6 +6,7 @@ public record FlightTimeRequestDTO(
         Long aircraftId,
         Long operationId,
         LocalDate flightDate,
-        Integer durationMinutes
+        Integer durationMinutes,
+        String comments
 ) {
 }

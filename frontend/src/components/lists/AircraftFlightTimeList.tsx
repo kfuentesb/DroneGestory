@@ -19,7 +19,7 @@ type AircraftFlightHours = {
 
 const formatTotalHours = (minutes?: number | null) => {
   if (minutes == null || Number.isNaN(minutes)) {
-    return "-";
+    return "0.0h";
   }
   return `${(minutes / 60).toFixed(1)}h`;
 };
@@ -37,10 +37,15 @@ export default function AircraftFlightTimeList() {
     const loadAircraftsFlightHours = async () => {
       setIsLoading(true);
       try {
-        const [aircraftRes, flightTimeRes] = await Promise.all([
+        const [aircraftResult, flightTimeResult] = await Promise.allSettled([
           apiFetch("/api/aircraft"),
           apiFetch("/api/flight-times")
         ]);
+
+        const aircraftRes =
+          aircraftResult.status === "fulfilled" ? aircraftResult.value : null;
+        const flightTimeRes =
+          flightTimeResult.status === "fulfilled" ? flightTimeResult.value : null;
 
         const aircraftData = aircraftRes ? await aircraftRes.json() : [];
         const flightTimes = flightTimeRes ? await flightTimeRes.json() : [];
@@ -74,7 +79,7 @@ export default function AircraftFlightTimeList() {
             model: aircraft.model ?? "",
             serialNumber: aircraft.serialNumber,
             lastFlightDate: summary?.lastFlightDate,
-            totalMinutes: summary?.totalMinutes
+            totalMinutes: summary?.totalMinutes ?? aircraft.flightMinutes ?? 0
           };
         }) : [];
 

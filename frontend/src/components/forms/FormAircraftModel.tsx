@@ -3,7 +3,15 @@ import Select from "react-select";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { apiFetch } from "../../api";
-import { aircraftClasses, configs } from "../../global-const/aircraft-const";
+import {
+  LIMITS,
+  aircraftClasses,
+  cautiveOptions,
+  configs,
+  powerSources,
+  powerSourcesNonElectric,
+  yesNoOptions,
+} from "../../global-const/aircraft-const";
 import AircraftDocumentationSection, {
   aircraftDocumentationFields,
 } from "../certificates/AircraftDocumentationSection";
@@ -32,28 +40,6 @@ export default function FormAircraftModel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState({ manufacturer: false, model: false });
-
-  const yesNoOptions: SelectOption[] = [
-    { value: "true", label: "Si" },
-    { value: "false", label: "No" },
-  ];
-
-  const cautiveOptions: SelectOption[] = [
-    { value: "YES", label: "Si" },
-    { value: "NO", label: "No" },
-    { value: "OPTIONAL", label: "Opcional" },
-  ];
-
-    const powerSources: SelectOption[] = [
-    { value: "HYBRID_VTOL", label: "Híbrido/VTOL" },
-    { value: "NON_HYBRID", label: "No Híbrido" },
-  ];
-
-  const powerSourcesNonHybrid: SelectOption[] = [
-    { value: "HYDROGEN", label: "Hidrógeno" },
-    { value: "GASOLINE", label: "Gasolina" },
-    { value: "OTHERS", label: "Otros" },
-  ];
 
   const backgroundBorderInputsSelect = {
     control: (provided: any) => ({
@@ -320,7 +306,7 @@ export default function FormAircraftModel() {
                 className="btn btn-success"
                 onClick={() => setShowDefaults((prev) => !prev)}
               >
-                ¿Quiere añadir datos por defecto a este modelo?
+                Quieres anadir datos por defecto a este modelo?
               </button>
             </div>
 
@@ -345,6 +331,9 @@ export default function FormAircraftModel() {
                       className="form-control"
                       value={defaultValues.mtomDefault}
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, mtomDefault: e.target.value }))}
+                      min={LIMITS.MIN_MTOM}
+                      max={LIMITS.MAX_MTOM}
+                      step="any"
                       style={backgroundBorderInputs}
                     />
                   </div>
@@ -355,6 +344,9 @@ export default function FormAircraftModel() {
                       className="form-control"
                       value={defaultValues.wingspanDefault}
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, wingspanDefault: e.target.value }))}
+                      min={LIMITS.MIN_WINGSPAN}
+                      max={LIMITS.MAX_WINGSPAN}
+                      step="any"
                       style={backgroundBorderInputs}
                     />
                   </div>
@@ -368,6 +360,8 @@ export default function FormAircraftModel() {
                       className="form-control"
                       value={defaultValues.maxSpeedDefault}
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, maxSpeedDefault: e.target.value }))}
+                      min={0}
+                      max={LIMITS.MAX_SPEED}
                       style={backgroundBorderInputs}
                     />
                   </div>
@@ -389,6 +383,8 @@ export default function FormAircraftModel() {
                       className="form-control"
                       value={defaultValues.impactEnergyDefault}
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, impactEnergyDefault: e.target.value }))}
+                      min={0}
+                      max={LIMITS.MAX_ENERGY}
                       style={backgroundBorderInputs}
                     />
                   </div>
@@ -432,33 +428,33 @@ export default function FormAircraftModel() {
 
                 <div className="row mb-3">
                   <div className="row mb-3">
-                      <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="form-label d-block text-start ps-1">Fuente de potencia</label>
-                        <Select
-                          options={powerSources}
-                          styles={backgroundBorderInputsSelect}
-                          placeholder="Seleccione fuente de potencia"
-                          onChange={(val) => {
-                            setDefaultValues((prev) => ({ 
-                              ...prev, 
-                              powerSourceDefault: val,
-                              powerSourceNonHybrid: val?.value === 'NON_HYBRID' ? prev.powerSourceNonHybrid : null 
-                            }));
-                          }}
-                          isClearable
-                        />
-                      </div>
-                      <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="form-label d-block text-start ps-1">Fuente no eléctrica</label>
-                        <Select
-                          options={powerSourcesNonHybrid}
-                          styles={backgroundBorderInputsSelect}
-                          placeholder="Seleccione fuente no eléctrica"
-                          onChange={(value) => setDefaultValues((prev) => ({ ...prev, powerSourceNonHybrid: value }))}
-                          isClearable
-                          isDisabled={defaultValues.powerSourceDefault?.value !== 'NON_HYBRID'}
-                        />
-                      </div>
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                      <label className="form-label d-block text-start ps-1">Fuente de potencia</label>
+                      <Select
+                        options={powerSources}
+                        styles={backgroundBorderInputsSelect}
+                        placeholder="Seleccione fuente de potencia"
+                        onChange={(val) => {
+                          setDefaultValues((prev) => ({
+                            ...prev,
+                            powerSourceDefault: val,
+                            powerSourceNonHybrid: val?.value === "NON_ELECTRIC" ? prev.powerSourceNonHybrid : null,
+                          }));
+                        }}
+                        isClearable
+                      />
+                    </div>
+                    <div className="col-12 col-md mb-3 mb-md-0">
+                      <label className="form-label d-block text-start ps-1">Fuente no electrica</label>
+                      <Select
+                        options={powerSourcesNonElectric}
+                        styles={backgroundBorderInputsSelect}
+                        placeholder="Seleccione fuente no electrica"
+                        onChange={(value) => setDefaultValues((prev) => ({ ...prev, powerSourceNonHybrid: value }))}
+                        isClearable
+                        isDisabled={defaultValues.powerSourceDefault?.value !== "NON_ELECTRIC"}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -533,7 +529,6 @@ export default function FormAircraftModel() {
                     </div>
                   </div>
                 </div>
-
               </>
             )}
 

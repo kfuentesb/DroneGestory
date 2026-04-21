@@ -15,6 +15,7 @@ public record FlightTimeDTO(
         Double flightHours,
         Integer totalFlightTimeMinutes,
         Double totalFlightHours,
+        String comments,
         FlightTimeDocumentationDTO documentation
 ) {
 }
