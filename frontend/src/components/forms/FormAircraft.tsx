@@ -3,7 +3,8 @@ import Select, { type StylesConfig } from "react-select";
 import { useNavigate } from "react-router-dom";
 
 import { apiFetch } from "../../api";
-import { aircraftClasses, configs, LIMITS } from "../../global-const/aircraft-const";
+import { aircraftClasses, configs, LIMITS, yesNoOptions,
+  cautiveOptions, powerSources, powerSourcesNonElectric } from "../../global-const/aircraft-const";
 import { InfoBadge } from "../commons/InfoBadge";
 import AircraftDocumentationSection, {
   OTHER_AIRCRAFT_DOCUMENTATION_KEY,
@@ -69,27 +70,6 @@ interface FormAircraftProps {
 }
 
 export default function FormAircraft({ initialValues, initialDocumentation = [] }: FormAircraftProps) {
-  const yesNoOptions: SelectOption[] = [
-    { value: "true", label: "Sí" },
-    { value: "false", label: "No" },
-  ];
-
-  const cautiveOptions: SelectOption[] = [
-    { value: "YES", label: "Sí" },
-    { value: "NO", label: "No" },
-    { value: "OPTIONAL", label: "Opcional" },
-  ];
-
-  const powerSources: SelectOption[] = [
-    { value: "HYBRID_VTOL", label: "Híbrido/VTOL" },
-    { value: "NON_HYBRID", label: "No Híbrido" },
-  ];
-
-  const powerSourcesNonHybrid: SelectOption[] = [
-    { value: "HYDROGEN", label: "Hidrógeno" },
-    { value: "GASOLINE", label: "Gasolina" },
-    { value: "OTHERS", label: "Otros" },
-  ];
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -168,7 +148,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     image: null as File | null,
     fechaFab: "",
     powerSource: getOptionByValue(powerSources, initialValues?.powerSourceDefault) as SelectOption | null,
-    powerSourceNonHybrid: getOptionByValue(powerSourcesNonHybrid, initialValues?.powerSourceTypeDefault) as SelectOption | null,
+    powerSourceNonElectric: getOptionByValue(powerSourcesNonElectric, initialValues?.powerSourceTypeDefault) as SelectOption | null,
   });
 
   const [errors, setErrors] = useState<any>({
@@ -530,9 +510,9 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
       tooMuchTextAccesories: formValues.accessories.length > 800,
       powerSource: false,
-      powerSourceNonHybrid:
-        formValues.powerSource?.value === "NON_HYBRID" &&
-        (formValues.powerSourceNonHybrid === null || formValues.powerSourceNonHybrid === undefined),
+      powerSourceNonElectric:
+        formValues.powerSource?.value === "NON_ELECTRIC" &&
+        (formValues.powerSourceNonElectric === null || formValues.powerSourceNonElectric === undefined),
     };
 
     setErrors(newErrors);
@@ -540,8 +520,8 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       let msg = "Por favor complete los campos correctamente.";
       if (newErrors.serialNumber && formValues.serialNumber.trim()) {
         msg = "El número de serie solo permite letras y números (2-25 carac.).";
-      } else if (newErrors.powerSourceNonHybrid) {
-        msg = "Seleccione un tipo de fuente no eléctrica cuando la fuente sea No Híbrido.";
+      } else if (newErrors.powerSourceNonElectric) {
+        msg = "Seleccione un tipo de fuente no eléctrica cuando la fuente sea No Eléctrica.";
       }
       setError(msg);
       setLoading(false);
@@ -576,7 +556,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       formData.append("flightMinutes", String(formValues.flightMinutes));
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
       if (formValues.powerSource) formData.append("powerSource", formValues.powerSource.value);
-      if (formValues.powerSourceNonHybrid) formData.append("powerSourceNonHybrid", formValues.powerSourceNonHybrid.value);
+      if (formValues.powerSourceNonElectric) formData.append("powerSourceNonElectric", formValues.powerSourceNonElectric.value);
       if (formValues.fechaFab) formData.append("fechaFab", formValues.fechaFab);
 
       if (formValues.privatelyBuilt) formData.append("privatelyBuilt", formValues.privatelyBuilt.value);
@@ -849,7 +829,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                       setFormValues({ 
                         ...formValues, 
                         powerSource: val,
-                        powerSourceNonHybrid: val?.value === 'NON_HYBRID' ? formValues.powerSourceNonHybrid : null 
+                        powerSourceNonElectric: val?.value === 'NON_ELECTRIC' ? formValues.powerSourceNonElectric : null 
                       });
                     }}
                     isClearable
@@ -858,13 +838,13 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                 <div className="col-12 col-md mb-3 mb-md-0">
                   <label className="form-label d-block text-start ps-1">Fuente no eléctrica</label>
                   <Select
-                    options={powerSourcesNonHybrid}
+                    options={powerSourcesNonElectric}
                     styles={backgroundBorderInputsSelect}
                     placeholder="Seleccione fuente no eléctrica"
-                    value={formValues.powerSourceNonHybrid}
-                    onChange={(val) => setFormValues({ ...formValues, powerSourceNonHybrid: val })}
+                    value={formValues.powerSourceNonElectric}
+                    onChange={(val) => setFormValues({ ...formValues, powerSourceNonElectric: val })}
                     isClearable
-                    isDisabled={formValues.powerSource?.value !== 'NON_HYBRID'}
+                    isDisabled={formValues.powerSource?.value !== 'NON_ELECTRIC'}
                   />
                 </div>
             </div>

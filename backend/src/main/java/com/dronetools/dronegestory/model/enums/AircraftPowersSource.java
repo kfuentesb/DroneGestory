@@ -2,8 +2,8 @@ package com.dronetools.dronegestory.model.enums;
 
 public class AircraftPowersSource {
         public enum PowerSource {
-            HYBRID_VTOL,
-            NON_HYBRID
+            ELECTRIC,
+            NON_ELECTRIC
         }
     
         public enum PowerSourceType {

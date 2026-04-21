@@ -9,12 +9,35 @@ export const aircraftClasses = [
 ];
 
 export const configs = [
+    { value: "Hibrido_vtol", label: "Híbrido/VTOL" },
     { value: "Avion", label: "Avión" },
     { value: "Multirrotor", label: "Multirrotor" },
     { value: "Helicoptero", label: "Helicóptero" },
     { value: "Hibrido", label: "Híbrido" },
     { value: "Ligero", label: "Ligero" },
     { value: "Otro", label: "Otro" }
+];
+
+export const yesNoOptions = [
+    { value: "true", label: "Sí" },
+    { value: "false", label: "No" },
+];
+
+export const cautiveOptions = [
+    { value: "YES", label: "Sí" },
+    { value: "NO", label: "No" },
+    { value: "OPTIONAL", label: "Opcional" },
+];
+
+export const powerSources = [
+    { value: "ELECTRIC", label: "Eléctrico" },
+    { value: "NON_ELECTRIC", label: "No Eléctrico" },
+];
+
+export const powerSourcesNonElectric = [
+    { value: "HYDROGEN", label: "Hidrógeno" },
+    { value: "GASOLINE", label: "Gasolina" },
+    { value: "OTHERS", label: "Otros" },
 ];
 
 export const LIMITS = {

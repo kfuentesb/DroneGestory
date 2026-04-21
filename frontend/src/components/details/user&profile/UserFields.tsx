@@ -82,13 +82,20 @@ export const userFields: FieldConfig[] = [
         label: "Tipo de usuario",
         key: "type",
         type: "select",
-        options: ["ADMIN", "MANAGER", "PILOT"]
+        options: [
+            { value: "ADMIN", label: "Administrador" },
+            { value: "MANAGER", label: "Gestor" },
+            { value: "PILOT", label: "Piloto" }
+        ]
     },
     {
         label: "Estado",
         key: "state",
         type: "select",
-        options: ["Activo", "Inactivo"],
+        options: [
+            { value: "Activo", label: "Activo" },
+            { value: "Inactivo", label: "Inactivo" }
+        ],
         format: (v: any) => (v === true || v === "true" || v === "Activo" ? "Activo" : "Inactivo")
     },
     {
