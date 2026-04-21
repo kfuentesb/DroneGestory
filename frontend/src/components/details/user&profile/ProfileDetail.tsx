@@ -14,10 +14,12 @@ export default function ProfileDetail() {
     const { token } = useAuth();
     const navigate = useNavigate();
 
+    const fieldsToLock = ['firstName','lastName','username'];
+
     const processedFields = userFields
     .filter(field => field.key !== 'type' && field.key !== 'state')
     .map(field => {
-        if (field.key === 'username') {
+        if (fieldsToLock.includes(field.key)) {
             return { ...field, readOnly: true };
         }
         return field;
