@@ -134,7 +134,6 @@ VISUAL<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
 
-
 COSAS DE MIGRACION DE LA BASE DE DATOS<br>
 
 -- 1. Backup and Move Data
