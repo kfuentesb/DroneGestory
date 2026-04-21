@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { apiFetch } from "../../api";
@@ -8,6 +8,7 @@ import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
+import { useAuth } from "../commons/hooks/useAuth";
 
 type FlightTimeDocumentation = {
     id: number;
@@ -51,6 +52,16 @@ const formatDate = (value: string | Date) => {
     return date.toLocaleDateString();
 };
 
+const toInputDateValue = (value: string | Date) => {
+    if (typeof value === "string") {
+        return value.includes("T") ? value.split("T")[0] : value;
+    }
+    if (Number.isNaN(value.getTime())) {
+        return "";
+    }
+    return value.toISOString().split("T")[0];
+};
+
 const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation) => {
     const path = documentation.documentationName || documentation.filePath;
     if (!path) {
@@ -82,8 +93,11 @@ const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation)
     }
 };
 
+
 export default function FlightTimeList() {
     const navigate = useNavigate();
+    const { role } = useAuth();
+    const isAdmin = role === "ADMIN";
     const { aircraftId } = useParams<{ aircraftId: string }>();
     const [flightTimes, setFlightTimes] = useState<FlightTimeDetail[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -91,37 +105,140 @@ export default function FlightTimeList() {
     const [currentPage, setCurrentPage] = useState(1);
 
     const [selectedFlight, setSelectedFlight] = useState<FlightTimeDetail | null>(null);
+    const [editingFlight, setEditingFlight] = useState<FlightTimeDetail | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [documentationMarkedForDeletion, setDocumentationMarkedForDeletion] = useState(false);
+
+    const [updateLoading, setUpdateLoading] = useState(false);
+    const [updateError, setUpdateError] = useState<string | null>(null);
+    const [updateSuccess, setUpdateSuccess] = useState(false);
 
     const ITEMS_PER_PAGE = 10;
 
-    useEffect(() => {
-        const fetchFlights = async () => {
-            setIsLoading(true);
-            try {
-                const endpoint = aircraftId ? `/api/flight-times/aircraft/${aircraftId}` : "/api/flight-times";
-                const response = await apiFetch(endpoint);
-                const data = response ? await response.json() : [];
-                const parsedData = Array.isArray(data) ? data : [];
-                setFlightTimes(parsedData);
-            } catch (error) {
-                console.error("Error cargando tracking de horas", error);
-                setFlightTimes([]);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchFlights();
+    const fetchFlights = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const endpoint = aircraftId ? `/api/flight-times/aircraft/${aircraftId}` : "/api/flight-times";
+            const response = await apiFetch(endpoint);
+            const data = response ? await response.json() : [];
+            const parsedData = Array.isArray(data) ? data : [];
+            setFlightTimes(parsedData);
+        } catch (error) {
+            console.error("Error cargando tracking de horas", error);
+            setFlightTimes([]);
+        } finally {
+            setIsLoading(false);
+        }
     }, [aircraftId]);
+
+    useEffect(() => {
+        fetchFlights();
+    }, [fetchFlights]);
+
+    const handleDelete = async (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        if (window.confirm("¿Estás seguro de que deseas eliminar este registro de vuelo?")) {
+            try {
+                const response = await apiFetch(`/api/flight-times/${id}`, { method: "DELETE" });
+                if (response?.ok) {
+                    fetchFlights();
+                }
+            } catch (error) {
+                console.error("Error al eliminar", error);
+            }
+        }
+    };
+
+    const handleUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setUpdateError(null);
+        setUpdateSuccess(false);
+        if (!editingFlight) return;
+
+        if (
+            editingFlight.durationMinutes == null ||
+            Number.isNaN(editingFlight.durationMinutes) ||
+            editingFlight.durationMinutes === 0
+        ) {
+            setUpdateError("La duracion debe ser un numero valido distinto de 0.");
+            return;
+        }
+
+        setUpdateLoading(true);
+        try {
+            const response = await apiFetch(`/api/flight-times/${editingFlight.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    aircraftId: editingFlight.aircraftId,
+                    operationId: editingFlight.operationId ?? null,
+                    flightDate:
+                        typeof editingFlight.flightDate === "string"
+                            ? editingFlight.flightDate
+                            : editingFlight.flightDate.toISOString().split("T")[0],
+                    durationMinutes: editingFlight.durationMinutes,
+                    comments: editingFlight.comments?.trim() || null,
+                }),
+            });
+
+            if (!response) {
+                throw new Error("Sin respuesta del servidor");
+            }
+
+            if (selectedFile) {
+                const formData = new FormData();
+                formData.append("documentationLabel", "Documentacion de horas de vuelo");
+                formData.append("dateIndefinite", "true");
+                formData.append("file", selectedFile);
+
+                await apiFetch(`/api/flight-time-documentation/flight-time/${editingFlight.id}/upload`, {
+                    method: "POST",
+                    body: formData,
+                });
+            } else if (documentationMarkedForDeletion) {
+                await apiFetch(`/api/flight-time-documentation/flight-time/${editingFlight.id}`, {
+                    method: "DELETE",
+                });
+            }
+
+            setEditingFlight(null);
+            setSelectedFile(null);
+            setDocumentationMarkedForDeletion(false);
+            setUpdateSuccess(true);
+            await fetchFlights();
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Desconocido";
+            setUpdateError("Error al actualizar: " + message);
+            console.error("Error al actualizar", error);
+        } finally {
+            setUpdateLoading(false);
+        }
+    };
+
+    const resetEditState = () => {
+        setEditingFlight(null);
+        setSelectedFile(null);
+        setDocumentationMarkedForDeletion(false);
+        setUpdateError(null);
+        setUpdateSuccess(false);
+        setUpdateLoading(false);
+    };
+
+    const handleEditStart = (flight: FlightTimeDetail) => {
+        setEditingFlight(flight);
+        setSelectedFile(null);
+        setDocumentationMarkedForDeletion(false);
+        setUpdateError(null);
+        setUpdateSuccess(false);
+    };
 
     if (isLoading) {
         return <LoadingSpinner message="Cargando horas de vuelo..." />;
     }
 
-    const filteredFlights = useSearchFilter(flightTimes, search, (flight) => [
-        flight.operationReference ?? "",
-        flight.flightDate?.toString() ?? "",
-        flight.aircraftSerialNumber ?? "",
-        flight.comments ?? "",
+    const filteredFlights = useSearchFilter(flightTimes, search, (f) => [
+        f.operationReference ?? "",
+        f.aircraftSerialNumber ?? "",
     ]);
 
     const paginatedFlights = filteredFlights.slice(
@@ -133,15 +250,25 @@ export default function FlightTimeList() {
         { label: "Fabricante", key: "aircraftManufacturer", sortable: true },
         { label: "Modelo", key: "aircraftModel", sortable: true },
         { label: "N Serie", key: "aircraftSerialNumber", sortable: true },
-        { label: "Ref. Operacion", key: "operationReference", sortable: true },
+        { label: "Ref. Operación", key: "operationReference", sortable: true },
         { label: "Fecha vuelo", key: "flightDate", sortable: true },
-        { label: "Duracion", key: "durationMinutes", sortable: true },
-        { label: "Total acumulado", key: "totalFlightTimeMinutes", sortable: true },
+        { label: "Duración", key: "durationMinutes", sortable: true },
+        { label: "Total horas", key: "totalFlightTimeMinutes", sortable: true },
         { label: "Comentarios", key: "comments", sortable: false },
-        { label: "Documentacion", key: "documentation", sortable: false },
+        { label: "Documentación", key: "documentation", sortable: false },
     ];
 
-    const heading = aircraftId ? `Horas de vuelo de la aeronave ${aircraftId}` : "Registro de Horas de Vuelo";
+    if (isAdmin) {
+        headers.push({ label: "Acciones", key: "actions", sortable: false });
+    }
+
+    const aircraftSerial = aircraftId && flightTimes.length > 0 
+        ? flightTimes[0].aircraftSerialNumber 
+        : null;
+
+    const heading = aircraftId 
+        ? `Horas de vuelo de la aeronave: ${aircraftSerial || aircraftId}` 
+        : "Registro de Horas de Vuelo";
 
     return (
         <div className="container py-4">
@@ -196,15 +323,9 @@ export default function FlightTimeList() {
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        {aircraftId ? (
-                            <ButtonProp onClick={() => navigate(`/flight-times/${aircraftId}/register`)}>
-                                + Anadir horas
-                            </ButtonProp>
-                        ) : (
-                            <ButtonProp onClick={() => {}} disabled>
-                                + Anadir horas
-                            </ButtonProp>
-                        )}
+                        <ButtonProp onClick={() => navigate(`/flight-times/${aircraftId}/register`)}>
+                            + Añadir horas
+                        </ButtonProp>
                     </div>
 
                     <ReusableTable
@@ -238,6 +359,24 @@ export default function FlightTimeList() {
                                         <span className="text-muted">No</span>
                                     )}
                                 </td>
+                                {isAdmin && (
+                                    <td>
+                                        <div className="d-flex gap-1">
+                                            <button 
+                                                className="btn btn-sm btn-outline-primary"
+                                                onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            </button>
+                                            <button 
+                                                className="btn btn-sm btn-outline-danger"
+                                                onClick={(e) => handleDelete(e, row.id)}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                )}
                             </>
                         )}
                         emptyText={aircraftId ? "No hay registros de horas de vuelo para esta aeronave." : "No hay registros de horas de vuelo."}
@@ -249,6 +388,110 @@ export default function FlightTimeList() {
                         itemsPerPage={ITEMS_PER_PAGE}
                         onPageChange={setCurrentPage}
                     />
+
+                    {editingFlight && (
+                        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+                            <div className="modal-dialog modal-dialog-centered">
+                                <form className="modal-content border-0 shadow-lg" onSubmit={handleUpdate}>
+                                    <div className="modal-header bg-dark text-white">
+                                        <h5 className="modal-title fw-bold">Modificar Registro</h5>
+                                        <button type="button" className="btn-close btn-close-white" onClick={resetEditState}></button>
+                                    </div>
+                                    <div className="modal-body p-4">
+                                        {/* Error or success feedback */}
+                                        {updateError && (
+                                            <div className="alert alert-danger py-2 small" role="alert">{updateError}</div>
+                                        )}
+                                        {updateSuccess && (
+                                            <div className="alert alert-success py-2 small" role="alert">Guardado correctamente.</div>
+                                        )}
+                                        <div className="row">
+                                            <div className="col-12 mb-3">
+                                                <label className="form-label small fw-bold text-muted">FECHA DE VUELO</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-control"
+                                                    value={toInputDateValue(editingFlight.flightDate)}
+                                                    onChange={(e) => setEditingFlight({ ...editingFlight, flightDate: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="col-12 mb-3">
+                                                <label className="form-label small fw-bold text-muted">DURACIÓN (MINUTOS)</label>
+                                                <input type="number" className="form-control" value={editingFlight.durationMinutes} onChange={(e) => setEditingFlight({...editingFlight, durationMinutes: parseInt(e.target.value)})} required />
+                                            </div>
+                                            <div className="col-12 mb-3">
+                                                <label className="form-label small fw-bold text-muted">COMENTARIOS</label>
+                                                <textarea className="form-control" rows={3} value={editingFlight.comments || ""} onChange={(e) => setEditingFlight({...editingFlight, comments: e.target.value})} />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label small fw-bold text-muted">DOCUMENTACIÓN ADJUNTA</label>
+                                                {editingFlight.documentation?.documentationName ? (
+                                                    <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded border mb-2">
+                                                        <span className="small text-truncate">{editingFlight.documentation.documentationName}</span>
+                                                        <button
+                                                            type="button"
+                                                            className="btn border-0 d-flex align-items-center justify-content-center"
+                                                            style={{
+                                                                width: "32px",
+                                                                height: "32px",
+                                                                backgroundColor: "#dc3545",
+                                                                color: "#ffffff",
+                                                                borderRadius: "6px",
+                                                                padding: 0,
+                                                                flexShrink: 0,
+                                                            }}
+                                                            onClick={() => {
+                                                                setEditingFlight({ ...editingFlight, documentation: null });
+                                                                setSelectedFile(null);
+                                                                setDocumentationMarkedForDeletion(true);
+                                                            }}
+                                                            aria-label="Eliminar documentacion"
+                                                        >
+                                                            <span style={{ fontSize: "20px", lineHeight: 1, fontWeight: 700 }}>X</span>
+                                                        </button>
+                                                    </div>
+                                                ) : null}
+                                                <div className="input-group">
+                                                    <input
+                                                        type="file"
+                                                        className="form-control"
+                                                        onChange={(e) => {
+                                                            setSelectedFile(e.target.files?.[0] || null);
+                                                            if (e.target.files?.[0]) {
+                                                                setDocumentationMarkedForDeletion(false);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                {documentationMarkedForDeletion && !selectedFile && (
+                                                    <small className="text-danger d-block mt-2">
+                                                        La documentacion actual se eliminara al guardar.
+                                                    </small>
+                                                )}
+                                                {selectedFile && (
+                                                    <small className="text-muted d-block mt-2">
+                                                        Se subira: {selectedFile.name}
+                                                    </small>
+                                                )}
+                                                {!selectedFile && !editingFlight.documentation && !documentationMarkedForDeletion && (
+                                                    <small className="text-muted d-block mt-2">
+                                                        Puedes adjuntar un archivo opcional.
+                                                    </small>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer bg-light border-0">
+                                        <button type="button" className="btn btn-outline-secondary" onClick={resetEditState}>Cancelar</button>
+                                        <button type="submit" className="btn btn-primary px-4 fw-bold" disabled={updateLoading}>
+                                            {updateLoading ? "Guardando..." : "Guardar"}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     {/* POPUP / MODAL */}
                     {selectedFlight && (

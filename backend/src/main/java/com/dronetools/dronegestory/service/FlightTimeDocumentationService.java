@@ -80,12 +80,20 @@ public class FlightTimeDocumentationService {
         FlightTimeDocumentation documentation = flightTimeDocumentationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Flight time documentation not found with id: " + id));
 
+        FlightTime flightTime = documentation.getFlightTime();
+        if (flightTime != null) {
+            flightTime.setDocumentation(null);
+        }
         deleteStoredFile(documentation.getDocumentationName());
         flightTimeDocumentationRepository.delete(documentation);
     }
 
-    void deleteByFlightTimeId(Long flightTimeId) {
+    public void deleteByFlightTimeId(Long flightTimeId) {
         flightTimeDocumentationRepository.findByFlightTime_FlightTimeId(flightTimeId).ifPresent(documentation -> {
+            FlightTime flightTime = documentation.getFlightTime();
+            if (flightTime != null) {
+                flightTime.setDocumentation(null);
+            }
             deleteStoredFile(documentation.getDocumentationName());
             flightTimeDocumentationRepository.delete(documentation);
         });

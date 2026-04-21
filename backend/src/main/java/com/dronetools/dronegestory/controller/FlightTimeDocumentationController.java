@@ -97,6 +97,13 @@ public class FlightTimeDocumentationController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/flight-time/{flightTimeId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> deleteByFlightTimeId(@PathVariable Long flightTimeId) {
+        flightTimeDocumentationService.deleteByFlightTimeId(flightTimeId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/files/**")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> getFile(HttpServletRequest request) throws IOException {
