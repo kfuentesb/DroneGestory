@@ -101,21 +101,14 @@ VISUAL<br>
 -Arreglar la toma de IP en local y en servidor<br>
 
 -USUARIO<br>
+-Evitar que un usuario pueda tener el mismo nombre de usuario<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
--No dejar que el usuario normal modifique su perfil, a escepcion de num de telefono, correo, imagen de perfil y certificados<br>
 
 -DRONES<br>
--Cambiar fecha de fabricacion a mes y año, sin dia<br>
--Híbrido/VTOL debería estar en configuración<br>
--En fuente de potencia quitar Híbrido/VTOL e introducir Eléctrico / No eléctrico<br>
-
--HORAS DE VUELO
--Añadir comentarios a la hora de vuelo<br>
-
--MANTENIMIENTO
--Borrar select de drone, es redundante, elegir el drone previamente seleccionado<br>
--Borrar columna comentarios de la lista de mantenimientos<br>
--Cambiar meses requeridos a meses desde ultima revisión<br>
+-Añadir fecha de fabricacion<br>
+-Siempre en mayusculas en nº de serie<br>
+-Añadir fuente de potencia (Híbirido/VTOL, no híbrido)<br>
+-Si selecciona no electrica tiene que salir tipo de fuente: hidrogeno, gasolina, otros.<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
@@ -123,7 +116,6 @@ VISUAL<br>
 -UAS asignable
 -Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
 -Asignar aeronave en a6, a7
--Hacer que CONOPS de a4 se autorellene en los demás
 -Meter opción cancelar
 -A5, aptitud para operar. Otros usuarios asignados pueden firmar
 -Acceder a una operación siendo un usuario asignados

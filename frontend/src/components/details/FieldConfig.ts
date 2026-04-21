@@ -1,8 +1,10 @@
+export type FieldOption = string | { value: any; label: string };
+
 export type FieldConfig = {
     label: string;
     key: string;
     type?: "text" | "email" | "number" |"boolean" | "select" | "file" | "date" | "textarea";
-    options?: string[];
+    options?: FieldOption[];
     validate?: (v: any) => boolean; // Validación del campo
     error?: string;
     format?: (v: string | number | null | undefined) => string; // Formatea el valor a mostrar

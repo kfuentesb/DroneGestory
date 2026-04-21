@@ -1,5 +1,5 @@
 import type { FieldConfig } from "../FieldConfig";
-import { LIMITS, aircraftClasses, configs } from "../../../global-const/aircraft-const";
+import { LIMITS, aircraftClasses, configs, powerSources, powerSourcesNonElectric } from "../../../global-const/aircraft-const";
 
 export const aircraftFields: FieldConfig[] = [
   {
@@ -45,7 +45,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Fuente de potencia",
     key: "powerSource",
     type: "select",
-    options: ["HYBRID_VTOL", "NON_HYBRID"],
+    options: powerSources,
     format: (v: any) => {
       if (v === "HYBRID_VTOL") return "Híbrido/VTOL";
       if (v === "NON_HYBRID") return "No Híbrido";
@@ -56,7 +56,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Tipo de fuente no eléctrica",
     key: "powerSourceType",
     type: "select",
-    options: ["HYDROGEN", "GASOLINE", "OTHERS"],
+    options: powerSourcesNonElectric,
     format: (v: any) => {
       if (v === "HYDROGEN") return "Hidrógeno";
       if (v === "GASOLINE") return "Gasolina";
@@ -104,7 +104,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Configuración",
     key: "config",
     type: "select",
-    options: configs.map((opt) => opt.value),
+    options: configs,
   },
   {
     key: "impactEnergy",
