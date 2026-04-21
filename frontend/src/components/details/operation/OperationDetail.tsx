@@ -211,9 +211,9 @@ export default function OperationDetail() {
                   {anexo.versiones.length === 0 ? (
                     <p className="text-muted mb-0">Aún no hay versiones registradas.</p>
                   ) : (
-                    <div className="table-responsive">
+                    <div className="table-responsive" style={anexo.versiones.length >= 5 ? { maxHeight: "300px", overflowY: "auto" } : undefined}>
                       <table className="table table-sm align-middle mb-0">
-                        <thead>
+                        <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
                           <tr>
                             <th>Versión</th>
                             <th>Estado</th>
