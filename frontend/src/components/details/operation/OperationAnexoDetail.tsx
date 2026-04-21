@@ -58,6 +58,11 @@ type OperationAnexoDetailProps = {
 
 type AnexoData = Anexo4Data | Anexo5Data | Anexo6Data | Anexo7Data | Anexo8Data;
 
+const getAircraftDisplayName = (aircraft: AircraftOption) => {
+  const base = (aircraft.model ?? "").trim();
+  return aircraft.serialNumber ? `${base} (${aircraft.serialNumber})` : base;
+};
+
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
     <span
@@ -602,11 +607,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                 value={selectedAircraftId ?? ""}
                 onChange={(e) => void handleAircraftChange(e)}
                 disabled={isViewingHistoricalVersion}
+                size={anexoAircraftOptions.length > 8 ? 8 : 1}
+                style={anexoAircraftOptions.length > 8 ? { overflowY: "auto" } : undefined}
               >
                 {anexoAircraftOptions.map((aircraft) => (
                   <option key={aircraft.id} value={aircraft.id}>
-                    {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()}
-                    {aircraft.serialNumber ? ` (${aircraft.serialNumber})` : ""}
+                    {getAircraftDisplayName(aircraft)}
                   </option>
                 ))}
               </select>
@@ -677,7 +683,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
                   selectedAircraftId={selectedAircraftId}
-                  disabled={isViewingHistoricalVersion || !canEditDraft || !selectedAircraftId}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."
@@ -694,7 +700,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
                   selectedAircraftId={selectedAircraftId}
-                  disabled={isViewingHistoricalVersion || !canEditDraft || !selectedAircraftId}
+                  disabled={isViewingHistoricalVersion || !canEditDraft}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."

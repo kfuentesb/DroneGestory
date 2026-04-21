@@ -93,12 +93,18 @@ export default function OperationDetail() {
     void loadAircraftOptions();
   }, []);
 
+  // Cambiado: ahora muestra solo "modelo · serial"
   const aircraftLabelById = useMemo(() => {
     const map = new Map<number, string>();
     aircraftOptions.forEach((aircraft) => {
-      const base = `${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim();
-      const label = aircraft.serialNumber ? `${base} (${aircraft.serialNumber})` : base;
-      map.set(aircraft.id, label || `Aeronave ${aircraft.id}`);
+      const base = (aircraft.model ?? "").trim();
+      const serial = aircraft.serialNumber ?? "";
+      const label =
+        base && serial ? `${base} · ${serial}`
+        : base ? base
+        : serial ? serial
+        : `Aeronave ${aircraft.id}`;
+      map.set(aircraft.id, label);
     });
     return map;
   }, [aircraftOptions]);
@@ -236,7 +242,7 @@ export default function OperationDetail() {
                   {anexo.versiones.length === 0 ? (
                     <p className="text-muted mb-0">Aún no hay versiones registradas.</p>
                   ) : (
-                    <div className="table-responsive" style={anexo.versiones.length >= 5 ? { maxHeight: "300px", overflowY: "auto" } : undefined}>
+                    <div className="table-responsive" style={anexo.versiones.length > 8 ? { maxHeight: "300px", overflowY: "auto" } : undefined}>
                       <table className="table table-sm align-middle mb-0">
                         <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
                           <tr>
@@ -257,7 +263,9 @@ export default function OperationDetail() {
                               </td>
                               {(tipoAnexo === 6 || tipoAnexo === 7) && (
                                 <td>
-                                  {version.aircraftId ? (aircraftLabelById.get(version.aircraftId) ?? `Aeronave ${version.aircraftId}`) : "-"}
+                                  {version.aircraftId
+                                    ? (aircraftLabelById.get(version.aircraftId) ?? `Aeronave ${version.aircraftId}`)
+                                    : "-"}
                                 </td>
                               )}
                               <td>{version.firmadoPor ?? "-"}</td>

@@ -87,46 +87,6 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
                 .orElse(null);
     }
 
-    @Transactional(readOnly = true)
-    public Anexo7 getDatosVersionPorAeronave(Long operationId, int version, Long aircraftId) {
-        if (aircraftId == null) {
-            throw new RuntimeException("Debes indicar la aeronave seleccionada");
-        }
-        Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
-        return anexo7Repository
-                .findByOperationAndNumeroVersionAndAircraftId(operation, version, aircraftId)
-                .orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    public java.util.List<Anexo7> getAllAircraftsInVersion(Long operationId, int version) {
-        Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
-        return anexo7Repository.findByOperationAndNumeroVersion(operation, version);
-    }
-
-    @Transactional
-    public void firmarVersionCompleta(Long operationId, int version, String username) {
-        Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
-        validarOperacionEditable(operation);
-
-        java.util.List<Anexo7> anexosEnVersion = anexo7Repository.findByOperationAndNumeroVersion(operation, version);
-        if (anexosEnVersion.isEmpty()) {
-            throw new RuntimeException("No hay datos en esta versión para firmar");
-        }
-
-        for (Anexo7 anexo : anexosEnVersion) {
-            if (anexo.getEstado() != AnexoStatus.FIRMADO) {
-                anexo.setEstado(AnexoStatus.FIRMADO);
-                anexo.setFirmadoPor(username);
-                anexo.setFechaFirma(java.time.LocalDateTime.now());
-                anexo7Repository.save(anexo);
-            }
-        }
-    }
-
     @Override
     protected Anexo7 crearCopia(Anexo7 origen) {
         Anexo7 copia = new Anexo7();

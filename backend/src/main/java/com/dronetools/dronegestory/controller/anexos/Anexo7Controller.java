@@ -76,36 +76,6 @@ public class Anexo7Controller extends AnexoControllerBase<Anexo7, Anexo7Service>
         return ResponseEntity.ok(toResponse(anexo7, operationId));
     }
 
-    @GetMapping("/versiones/{numeroVersion}/datos")
-    public ResponseEntity<Anexo7ResponseDTO> getDatosVersionPorNumero(@PathVariable Long operationId,
-                                                                      @PathVariable Integer numeroVersion,
-                                                                      @RequestParam Long aircraftId) {
-        Anexo7 anexo7 = service.getDatosVersionPorAeronave(operationId, numeroVersion, aircraftId);
-        if (anexo7 == null) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(toResponse(anexo7, operationId));
-    }
-
-    @GetMapping("/versiones/{numeroVersion}/aircrafts")
-    public ResponseEntity<java.util.List<Anexo7ResponseDTO>> getAircraftsInVersion(@PathVariable Long operationId,
-                                                                                      @PathVariable Integer numeroVersion) {
-        java.util.List<Anexo7> anexos = service.getAllAircraftsInVersion(operationId, numeroVersion);
-        java.util.List<Anexo7ResponseDTO> dtos = anexos.stream()
-                .map(a -> toResponse(a, operationId))
-                .toList();
-        return ResponseEntity.ok(dtos);
-    }
-
-    @PostMapping("/versiones/{numeroVersion}/firmar")
-    public ResponseEntity<Void> firmarVersionCompleta(@PathVariable Long operationId,
-                                                      @PathVariable Integer numeroVersion,
-                                                      Principal principal) {
-        String username = (principal != null) ? principal.getName() : "Sistema";
-        service.firmarVersionCompleta(operationId, numeroVersion, username);
-        return ResponseEntity.ok().build();
-    }
-
     @Override
     protected Anexo7 registrar(Long operationId, Anexo7 input) {
         return service.registrarAnexo7(operationId, input);

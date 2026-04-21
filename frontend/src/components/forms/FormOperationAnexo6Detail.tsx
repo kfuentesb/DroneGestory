@@ -167,15 +167,13 @@ export default function FormOperationAnexo6Detail({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
-    if (!selectedAircraftId) {
-      alert("Selecciona una aeronave de Anexo 4 antes de guardar.");
-      return;
-    }
 
     setSaving(true);
     try {
       const formData = new FormData();
-      formData.append("aircraftId", String(selectedAircraftId));
+      if (selectedAircraftId) {
+        formData.append("aircraftId", String(selectedAircraftId));
+      }
 
       // Materiales auxiliares como array de strings
       materialesAuxiliares

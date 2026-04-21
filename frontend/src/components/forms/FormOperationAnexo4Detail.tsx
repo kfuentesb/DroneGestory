@@ -85,6 +85,11 @@ const BOOL_OPTIONS = [
   { value: "false", label: "No" },
 ];
 
+const getAircraftDisplayName = (aircraft: AircraftOption) => {
+  const base = (aircraft.model ?? "").trim();
+  return aircraft.serialNumber ? `${base} (${aircraft.serialNumber})` : base;
+};
+
 export default function FormOperationAnexo4Detail({
   operationId,
   //operationTitle,
@@ -225,10 +230,7 @@ export default function FormOperationAnexo4Detail({
     e.preventDefault();
     if (disabled) return;
 
-    if (!validate()) {
-      alert("Revisa los campos obligatorios antes de guardar.");
-      return;
-    }
+    validate();
 
     setSaving(true);
     try {
@@ -337,6 +339,8 @@ export default function FormOperationAnexo4Detail({
               )
             }
             disabled={disabled || saving}
+            size={aircraftOptions.length > 8 ? 8 : 1}
+            style={aircraftOptions.length > 8 ? { overflowY: "auto" } : undefined}
           >
             <option value="">Selecciona una aeronave...</option>
             {aircraftOptions
@@ -346,8 +350,7 @@ export default function FormOperationAnexo4Detail({
               )
               .map((aircraft) => (
                 <option key={aircraft.id} value={aircraft.id}>
-                  {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()}{" "}
-                  {aircraft.serialNumber ? `(${aircraft.serialNumber})` : ""}
+                  {getAircraftDisplayName(aircraft)}
                 </option>
               ))}
           </select>
@@ -367,15 +370,17 @@ export default function FormOperationAnexo4Detail({
         </div>
 
         {aircraftIds.length > 0 && (
-          <ul className="list-group">
+          <ul
+            className="list-group"
+            style={aircraftIds.length > 8 ? { maxHeight: "280px", overflowY: "auto" } : undefined}
+          >
             {aircraftIds.map((id: number) => {
               const aircraft = aircraftOptions.find((a) => a.id === id);
               if (!aircraft) return null;
               return (
                 <li key={id} className="list-group-item d-flex justify-content-between align-items-center">
                   <span>
-                    {`${aircraft.manufacturer ?? ""} ${aircraft.model ?? ""}`.trim()}{" "}
-                    {aircraft.serialNumber ? `(${aircraft.serialNumber})` : ""}
+                    {getAircraftDisplayName(aircraft)}
                   </span>
                   <button
                     type="button"

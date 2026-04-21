@@ -112,15 +112,13 @@ export default function FormOperationAnexo7Detail({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
-    if (!selectedAircraftId) {
-      alert("Selecciona una aeronave de Anexo 4 antes de guardar.");
-      return;
-    }
 
     setSaving(true);
     try {
       const formData = new FormData();
-      formData.append("aircraftId", String(selectedAircraftId));
+      if (selectedAircraftId) {
+        formData.append("aircraftId", String(selectedAircraftId));
+      }
       FORM_FIELDS.forEach((key) => {
         const value = formValues[key];
         if (value !== undefined && value !== null && value !== "") {
@@ -244,12 +242,7 @@ export default function FormOperationAnexo7Detail({
             min={0}
             className="form-control bg-white border"
             value={formValues.tiempoVueloMinutos ?? ""}
-            onChange={(e) =>
-              handleChange(
-                "tiempoVueloMinutos",
-                e.target.value === "" ? null : Number(e.target.value),
-              )
-            }
+            onChange={(e) => handleChange("tiempoVueloMinutos", e.target.value)}
             disabled={disabled || saving}
           />
         </div>
@@ -260,12 +253,7 @@ export default function FormOperationAnexo7Detail({
             min={0}
             className="form-control bg-white border"
             value={formValues.ciclosAterrizaje ?? ""}
-            onChange={(e) =>
-              handleChange(
-                "ciclosAterrizaje",
-                e.target.value === "" ? null : Number(e.target.value),
-              )
-            }
+            onChange={(e) => handleChange("ciclosAterrizaje", e.target.value)}
             disabled={disabled || saving}
           />
         </div>
