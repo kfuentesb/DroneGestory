@@ -74,7 +74,7 @@ public class AircraftService {
             boolean impactEnergyPresent, boolean privatelyBuiltPresent,
             boolean hasParachutePresent, boolean hasEnsurancePresent,
             boolean hasFTSPresent, boolean cautivePresent, boolean accessoriesPresent,
-            boolean fechaFabPresent
+            boolean fechaFabPresent, boolean powerSourcePresent, boolean powerSourceTypePresent
     ) throws IOException {
         
         Aircraft aircraft = aircraftRepository.findById(id)
@@ -91,8 +91,8 @@ public class AircraftService {
         if (updatedData.getConfig() != null) aircraft.setConfig(updatedData.getConfig());
         if (updatedData.getHasCamera() != null) aircraft.setHasCamera(updatedData.getHasCamera());
         if (updatedData.getFechaFab() != null) aircraft.setFechaFab(updatedData.getFechaFab()); else if (fechaFabPresent) aircraft.setFechaFab(null);
-        if (updatedData.getPowerSource() != null) aircraft.setPowerSource(updatedData.getPowerSource());
-        if (updatedData.getPowerSourceType() != null) aircraft.setPowerSourceType(updatedData.getPowerSourceType());
+        if (updatedData.getPowerSource() != null) aircraft.setPowerSource(updatedData.getPowerSource()); else if (powerSourcePresent) aircraft.setPowerSource(null);
+        if (updatedData.getPowerSourceType() != null) aircraft.setPowerSourceType(updatedData.getPowerSourceType()); else if (powerSourceTypePresent) aircraft.setPowerSourceType(null);
 
         // Logic for nullable numeric/boolean fields (MTOM, Wingspan, etc.)
         updateNullableFields(aircraft, updatedData, mtomPresent, wingspanPresent, maxSpeedPresent, 
