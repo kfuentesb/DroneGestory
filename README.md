@@ -106,8 +106,6 @@ VISUAL<br>
 
 -DRONES<br>
 -Cambiar fecha de fabricacion a mes y año, sin dia<br>
--Híbrido/VTOL debería estar en configuración<br>
--En fuente de potencia quitar Híbrido/VTOL e introducir Eléctrico / No eléctrico<br>
 
 -HORAS DE VUELO
 -Añadir comentarios a la hora de vuelo<br>
