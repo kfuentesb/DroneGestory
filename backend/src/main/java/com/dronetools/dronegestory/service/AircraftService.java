@@ -73,7 +73,8 @@ public class AircraftService {
             boolean mtomPresent, boolean wingspanPresent, boolean maxSpeedPresent,
             boolean impactEnergyPresent, boolean privatelyBuiltPresent,
             boolean hasParachutePresent, boolean hasEnsurancePresent,
-            boolean hasFTSPresent, boolean cautivePresent, boolean accessoriesPresent
+            boolean hasFTSPresent, boolean cautivePresent, boolean accessoriesPresent,
+            boolean fechaFabPresent
     ) throws IOException {
         
         Aircraft aircraft = aircraftRepository.findById(id)
@@ -89,7 +90,7 @@ public class AircraftService {
         if (updatedData.getAircraftClass() != null) aircraft.setAircraftClass(updatedData.getAircraftClass());
         if (updatedData.getConfig() != null) aircraft.setConfig(updatedData.getConfig());
         if (updatedData.getHasCamera() != null) aircraft.setHasCamera(updatedData.getHasCamera());
-        if (updatedData.getFechaFab() != null) aircraft.setFechaFab(updatedData.getFechaFab());
+        if (updatedData.getFechaFab() != null) aircraft.setFechaFab(updatedData.getFechaFab()); else if (fechaFabPresent) aircraft.setFechaFab(null);
         if (updatedData.getPowerSource() != null) aircraft.setPowerSource(updatedData.getPowerSource());
         if (updatedData.getPowerSourceType() != null) aircraft.setPowerSourceType(updatedData.getPowerSourceType());
 

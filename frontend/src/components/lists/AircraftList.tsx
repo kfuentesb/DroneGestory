@@ -17,19 +17,24 @@ type Aircraft = {
   model: string;
   serialNumber?: string;
   aircraftClass: "No" | "C0" | "C1" | "C2" | "C3" | "C4" | "Legacy";
-  mtom?: number;                 // Peso máximo, kg (BigDecimal)
-  wingspan?: number;             // En metros (BigDecimal)
-  maxSpeed?: number;             // En m/s (BigDecimal)
+  mtom?: number;
+  wingspan?: number;
+  maxSpeed?: number;
   config: "Avion" | "Multirrotor" | "Helicoptero" | "Hibrido" | "Ligero" | "Otro";
-  impactEnergy?: number;         // En Julios (BigDecimal)
-  fechaFab?: string;             // En formato 'YYYY-MM-DD'
+  impactEnergy?: number;
+  fechaFab?: string;
   hasCamera: boolean;
-
   powerSource: "Electric" | "Non_Electric";
   powerSourceType?: "Hydrogen" | "Gasoline";
 };
 
 export default function AircraftList() {
+  const formatMonthYear = (value?: string | null) => {
+    if (!value) return "-";
+    const [year, month] = value.split("-");
+    return year && month ? `${month}/${year}` : value;
+  };
+
   const [aircrafts, setAircrafts] = useState<Aircraft[]>([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,12 +42,11 @@ export default function AircraftList() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
-
   useEffect(() => {
     const loadAircrafts = async () => {
       setIsLoading(true);
       try {
-      const res = await apiFetch(`${API_BASE_URL}/api/aircraft`, {
+        const res = await apiFetch(`${API_BASE_URL}/api/aircraft`, {
           headers: { "Content-Type": "application/json" }
         });
 
@@ -86,13 +90,13 @@ export default function AircraftList() {
     { label: "Modelo", key: "model", sortable: true },
     { label: "Nº Serie", key: "serialNumber", sortable: true },
     { label: "Clase", key: "aircraftClass", sortable: true },
-    { label: "MTOM", key: "mtom", sortable: true},
-    { label: "Dimensión", key: "wingspan", sortable: true},
-    { label: "Velocidad", key: "maxSpeed", sortable: true},
-    { label: "Configuración", key: "config", sortable: true },
-    { label: "Energía impacto", key: "impactEnergy", sortable: true},
-    { label: "Fecha fabricación", key: "fechaFab", sortable: true },
-    { label: "Cámara", key: "hasCamera", sortable: true },
+    { label: "MTOM", key: "mtom", sortable: true },
+    { label: "Dimension", key: "wingspan", sortable: true },
+    { label: "Velocidad", key: "maxSpeed", sortable: true },
+    { label: "Configuracion", key: "config", sortable: true },
+    { label: "Energia impacto", key: "impactEnergy", sortable: true },
+    { label: "Fecha fabricacion", key: "fechaFab", sortable: true },
+    { label: "Camara", key: "hasCamera", sortable: true },
   ];
 
   return (
@@ -113,8 +117,8 @@ export default function AircraftList() {
               <ButtonProp onClick={() => navigate("/aircraft-models")}>
                 Listar modelos
               </ButtonProp>
-              
-              <ButtonProp 
+
+              <ButtonProp
                 onClick={() => navigate("/register-aircraft")}
                 className="d-flex align-items-center justify-content-center"
               >
@@ -126,7 +130,6 @@ export default function AircraftList() {
           <ReusableTable
             headers={modelHeaders}
             rows={paginatedAircrafts}
-            // onRowClick={(m) => navigate(`/models/${m.manufacturer}/${m.model}`)} // Navigates to View B
             renderRow={(a) => (
               <>
                 <td>{a.manufacturer || "N/A"}</td>
@@ -140,15 +143,15 @@ export default function AircraftList() {
                 <td>{a.maxSpeed ?? "-"} <b>m/s</b></td>
                 <td>{a.config}</td>
                 <td>{a.impactEnergy ?? "-"} <b>J</b></td>
-                <td>{a.fechaFab ? new Date(a.fechaFab).toLocaleDateString() : "-"}</td>
-                <td className = "text-center">
+                <td>{formatMonthYear(a.fechaFab)}</td>
+                <td className="text-center">
                   <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
-                    {a.hasCamera ? "Sí" : "No"}
+                    {a.hasCamera ? "Si" : "No"}
                   </span>
                 </td>
               </>
             )}
-                        onRowClick={(a) => navigate(`/aircrafts/${a.id}`)}
+            onRowClick={(a) => navigate(`/aircrafts/${a.id}`)}
             emptyText="No hay aeronaves registradas."
           />
 

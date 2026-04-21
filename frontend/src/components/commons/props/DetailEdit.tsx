@@ -1,5 +1,6 @@
 import type { FieldConfig } from "../../details/FieldConfig";
 import Select from "react-select";
+import MonthYearInput from "../MonthYearInput";
 
 type FieldOption = string | { value: any; label: string };
 
@@ -233,6 +234,15 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 }),
                             }}
                         />
+                    ) : field.type === "month" ? (
+                            <MonthYearInput
+                                value={values[field.key]}
+                                onChange={(newValue) => {
+                                    setValues({ ...values, [field.key]: newValue });
+                                }}
+                                disabled={field.readOnly}
+                                invalid={Boolean(errors[field.key])}
+                            />
                     ) : field.type === "date" ? (
                             <input
                                 type="date"

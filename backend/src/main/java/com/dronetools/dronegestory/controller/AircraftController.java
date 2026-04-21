@@ -112,6 +112,7 @@ public class AircraftController {
         boolean hasFTSPresent = request.getParameterMap().containsKey("hasFTS");
         boolean cautivePresent = request.getParameterMap().containsKey("cautive");
         boolean accessoriesPresent = request.getParameterMap().containsKey("accessories");
+        boolean fechaFabPresent = request.getParameterMap().containsKey("fechaFab");
 
         Aircraft updatedAircraft = aircraftService.updateWithFile(
                 id,
@@ -129,7 +130,8 @@ public class AircraftController {
                 hasEnsurancePresent,
                 hasFTSPresent,
                 cautivePresent,
-                accessoriesPresent
+                accessoriesPresent,
+                fechaFabPresent
         );
 
         return ResponseEntity.ok(AircraftResponseDTO.fromEntity(updatedAircraft));

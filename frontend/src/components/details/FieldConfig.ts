@@ -3,7 +3,7 @@ export type FieldOption = string | { value: any; label: string };
 export type FieldConfig = {
     label: string;
     key: string;
-    type?: "text" | "email" | "number" |"boolean" | "select" | "file" | "date" | "textarea";
+    type?: "text" | "email" | "number" |"boolean" | "select" | "file" | "date" | "month" | "textarea";
     options?: FieldOption[];
     validate?: (v: any) => boolean; // Validación del campo
     error?: string;

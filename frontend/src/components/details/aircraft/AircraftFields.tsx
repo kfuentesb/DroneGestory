@@ -1,6 +1,12 @@
 import type { FieldConfig } from "../FieldConfig";
 import { LIMITS, aircraftClasses, configs, powerSources, powerSourcesNonElectric } from "../../../global-const/aircraft-const";
 
+const formatMonthYear = (value: string) => {
+  const [year, month] = value.split("-");
+  if (!year || !month) return "No especificado";
+  return `${month}/${year}`;
+};
+
 export const aircraftFields: FieldConfig[] = [
   {
     label: "Fabricante",
@@ -17,28 +23,27 @@ export const aircraftFields: FieldConfig[] = [
     error: "El modelo debe tener entre 2 y 100 caracteres",
   },
   {
-    label: "Número de Serie",
+    label: "Numero de Serie",
     key: "serialNumber",
     type: "text",
     validate: (v: any) => {
       const value = v?.toString().trim();
       return value && typeof value === "string" && /^[a-zA-Z0-9]+$/.test(value) && value.length >= 2 && value.length <= 25;
     },
-    error: "El número de serie debe ser alfanumérico, entre 2 y 25 caracteres",
+    error: "El numero de serie debe ser alfanumerico, entre 2 y 25 caracteres",
   },
   {
-    label: "Fecha Fabricación",
+    label: "Fecha Fabricacion",
     key: "fechaFab",
-    type: "date",
+    type: "month",
     validate: (v: any) => {
       if (v === null || v === undefined || String(v).trim() === "") return true;
-      return !Number.isNaN(Date.parse(String(v)));
+      return /^\d{4}-\d{2}$/.test(String(v));
     },
-    error: "Fecha de fabricación inválida",
+    error: "Fecha de fabricacion invalida",
     format: (v: any) => {
       if (!v) return "No especificado";
-      const parsed = new Date(String(v));
-      return Number.isNaN(parsed.getTime()) ? "No especificado" : parsed.toLocaleDateString("es-ES");
+      return formatMonthYear(String(v));
     },
   },
   {
@@ -47,18 +52,18 @@ export const aircraftFields: FieldConfig[] = [
     type: "select",
     options: powerSources,
     format: (v: any) => {
-      if (v === "HYBRID_VTOL") return "Híbrido/VTOL";
-      if (v === "NON_HYBRID") return "No Híbrido";
+      if (v === "HYBRID_VTOL") return "Hibrido/VTOL";
+      if (v === "NON_HYBRID") return "No Hibrido";
       return v ? String(v) : "No especificado";
     },
   },
   {
-    label: "Tipo de fuente no eléctrica",
+    label: "Tipo de fuente no electrica",
     key: "powerSourceType",
     type: "select",
     options: powerSourcesNonElectric,
     format: (v: any) => {
-      if (v === "HYDROGEN") return "Hidrógeno";
+      if (v === "HYDROGEN") return "Hidrogeno";
       if (v === "GASOLINE") return "Gasolina";
       if (v === "OTHERS") return "Otros";
       return v ? String(v) : "No especificado";
@@ -82,7 +87,7 @@ export const aircraftFields: FieldConfig[] = [
   },
   {
     key: "wingspan",
-    label: "Dimensión (m)",
+    label: "Dimension (m)",
     type: "number",
     validate: (val: any) => {
       const num = Number(val);
@@ -92,60 +97,60 @@ export const aircraftFields: FieldConfig[] = [
   },
   {
     key: "maxSpeed",
-    label: "Velocidad máx (m/s)",
+    label: "Velocidad max (m/s)",
     type: "number",
     validate: (val: any) => {
       const num = Number(val);
       return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_SPEED;
     },
-    error: `Máximo permitido: ${LIMITS.MAX_SPEED} km/h`,
+    error: `Maximo permitido: ${LIMITS.MAX_SPEED} km/h`,
   },
   {
-    label: "Configuración",
+    label: "Configuracion",
     key: "config",
     type: "select",
     options: configs,
   },
   {
     key: "impactEnergy",
-    label: "Energía impacto (J)",
+    label: "Energia impacto (J)",
     type: "number",
     validate: (val: any) => {
       const num = Number(val);
       return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_ENERGY;
     },
-    error: `Máximo permitido: ${LIMITS.MAX_ENERGY} J`,
+    error: `Maximo permitido: ${LIMITS.MAX_ENERGY} J`,
   },
   {
-    label: "Cámara",
+    label: "Camara",
     key: "hasCamera",
     type: "select",
-    options: ["Sí", "No"],
+    options: ["Si", "No"],
     format: (v: any) => {
-      if (v === true) return "Sí";
+      if (v === true) return "Si";
       if (v === false) return "No";
       return "No especificado";
     },
-    error: "Seleccione una opción válida",
+    error: "Seleccione una opcion valida",
   },
   {
-    label: "Construcción privada",
+    label: "Construccion privada",
     key: "privatelyBuilt",
     type: "select",
-    options: ["Sí", "No"],
+    options: ["Si", "No"],
     format: (v: any) => {
-      if (v === true) return "Sí";
+      if (v === true) return "Si";
       if (v === false) return "No";
       return "No especificado";
     },
   },
   {
-    label: "Paracaídas",
+    label: "Paracaidas",
     key: "hasParachute",
     type: "select",
-    options: ["Sí", "No"],
+    options: ["Si", "No"],
     format: (v: any) => {
-      if (v === true) return "Sí";
+      if (v === true) return "Si";
       if (v === false) return "No";
       return "No especificado";
     },
@@ -154,9 +159,9 @@ export const aircraftFields: FieldConfig[] = [
     label: "Seguro RC",
     key: "hasEnsurance",
     type: "select",
-    options: ["Sí", "No"],
+    options: ["Si", "No"],
     format: (v: any) => {
-      if (v === true) return "Sí";
+      if (v === true) return "Si";
       if (v === false) return "No";
       return "No especificado";
     },
@@ -165,9 +170,9 @@ export const aircraftFields: FieldConfig[] = [
     label: "Sistema FTS",
     key: "hasFTS",
     type: "select",
-    options: ["Sí", "No"],
+    options: ["Si", "No"],
     format: (v: any) => {
-      if (v === true) return "Sí";
+      if (v === true) return "Si";
       if (v === false) return "No";
       return "No especificado";
     },
@@ -176,29 +181,29 @@ export const aircraftFields: FieldConfig[] = [
     label: "Cautivo",
     key: "cautive",
     type: "select",
-    options: ["Sí", "No", "Opcional"],
+    options: ["Si", "No", "Opcional"],
     format: (v: any) => {
-        if (v === null || v === undefined || v === "") return "No especificado";
-        const val = String(v).toUpperCase();
-        if (val === "YES" || val === "SI" || val === "SÍ") return "Sí";
-        if (val === "NO") return "No";
-        if (val === "OPTIONAL" || val === "OPCIONAL") return "Opcional";
-        return String(v);
-      },
+      if (v === null || v === undefined || v === "") return "No especificado";
+      const val = String(v).toUpperCase();
+      if (val === "YES" || val === "SI") return "Si";
+      if (val === "NO") return "No";
+      if (val === "OPTIONAL" || val === "OPCIONAL") return "Opcional";
+      return String(v);
+    },
   },
   {
     label: "Accesorios",
     key: "accessories",
     type: "textarea",
     validate: (v: any) => v == null || String(v).length <= 800,
-    error: "Máximo 800 caracteres",
+    error: "Maximo 800 caracteres",
   },
   {
     label: "Horas de vuelo (min)",
     key: "flightMinutes",
     type: "number",
     validate: (val: any) => Number.isInteger(Number(val)) && Number(val) >= 0,
-    error: "Debe ser un nÃºmero entero mayor o igual que 0",
+    error: "Debe ser un numero entero mayor o igual que 0",
     format: (v: any) => v === null || v === undefined || v === "" ? "0 min" : `${v} min`,
     readOnly: true,
   },
