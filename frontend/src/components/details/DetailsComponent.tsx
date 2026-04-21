@@ -1248,7 +1248,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             "state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS",
             "hasCameraDefault", "privatelyBuiltDefault", "hasParachuteDefault", "hasEnsuranceDefault", "hasFTSDefault"
         ];
-        const clearableFieldKeys = ["accessories"];
+        const clearableFieldKeys = ["accessories", ...(props.clearableFieldKeys || [])];
 
         const isNumericField = (key: string) => numericFields.includes(key);
         const isBooleanField = (key: string) => booleanFields.includes(key);

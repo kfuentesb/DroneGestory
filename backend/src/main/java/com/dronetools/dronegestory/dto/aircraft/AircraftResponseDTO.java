@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Setter
@@ -37,9 +37,11 @@ public class AircraftResponseDTO {
     private SelectionStatus cautive;
     private String accessories;
     private Integer flightMinutes;
-    private LocalDate fechaFab;
+    private String fechaFab;
     private AircraftPowersSource.PowerSource powerSource;
     private AircraftPowersSource.PowerSourceType powerSourceType;
+
+    private static final DateTimeFormatter MONTH_YEAR_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     public static AircraftResponseDTO fromEntity(Aircraft aircraft) {
         AircraftResponseDTO dto = new AircraftResponseDTO();
@@ -53,7 +55,7 @@ public class AircraftResponseDTO {
         }
 
         dto.setSerialNumber(aircraft.getSerialNumber());
-        dto.setFechaFab(aircraft.getFechaFab());
+        dto.setFechaFab(aircraft.getFechaFab() == null ? null : aircraft.getFechaFab().format(MONTH_YEAR_FORMATTER));
         dto.setPowerSource(aircraft.getPowerSource());
         dto.setPowerSourceType(aircraft.getPowerSourceType());
         dto.setAircraftClass(aircraft.getAircraftClass());

@@ -1,5 +1,6 @@
 import type { FieldConfig } from "../../details/FieldConfig";
 import Select from "react-select";
+import MonthYearInput from "../MonthYearInput";
 
 type FieldOption = string | { value: any; label: string };
 
@@ -18,6 +19,8 @@ type Props = {
 export default function DetailEdit({ values, setValues, fields, errors, removeImage, setRemoveImage }: Props) {
     const normalize = (v: string) =>
         v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
+    const isNonElectricPowerSource = values.powerSource === "NON_ELECTRIC";
 
     const BOOLEAN_FIELD_KEYS = new Set([
         "state",
@@ -170,7 +173,7 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : field.type === "select" ? (
                         <Select
                             classNamePrefix="react-select"
-                            isDisabled={field.readOnly}
+                            isDisabled={field.readOnly || (field.key === "powerSourceType" && !isNonElectricPowerSource)}
                             isClearable={!field.readOnly}
                             placeholder="Seleccionar..."
                             value={(() => {
@@ -206,7 +209,11 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             ) || []}
                             onChange={(selected) => {
                                 if (!selected) {
-                                    setValues({ ...values, [field.key]: null });
+                                    const nextValues = { ...values, [field.key]: null };
+                                    if (field.key === "powerSource") {
+                                        nextValues.powerSourceType = null;
+                                    }
+                                    setValues(nextValues);
                                     return;
                                 }
                                 const val = selected.value;
@@ -221,7 +228,11 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                     else if (normalized.startsWith("opc")) finalValue = "OPTIONAL";
                                     else finalValue = null;
                                 }
-                                setValues({ ...values, [field.key]: finalValue });
+                                const nextValues = { ...values, [field.key]: finalValue };
+                                if (field.key === "powerSource" && finalValue !== "NON_ELECTRIC") {
+                                    nextValues.powerSourceType = null;
+                                }
+                                setValues(nextValues);
                             }}
                             styles={{
                                 control: (base) => ({
@@ -233,6 +244,15 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 }),
                             }}
                         />
+                    ) : field.type === "month" ? (
+                            <MonthYearInput
+                                value={values[field.key]}
+                                onChange={(newValue) => {
+                                    setValues({ ...values, [field.key]: newValue });
+                                }}
+                                disabled={field.readOnly}
+                                invalid={Boolean(errors[field.key])}
+                            />
                     ) : field.type === "date" ? (
                             <input
                                 type="date"

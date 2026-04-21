@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 @Getter
 @Setter
@@ -63,7 +64,7 @@ public class AircraftRequestDTO {
         aircraft.setHasCamera(hasCamera);
         aircraft.setPrivatelyBuilt(privatelyBuilt);
         if (fechaFab != null && !fechaFab.isBlank()) {
-            aircraft.setFechaFab(LocalDate.parse(fechaFab));
+            aircraft.setFechaFab(parseMonthYearDate(fechaFab));
         }
         aircraft.setPowerSource(powerSource);
         aircraft.setPowerSourceType(powerSourceType);
@@ -76,6 +77,14 @@ public class AircraftRequestDTO {
         aircraft.setFlightMinutes(flightMinutes != null ? flightMinutes : 0);
 
         return aircraft;
+    }
+
+    private static LocalDate parseMonthYearDate(String rawValue) {
+        String value = rawValue.trim();
+        if (value.length() == 7) {
+            return YearMonth.parse(value).atDay(1);
+        }
+        return LocalDate.parse(value).withDayOfMonth(1);
     }
 
     private static Boolean resolveBoolean(Boolean canonical, Boolean alias) {
