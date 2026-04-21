@@ -333,6 +333,7 @@ export default function FormAircraftModel() {
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, mtomDefault: e.target.value }))}
                       min={LIMITS.MIN_MTOM}
                       max={LIMITS.MAX_MTOM}
+                      step="any"
                       style={backgroundBorderInputs}
                     />
                   </div>
@@ -345,6 +346,7 @@ export default function FormAircraftModel() {
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, wingspanDefault: e.target.value }))}
                       min={LIMITS.MIN_WINGSPAN}
                       max={LIMITS.MAX_WINGSPAN}
+                      step="any"
                       style={backgroundBorderInputs}
                     />
                   </div>

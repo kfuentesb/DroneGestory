@@ -120,6 +120,7 @@ public class FlightTimeService {
         flightTime.setOperation(operation);
         flightTime.setFlightDate(Date.valueOf(request.flightDate()));
         flightTime.setDurationMinutes(request.durationMinutes());
+        flightTime.setComments(normalizeComments(request.comments()));
         if (flightTime.getTotalFlightTimeMinutes() == null) {
             flightTime.setTotalFlightTimeMinutes(0);
         }
@@ -155,8 +156,17 @@ public class FlightTimeService {
                 minutesToHours(flightTime.getDurationMinutes()),
                 flightTime.getTotalFlightTimeMinutes(),
                 minutesToHours(flightTime.getTotalFlightTimeMinutes()),
+                flightTime.getComments(),
                 flightTime.getDocumentation() == null ? null : flightTimeDocumentationService.toDto(flightTime.getDocumentation())
         );
+    }
+
+    private String normalizeComments(String comments) {
+        if (comments == null) {
+            return null;
+        }
+        String trimmedComments = comments.trim();
+        return trimmedComments.isEmpty() ? null : trimmedComments;
     }
 
     private Double minutesToHours(Integer minutes) {

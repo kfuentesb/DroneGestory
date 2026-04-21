@@ -16,6 +16,7 @@ export default function FormFlightTime() {
     const [flightDate, setFlightDate] = useState("");
     const [hours, setHours] = useState<number>(1);
     const [minutes, setMinutes] = useState<number>(0);
+    const [comments, setComments] = useState("");
     const [isNegative, setIsNegative] = useState(false);
     const [documentationEnabled, setDocumentationEnabled] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -88,6 +89,7 @@ export default function FormFlightTime() {
                 operationId,
                 flightDate,
                 durationMinutes,
+                comments: comments.trim() || null,
             };
 
             const response = await apiFetch("/api/flight-times", {
@@ -232,6 +234,18 @@ export default function FormFlightTime() {
                                         </p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="col-12">
+                                <label className="form-label">Comentarios</label>
+                                <textarea
+                                    className="form-control"
+                                    rows={4}
+                                    maxLength={2000}
+                                    value={comments}
+                                    onChange={(e) => setComments(e.target.value)}
+                                    placeholder="Añada comentarios opcionales"
+                                />
                             </div>
 
                             <div className="col-12 col-md-6">

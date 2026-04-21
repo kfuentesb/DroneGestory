@@ -45,6 +45,9 @@ public class FlightTime {
     @Column(name = "total_flight_time_minutes", nullable = false)
     private Integer totalFlightTimeMinutes;
 
+    @Column(name = "comments", length = 2000)
+    private String comments;
+
     // Relación inversa opcional para acceder a la documentación desde el vuelo
     @OneToOne(mappedBy = "flightTime", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private FlightTimeDocumentation documentation;
