@@ -157,7 +157,7 @@ export default function FormMaintenance() {
                             </div>
 
                             <div className="col-12 col-md-6">
-                                <label className="form-label">Meses requeridos</label>
+                                <label className="form-label">Meses desde última revisión</label>
                                 <input
                                     type="number"
                                     className="form-control"
@@ -169,7 +169,7 @@ export default function FormMaintenance() {
                             </div>
 
                             <div className="col-12 col-md-6">
-                                <label className="form-label">Horas de vuelo requeridas</label>
+                                <label className="form-label">Horas de vuelo realizadas</label>
                                 <input
                                     type="number"
                                     className="form-control"
@@ -192,17 +192,17 @@ export default function FormMaintenance() {
                             </div>
 
                             <div className="col-12 d-flex gap-2 mt-4">
-                                <ButtonProp type="submit" disabled={loading || !selectedAircraft} onClick={() => {}}>
+                                <button type="submit" className="btn btn-success" disabled={loading || !selectedAircraft} onClick={() => {}}>
                                     {loading ? "Guardando..." : "Registrar mantenimiento"}
-                                </ButtonProp>
-                                <ButtonProp
+                                </button>
+                                <button
                                     type="button"
                                     className="btn btn-secondary"
                                     onClick={() => navigate(-1)}
                                     disabled={loading}
                                 >
                                     Cancelar
-                                </ButtonProp>
+                                </button>
                             </div>
                         </form>
                     )}

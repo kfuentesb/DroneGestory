@@ -101,18 +101,14 @@ VISUAL<br>
 -Arreglar la toma de IP en local y en servidor<br>
 
 -USUARIO<br>
--Evitar que un usuario pueda tener el mismo nombre de usuario<br>
+-El usuario debería solo modificar ciertos datos en el perfil, no todos <br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
 
--HORAS DE VUELO
--Añadir comentarios a la hora de vuelo<br>
+-HORAS DE VUELO<br>
 
 -MANTENIMIENTO
--Borrar select de drone, es redundante, elegir el drone previamente seleccionado<br>
--Borrar columna comentarios de la lista de mantenimientos<br>
--Cambiar meses requeridos a meses desde ultima revisión<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
