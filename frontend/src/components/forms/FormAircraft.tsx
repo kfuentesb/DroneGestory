@@ -562,7 +562,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       formData.append("flightMinutes", String(formValues.flightMinutes));
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
       if (formValues.powerSource) formData.append("powerSource", formValues.powerSource.value);
-      if (formValues.powerSourceNonElectric) formData.append("powerSourceNonElectric", formValues.powerSourceNonElectric.value);
+      if (formValues.powerSourceNonElectric) formData.append("powerSourceType", formValues.powerSourceNonElectric.value);
       if (formValues.fechaFab) formData.append("fechaFab", formValues.fechaFab);
 
       if (formValues.privatelyBuilt) formData.append("privatelyBuilt", formValues.privatelyBuilt.value);

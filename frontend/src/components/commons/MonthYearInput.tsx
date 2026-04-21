@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 type Props = {
   value: string | null | undefined;
@@ -50,9 +50,20 @@ export default function MonthYearInput({
   invalid = false,
   style
 }: Props) {
-  const { year, month } = parseValue(value);
+  const parsed = parseValue(value);
+  const [year, setYear] = useState(parsed.year);
+  const [month, setMonth] = useState(parsed.month);
+
+  useEffect(() => {
+    const next = parseValue(value);
+    setYear(next.year);
+    setMonth(next.month);
+  }, [value]);
 
   const emit = (nextYear: string, nextMonth: string) => {
+    setYear(nextYear);
+    setMonth(nextMonth);
+
     if (!nextYear || !nextMonth) {
       onChange("");
       return;
