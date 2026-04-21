@@ -106,11 +106,9 @@ VISUAL<br>
 
 -DRONES<br>
 
--HORAS DE VUELO
--Añadir comentarios a la hora de vuelo<br>
+-HORAS DE VUELO<br>
 
 -MANTENIMIENTO
--Borrar select de drone, es redundante, elegir el drone previamente seleccionado<br>
 -Borrar columna comentarios de la lista de mantenimientos<br>
 -Cambiar meses requeridos a meses desde ultima revisión<br>
 
