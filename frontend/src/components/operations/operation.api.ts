@@ -82,6 +82,7 @@ export type Anexo7Data = AnexoBaseData & {
   fechaOp?: string;
   aircraftId?: number;
   tiempoVueloMinutos?: number | null;
+  ciclosAterrizaje?: number | null;
   estructuraCorrecto?: boolean | null;
   estructuraObservaciones?: string;
   bateriasCorrecto?: boolean | null;

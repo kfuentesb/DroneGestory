@@ -114,6 +114,7 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         destino.setAircraftId(origen.getAircraftId());
         destino.setFechaOp(origen.getFechaOp());
         destino.setTiempoVueloMinutos(origen.getTiempoVueloMinutos());
+        destino.setCiclosAterrizaje(origen.getCiclosAterrizaje());
         destino.setEstructuraCorrecto(origen.getEstructuraCorrecto());
         destino.setEstructuraObservaciones(origen.getEstructuraObservaciones());
         destino.setBateriasCorrecto(origen.getBateriasCorrecto());

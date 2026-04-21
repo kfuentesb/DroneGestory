@@ -26,6 +26,9 @@ public class Anexo7 extends Anexo {
     @Column(name = "tiempo_vuelo_minutos")
     private Integer tiempoVueloMinutos;
 
+    @Column(name = "ciclos_aterrizaje")
+    private Integer ciclosAterrizaje;
+
     // 1. Verificación - 13 elementos
     private Boolean estructuraCorrecto;
     private String estructuraObservaciones;

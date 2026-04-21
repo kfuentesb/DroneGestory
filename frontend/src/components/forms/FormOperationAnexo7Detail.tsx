@@ -16,6 +16,7 @@ type FormOperationAnexo7DetailProps = {
 const FORM_FIELDS = [
   "fechaOp",
   "tiempoVueloMinutos",
+  "ciclosAterrizaje",
   "estructuraCorrecto",
   "estructuraObservaciones",
   "bateriasCorrecto",
@@ -246,6 +247,22 @@ export default function FormOperationAnexo7Detail({
             onChange={(e) =>
               handleChange(
                 "tiempoVueloMinutos",
+                e.target.value === "" ? null : Number(e.target.value),
+              )
+            }
+            disabled={disabled || saving}
+          />
+        </div>
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold small text-uppercase text-muted">Ciclos de aterrizaje</label>
+          <input
+            type="number"
+            min={0}
+            className="form-control bg-white border"
+            value={formValues.ciclosAterrizaje ?? ""}
+            onChange={(e) =>
+              handleChange(
+                "ciclosAterrizaje",
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }

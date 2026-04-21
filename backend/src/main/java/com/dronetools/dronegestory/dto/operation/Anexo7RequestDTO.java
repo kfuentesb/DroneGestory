@@ -12,6 +12,7 @@ public class Anexo7RequestDTO {
     private LocalDateTime fechaOp;
     private Long aircraftId;
     private Integer tiempoVueloMinutos;
+    private Integer ciclosAterrizaje;
 
     // 1. Verificación
     private Boolean estructuraCorrecto;
