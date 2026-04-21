@@ -109,8 +109,6 @@ VISUAL<br>
 -HORAS DE VUELO<br>
 
 -MANTENIMIENTO
--Borrar columna comentarios de la lista de mantenimientos<br>
--Cambiar meses requeridos a meses desde ultima revisión<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
