@@ -10,8 +10,10 @@ import {
   fetchAnexo5VersionData,
   fetchAnexo6Data,
   fetchAnexo6VersionByNumero,
+  fetchAnexo6AircraftsInVersion,
   fetchAnexo7Data,
   fetchAnexo7VersionByNumero,
+  fetchAnexo7AircraftsInVersion,
   fetchAnexo8Data,
   fetchAnexo8VersionData,
   fetchAircraftOptions,
@@ -26,6 +28,10 @@ import {
   signAnexo6Data,
   signAnexo7Data,
   signAnexo8Data,
+  signAnexo6Version,
+  signAnexo7Version,
+  saveAnexo6Data,
+  saveAnexo7Data,
   type Anexo4Data,
   type AircraftOption,
   type Anexo5Data,
@@ -98,6 +104,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
   const [anexoAircraftOptions, setAnexoAircraftOptions] = useState<AircraftOption[]>([]);
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
+  const [aircraftsInVersion, setAircraftsInVersion] = useState<Anexo6Data[] | Anexo7Data[]>([]);
+  const [autoSaving, setAutoSaving] = useState(false);
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -123,24 +131,19 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
   const isViewingHistoricalVersion = selectedVersion !== null;
   const requiresAircraftSelection = tipoAnexo === 6 || tipoAnexo === 7;
+  
+  // Para anexos 6 y 7, el estado se determina por la versión completa, no por aeronave individual
   const currentAnexoId = anexoData?.id ?? anexo?.actual.id ?? null;
   const currentAnexoVersion = anexoData?.numeroVersion ?? anexo?.actual.numeroVersion ?? 0;
   const currentAnexoStatus = anexoData?.estado ?? anexo?.actual.estado ?? null;
   const actualIsSigned = currentAnexoStatus === "FIRMADO";
   const canManageCompletedOperation = role === "ADMIN";
   const canCreate = !operation?.completada || canManageCompletedOperation;
-  const canEditDraft =
-    !isViewingHistoricalVersion &&
-    canCreate &&
-    (!actualIsSigned || currentAnexoVersion === 0) &&
-    (!requiresAircraftSelection || !!selectedAircraftId);
-  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned && !!currentAnexoId;
-  const canSign =
-    !isViewingHistoricalVersion &&
-    canCreate &&
-    !!currentAnexoId &&
-    currentAnexoStatus === "BORRADOR" &&
-    (!requiresAircraftSelection || !!selectedAircraftId);
+  
+  // Para anexos 6 y 7: en borrador se puede editar, en firmado solo lectura
+  const canEditDraft = !isViewingHistoricalVersion && canCreate && !actualIsSigned;
+  const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned;
+  const canSign = !isViewingHistoricalVersion && canCreate && actualIsSigned === false && currentAnexoVersion > 0;
 
   const loadOperation = async () => {
     if (!id) {
@@ -287,38 +290,49 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, [operation, selectedVersion, selectedVersionId, selectedAircraftId, tipoAnexo]);
 
   const handleSign = async () => {
-    if (!operation || !currentAnexoId) {
+    if (!operation) {
       return;
     }
 
     try {
       setSigning(true);
-      let signedData: AnexoData | null = null;
-      switch (tipoAnexo) {
-        case 4:
-          signedData = await signAnexo4Data(operation.idOperacion, currentAnexoId);
-          break;
-        case 5:
-          signedData = await signAnexo5Data(operation.idOperacion, currentAnexoId);
-          break;
-        case 6:
-          signedData = await signAnexo6Data(operation.idOperacion, currentAnexoId);
-          break;
-        case 7:
-          signedData = await signAnexo7Data(operation.idOperacion, currentAnexoId);
-          break;
-        case 8:
-          signedData = await signAnexo8Data(operation.idOperacion, currentAnexoId);
-          break;
-        default:
-          signedData = null;
+      
+      // Para anexos 6 y 7, firmar toda la versión completa
+      if (tipoAnexo === 6 || tipoAnexo === 7) {
+        const success = tipoAnexo === 6 
+          ? await signAnexo6Version(operation.idOperacion, currentAnexoVersion)
+          : await signAnexo7Version(operation.idOperacion, currentAnexoVersion);
+        
+        if (success) {
+          setShowSignConfirm(false);
+          navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
+          await loadOperation();
+        } else {
+          alert(`No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`);
+        }
+      } else {
+        // Para otros anexos, firmar individualmente
+        let signedData: AnexoData | null = null;
+        switch (tipoAnexo) {
+          case 4:
+            signedData = await signAnexo4Data(operation.idOperacion, currentAnexoId!);
+            break;
+          case 5:
+            signedData = await signAnexo5Data(operation.idOperacion, currentAnexoId!);
+            break;
+          case 8:
+            signedData = await signAnexo8Data(operation.idOperacion, currentAnexoId!);
+            break;
+          default:
+            signedData = null;
+        }
+        if (signedData) {
+          setAnexoData(signedData);
+        }
+        setShowSignConfirm(false);
+        navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
+        await loadOperation();
       }
-      if (signedData) {
-        setAnexoData(signedData);
-      }
-      setShowSignConfirm(false);
-      navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
-      await loadOperation();
     } catch (err) {
       console.error(`Error firmando ${getAnexoLabel(tipoAnexo)}:`, err);
       alert(`No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`);
@@ -373,6 +387,45 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     if (!operation) return null;
     navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
     await loadOperation();
+  };
+
+  // Función para auto-guardar antes de cambiar de aeronave
+  const autoSaveBeforeSwitch = async (): Promise<boolean> => {
+    if (!operation || !selectedAircraftId || !canEditDraft) return true;
+    if (tipoAnexo !== 6 && tipoAnexo !== 7) return true;
+
+    // Solo auto-guardar si hay datos en el formulario actual
+    const currentForm = document.querySelector('form');
+    if (!currentForm) return true;
+
+    setAutoSaving(true);
+    try {
+      const formData = new FormData(currentForm);
+      
+      if (tipoAnexo === 6) {
+        await saveAnexo6Data(operation.idOperacion, formData);
+      } else if (tipoAnexo === 7) {
+        await saveAnexo7Data(operation.idOperacion, formData);
+      }
+      return true;
+    } catch (err) {
+      console.error('Error auto-guardando:', err);
+      // Continuar con el cambio de aeronave aunque falle el auto-guardado
+      return true;
+    } finally {
+      setAutoSaving(false);
+    }
+  };
+
+  const handleAircraftChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newAircraftId = e.target.value === "" ? null : Number(e.target.value);
+    
+    // Auto-guardar antes de cambiar
+    if (newAircraftId !== selectedAircraftId) {
+      await autoSaveBeforeSwitch();
+    }
+    
+    setSelectedAircraftId(newAircraftId);
   };
 
   if (loading) {

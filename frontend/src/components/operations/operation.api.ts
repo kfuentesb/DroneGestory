@@ -348,6 +348,65 @@ export async function fetchAnexo7VersionByNumero(
   return (await response.json()) as Anexo7Data;
 }
 
+// Nuevas funciones para gestión de versiones múltiples aeronaves
+export async function fetchAnexo6AircraftsInVersion(
+  operationId: number,
+  numeroVersion: number,
+): Promise<Anexo6Data[]> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/operations/${operationId}/anexo6/versiones/${numeroVersion}/aircrafts`,
+  );
+
+  if (!response || response.status === 204) {
+    return [];
+  }
+
+  return (await response.json()) as Anexo6Data[];
+}
+
+export async function fetchAnexo7AircraftsInVersion(
+  operationId: number,
+  numeroVersion: number,
+): Promise<Anexo7Data[]> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/operations/${operationId}/anexo7/versiones/${numeroVersion}/aircrafts`,
+  );
+
+  if (!response || response.status === 204) {
+    return [];
+  }
+
+  return (await response.json()) as Anexo7Data[];
+}
+
+export async function signAnexo6Version(
+  operationId: number,
+  numeroVersion: number,
+): Promise<boolean> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/operations/${operationId}/anexo6/versiones/${numeroVersion}/firmar`,
+    {
+      method: "POST",
+    },
+  );
+
+  return response !== null;
+}
+
+export async function signAnexo7Version(
+  operationId: number,
+  numeroVersion: number,
+): Promise<boolean> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/operations/${operationId}/anexo7/versiones/${numeroVersion}/firmar`,
+    {
+      method: "POST",
+    },
+  );
+
+  return response !== null;
+}
+
 export async function fetchAircraftOptions(): Promise<AircraftOption[]> {
   const response = await apiFetch(`${API_BASE_URL}/api/aircraft`);
   if (!response) {

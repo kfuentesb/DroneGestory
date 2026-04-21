@@ -98,6 +98,34 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<Anexo6> getAllAircraftsInVersion(Long operationId, int version) {
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        return anexo6Repository.findByOperationAndNumeroVersion(operation, version);
+    }
+
+    @Transactional
+    public void firmarVersionCompleta(Long operationId, int version, String username) {
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+        validarOperacionEditable(operation);
+
+        java.util.List<Anexo6> anexosEnVersion = anexo6Repository.findByOperationAndNumeroVersion(operation, version);
+        if (anexosEnVersion.isEmpty()) {
+            throw new RuntimeException("No hay datos en esta versión para firmar");
+        }
+
+        for (Anexo6 anexo : anexosEnVersion) {
+            if (anexo.getEstado() != AnexoStatus.FIRMADO) {
+                anexo.setEstado(AnexoStatus.FIRMADO);
+                anexo.setFirmadoPor(username);
+                anexo.setFechaFirma(java.time.LocalDateTime.now());
+                anexo6Repository.save(anexo);
+            }
+        }
+    }
+
     @Override
     protected Anexo6 crearCopia(Anexo6 origen) {
         Anexo6 copia = new Anexo6();
