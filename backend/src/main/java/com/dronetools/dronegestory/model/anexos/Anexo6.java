@@ -11,7 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "anexo6")
+@Table(
+    name = "anexo6",
+    indexes = {
+        @Index(name = "idx_anexo6_operation_aircraft_version", columnList = "operation_id,aircraft_id,numero_version")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_anexo6_operation_aircraft_version", columnNames = {"operation_id", "aircraft_id", "numero_version"})
+    }
+)
 @Getter
 @Setter
 public class Anexo6 extends Anexo {

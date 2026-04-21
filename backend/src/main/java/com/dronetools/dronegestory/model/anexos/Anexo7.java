@@ -9,7 +9,15 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "anexo7")
+@Table(
+    name = "anexo7",
+    indexes = {
+        @Index(name = "idx_anexo7_operation_aircraft_version", columnList = "operation_id,aircraft_id,numero_version")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_anexo7_operation_aircraft_version", columnNames = {"operation_id", "aircraft_id", "numero_version"})
+    }
+)
 @Getter
 @Setter
 public class Anexo7 extends Anexo {
