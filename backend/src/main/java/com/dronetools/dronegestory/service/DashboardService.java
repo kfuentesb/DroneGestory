@@ -13,6 +13,8 @@ import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.dronetools.dronegestory.model.enums.UserType;
 
@@ -20,6 +22,8 @@ import java.util.List;
 
 @Service
 public class DashboardService {
+    private static final Logger log = LoggerFactory.getLogger(DashboardService.class);
+
     @Autowired private OperationRepository operationRepo;
     @Autowired private UserRepository userRepo;
     @Autowired private AircraftRepository aircraftRepo;
@@ -33,18 +37,47 @@ public class DashboardService {
         dto.setTotalPilotos(userRepo.countByRoleAndStateTrue(UserType.PILOT));
         dto.setTotalUsuarios(userRepo.count());
         dto.setTotalDrones(aircraftRepo.count());
-        dto.setBirthdays(mapBirthdays(userRepo.findAllWithBirthday()));
+        List<User> usersWithBirthday = userRepo.findAllWithBirthday();
+        dto.setBirthdays(mapBirthdays(usersWithBirthday));
 
         User currentUser = userService.getAuthenticatedUser();
+        boolean privileged = isPrivileged(currentUser);
+        log.info(
+                "Dashboard request user={} privileged={} rawCounts users={} usersWithBirthday={} userCertificates={} aircraftDocumentation={}",
+                currentUser.getUsername(),
+                privileged,
+                userRepo.count(),
+                usersWithBirthday.size(),
+                userCertificateRepository.count(),
+                aircraftDocumentationRepository.count()
+        );
+
         if (isPrivileged(currentUser)) {
-            dto.setCertificateExpirations(mapCertificateExpirations(userCertificateRepository.findAllExpiringWithUser()));
-            dto.setAircraftDocumentationExpirations(mapAircraftDocumentationExpirations(
-                    aircraftDocumentationRepository.findAllInsuranceExpiringWithAircraft()
-            ));
+            List<UserCertificate> expiringCertificates = userCertificateRepository.findAllExpiringWithUser();
+            List<AircraftDocumentation> expiringAircraftDocumentation =
+                    aircraftDocumentationRepository.findAllInsuranceExpiringWithAircraft();
+
+            dto.setCertificateExpirations(mapCertificateExpirations(expiringCertificates));
+            dto.setAircraftDocumentationExpirations(mapAircraftDocumentationExpirations(expiringAircraftDocumentation));
+
+            log.info(
+                    "Dashboard filtered privileged user={} certificateExpirations={} aircraftDocumentationExpirations={} birthdays={}",
+                    currentUser.getUsername(),
+                    expiringCertificates.size(),
+                    expiringAircraftDocumentation.size(),
+                    usersWithBirthday.size()
+            );
         } else {
-            dto.setCertificateExpirations(mapCertificateExpirations(
-                    userCertificateRepository.findAllExpiringWithUserByUserId(currentUser.getId())
-            ));
+            List<UserCertificate> userCertificates =
+                    userCertificateRepository.findAllExpiringWithUserByUserId(currentUser.getId());
+            dto.setCertificateExpirations(mapCertificateExpirations(userCertificates));
+
+            log.info(
+                    "Dashboard filtered standard user={} certificateExpirations={} birthdays={}",
+                    currentUser.getUsername(),
+                    userCertificates.size(),
+                    usersWithBirthday.size()
+            );
         }
 
         return dto;
