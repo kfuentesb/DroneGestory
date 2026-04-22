@@ -105,6 +105,7 @@ VISUAL<br>
 -Crear la vista de opciones<br>
 
 -USUARIO<br>
+poder borrar fecha de nacimiento<br>
 
 -DRONES<br>
 
