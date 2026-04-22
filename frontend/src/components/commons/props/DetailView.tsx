@@ -12,7 +12,7 @@ export default function DetailView({ data, fields }: Props) {
                 .filter((field) => field.type !== "file")
                 .map((field) => {
                     const rawValue = data[field.key];
-                    const value = field.format ? field.format(rawValue) : rawValue;
+                    const value = field.format ? field.format(rawValue) : Array.isArray(rawValue) ? rawValue.join(", ") : rawValue;
                     const colClass = field.type === "textarea" ? "col-12" : "col-md-4 col-sm-6";
 
                     return (

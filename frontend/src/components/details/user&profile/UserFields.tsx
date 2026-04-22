@@ -79,14 +79,17 @@ export const userFields: FieldConfig[] = [
         }
     },
     {
-        label: "Tipo de usuario",
-        key: "type",
+        label: "Roles",
+        key: "roles",
         type: "select",
+        isMulti: true,
         options: [
             { value: "ADMIN", label: "Administrador" },
             { value: "MANAGER", label: "Gestor" },
+            { value: "MAINTAINER", label: "Mantenedor" },
             { value: "PILOT", label: "Piloto" }
-        ]
+        ],
+        format: (value: any) => Array.isArray(value) ? value.join(", ") : (value || "")
     },
     {
         label: "Estado",

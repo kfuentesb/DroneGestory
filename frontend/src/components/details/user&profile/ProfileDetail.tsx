@@ -17,7 +17,7 @@ export default function ProfileDetail() {
     const fieldsToLock = ['firstName','lastName','username'];
 
     const processedFields = userFields
-    .filter(field => field.key !== 'type' && field.key !== 'state')
+    .filter(field => field.key !== 'type' && field.key !== 'roles' && field.key !== 'state')
     .map(field => {
         if (fieldsToLock.includes(field.key)) {
             return { ...field, readOnly: true };

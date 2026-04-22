@@ -7,7 +7,6 @@ function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, setToken } = useAuth();
@@ -21,24 +20,19 @@ function LogIn() {
       const res = await apiFetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password}),
+        body: JSON.stringify({ username, password }),
       });
 
-      //IMPORTANTE!! DE MOMENTO SOLO SE ESTÁ RECOGIENDO EL PRIMER ROL DE UN USUARIO, PERO ES UNA LISTA DE ROLES
-      //LO QUE DEVUELVE EL BACKEND, PARA CUANDO UN USUARIO PUEDA TENER MÚLTIPLES ROLES !!!!!!!!!!!!!!!!!!!!!!
       if (res) {
         const data = await res.json();
+        const cleanRoles = Array.isArray(data.roles) && data.roles.length > 0
+          ? data.roles.map((rawRole: string) => rawRole.replace("ROLE_", ""))
+          : ["PILOT"];
 
-        const rawRole = data.roles && data.roles.length > 0 ? data.roles[0] : "ROLE_PILOT";
-        const cleanRole = rawRole.replace("ROLE_", "");
-        
-        login(data.username, cleanRole);
+        login(data.username, cleanRoles);
         setToken(data.token);
         navigate("/home");
       }
-
-      // aquí puedes guardar token o userId
-      // localStorage.setItem("userId", data.userId);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -64,7 +58,6 @@ function LogIn() {
             backgroundColor: "#FFFFFF",
           }}
         >
-          {/* añadido handleSubmit*/}
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label" style={{ color: "#1E1E1E" }}>
@@ -73,7 +66,6 @@ function LogIn() {
               <input
                 type="text"
                 className="form-control"
-                // Añadidos value y onchange
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
@@ -86,7 +78,7 @@ function LogIn() {
                   Contraseña
                 </label>
                 <a href="#" style={{ fontSize: "0.8rem", color: "#2F8F5B" }}>
-                  ¿Olvidaste la contraseña?
+                  Olvidaste la contraseña?
                 </a>
               </div>
               <input
@@ -97,12 +89,12 @@ function LogIn() {
                 style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
               />
             </div>
-            {/* Añadido error */}
+
             {error && <p className="text-danger">{error}</p>}
+
             <button
               type="submit"
               className="btn w-100"
-              // Añadido disabled loading
               disabled={loading}
               style={{
                 backgroundColor: "#2F8F5B",
@@ -110,9 +102,7 @@ function LogIn() {
                 fontWeight: "500",
               }}
             >
-              {/* Añadido */}
-              {loading ? "Cargando..." : "Iniciar Sesión"}
-              
+              {loading ? "Cargando..." : "Iniciar sesion"}
             </button>
           </form>
         </div>
@@ -122,4 +112,3 @@ function LogIn() {
 }
 
 export default LogIn;
-

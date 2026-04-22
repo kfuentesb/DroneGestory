@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 public record UserResponse(
         Integer id,
-        UserType type,
+        java.util.List<UserType> roles,
         String firstName,
         String lastName,
         String username,

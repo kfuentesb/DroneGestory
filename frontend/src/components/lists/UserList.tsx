@@ -16,7 +16,26 @@ type User = {
   username: string;
   email: string;
   phoneNumber: number |null;
-  type: string;
+  roles: string[];
+};
+
+const roleColors: Record<string, { backgroundColor: string; color: string }> = {
+  ADMIN: {
+    backgroundColor: "#FEE2E2",
+    color: "#991B1B",
+  },
+  MANAGER: {
+    backgroundColor: "#E0F2FE",
+    color: "#075985",
+  },
+  MAINTAINER: {
+    backgroundColor: "#FEF3C7",
+    color: "#92400E",
+  },
+  PILOT: {
+    backgroundColor: "#E6F4EC",
+    color: "#1F6B43",
+  },
 };
 
 export default function UserList() {
@@ -53,7 +72,7 @@ export default function UserList() {
     u.username,
     u.email,
     u.phoneNumber ?? "",
-    u.type,
+    ...u.roles,
   ]);
 
   useEffect(() => {
@@ -63,21 +82,6 @@ export default function UserList() {
   if (isLoading) {
     return <LoadingSpinner message="Cargando usuarios..." />;
   }
-
-  const typeColors: Record<string, { backgroundColor: string; color: string }> = {
-    ADMIN: {
-      backgroundColor: "#FEE2E2",
-      color: "#991B1B",
-    },
-    MANAGER: {
-      backgroundColor: "#E0F2FE",
-      color: "#075985",
-    },
-    PILOT: {
-      backgroundColor: "#E6F4EC",
-      color: "#1F6B43",
-    },
-  };
 
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -89,7 +93,7 @@ export default function UserList() {
     { label: "Usuario", key: "username", sortable: true },
     { label: "Email", key: "email", sortable: true },
     { label: "Teléfono", key: "phoneNumber", sortable: true },
-    { label: "Tipo", key: "type", sortable: true },
+    { label: "Roles", key: "roles", sortable: false },
   ];
 
   return (
@@ -130,17 +134,22 @@ export default function UserList() {
                     : "-"}
                 </td>
                 <td className="text-center">
-                  <span
-                    className="badge"
-                    style={
-                      typeColors[p.type] || {
-                        backgroundColor: "#E5E7EB",
-                        color: "#374151",
-                      }
-                    }
-                  >
-                    {p.type}
-                  </span>
+                  <div className="d-flex flex-wrap justify-content-center gap-1">
+                    {p.roles.map((role) => (
+                      <span
+                        key={`${p.id}-${role}`}
+                        className="badge"
+                        style={
+                          roleColors[role] || {
+                            backgroundColor: "#E5E7EB",
+                            color: "#374151",
+                          }
+                        }
+                      >
+                        {role}
+                      </span>
+                    ))}
+                  </div>
                 </td>
               </>
             )}

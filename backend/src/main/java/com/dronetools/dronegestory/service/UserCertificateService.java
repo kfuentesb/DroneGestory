@@ -156,8 +156,8 @@ public class UserCertificateService {
     }
 
     private boolean isPrivileged(User user) {
-        return user.getType() == com.dronetools.dronegestory.model.enums.UserType.ADMIN
-                || user.getType() == com.dronetools.dronegestory.model.enums.UserType.MANAGER;
+        return user.getEffectiveRoles().contains(com.dronetools.dronegestory.model.enums.UserType.ADMIN)
+                || user.getEffectiveRoles().contains(com.dronetools.dronegestory.model.enums.UserType.MANAGER);
     }
 
     private void applyMetadataAndFile(

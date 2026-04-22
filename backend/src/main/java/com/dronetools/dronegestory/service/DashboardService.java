@@ -19,7 +19,7 @@ public class DashboardService {
     public DashboardDTO getDashboard() {
         DashboardDTO dto = new DashboardDTO();
         dto.setTotalOperaciones(operationRepo.count());
-        dto.setTotalPilotos(userRepo.countByTypeAndStateTrue(UserType.PILOT));
+        dto.setTotalPilotos(userRepo.countByRoleAndStateTrue(UserType.PILOT));
         dto.setTotalUsuarios(userRepo.count());
         dto.setTotalDrones(aircraftRepo.count());
         return dto;

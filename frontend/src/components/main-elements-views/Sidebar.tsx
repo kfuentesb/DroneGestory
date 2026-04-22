@@ -18,8 +18,9 @@ interface SidebarMenuProps {
 export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
-    const { role } = useAuth();
-    const canManage = role === "ADMIN" || role === "MANAGER";
+    const { hasRole } = useAuth();
+    const canManage = hasRole("ADMIN") || hasRole("MANAGER");
+    const canViewMaintenance = hasRole("ADMIN") || hasRole("MAINTAINER");
 
     const [openMenu, setOpenMenu] = useState<string | null>(null);
 
@@ -114,7 +115,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         {canManage && (
                             <MenuItem onClick={() => { navigate("/register-aircraft"); setToggled(false); }}>Registrar Aeronave</MenuItem>
                         )}
-                        {canManage && (
+                        {canViewMaintenance && (
                             <MenuItem onClick={() => { navigate("/maintenance"); setToggled(false); }}>Mantenimiento</MenuItem>
                         )}
                         {canManage && (

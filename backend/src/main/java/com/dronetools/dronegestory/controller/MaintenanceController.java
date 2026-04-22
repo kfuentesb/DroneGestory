@@ -32,13 +32,13 @@ public class MaintenanceController {
     private final MaintenanceDocumentationService maintenanceDocumentationService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTAINER')")
     public List<MaintenanceDTO> getAll() {
         return maintenanceService.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTAINER')")
     public ResponseEntity<MaintenanceDTO> getById(@PathVariable Long id) {
         return maintenanceService.findById(id)
                 .map(ResponseEntity::ok)
@@ -46,7 +46,7 @@ public class MaintenanceController {
     }
 
     @GetMapping("/aircraft/{aircraftId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTAINER')")
     public List<MaintenanceDTO> getByAircraftId(@PathVariable Long aircraftId) {
         return maintenanceService.findByAircraftId(aircraftId);
     }

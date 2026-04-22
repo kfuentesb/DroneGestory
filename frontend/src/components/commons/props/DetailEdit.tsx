@@ -173,12 +173,20 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                     ) : field.type === "select" ? (
                         <Select
                             classNamePrefix="react-select"
+                            isMulti={field.isMulti}
                             isDisabled={field.readOnly || (field.key === "powerSourceType" && !isNonElectricPowerSource)}
                             isClearable={!field.readOnly}
                             placeholder="Seleccionar..."
                             value={(() => {
                                 const opts = (field.options as FieldOption[]) || [];
                                 const val = values[field.key];
+
+                                if (field.isMulti) {
+                                    const selectedValues = Array.isArray(val) ? val : [];
+                                    return opts
+                                        .filter((opt) => selectedValues.includes(getOptionValue(opt)))
+                                        .map((opt) => isObjectOption(opt) ? opt : { value: opt, label: String(opt) });
+                                }
 
                                 if (BOOLEAN_FIELD_KEYS.has(field.key)) {
                                     return mapBooleanToOption(opts, val);
@@ -208,6 +216,11 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 isObjectOption(opt) ? opt : { value: opt, label: String(opt) }
                             ) || []}
                             onChange={(selected) => {
+                                if (field.isMulti) {
+                                    const selectedOptions = Array.isArray(selected) ? selected : [];
+                                    setValues({ ...values, [field.key]: selectedOptions.map((option) => option.value) });
+                                    return;
+                                }
                                 if (!selected) {
                                     const nextValues = { ...values, [field.key]: null };
                                     if (field.key === "powerSource") {

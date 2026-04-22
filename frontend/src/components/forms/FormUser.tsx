@@ -1,4 +1,4 @@
-import React, { useState,  } from 'react';
+import React, { useState } from 'react';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import '../../styles/generic-form.css';
 import Select from 'react-select';
@@ -52,6 +52,11 @@ type FormErrors = {
     confirmPassword: string | null;
 };
 
+type RoleOption = {
+    value: string;
+    label: string;
+};
+
 function FormUser() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -67,8 +72,7 @@ function FormUser() {
         fileCMC2: null,
         fileCMCLAPL: null
     });
-    const [selectedUserType, setSelectedUserType] = useState<{ value: string; label: string } | null>(null);
-    const [showOptional, setShowOptional] = useState(false);
+    const [selectedRoles, setSelectedRoles] = useState<RoleOption[]>([]);
     const navigate = useNavigate();
 
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -79,10 +83,11 @@ function FormUser() {
     const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     const allowedCertificateTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-    const type_user: { value: string; label: string }[] = [
-        { value: "PILOT", label: "Piloto" },
+    const roleOptions: RoleOption[] = [
+        { value: "ADMIN", label: "Administrador" },
         { value: "MANAGER", label: "Gestor" },
-        { value: "ADMIN", label: "Administrador" }
+        { value: "MAINTAINER", label: "Mantenedor" },
+        { value: "PILOT", label: "Piloto" }
     ];
 
     const [formValues, setFormValues] = useState({
@@ -303,15 +308,15 @@ function FormUser() {
             };
 
             setErrors(newErrors);
-            setUserTypeError(selectedUserType ? null : "Seleccione un tipo de usuario.");
+            setUserTypeError(selectedRoles.length > 0 ? null : "Seleccione al menos un rol.");
 
-            if (Object.values(newErrors).some((v) => v !== null) || !selectedUserType) {
+            if (Object.values(newErrors).some((v) => v !== null) || selectedRoles.length === 0) {
                 setError(null);
                 setLoading(false);
                 return;
             }
 
-            if (selectedUserType && formValues.password !== formValues.confirmPassword) {
+            if (selectedRoles.length > 0 && formValues.password !== formValues.confirmPassword) {
                 setError("Las contraseñas no coinciden.");
                 setLoading(false);
                 return;
@@ -324,7 +329,7 @@ function FormUser() {
             formData.append("username", formValues.username.trim());
             formData.append("email", formValues.email.trim());
             formData.append("password", formValues.password);
-            formData.append("type", selectedUserType?.value || "");
+            selectedRoles.forEach((role) => formData.append("roles", role.value));
             if (telefonoValue !== "") {
                 formData.append("phoneNumber", telefonoValue);
             }
@@ -614,18 +619,19 @@ function FormUser() {
                         </div>
                     </div>
 
-                    {/* Row 4: Tipo de usuario, Imagen */}
+                    {/* Row 4: Roles, Imagen */}
                     <div className="row mb-3">
                         <div className="col-12 col-md mb-3 mb-md-0">
-                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Tipo de usuario</label>
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Roles</label>
                             <Select
-                                options={type_user}
+                                options={roleOptions}
                                 styles={backgroundBorderInputsSelect}
-                                placeholder="Seleccione el tipo de usuario"
-                                value={selectedUserType}
-                                isClearable
+                                placeholder="Seleccione uno o varios roles"
+                                value={selectedRoles}
+                                isMulti
+                                closeMenuOnSelect={false}
                                 onChange={(val) => {
-                                    setSelectedUserType(val);
+                                    setSelectedRoles((val as RoleOption[] | null) ?? []);
                                     setUserTypeError(null);
                                 }}
                             />

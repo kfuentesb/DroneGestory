@@ -11,8 +11,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Table(name = "app_user")
@@ -31,9 +32,11 @@ public class User implements UserDetails{
 //    @JoinColumn(name = "operator_id", nullable = false)
 //    private Operator operator;
 
-    @Column(name = "type", nullable = false, length = 50)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "app_user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    private UserType type;
+    @Column(name = "role", nullable = false, length = 50)
+    private Set<UserType> roles = new LinkedHashSet<>();
 
     // por defecto está activo el estado, tampoco se pide como campo en el registro
     @Column(name = "state", nullable = false)
@@ -73,7 +76,9 @@ public class User implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + type.name()));
+        return getEffectiveRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .toList();
     }
 
     @Override
@@ -104,6 +109,10 @@ public class User implements UserDetails{
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public Set<UserType> getEffectiveRoles() {
+        return roles == null ? new LinkedHashSet<>() : new LinkedHashSet<>(roles);
     }
 
 }

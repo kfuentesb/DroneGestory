@@ -106,7 +106,6 @@ VISUAL<br>
 -Arreglar la toma de IP en local y en servidor<br>
 
 -USUARIO<br>
--El usuario debería solo modificar ciertos datos en el perfil, no todos <br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
@@ -117,11 +116,9 @@ VISUAL<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
--Crear TABLA OTROS
 -Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
 -Meter opción cancelar
 -A5, aptitud para operar. Otros usuarios asignados pueden firmar
--Acceder a una operación siendo un usuario asignados
 -Tiempo de vuelo no se suma a la tabla hora de vuelo
 
 
@@ -131,50 +128,9 @@ VISUAL<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
 
-COSAS DE MIGRACION DE LA BASE DE DATOS<br>
 
--- 1. Backup and Move Data
-CREATE TABLE aircraft_backup AS SELECT * FROM aircraft;
+local
+docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/database/migrations/V2026_04_22_001__user_multi_roles.sql
 
--- 2. Populate the new Model table
-INSERT INTO aircraft_model (manufacturer, model)
-SELECT DISTINCT manufacturer, model FROM aircraft_backup;
-
--- 3. Link Aircraft to the new Models
-ALTER TABLE aircraft ADD COLUMN aircraft_model_id INTEGER;
-
-UPDATE aircraft a
-SET aircraft_model_id = m.id
-FROM aircraft_model m
-WHERE a.manufacturer = m.manufacturer 
-  AND a.model = m.model;
-
--- 4. Clean up old columns and constraints
-ALTER TABLE aircraft DROP COLUMN manufacturer;
-ALTER TABLE aircraft DROP COLUMN model;
-
--- 5. Wipe documentation (as requested) to avoid "Orphan" errors
-DROP TABLE IF EXISTS aircraft_documentation CASCADE;
-DROP TABLE IF EXISTS aircraft_model_documentation CASCADE;
-
--- 6. Upgrade IDs to BIGINT for the remaining tables
-ALTER TABLE aircraft ALTER COLUMN aircraft_id TYPE BIGINT;
-ALTER TABLE aircraft_model ALTER COLUMN id TYPE BIGINT; -- Note: check if col name is 'id' or 'aircraft_model_id'
-ALTER TABLE aircraft ALTER COLUMN aircraft_model_id TYPE BIGINT;
-
--- 7. Sync the Sequences (CRITICAL)
--- This prevents "Duplicate Key" errors when users try to create new drones
-SELECT setval(pg_get_serial_sequence('aircraft', 'aircraft_id'), (SELECT MAX(aircraft_id) FROM aircraft));
-SELECT setval(pg_get_serial_sequence('aircraft_model', 'id'), (SELECT MAX(id) FROM aircraft_model));
-
-ALTER TABLE aircraft_model 
-  DROP COLUMN max_speed, 
-  DROP COLUMN model_name, 
-  DROP COLUMN mtom, 
-  DROP COLUMN wingspan,
-  DROP COLUMN aircraft_class,
-  DROP COLUMN config,
-  DROP COLUMN impact_energy,
-  DROP COLUMN aircraft_model_id;
-
-ALTER TABLE aircraft_model DROP COLUMN aircraft_model_id;
+server
+docker exec -i dronegestory-db psql -U admin -d aeronaves_db < backend/database/migrations/V2026_04_22_001__user_multi_roles.sql

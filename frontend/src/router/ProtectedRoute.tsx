@@ -7,14 +7,14 @@ interface Props {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
-    const { token, role } = useAuth();
+    const { token, roles } = useAuth();
     const location = useLocation();
     
     if (!token) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(role || "")) {
+    if (allowedRoles && !allowedRoles.some((allowedRole) => roles.includes(allowedRole))) {
         return <Navigate to="/403" replace />;
     }
 

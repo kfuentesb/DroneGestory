@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.exception.ConflictException;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.model.User;
+import com.dronetools.dronegestory.model.enums.UserType;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,9 @@ import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -79,6 +82,7 @@ public class UserService {
     // Crear un nuevo usuario
     public User create(User user) {
         ensureUniqueUsername(user);
+        applyRoles(user, user.getRoles(), true);
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -89,6 +93,7 @@ public class UserService {
     @Transactional
     public User createWithFile(User user, MultipartFile imageFile) throws IOException {
         ensureUniqueUsername(user);
+        applyRoles(user, user.getRoles(), true);
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -232,7 +237,7 @@ public class UserService {
                         existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                     }
                     existingUser.setEmail(updatedUser.getEmail());
-                    existingUser.setType(updatedUser.getType());
+                    applyRoles(existingUser, updatedUser.getRoles(), false);
                     existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
                     existingUser.setImagePath(updatedUser.getImagePath());
                     existingUser.setDocIdentidad(updatedUser.getDocIdentidad());
@@ -281,7 +286,9 @@ public class UserService {
                 }
                 user.setUsername(newUsername);
             }
-            if (updatedUser.getType() != null) user.setType(updatedUser.getType());
+            if (updatedUser.getRoles() != null && !updatedUser.getRoles().isEmpty()) {
+                applyRoles(user, updatedUser.getRoles(), false);
+            }
             user.setState(updatedUser.isState());
         } else {
             // Si no es admin, ignoramos silenciosamente los cambios en username, type y state.
@@ -321,6 +328,23 @@ public class UserService {
         }
 
         return userRepository.save(user);
+    }
+
+    private void applyRoles(User user, Set<UserType> requestedRoles, boolean failIfEmpty) {
+        LinkedHashSet<UserType> normalizedRoles = new LinkedHashSet<>();
+        if (requestedRoles != null) {
+            requestedRoles.stream()
+                    .filter(role -> role != null)
+                    .forEach(normalizedRoles::add);
+        }
+
+        if (normalizedRoles.isEmpty() && failIfEmpty) {
+            throw new IllegalArgumentException("At least one role is required.");
+        }
+
+        if (!normalizedRoles.isEmpty()) {
+            user.setRoles(normalizedRoles);
+        }
     }
     @Transactional
     public void updatePassword(Integer id, String actorUsername, String actorPassword, String newPassword) {

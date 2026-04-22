@@ -1,5 +1,5 @@
 package com.dronetools.dronegestory.model.enums;
 
 public enum UserType {
-    ADMIN, PILOT, MANAGER
+    ADMIN, MANAGER, MAINTAINER, PILOT
 }

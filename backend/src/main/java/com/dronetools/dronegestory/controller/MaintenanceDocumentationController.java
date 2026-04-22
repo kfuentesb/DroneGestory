@@ -35,7 +35,7 @@ public class MaintenanceDocumentationController {
     private final MaintenanceDocumentationService maintenanceDocumentationService;
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTAINER')")
     public ResponseEntity<MaintenanceDocumentationDTO> getById(@PathVariable Long id) {
         return maintenanceDocumentationService.findById(id)
                 .map(ResponseEntity::ok)
@@ -43,7 +43,7 @@ public class MaintenanceDocumentationController {
     }
 
     @GetMapping("/maintenance/{maintenanceId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTAINER')")
     public ResponseEntity<MaintenanceDocumentationDTO> getByMaintenanceId(@PathVariable Long maintenanceId) {
         return maintenanceDocumentationService.findByMaintenanceId(maintenanceId)
                 .map(ResponseEntity::ok)
@@ -109,7 +109,7 @@ public class MaintenanceDocumentationController {
     }
 
     @GetMapping("/files/**")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTAINER')")
     public ResponseEntity<Resource> getFile(HttpServletRequest request) throws IOException {
         String requestUri = request.getRequestURI();
         String marker = "/api/maintenance-documentation/files/";

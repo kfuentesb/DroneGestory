@@ -1298,6 +1298,15 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                     return;
                 }
 
+                if (Array.isArray(value)) {
+                    value.forEach((item) => {
+                        if (item !== null && item !== undefined && item.toString().trim() !== "") {
+                            formData.append(field.key, item.toString().trim());
+                        }
+                    });
+                    return;
+                }
+
                 let finalValue = value.toString().trim();
 
                 if (isBooleanField(field.key)) {
@@ -1394,7 +1403,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         return {
             title: title.trim(),
             subtitle,
-            typeLabel: isUser ? data?.type : undefined,
+            typeLabel: isUser && Array.isArray(data?.roles) ? data.roles.join(", ") : undefined,
             stateLabel: isUser ? (data?.state ? "Activo" : "Inactivo") : undefined,
             classLabel: props.entityType === "aircraft" ? data?.aircraftClass : undefined,
             img: props.defaultImage === "user" ? defaultUserImg : defaultDroneImg

@@ -180,7 +180,7 @@ public class UserController {
     private UserResponse toResponse(User user) {
         return new UserResponse(
                 user.getId(),
-                user.getType(),
+                user.getEffectiveRoles().stream().toList(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),

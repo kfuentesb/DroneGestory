@@ -132,7 +132,7 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/maintenance" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MAINTAINER"]}>
               <MaintenanceList />
             </ProtectedRoute>
           } 
@@ -141,7 +141,7 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/maintenance/aircraft/:aircraftId" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MAINTAINER"]}>
               <MaintenanceAircraftList />
             </ProtectedRoute>
           } 
