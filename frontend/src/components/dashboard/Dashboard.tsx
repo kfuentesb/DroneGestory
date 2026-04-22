@@ -56,6 +56,8 @@ type TooltipState = {
   details: CalendarDayDetails;
 } | null;
 
+type ApiDateValue = string | number[] | null | undefined;
+
 const addMonth = (date: Date, n: number) => {
   const next = new Date(date);
   next.setMonth(next.getMonth() + n);
@@ -106,8 +108,33 @@ const formatCertificateCategory = (entry: DashboardCertificateExpiration) =>
 const formatAircraftName = (entry: DashboardAircraftDocumentationExpiration) =>
   [entry.manufacturer, entry.model].filter(Boolean).join(" ");
 
-const getBirthdayKey = (birthDate: string) => {
-  const [, month = "", day = ""] = birthDate.split("-");
+const normalizeDateKey = (value: ApiDateValue): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  if (Array.isArray(value) && value.length >= 3) {
+    const [year, month, day] = value;
+    return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  if (typeof value === "string") {
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+  }
+
+  return null;
+};
+
+const getBirthdayMonthDay = (birthDate: ApiDateValue) => {
+  const normalized = normalizeDateKey(birthDate);
+  if (!normalized) {
+    return null;
+  }
+
+  const [, month = "", day = ""] = normalized.split("-");
   return `${month}-${day}`;
 };
 
@@ -118,6 +145,7 @@ export default function Dashboard() {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
   const navigate = useNavigate();
   const monthRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const baseDate = useMemo(() => new Date(), []);
 
   useEffect(() => {
     apiFetch("/api/dashboard")
@@ -126,7 +154,31 @@ export default function Dashboard() {
         if (!res.ok) throw new Error("Error cargando resumen");
         return res.json();
       })
-      .then((data: DashboardData) => setSummary(data))
+      .then((data: Partial<DashboardData>) => {
+        console.log("[Dashboard] /api/dashboard raw payload", data);
+
+        const nextSummary: DashboardData = {
+          totalUsuarios: data.totalUsuarios ?? 0,
+          totalPilotos: data.totalPilotos ?? 0,
+          totalOperaciones: data.totalOperaciones ?? 0,
+          totalDrones: data.totalDrones ?? 0,
+          certificateExpirations: data.certificateExpirations ?? [],
+          aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
+          birthdays: data.birthdays ?? [],
+        };
+
+        console.log("[Dashboard] normalized payload counts", {
+          totalUsuarios: nextSummary.totalUsuarios,
+          totalPilotos: nextSummary.totalPilotos,
+          totalOperaciones: nextSummary.totalOperaciones,
+          totalDrones: nextSummary.totalDrones,
+          certificateExpirations: nextSummary.certificateExpirations.length,
+          aircraftDocumentationExpirations: nextSummary.aircraftDocumentationExpirations.length,
+          birthdays: nextSummary.birthdays.length,
+        });
+
+        setSummary(nextSummary);
+      })
       .catch((err) => setSummary({ error: err.message }))
       .finally(() => setLoading(false));
   }, []);
@@ -134,7 +186,6 @@ export default function Dashboard() {
   const isError = (s: SummaryState): s is { error: string } => s !== null && "error" in s;
   const isData = (s: SummaryState): s is DashboardData => s !== null && !("error" in s);
 
-  const baseDate = new Date();
   const isPrivilegedUser = hasRole("ADMIN") || hasRole("MANAGER");
 
   const expirationsByDate = useMemo(() => {
@@ -144,24 +195,26 @@ export default function Dashboard() {
     }
 
     summary.certificateExpirations.forEach((entry) => {
-      if (!entry.expireDate) {
+      const dateKey = normalizeDateKey(entry.expireDate);
+      if (!dateKey) {
         return;
       }
 
-      const current = grouped.get(entry.expireDate) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
+      const current = grouped.get(dateKey) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
       current.certificates.push(entry);
-      grouped.set(entry.expireDate, current);
+      grouped.set(dateKey, current);
     });
 
     if (isPrivilegedUser) {
       summary.aircraftDocumentationExpirations.forEach((entry) => {
-        if (!entry.expireDate) {
+        const dateKey = normalizeDateKey(entry.expireDate);
+        if (!dateKey) {
           return;
         }
 
-        const current = grouped.get(entry.expireDate) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
+        const current = grouped.get(dateKey) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
         current.aircraftDocumentation.push(entry);
-        grouped.set(entry.expireDate, current);
+        grouped.set(dateKey, current);
       });
     }
 
@@ -171,11 +224,12 @@ export default function Dashboard() {
       const month = `${monthDate.getMonth() + 1}`.padStart(2, "0");
 
       summary.birthdays.forEach((entry) => {
-        if (!entry.birthDate || getBirthdayKey(entry.birthDate).slice(0, 2) !== month) {
+        const monthDay = getBirthdayMonthDay(entry.birthDate);
+        if (!monthDay || monthDay.slice(0, 2) !== month) {
           return;
         }
 
-        const key = `${year}-${month}-${getBirthdayKey(entry.birthDate).slice(3, 5)}`;
+        const key = `${year}-${month}-${monthDay.slice(3, 5)}`;
         const current = grouped.get(key) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
         current.birthdays.push(entry);
         grouped.set(key, current);
@@ -184,6 +238,31 @@ export default function Dashboard() {
 
     return grouped;
   }, [baseDate, isPrivilegedUser, summary]);
+
+  useEffect(() => {
+    if (!isData(summary)) {
+      console.log("[Dashboard] no summary data available yet", summary);
+      return;
+    }
+
+    console.log("[Dashboard] role visibility", {
+      username,
+      isPrivilegedUser,
+      certificateExpirations: summary.certificateExpirations,
+      aircraftDocumentationExpirations: summary.aircraftDocumentationExpirations,
+      birthdays: summary.birthdays,
+    });
+
+    console.log(
+      "[Dashboard] grouped date keys",
+      Array.from(expirationsByDate.entries()).map(([date, details]) => ({
+        date,
+        certificates: details.certificates.length,
+        aircraftDocumentation: details.aircraftDocumentation.length,
+        birthdays: details.birthdays.length,
+      }))
+    );
+  }, [expirationsByDate, isPrivilegedUser, summary, username]);
 
   useEffect(() => {
     const cleanups: Array<() => void> = [];
