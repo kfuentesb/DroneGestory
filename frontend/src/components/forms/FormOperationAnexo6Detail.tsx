@@ -373,6 +373,7 @@ export default function FormOperationAnexo6Detail({
         onItemsChange={setElementosAuxiliaresItems}
         numeroBase="13.1"
         mostrarSelectorPrincipal={false}
+        mostrarColumnaValor={false}
         descripcionHeader="Elemento auxiliar"
         valorHeader="Resultado"
         maxItems={8}

@@ -223,6 +223,7 @@ export default function FormOperationAnexo8Detail({
         onItemsChange={setOtrasLimitacionesItems}
         numeroBase="2.3"
         mostrarSelectorPrincipal={false}
+        mostrarColumnaValor={false}
         descripcionHeader="Descripción"
         valorHeader="Resultado"
         maxItems={8}

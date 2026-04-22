@@ -20,11 +20,6 @@ Para montar el proyecto en un servidor desde 0:<br>
 # Creamos el docker (el que está en la raíz, no el que está en backend)
 > docker system prune <br>
 > docker image prune -a <br>
-
-> docker compose build frontend <br >
-> docker compose build backend <br>
-> docker compose up -d <br>
-
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
 
@@ -113,20 +108,17 @@ VISUAL<br>
 
 -HORAS DE VUELO<br>
 
--MANTENIMIENTO<br>
--Cambiar el texto de horas de vuelo, y hacer un fetch para poner de ejemplo las horas q lleva<br>
-Proximo mantenimiento: se define por el numero de horas o el proximo dia indicado<br>
--Fecha planificada para el porx mantenimiento<br>
--Poder adjuntar un documento<br>
+-MANTENIMIENTO
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>
--Crear TABLA OTROS
--Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
--Meter opción cancelar
--A5, aptitud para operar. Otros usuarios asignados pueden firmar
--Acceder a una operación siendo un usuario asignados
--Tiempo de vuelo no se suma a la tabla hora de vuelo
+-Crear TABLA OTROS<br>
+-Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar<br>
+-Meter opción cancelar<br>
+-A5, aptitud para operar. Otros usuarios asignados pueden firmar<br>
+-Acceder a una operación siendo un usuario asignados<br>
+-Tiempo de vuelo no se suma a la tabla hora de vuelo<br>
+-No se autocompletan al rehacer la versión en aeronaves<br>
 
 
 

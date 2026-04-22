@@ -16,6 +16,7 @@ interface TablaExpandibleProps {
   numeroBase: string;
   valoresQueHabilitan?: string[];
   mostrarSelectorPrincipal?: boolean;
+  mostrarColumnaValor?: boolean;  // ← NUEVA PROP
   descripcionHeader?: string;
   valorHeader?: string;
   maxItems?: number;
@@ -37,6 +38,7 @@ export function TablaExpandible({
   numeroBase,
   valoresQueHabilitan = ["SI"],
   mostrarSelectorPrincipal = true,
+  mostrarColumnaValor = true,  // ← DEFAULT TRUE (mantiene compatibilidad)
   descripcionHeader = "Descripción",
   valorHeader = "Valor",
   maxItems = 8,
@@ -88,6 +90,16 @@ export function TablaExpandible({
 
   const isExpanded = !mostrarSelectorPrincipal || valoresQueHabilitan.includes(valorPrincipal);
 
+  // Calcular anchos de columna dinámicamente
+  const getColumnWidths = () => {
+    if (mostrarColumnaValor) {
+      return { punto: "15%", descripcion: "45%", valor: "25%", accion: "15%" };
+    }
+    return { punto: "15%", descripcion: "70%", accion: "15%" };
+  };
+
+  const widths = getColumnWidths();
+
   return (
     <div className="form-section mb-4">
       <label className="form-label fw-bold">{label}</label>
@@ -113,10 +125,12 @@ export function TablaExpandible({
             <table className="table table-sm table-bordered align-middle">
               <thead style={{ position: "sticky", top: 0, backgroundColor: "#f8f9fa", zIndex: 1 }}>
                 <tr>
-                  <th style={{ width: "15%" }}>Punto</th>
-                  <th style={{ width: "45%" }}>{descripcionHeader}</th>
-                  <th style={{ width: "25%" }}>{valorHeader}</th>
-                  <th style={{ width: "15%" }}>Acción</th>
+                  <th style={{ width: widths.punto }}>Punto</th>
+                  <th style={{ width: widths.descripcion }}>{descripcionHeader}</th>
+                  {mostrarColumnaValor && (
+                    <th style={{ width: widths.valor }}>{valorHeader}</th>
+                  )}
+                  <th style={{ width: widths.accion }}>Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,22 +160,24 @@ export function TablaExpandible({
                         </small>
                       )}
                     </td>
-                    <td>
-                      <select
-                        value={item.valor}
-                        onChange={(e) =>
-                          handleUpdateItem(index, "valor", e.target.value)
-                        }
-                        className="form-control form-control-sm"
-                        disabled={disabled}
-                      >
-                        {opciones.map((opcion) => (
-                          <option key={opcion} value={opcion}>
-                            {opcion}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
+                    {mostrarColumnaValor && (
+                      <td>
+                        <select
+                          value={item.valor}
+                          onChange={(e) =>
+                            handleUpdateItem(index, "valor", e.target.value)
+                          }
+                          className="form-control form-control-sm"
+                          disabled={disabled}
+                        >
+                          {opciones.map((opcion) => (
+                            <option key={opcion} value={opcion}>
+                              {opcion}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    )}
                     <td className="text-center">
                       <button
                         type="button"
