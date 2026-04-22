@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { saveAnexo4Data, type Anexo4Data } from "../operations/operation.api";
+import {
+  saveAnexo4Data,
+  type Anexo4Data,
+  type ExpandableTableItem,
+} from "../operations/operation.api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { apiFetch } from "../../api";
+import { TablaExpandible } from "./TablaExpandible";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
@@ -45,7 +50,6 @@ const SECCIONES_CONFIG: { seccion4: SectionItem[]; seccion6: SectionItem[] } = {
     { num: "6.2", title: "NOTAMS", key: "notams", level: 0 },
     { num: "6.2.1", title: "Se revisa los NOTAMS activos y no existen limitaciones a la operación.", key: "revisaNotams", level: 1 },
     { num: "6.2.2", title: "Si la operación debe realizarse en TSA o está condicionada a la publicación  previa de NOTAM, se solicita al COOP de ENAIRE su promulgación", key: "tsaOCondicionada", level: 1 },
-    { num: "6.3", title: "Otras limitaciones", key: "otrasLimitaciones", level: 0 },
   ]
 };
 
@@ -79,6 +83,25 @@ const normalizeAircraftIds = (value: unknown): number[] => {
   return [];
 };
 
+const normalizeExpandableItems = (value: unknown): ExpandableTableItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const raw = item as Record<string, unknown>;
+      return {
+        descripcion: typeof raw.descripcion === "string" ? raw.descripcion : "",
+        valor: typeof raw.valor === "string" ? raw.valor : "N/A",
+      };
+    })
+    .filter((item): item is ExpandableTableItem => item !== null);
+};
+
 const BOOL_OPTIONS = [
   { value: "", label: "N/A" },
   { value: "true", label: "Sí" },
@@ -99,7 +122,11 @@ export default function FormOperationAnexo4Detail({
   onSaved,
 }: FormOperationAnexo4DetailProps) {
   const fields = useMemo<FieldConfig[]>(() => operationAnexo4DetailFields, []);
-  const [formValues, setFormValues] = useState<Record<string, any>>(initialValues ?? {});
+  const [formValues, setFormValues] = useState<Record<string, any>>({
+    otrasLimitacionesValor: "N/A",
+    otrasLimitacionesItems: [],
+    ...(initialValues ?? {}),
+  });
   const [errors, setErrors] = useState<ErrorsMap>({});
   const [saving, setSaving] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
@@ -127,6 +154,12 @@ export default function FormOperationAnexo4Detail({
         if (k === "aircraftIds") {
           return [k, normalizeAircraftIds(v)];
         }
+        if (k === "otrasLimitacionesItems") {
+          return [k, normalizeExpandableItems(v)];
+        }
+        if (k === "otrasLimitacionesValor") {
+          return [k, typeof v === "string" && v.trim() ? v : "N/A"];
+        }
         return [
           k,
           v === null || v === undefined
@@ -138,7 +171,11 @@ export default function FormOperationAnexo4Detail({
       })
     );
 
-    setFormValues(normalized);
+    setFormValues({
+      otrasLimitacionesValor: "N/A",
+      otrasLimitacionesItems: [],
+      ...normalized,
+    });
 
     // Limpiar las URLs de previsualización previas
     setPreviewUrls((prev) => {
@@ -240,6 +277,22 @@ export default function FormOperationAnexo4Detail({
           normalizeAircraftIds(value).forEach((aircraftId, index) =>
             formData.append(`aircraftIds[${index}]`, String(aircraftId))
           );
+          return;
+        }
+        if (
+          key === "otrasLimitacionesItems" &&
+          Array.isArray(value) &&
+          (formValues.otrasLimitacionesValor ?? "N/A") === "SI"
+        ) {
+          normalizeExpandableItems(value)
+            .slice(0, 8)
+            .forEach((item, index) => {
+              formData.append(
+                `otrasLimitacionesItems[${index}].descripcion`,
+                item.descripcion,
+              );
+              formData.append(`otrasLimitacionesItems[${index}].valor`, item.valor);
+            });
           return;
         }
         if (value instanceof File) {
@@ -560,6 +613,24 @@ export default function FormOperationAnexo4Detail({
       <div className="bg-white border rounded p-3 mb-4 text-start">
         {SECCIONES_CONFIG.seccion6.map(renderApartadoRow)}
       </div>
+
+      <TablaExpandible
+        label="6.3 - Otras limitaciones operacionales"
+        selectLabel="Limitación"
+        valorPrincipal={formValues.otrasLimitacionesValor ?? "N/A"}
+        items={normalizeExpandableItems(formValues.otrasLimitacionesItems)}
+        opciones={["N/A", "SI", "NO"]}
+        onValorPrincipalChange={(valor) =>
+          handleChange("otrasLimitacionesValor", valor)
+        }
+        onItemsChange={(items) => handleChange("otrasLimitacionesItems", items)}
+        numeroBase="6.3"
+        valoresQueHabilitan={["SI"]}
+        descripcionHeader="Descripción"
+        valorHeader="Resultado"
+        maxItems={8}
+        disabled={disabled || saving}
+      />
     </AnexoFormLayout>
   );
 }

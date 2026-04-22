@@ -85,9 +85,19 @@ public class Anexo6 extends Anexo {
     // 12. Sistema de geoconsciencia
     private Boolean informacionActualizada;
     private Boolean sistemaActivado;
+    
     // 13. Conops
-    // 13.1 Revisión de elementos auxiliares
-    // TODO campo otros
+    // 13.1 Revisión de elementos auxiliares (tabla expandible, máx 8 filas)
+    @Column(name = "elementos_auxiliares_valor")
+    private String elementosAuxiliaresValor; // Correcto, Incorrecto, N/A
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "anexo6_elementos_auxiliares",
+            joinColumns = @JoinColumn(name = "anexo6_id")
+    )
+    @OrderColumn(name = "indice")
+    private List<ItemTablaExpandible> elementosAuxiliaresItems = new ArrayList<>();
 
     public Anexo6() {
         super();

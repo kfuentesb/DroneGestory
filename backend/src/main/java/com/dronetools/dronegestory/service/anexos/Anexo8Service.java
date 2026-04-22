@@ -8,8 +8,13 @@ import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Service
 public class Anexo8Service extends AnexoServiceBase<Anexo8> {
+
+    private static final Set<String> OPCIONES_LIMITACIONES = Set.of("SI", "NO", "N/A");
+    private static final Set<String> VALORES_HABILITADORES_LIMITACIONES = Set.of("SI");
 
     public Anexo8Service(Anexo8Repository repository, OperationRepository operationRepository) {
         super(repository, operationRepository);
@@ -53,6 +58,22 @@ public class Anexo8Service extends AnexoServiceBase<Anexo8> {
         destino.setAnotacionTIempoActividadPersonal(origen.getAnotacionTIempoActividadPersonal());
         destino.setAnotacionEventosOcurridosOperacion(origen.getAnotacionEventosOcurridosOperacion());
         destino.setComunicacionIncidentes(origen.getComunicacionIncidentes());
+
+        String otrasLimitacionesValor = TablaExpandibleUtils.normalizeMainValue(
+            origen.getOtrasLimitacionesValor(),
+            OPCIONES_LIMITACIONES,
+            "N/A"
+        );
+        destino.setOtrasLimitacionesValor(otrasLimitacionesValor);
+        destino.setOtrasLimitacionesItems(
+            TablaExpandibleUtils.normalizeItems(
+                otrasLimitacionesValor,
+                VALORES_HABILITADORES_LIMITACIONES,
+                origen.getOtrasLimitacionesItems(),
+                OPCIONES_LIMITACIONES,
+                "N/A"
+            )
+        );
     }
 }
 

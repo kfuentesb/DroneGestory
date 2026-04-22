@@ -37,7 +37,6 @@ const initialFields = {
   notams: "",
   revisaNotams: "",
   tsaOCondicionada: "",
-  otrasLimitaciones: "",
 };
 
 const booleanFields = [
@@ -69,7 +68,6 @@ const booleanFields = [
   "notams",
   "revisaNotams",
   "tsaOCondicionada",
-  "otrasLimitaciones",
 ];
 
 export const operationAnexo4DetailFields: FieldConfig[] = [
@@ -142,5 +140,4 @@ export const operationAnexo4DetailFields: FieldConfig[] = [
   { label: "notams", key: "notams", type: "boolean" },
   { label: "revisaNotams", key: "revisaNotams", type: "boolean" },
   { label: "tsaOCondicionada", key: "tsaOCondicionada", type: "boolean" },
-  { label: "otrasLimitaciones", key: "otrasLimitaciones", type: "boolean" },
 ];

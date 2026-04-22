@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -56,7 +57,10 @@ public class Anexo4RequestDTO {
     private Boolean notams; // 6.2
     private Boolean revisaNotams; // 6.2.1
     private Boolean tsaOCondicionada; // 6.2.2
-    private Boolean otrasLimitaciones; // 6.3
+    
+    // 6.3 - Otras limitaciones (tabla expandible)
+    private String otrasLimitacionesValor; // SI, NO, N/A
+    private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 
     // Si quieres: puedes añadir más campos según evolucione el modelo/anexo.
 }

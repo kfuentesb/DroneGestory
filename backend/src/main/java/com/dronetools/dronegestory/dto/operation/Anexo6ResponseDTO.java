@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo6;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -61,6 +63,10 @@ public class Anexo6ResponseDTO {
     // 12. Sistema de geoconsciencia
     private Boolean informacionActualizada;
     private Boolean sistemaActivado;
+    
+    // 13.1 - Elementos auxiliares (tabla expandible)
+    private String elementosAuxiliaresValor; // Correcto, Incorrecto, N/A
+    private List<ItemTablaExpandibleDTO> elementosAuxiliaresItems;
 
     public static Anexo6ResponseDTO fromEntity(Anexo6 anexo) {
         Anexo6ResponseDTO dto = new Anexo6ResponseDTO();
@@ -103,6 +109,17 @@ public class Anexo6ResponseDTO {
         dto.setTransmisionDatos(anexo.getTransmisionDatos());
         dto.setInformacionActualizada(anexo.getInformacionActualizada());
         dto.setSistemaActivado(anexo.getSistemaActivado());
+        
+        // Manejar elementos auxiliares
+        dto.setElementosAuxiliaresValor(anexo.getElementosAuxiliaresValor());
+        if (anexo.getElementosAuxiliaresItems() != null) {
+            dto.setElementosAuxiliaresItems(
+                anexo.getElementosAuxiliaresItems().stream()
+                    .map(item -> new ItemTablaExpandibleDTO(item.getDescripcion(), item.getValor()))
+                    .collect(Collectors.toList())
+            );
+        }
+        
         return dto;
     }
 }

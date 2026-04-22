@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { saveAnexo6Data, type Anexo6Data } from "../operations/operation.api";
+import {
+  saveAnexo6Data,
+  type Anexo6Data,
+  type ExpandableTableItem,
+} from "../operations/operation.api";
 import { MaterialesAuxiliaresInput } from "../commons/MaterialesAuxiliaresInput";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import { TablaExpandible } from "./TablaExpandible";
 
 type FormOperationAnexo6DetailProps = {
   operationId: number;
@@ -49,6 +54,7 @@ const FORM_FIELDS = [
   "transmisionDatos",
   "informacionActualizada",
   "sistemaActivado",
+  "elementosAuxiliaresValor",
 ] as const;
 
 type FormKey = (typeof FORM_FIELDS)[number];
@@ -73,7 +79,6 @@ const SECCIONES_CONFIG: {
   seccion10: SectionItem[];
   seccion11: SectionItem[];
   seccion12: SectionItem[];
-  seccion13: SectionItem[];
 } = {
   seccion2: [
     { num: "2.1", title: "Sin impacto ni muescas", key: "sinImpacto", level: 0 },
@@ -127,9 +132,6 @@ const SECCIONES_CONFIG: {
     { num: "12.1", title: "Información actualizada", key: "informacionActualizada", level: 0 },
     { num: "12.2", title: "Sistema activado", key: "sistemaActivado", level: 0 },
   ],
-  seccion13: [
-        { num: "13.1", title: "Revisión de elementos auxiliares al CONOPS de la operación (Paracaídas, sistema cautivo, etc...)", level: 0, inputType: "title"},
-  ]
 };
 
 export default function FormOperationAnexo6Detail({
@@ -147,6 +149,8 @@ export default function FormOperationAnexo6Detail({
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
   const [materialesAuxiliares, setMaterialesAuxiliares] = useState<string[]>([""]);
+  const [elementosAuxiliaresItems, setElementosAuxiliaresItems] =
+    useState<ExpandableTableItem[]>([]);
 
   useEffect(() => {
     if (!initialValues) {
@@ -162,6 +166,22 @@ export default function FormOperationAnexo6Detail({
     } else {
       setMaterialesAuxiliares([""]);
     }
+  }, [initialValues]);
+
+  useEffect(() => {
+    if (!initialValues || !Array.isArray(initialValues.elementosAuxiliaresItems)) {
+      setElementosAuxiliaresItems([]);
+      return;
+    }
+
+    const parsedItems = initialValues.elementosAuxiliaresItems
+      .map((item) => ({
+        descripcion: item?.descripcion ?? "",
+        valor: item?.valor ?? "N/A",
+      }))
+      .slice(0, 8);
+
+    setElementosAuxiliaresItems(parsedItems);
   }, [initialValues]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,6 +208,16 @@ export default function FormOperationAnexo6Detail({
           formData.append(key, value);
         }
       });
+
+      if ((formValues.elementosAuxiliaresValor || "N/A") === "Correcto") {
+        elementosAuxiliaresItems.slice(0, 8).forEach((item, index) => {
+          formData.append(
+            `elementosAuxiliaresItems[${index}].descripcion`,
+            item.descripcion,
+          );
+          formData.append(`elementosAuxiliaresItems[${index}].valor`, item.valor);
+        });
+      }
 
       const savedData = await saveAnexo6Data(operationId, formData);
       alert("Anexo 6 guardado correctamente");
@@ -338,9 +368,23 @@ export default function FormOperationAnexo6Detail({
       </div>
 
       <SectionTitle>SECCIÓN 13: CONOPS</SectionTitle>
-      <div className="bg-white border rounded p-3 mb-4 text-start">
-        {SECCIONES_CONFIG.seccion13.map(renderApartadoRow)}
-      </div>
+      <TablaExpandible
+        label="13.1 - Elementos auxiliares de verificación del CONOPS"
+        selectLabel="Elemento"
+        valorPrincipal={formValues.elementosAuxiliaresValor || "N/A"}
+        items={elementosAuxiliaresItems}
+        opciones={["N/A", "Correcto", "Incorrecto"]}
+        onValorPrincipalChange={(valor) =>
+          handleChange("elementosAuxiliaresValor", valor)
+        }
+        onItemsChange={setElementosAuxiliaresItems}
+        numeroBase="13.1"
+        valoresQueHabilitan={["Correcto"]}
+        descripcionHeader="Elemento auxiliar"
+        valorHeader="Resultado"
+        maxItems={8}
+        disabled={disabled || saving}
+      />
 
     </AnexoFormLayout>
   );

@@ -86,7 +86,19 @@ public class Anexo4 extends Anexo {
     private Boolean notams; // 6.2
     private Boolean revisaNotams; // 6.2.1
     private Boolean tsaOCondicionada; // 6.2.2
-    private Boolean otrasLimitaciones; // 6.3
+    private Boolean otrasLimitacionesInicial; // 6.3 - campo boolean original (puede eliminarse en el futuro)
+
+    // --- Sección 6.3 Otras limitaciones (tabla expandible, máx 8 filas)
+    @Column(name = "otras_limitaciones_valor")
+    private String otrasLimitacionesValor; // SI, NO, N/A
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "anexo4_otras_limitaciones",
+            joinColumns = @JoinColumn(name = "anexo4_id")
+    )
+    @OrderColumn(name = "indice")
+    private List<ItemTablaExpandible> otrasLimitacionesItems = new ArrayList<>();
 
     // Clase campoDinamico en package commons
 //    @ElementCollection

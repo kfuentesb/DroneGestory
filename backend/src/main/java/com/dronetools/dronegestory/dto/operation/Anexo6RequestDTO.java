@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,4 +56,8 @@ public class Anexo6RequestDTO {
     // 12. Sistema de geoconsciencia
     private Boolean informacionActualizada;
     private Boolean sistemaActivado;
+    
+    // 13.1 - Elementos auxiliares (tabla expandible)
+    private String elementosAuxiliaresValor; // Correcto, Incorrecto, N/A
+    private List<ItemTablaExpandibleDTO> elementosAuxiliaresItems;
 }
