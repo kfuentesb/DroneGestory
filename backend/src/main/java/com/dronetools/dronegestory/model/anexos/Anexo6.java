@@ -88,9 +88,6 @@ public class Anexo6 extends Anexo {
     
     // 13. Conops
     // 13.1 Revisión de elementos auxiliares (tabla expandible, máx 8 filas)
-    @Column(name = "elementos_auxiliares_valor")
-    private String elementosAuxiliaresValor; // Correcto, Incorrecto, N/A
-
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "anexo6_elementos_auxiliares",

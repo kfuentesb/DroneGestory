@@ -16,7 +16,6 @@ import java.util.Set;
 public class Anexo6Service extends AnexoServiceBase<Anexo6> {
     private final Anexo6Repository anexo6Repository;
     private static final Set<String> OPCIONES_ELEMENTOS_AUX = Set.of("Correcto", "Incorrecto", "N/A");
-    private static final Set<String> VALORES_HABILITADORES_ELEMENTOS_AUX = Set.of("Correcto");
 
     public Anexo6Service(Anexo6Repository repository, OperationRepository operationRepository) {
         super(repository, operationRepository);
@@ -142,17 +141,8 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         destino.setTransmisionDatos(origen.getTransmisionDatos());
         destino.setInformacionActualizada(origen.getInformacionActualizada());
         destino.setSistemaActivado(origen.getSistemaActivado());
-
-        String elementosAuxiliaresValor = TablaExpandibleUtils.normalizeMainValue(
-            origen.getElementosAuxiliaresValor(),
-            OPCIONES_ELEMENTOS_AUX,
-            "N/A"
-        );
-        destino.setElementosAuxiliaresValor(elementosAuxiliaresValor);
         destino.setElementosAuxiliaresItems(
             TablaExpandibleUtils.normalizeItems(
-                elementosAuxiliaresValor,
-                VALORES_HABILITADORES_ELEMENTOS_AUX,
                 origen.getElementosAuxiliaresItems(),
                 OPCIONES_ELEMENTOS_AUX,
                 "N/A"

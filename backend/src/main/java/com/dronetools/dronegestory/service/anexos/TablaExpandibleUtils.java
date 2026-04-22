@@ -31,6 +31,18 @@ public final class TablaExpandibleUtils {
             return new ArrayList<>();
         }
 
+        return normalizeItems(items, allowedItemValues, defaultItemValue);
+    }
+
+    public static List<ItemTablaExpandible> normalizeItems(
+            List<ItemTablaExpandible> items,
+            Set<String> allowedItemValues,
+            String defaultItemValue
+    ) {
+        if (items == null || items.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         List<ItemTablaExpandible> normalized = new ArrayList<>();
         int limit = Math.min(items.size(), MAX_ITEMS);
 

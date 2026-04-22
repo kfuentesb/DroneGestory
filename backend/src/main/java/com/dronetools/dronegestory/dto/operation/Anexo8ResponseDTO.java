@@ -32,7 +32,6 @@ public class Anexo8ResponseDTO {
     private Boolean comunicacionIncidentes;
     
     // 2.3 - Otras limitaciones (tabla expandible)
-    private String otrasLimitacionesValor; // SI, NO, N/A
     private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 
     public static Anexo8ResponseDTO fromEntity(Anexo8 anexo) {
@@ -51,7 +50,6 @@ public class Anexo8ResponseDTO {
         dto.setComunicacionIncidentes(anexo.getComunicacionIncidentes());
         
         // Manejar otras limitaciones
-        dto.setOtrasLimitacionesValor(anexo.getOtrasLimitacionesValor());
         if (anexo.getOtrasLimitacionesItems() != null) {
             dto.setOtrasLimitacionesItems(
                 anexo.getOtrasLimitacionesItems().stream()

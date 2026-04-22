@@ -26,6 +26,5 @@ public class Anexo8RequestDTO {
     private Boolean comunicacionIncidentes;
     
     // 2.3 - Otras limitaciones (tabla expandible)
-    private String otrasLimitacionesValor; // SI, NO, N/A
     private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 }

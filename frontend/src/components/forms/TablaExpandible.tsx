@@ -8,13 +8,14 @@ export interface ItemTablaExpandible {
 interface TablaExpandibleProps {
   label: string;
   selectLabel: string;
-  valorPrincipal: string;
+  valorPrincipal?: string;
   items: ItemTablaExpandible[];
   opciones: string[];
-  onValorPrincipalChange: (valor: string) => void;
+  onValorPrincipalChange?: (valor: string) => void;
   onItemsChange: (items: ItemTablaExpandible[]) => void;
   numeroBase: string;
-  valoresQueHabilitan: string[];
+  valoresQueHabilitan?: string[];
+  mostrarSelectorPrincipal?: boolean;
   descripcionHeader?: string;
   valorHeader?: string;
   maxItems?: number;
@@ -28,13 +29,14 @@ interface TablaExpandibleProps {
 export function TablaExpandible({
   label,
   selectLabel,
-  valorPrincipal,
+  valorPrincipal = "N/A",
   items,
   opciones,
   onValorPrincipalChange,
   onItemsChange,
   numeroBase,
-  valoresQueHabilitan,
+  valoresQueHabilitan = ["SI"],
+  mostrarSelectorPrincipal = true,
   descripcionHeader = "Descripción",
   valorHeader = "Valor",
   maxItems = 8,
@@ -76,32 +78,34 @@ export function TablaExpandible({
   };
 
   const handleValuePrincipalChange = (value: string) => {
-    onValorPrincipalChange(value);
+    onValorPrincipalChange?.(value);
     // Limpiar filas si deja de estar habilitado.
-    if (!valoresQueHabilitan.includes(value)) {
+    if (mostrarSelectorPrincipal && !valoresQueHabilitan.includes(value)) {
       onItemsChange([]);
       setErrors([]);
     }
   };
 
-  const isExpanded = valoresQueHabilitan.includes(valorPrincipal);
+  const isExpanded = !mostrarSelectorPrincipal || valoresQueHabilitan.includes(valorPrincipal);
 
   return (
     <div className="form-section mb-4">
       <label className="form-label fw-bold">{label}</label>
 
-      <select
-        value={valorPrincipal}
-        onChange={(e) => handleValuePrincipalChange(e.target.value)}
-        className="form-control mb-3"
-        disabled={disabled}
-      >
-        {opciones.map((opcion) => (
-          <option key={opcion} value={opcion}>
-            {opcion}
-          </option>
-        ))}
-      </select>
+      {mostrarSelectorPrincipal && (
+        <select
+          value={valorPrincipal}
+          onChange={(e) => handleValuePrincipalChange(e.target.value)}
+          className="form-control mb-3"
+          disabled={disabled}
+        >
+          {opciones.map((opcion) => (
+            <option key={opcion} value={opcion}>
+              {opcion}
+            </option>
+          ))}
+        </select>
+      )}
 
       {isExpanded && (
         <>
@@ -192,7 +196,7 @@ export function TablaExpandible({
         </>
       )}
 
-      {!isExpanded && items.length > 0 && (
+      {mostrarSelectorPrincipal && !isExpanded && items.length > 0 && (
         <div className="alert alert-info alert-sm mt-2">
           <small>
             Se han limpiado {items.length} {selectLabel.toLowerCase()}(s)

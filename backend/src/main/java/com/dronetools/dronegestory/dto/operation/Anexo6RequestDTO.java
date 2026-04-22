@@ -58,6 +58,5 @@ public class Anexo6RequestDTO {
     private Boolean sistemaActivado;
     
     // 13.1 - Elementos auxiliares (tabla expandible)
-    private String elementosAuxiliaresValor; // Correcto, Incorrecto, N/A
     private List<ItemTablaExpandibleDTO> elementosAuxiliaresItems;
 }

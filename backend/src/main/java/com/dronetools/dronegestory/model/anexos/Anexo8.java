@@ -37,9 +37,6 @@ public class Anexo8 extends Anexo {
     private Boolean anotacionEventosOcurridosOperacion;
     private Boolean comunicacionIncidentes;
     // 2.3 OTROS - tabla expandible de limitaciones (máx 8 filas)
-    @Column(name = "otras_limitaciones_valor")
-    private String otrasLimitacionesValor; // SI, NO, N/A
-
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "anexo8_otras_limitaciones",

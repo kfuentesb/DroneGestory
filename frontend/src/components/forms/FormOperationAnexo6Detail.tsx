@@ -54,7 +54,6 @@ const FORM_FIELDS = [
   "transmisionDatos",
   "informacionActualizada",
   "sistemaActivado",
-  "elementosAuxiliaresValor",
 ] as const;
 
 type FormKey = (typeof FORM_FIELDS)[number];
@@ -209,15 +208,13 @@ export default function FormOperationAnexo6Detail({
         }
       });
 
-      if ((formValues.elementosAuxiliaresValor || "N/A") === "Correcto") {
-        elementosAuxiliaresItems.slice(0, 8).forEach((item, index) => {
-          formData.append(
-            `elementosAuxiliaresItems[${index}].descripcion`,
-            item.descripcion,
-          );
-          formData.append(`elementosAuxiliaresItems[${index}].valor`, item.valor);
-        });
-      }
+      elementosAuxiliaresItems.slice(0, 8).forEach((item, index) => {
+        formData.append(
+          `elementosAuxiliaresItems[${index}].descripcion`,
+          item.descripcion,
+        );
+        formData.append(`elementosAuxiliaresItems[${index}].valor`, item.valor);
+      });
 
       const savedData = await saveAnexo6Data(operationId, formData);
       alert("Anexo 6 guardado correctamente");
@@ -371,15 +368,11 @@ export default function FormOperationAnexo6Detail({
       <TablaExpandible
         label="13.1 - Elementos auxiliares de verificación del CONOPS"
         selectLabel="Elemento"
-        valorPrincipal={formValues.elementosAuxiliaresValor || "N/A"}
         items={elementosAuxiliaresItems}
         opciones={["N/A", "Correcto", "Incorrecto"]}
-        onValorPrincipalChange={(valor) =>
-          handleChange("elementosAuxiliaresValor", valor)
-        }
         onItemsChange={setElementosAuxiliaresItems}
         numeroBase="13.1"
-        valoresQueHabilitan={["Correcto"]}
+        mostrarSelectorPrincipal={false}
         descripcionHeader="Elemento auxiliar"
         valorHeader="Resultado"
         maxItems={8}

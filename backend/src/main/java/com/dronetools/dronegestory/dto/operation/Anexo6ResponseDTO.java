@@ -65,7 +65,6 @@ public class Anexo6ResponseDTO {
     private Boolean sistemaActivado;
     
     // 13.1 - Elementos auxiliares (tabla expandible)
-    private String elementosAuxiliaresValor; // Correcto, Incorrecto, N/A
     private List<ItemTablaExpandibleDTO> elementosAuxiliaresItems;
 
     public static Anexo6ResponseDTO fromEntity(Anexo6 anexo) {
@@ -111,7 +110,6 @@ public class Anexo6ResponseDTO {
         dto.setSistemaActivado(anexo.getSistemaActivado());
         
         // Manejar elementos auxiliares
-        dto.setElementosAuxiliaresValor(anexo.getElementosAuxiliaresValor());
         if (anexo.getElementosAuxiliaresItems() != null) {
             dto.setElementosAuxiliaresItems(
                 anexo.getElementosAuxiliaresItems().stream()

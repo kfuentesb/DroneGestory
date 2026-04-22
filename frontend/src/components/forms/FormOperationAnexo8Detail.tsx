@@ -28,7 +28,6 @@ const FORM_FIELDS = [
   "anotacionTIempoActividadPersonal",
   "anotacionEventosOcurridosOperacion",
   "comunicacionIncidentes",
-  "otrasLimitacionesValor",
 ] as const;
 
 type FormKey = (typeof FORM_FIELDS)[number];
@@ -112,15 +111,13 @@ export default function FormOperationAnexo8Detail({
         }
       });
 
-      if ((formValues.otrasLimitacionesValor || "N/A") === "SI") {
-        otrasLimitacionesItems.slice(0, 8).forEach((item, index) => {
-          formData.append(
-            `otrasLimitacionesItems[${index}].descripcion`,
-            item.descripcion,
-          );
-          formData.append(`otrasLimitacionesItems[${index}].valor`, item.valor);
-        });
-      }
+      otrasLimitacionesItems.slice(0, 8).forEach((item, index) => {
+        formData.append(
+          `otrasLimitacionesItems[${index}].descripcion`,
+          item.descripcion,
+        );
+        formData.append(`otrasLimitacionesItems[${index}].valor`, item.valor);
+      });
 
       const savedData = await saveAnexo8Data(operationId, formData);
       alert("Anexo 8 guardado correctamente");
@@ -221,15 +218,11 @@ export default function FormOperationAnexo8Detail({
       <TablaExpandible
         label="2.3 - Otras limitaciones operacionales"
         selectLabel="Limitación"
-        valorPrincipal={formValues.otrasLimitacionesValor || "N/A"}
         items={otrasLimitacionesItems}
         opciones={["N/A", "SI", "NO"]}
-        onValorPrincipalChange={(valor) =>
-          handleChange("otrasLimitacionesValor", valor)
-        }
         onItemsChange={setOtrasLimitacionesItems}
         numeroBase="2.3"
-        valoresQueHabilitan={["SI"]}
+        mostrarSelectorPrincipal={false}
         descripcionHeader="Descripción"
         valorHeader="Resultado"
         maxItems={8}
