@@ -21,13 +21,6 @@ public class Aircraft {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "aircraft_id")
     private Long aircraftId;
-
-    // ============ CAMPOS OBLIGATORIOS para el cliente ============
-    // @Column(name = "manufacturer", length = 100, nullable = false)
-    // private String manufacturer;
-
-    // @Column(name = "model", length = 100, nullable = false)
-    // private String model;
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "aircraft_model_id", nullable = false)
