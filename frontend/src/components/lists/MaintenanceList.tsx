@@ -137,7 +137,7 @@ export default function MaintenanceList() {
         { label: "Modelo", key: "model", sortable: true },
         { label: "Configuración", key: "config", sortable: true },
         { label: "Nº serie", key: "serialNumber", sortable: true },
-        { label: "F. Fabricación", key: "fechaFab", sortable: true },
+        { label: "Fecha Fabric.", key: "fechaFab", sortable: true },
         { label: "Mantenimientos", key: "maintenanceCount", sortable: true },
         { label: "Último mantenimiento", key: "lastMaintenanceDate", sortable: true },
     ];

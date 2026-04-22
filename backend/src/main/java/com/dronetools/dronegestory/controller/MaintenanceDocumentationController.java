@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.dto.MaintenanceDocumentationDTO;
+import com.dronetools.dronegestory.dto.MaintenanceDocumentationMetadataDTO;
 import com.dronetools.dronegestory.service.MaintenanceDocumentationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,6 +54,7 @@ public class MaintenanceDocumentationController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MaintenanceDocumentationDTO> createOrReplace(
             @PathVariable Long maintenanceId,
+            @RequestPart(value = "metadata", required = false) MaintenanceDocumentationMetadataDTO metadata,
             @RequestParam(value = "documentationType", required = false) String documentationType,
             @RequestParam(value = "documentationLabel", required = false) String documentationLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
@@ -61,9 +64,9 @@ public class MaintenanceDocumentationController {
         return ResponseEntity.ok(
                 maintenanceDocumentationService.createOrReplaceWithFile(
                         maintenanceId,
-                        resolveDocumentationType(documentationType, documentationLabel),
-                        expireDate,
-                        dateIndefinite,
+                        resolveDocumentationType(metadata, documentationType, documentationLabel),
+                        resolveExpireDate(metadata, expireDate),
+                        resolveDateIndefinite(metadata, dateIndefinite),
                         file
                 )
         );
@@ -73,6 +76,7 @@ public class MaintenanceDocumentationController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MaintenanceDocumentationDTO> update(
             @PathVariable Long id,
+            @RequestPart(value = "metadata", required = false) MaintenanceDocumentationMetadataDTO metadata,
             @RequestParam(value = "documentationType", required = false) String documentationType,
             @RequestParam(value = "documentationLabel", required = false) String documentationLabel,
             @RequestParam(value = "expireDate", required = false) String expireDate,
@@ -81,9 +85,9 @@ public class MaintenanceDocumentationController {
     ) {
         return maintenanceDocumentationService.updateWithFile(
                         id,
-                        resolveDocumentationType(documentationType, documentationLabel),
-                        expireDate,
-                        dateIndefinite,
+                        resolveDocumentationType(metadata, documentationType, documentationLabel),
+                        resolveExpireDate(metadata, expireDate),
+                        resolveDateIndefinite(metadata, dateIndefinite),
                         file
                 )
                 .map(ResponseEntity::ok)
@@ -140,7 +144,19 @@ public class MaintenanceDocumentationController {
                 .body(resource);
     }
 
-    private String resolveDocumentationType(String documentationType, String documentationLabel) {
+    private String resolveDocumentationType(
+            MaintenanceDocumentationMetadataDTO metadata,
+            String documentationType,
+            String documentationLabel
+    ) {
+        if (metadata != null) {
+            if (metadata.documentationType() != null && !metadata.documentationType().isBlank()) {
+                return metadata.documentationType().trim();
+            }
+            if (metadata.documentationLabel() != null && !metadata.documentationLabel().isBlank()) {
+                return metadata.documentationLabel().trim();
+            }
+        }
         if (documentationType != null && !documentationType.isBlank()) {
             return documentationType.trim();
         }
@@ -148,5 +164,19 @@ public class MaintenanceDocumentationController {
             return documentationLabel.trim();
         }
         throw new IllegalArgumentException("Either documentationType or documentationLabel is required.");
+    }
+
+    private String resolveExpireDate(MaintenanceDocumentationMetadataDTO metadata, String expireDate) {
+        if (metadata != null && metadata.expireDate() != null) {
+            return metadata.expireDate().toString();
+        }
+        return expireDate;
+    }
+
+    private Boolean resolveDateIndefinite(MaintenanceDocumentationMetadataDTO metadata, Boolean dateIndefinite) {
+        if (metadata != null && metadata.dateIndefinite() != null) {
+            return metadata.dateIndefinite();
+        }
+        return dateIndefinite;
     }
 }

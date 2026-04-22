@@ -114,9 +114,6 @@ VISUAL<br>
 -HORAS DE VUELO<br>
 
 -MANTENIMIENTO<br>
-Proximo mantenimiento: se define por el numero de horas o el proximo dia indicado<br>
--Fecha planificada para el porx mantenimiento<br>
--Poder adjuntar un documento<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>

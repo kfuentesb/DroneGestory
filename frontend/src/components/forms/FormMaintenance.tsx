@@ -9,9 +9,12 @@ type AircraftDetails = {
     manufacturer?: string;
     model?: string;
     serialNumber?: string;
-    aircraftClass?: string;
+    config?: string;
+    fechaFab?: string;
     flightMinutes?: number;
 };
+
+const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 export default function FormMaintenance() {
     const navigate = useNavigate();
@@ -23,7 +26,7 @@ export default function FormMaintenance() {
 
     const [reviewType, setReviewType] = useState("");
     const [monthsRequired, setMonthsRequired] = useState<number | "">("");
-    const [maintenanceDate, setMaintenanceDate] = useState("");
+    const [maintenanceDate, setMaintenanceDate] = useState(getTodayDate());
     const [nextMaintenanceDate, setNextMaintenanceDate] = useState("");
     const [comments, setComments] = useState("");
 
@@ -79,7 +82,7 @@ export default function FormMaintenance() {
         const totalMinutes = Number(hoursPart) * 60 + Number(minsPart);
 
         try {
-            const payload = {
+            const metadata = {
                 aircraftId: selectedAircraft.id,
                 reviewType: reviewType.trim(),
                 monthsRequired,
@@ -87,33 +90,28 @@ export default function FormMaintenance() {
                 maintenanceDate,
                 nextMaintenanceDate: nextMaintenanceDate || null,
                 comments: comments.trim() || null,
+                documentation: documentationEnabled && selectedFile ? {
+                    documentationLabel: "Documentacion de mantenimiento",
+                    documentationType: "Documentacion de mantenimiento",
+                    expireDate: isIndefinite ? null : (expirationDate || null),
+                    dateIndefinite: isIndefinite,
+                } : null,
+                removeDocumentation: false,
             };
+
+            const formData = new FormData();
+            formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+            if (documentationEnabled && selectedFile) {
+                formData.append("file", selectedFile);
+            }
 
             const response = await apiFetch("/api/maintenance", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: formData,
             });
 
             if (!response) {
                 throw new Error("No se pudo registrar el mantenimiento.");
-            }
-
-            const created = await response.json();
-
-            if (documentationEnabled && selectedFile) {
-                const formData = new FormData();
-                formData.append("documentationLabel", "Documentacion de mantenimiento");
-                formData.append("dateIndefinite", String(isIndefinite));
-                if (!isIndefinite && expirationDate) {
-                    formData.append("expireDate", expirationDate);
-                }
-                formData.append("file", selectedFile);
-
-                await apiFetch(`/api/maintenance-documentation/maintenance/${created.id}/upload`, {
-                    method: "POST",
-                    body: formData,
-                });
             }
 
             navigate(`/maintenance/aircraft/${selectedAircraft.id}`);
@@ -132,6 +130,10 @@ export default function FormMaintenance() {
     const aircraftLabel = selectedAircraft
         ? `${selectedAircraft.manufacturer ?? ""} ${selectedAircraft.model ?? ""}`.trim()
         : "Aeronave";
+
+    const aircraftDataLabel = selectedAircraft 
+        ? `Nº Serie: ${selectedAircraft.serialNumber ?? "N/A"} | Configuración: ${selectedAircraft.config ?? "N/A"} | Fecha de fabricación: ${selectedAircraft.fechaFab ?? "N/A"}` 
+        : "Nº Serie: N/A | Configuración: N/A | Fecha de fabricación: N/A";
 
     const currentFlightTimeStr = selectedAircraft?.flightMinutes !== undefined
         ? `${Math.floor(selectedAircraft.flightMinutes / 60)}h ${selectedAircraft.flightMinutes % 60}m`
@@ -153,11 +155,11 @@ export default function FormMaintenance() {
                     </button>
 
                     <h2 className="card-title mb-1" style={{ color: "#1E1E1E" }}>
-                        Registrar mantenimiento: {aircraftLoading ? "Cargando..." : aircraftLabel}
+                        Registro de mantenimiento: {aircraftLoading ? "Cargando..." : aircraftLabel}
                     </h2>
 
                     {selectedAircraft?.serialNumber && (
-                        <p className="text-muted mb-0">Nº Serie: {selectedAircraft.serialNumber}</p>
+                        <p className="text-muted mb-0">{aircraftDataLabel}</p>
                     )}
 
                     {error && <div className="alert alert-danger">{error}</div>}
@@ -166,23 +168,23 @@ export default function FormMaintenance() {
                         <LoadingSpinner message="Cargando datos de la aeronave..." />
                     ) : (
                         <form onSubmit={handleSubmit} className="row g-3 pt-3">
-                            <div className="col-12 col-md-6">
+                            <div className="col-12">
                                 <label className="form-label d-flex justify-content-between">
-                                    <span>Tipo de revision</span>
+                                    <span>Tipo de revisión</span>
                                 </label>
                                 <input
                                     type="text"
                                     className="form-control"
                                     value={reviewType}
                                     onChange={(e) => setReviewType(e.target.value)}
-                                    placeholder="Revision básica, revision general, etc."
+                                    placeholder="Revisión básica, revisión general, etc."
                                     required
                                 />
                             </div>
 
                             <div className="col-12 col-md-6">
                                 <label className="form-label d-flex justify-content-between">
-                                    <span>Meses desde ultima revision</span>
+                                    <span>Meses transcurridos desde última revisión</span>
                                 </label>
                                 <input
                                     type="number"
@@ -191,38 +193,14 @@ export default function FormMaintenance() {
                                     min={0}
                                     onChange={(e) => setMonthsRequired(e.target.value === "" ? "" : Number(e.target.value))}
                                     required
+                                    placeholder="12, 24, etc."
                                 />
                             </div>
 
                             <div className="col-12 col-md-6">
                                 <label className="form-label d-flex justify-content-between">
-                                    <span>Fecha dia mantenimiento</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={maintenanceDate}
-                                    onChange={(e) => setMaintenanceDate(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="col-12 col-md-6">
-                                <label className="form-label d-flex justify-content-between">
-                                    <span>Proximo dia de mantenimiento</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={nextMaintenanceDate}
-                                    onChange={(e) => setNextMaintenanceDate(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="col-12 col-md-6">
-                                <label className="form-label d-flex justify-content-between">
-                                    <span>Tiempo de vuelo al hacer revision</span>
-                                    <small className="text-muted">Tiempo vuelo actual registrado: <strong>{currentFlightTimeStr}</strong></small>
+                                    <span>Tiempo de vuelo al hacer revisión</span>
+                                    <small className="text-muted">(Tiempo de vuelo actual del dron: <strong>{currentFlightTimeStr}</strong>)</small>
                                 </label>
                                 <div className="row g-2">
                                     <div className="col-6">
@@ -258,6 +236,31 @@ export default function FormMaintenance() {
                                 </div>
                             </div>
 
+                            <div className="col-12 col-md-6">
+                                <label className="form-label d-flex justify-content-between">
+                                    <span>Fecha día mantenimiento (Hoy por defecto)</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={maintenanceDate}
+                                    onChange={(e) => setMaintenanceDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="col-12 col-md-6">
+                                <label className="form-label d-flex justify-content-between">
+                                    <span>Próximo día de mantenimiento</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={nextMaintenanceDate}
+                                    onChange={(e) => setNextMaintenanceDate(e.target.value)}
+                                />
+                            </div>
+
                             <div className="col-12">
                                 <label className="form-label d-flex justify-content-between">
                                     <span>Comentarios (opcional)</span>
@@ -271,7 +274,7 @@ export default function FormMaintenance() {
                                 />
                             </div>
 
-                            <div className="col-12 col-md-6">
+                            <div className="col-12">
                                 <InsertDoc
                                     checkboxLabel="Añadir documentación (opcional)"
                                     isChecked={documentationEnabled}
@@ -286,7 +289,7 @@ export default function FormMaintenance() {
                                     indefiniteId="maintenanceDocIndefinite"
                                     isIndefinite={isIndefinite}
                                     onToggleIndefinite={() => setIsIndefinite((prev) => !prev)}
-                                    showDateControls={true}
+                                    showDateControls={false}
                                     accept=".pdf,.jpg,.jpeg,.png"
                                 />
                             </div>
