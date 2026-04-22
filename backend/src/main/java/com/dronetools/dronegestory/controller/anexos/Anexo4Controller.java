@@ -11,6 +11,7 @@ import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
@@ -43,11 +44,20 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     public ResponseEntity<Anexo4ResponseDTO> createAnexo4WithImagen(
             @PathVariable Long operationId,
             @ModelAttribute Anexo4 anexo4,
+            BindingResult bindingResult,
             @RequestParam(value = "conops", required = false) String conops,
             @RequestParam(value = "imagenEspacioAereoFile", required = false) MultipartFile imagenEspacioAereoFile,
             @RequestParam(value = "imagenZonaVueloFile", required = false) MultipartFile imagenZonaVueloFile,
             HttpServletRequest request
     ) throws IOException {
+        if (bindingResult.hasErrors()) {
+            boolean onlyExpandableTableBindingError = bindingResult.getFieldErrors().stream()
+                    .allMatch(error -> "otrasLimitacionesItems".equals(error.getField()));
+            if (!onlyExpandableTableBindingError) {
+                throw new RuntimeException("Datos inválidos en Anexo 4: " + bindingResult.getAllErrors());
+            }
+            anexo4.setOtrasLimitacionesItems(new ArrayList<>());
+        }
         anexo4.setAircraftIds(resolveAircraftIds(anexo4, request));
         Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
         return ResponseEntity.ok(toResponse(saved, operationId));

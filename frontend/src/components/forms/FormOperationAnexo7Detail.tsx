@@ -108,7 +108,6 @@ export default function FormOperationAnexo7Detail({
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
@@ -258,7 +257,6 @@ export default function FormOperationAnexo7Detail({
           />
         </div>
       </div>
-
       <SectionTitle>SECCIÓN 1: Verificación del estado de la aeronave</SectionTitle>
       <div className="bg-white border rounded p-3">
         {VERIFICACION_CONFIG.map(renderRow)}

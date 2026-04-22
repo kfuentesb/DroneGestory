@@ -21,9 +21,11 @@ import java.util.List;
 public class OperationService {
 
     private final OperationRepository operationRepository;
+    private final FlightTimeService flightTimeService;
 
-    public OperationService(OperationRepository operationRepository) {
+    public OperationService(OperationRepository operationRepository, FlightTimeService flightTimeService) {
         this.operationRepository = operationRepository;
+        this.flightTimeService = flightTimeService;
     }
 
     @Transactional(readOnly = true)
@@ -106,7 +108,9 @@ public class OperationService {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
         op.setEstado(OperationStatus.COMPLETADA);
-        return operationRepository.save(op);
+        Operation saved = operationRepository.save(op);
+        flightTimeService.registerFromAnexo7WhenOperationCompleted(saved);
+        return saved;
     }
 
     private void validarOperacionEditable(Operation op) {
@@ -158,8 +162,9 @@ public class OperationService {
             throw new RuntimeException("No se puede completar la operación sin todos los anexos firmados");
         }
         op.setEstado(OperationStatus.COMPLETADA);
-        operationRepository.save(op);
-        return new OperationDetailDTO(op); // El mapping ocurre aquí, en sesión
+        Operation saved = operationRepository.save(op);
+        flightTimeService.registerFromAnexo7WhenOperationCompleted(saved);
+        return new OperationDetailDTO(saved); // El mapping ocurre aquí, en sesión
     }
 
     @Transactional

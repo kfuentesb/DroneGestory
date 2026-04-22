@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.repository.OperationRepository;
@@ -25,8 +26,9 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         }
 
         Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+                .orElseThrow(() -> new RuntimeException("Operacion no encontrada " + operationId));
         validarOperacionEditable(operation);
+        validateAnexo7Input(operation, datosNuevos);
 
         int currentVersion = anexo7Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, datosNuevos.getAircraftId());
         datosNuevos.setNombreConops(operation.getConops());
@@ -39,7 +41,7 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
                 .findByOperationAndNumeroVersionAndAircraftId(operation, currentVersion, datosNuevos.getAircraftId())
                 .map(existing -> {
                     if (existing.getEstado() == AnexoStatus.FIRMADO) {
-                        throw new RuntimeException("El formulario actual de esta aeronave está firmado. Usa rehacer para crear una nueva versión.");
+                        throw new RuntimeException("El formulario actual de esta aeronave esta firmado. Usa rehacer para crear una nueva version.");
                     }
                     actualizarCampos(existing, datosNuevos);
                     return anexo7Repository.save(existing);
@@ -53,7 +55,7 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
                 .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexoOrigen));
 
         if (anexoOrigen.getEstado() != AnexoStatus.FIRMADO) {
-            throw new RuntimeException("Solo se puede rehacer desde una versión firmada");
+            throw new RuntimeException("Solo se puede rehacer desde una version firmada");
         }
 
         Operation operation = anexoOrigen.getOperation();
@@ -77,7 +79,8 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
             throw new RuntimeException("Debes indicar la aeronave seleccionada");
         }
         Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+                .orElseThrow(() -> new RuntimeException("Operacion no encontrada " + operationId));
+        validateAircraftLinkedToAnexo4(operation, aircraftId);
         int currentVersion = anexo7Repository.findMaxNumeroVersionByOperationAndAircraftId(operation, aircraftId);
         if (currentVersion == 0) {
             return null;
@@ -153,4 +156,17 @@ public class Anexo7Service extends AnexoServiceBase<Anexo7> {
         return anexo7Repository.save(nuevo);
     }
 
+    private void validateAnexo7Input(Operation operation, Anexo7 anexo7) {
+        validateAircraftLinkedToAnexo4(operation, anexo7.getAircraftId());
+    }
+
+    private void validateAircraftLinkedToAnexo4(Operation operation, Long aircraftId) {
+        Anexo4 anexo4Actual = operation.getAnexo4Actual();
+        if (anexo4Actual == null || anexo4Actual.getAircraftIds() == null || anexo4Actual.getAircraftIds().isEmpty()) {
+            throw new RuntimeException("Debes seleccionar aeronaves en Anexo 4 antes de registrar Anexo 7");
+        }
+        if (!anexo4Actual.getAircraftIds().contains(aircraftId)) {
+            throw new RuntimeException("La aeronave seleccionada no esta incluida en el Anexo 4 de la operacion");
+        }
+    }
 }

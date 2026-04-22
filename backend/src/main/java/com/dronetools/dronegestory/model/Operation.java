@@ -90,6 +90,9 @@ public class Operation {
     @OrderBy("numeroVersion DESC")
     private List<Anexo8> anexos8 = new ArrayList<>();
 
+    @OneToMany(mappedBy = "operation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FlightTime> flightTimes = new ArrayList<>();
+
     // ========== MÉTODOS PRIVADOS ============
     // Obtener última versión
     private <T extends AnexoVersionado> T getUltimaVersion(List<T> lista){

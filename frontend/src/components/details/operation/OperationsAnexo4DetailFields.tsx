@@ -75,8 +75,6 @@ export const operationAnexo4DetailFields: FieldConfig[] = [
     label: "Descripción",
     key: "descripcion",
     type: "text",
-    validate: (v: string) => typeof v === "string" && v.trim().length > 0,
-    error: "La descripción es obligatoria",
   },
   { label: "Fecha/Hora Prevista", key: "fechaHoraPrevista", type: "date" },
   { label: "Medios materiales", key: "mediosMateriales", type: "text" },
