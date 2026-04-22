@@ -20,14 +20,11 @@ Para montar el proyecto en un servidor desde 0:<br>
 # Creamos el docker (el que está en la raíz, no el que está en backend)
 > docker system prune <br>
 > docker image prune -a <br>
-<<<<<<< HEAD
 
 > docker compose build backend <br >
 > docker compose build frontend <br>
 > docker compose up -d <br>
 
-=======
->>>>>>> main
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
 
@@ -132,8 +129,7 @@ VISUAL<br>
 
 
 
-local
-docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/database/migrations/V2026_04_22_001__user_multi_roles.sql
+MIGRACION
 
 server
 docker exec -i dronegestory-db psql -U admin -d aeronaves_db < backend/database/migrations/V2026_04_22_001__user_multi_roles.sql

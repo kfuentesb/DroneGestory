@@ -118,9 +118,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         {canViewMaintenance && (
                             <MenuItem onClick={() => { navigate("/maintenance"); setToggled(false); }}>Mantenimiento</MenuItem>
                         )}
-                        {canManage && (
-                            <MenuItem onClick={() => { navigate("/flight-times"); setToggled(false); }}>Horas de vuelo</MenuItem>
-                        )}
+                        <MenuItem onClick={() => { navigate("/flight-times"); setToggled(false); }}>Horas de vuelo</MenuItem>
                     </SubMenu>
 
                 {/* 4. Operations Section */}

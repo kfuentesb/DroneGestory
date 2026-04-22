@@ -105,27 +105,21 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/flight-times" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <AircraftFlightTimeList />
-            </ProtectedRoute>
           } 
         />
 
         <Route 
           path="/flight-times/:aircraftId" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <FlightTimeList />
-            </ProtectedRoute>
           } 
         />
 
         <Route 
           path="/flight-times/:aircraftId/register" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
               <FormFlightTime />
-            </ProtectedRoute>
           } 
         />
 

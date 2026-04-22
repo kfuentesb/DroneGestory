@@ -7,6 +7,7 @@ import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
+import { useAuth } from "../commons/hooks/useAuth";
 
 import DronePlusIcon from "../../assets/commons/drone_plus_white.svg";
 import LoadingSpinner from "../commons/Loading";
@@ -34,6 +35,8 @@ export default function AircraftList() {
     const [year, month] = value.split("-");
     return year && month ? `${month}/${year}` : value;
   };
+
+  const { roles } = useAuth();
 
   const [aircrafts, setAircrafts] = useState<Aircraft[]>([]);
   const [search, setSearch] = useState("");
@@ -118,12 +121,14 @@ export default function AircraftList() {
                 Listar modelos
               </ButtonProp>
 
-              <ButtonProp
-                onClick={() => navigate("/register-aircraft")}
-                className="d-flex align-items-center justify-content-center"
-              >
-                <img src={DronePlusIcon} style={{ width: "30px", height: "30px" }} alt="plus icon" />
-              </ButtonProp>
+              {(roles.includes("ADMIN") || roles.includes("MANAGER")) && (
+                <ButtonProp
+                  onClick={() => navigate("/register-aircraft")}
+                  className="d-flex align-items-center justify-content-center"
+                >
+                  <img src={DronePlusIcon} style={{ width: "30px", height: "30px" }} alt="plus icon" />
+                </ButtonProp>
+              )}
             </div>
           </div>
 
