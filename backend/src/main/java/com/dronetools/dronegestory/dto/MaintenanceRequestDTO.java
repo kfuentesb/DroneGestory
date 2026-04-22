@@ -8,6 +8,7 @@ public record MaintenanceRequestDTO(
         Integer monthsRequired,
         Integer hoursFlightRequired,
         LocalDate maintenanceDate,
+        LocalDate nextMaintenanceDate,
         String comments
 ) {
 }

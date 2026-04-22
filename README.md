@@ -21,8 +21,8 @@ Para montar el proyecto en un servidor desde 0:<br>
 > docker system prune <br>
 > docker image prune -a <br>
 
-> docker compose build frontend <br >
-> docker compose build backend <br>
+> docker compose build backend <br >
+> docker compose build frontend <br>
 > docker compose up -d <br>
 
 > docker compose up -d --build <br>
@@ -114,7 +114,6 @@ VISUAL<br>
 -HORAS DE VUELO<br>
 
 -MANTENIMIENTO<br>
--Cambiar el texto de horas de vuelo, y hacer un fetch para poner de ejemplo las horas q lleva<br>
 Proximo mantenimiento: se define por el numero de horas o el proximo dia indicado<br>
 -Fecha planificada para el porx mantenimiento<br>
 -Poder adjuntar un documento<br>

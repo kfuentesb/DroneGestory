@@ -20,10 +20,16 @@ public class MaintenanceService {
 
     private final MaintenanceRepository maintenanceRepository;
     private final AircraftRepository aircraftRepository;
+    private final MaintenanceDocumentationService maintenanceDocumentationService;
 
-    public MaintenanceService(MaintenanceRepository maintenanceRepository, AircraftRepository aircraftRepository) {
+    public MaintenanceService(
+            MaintenanceRepository maintenanceRepository,
+            AircraftRepository aircraftRepository,
+            MaintenanceDocumentationService maintenanceDocumentationService
+    ) {
         this.maintenanceRepository = maintenanceRepository;
         this.aircraftRepository = aircraftRepository;
+        this.maintenanceDocumentationService = maintenanceDocumentationService;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +70,7 @@ public class MaintenanceService {
         if (!maintenanceRepository.existsById(id)) {
             throw new EntityNotFoundException("Maintenance not found with id: " + id);
         }
+        maintenanceDocumentationService.deleteByMaintenanceId(id);
         maintenanceRepository.deleteById(id);
     }
 
@@ -89,6 +96,7 @@ public class MaintenanceService {
         maintenance.setMonthsRequired(request.monthsRequired());
         maintenance.setHoursFlightRequired(request.hoursFlightRequired());
         maintenance.setMaintenanceDate(Date.valueOf(request.maintenanceDate()));
+        maintenance.setNextMaintenanceDate(request.nextMaintenanceDate() == null ? null : Date.valueOf(request.nextMaintenanceDate()));
         maintenance.setComments(request.comments());
     }
 
@@ -106,7 +114,9 @@ public class MaintenanceService {
                 maintenance.getMonthsRequired(),
                 maintenance.getHoursFlightRequired(),
                 maintenance.getMaintenanceDate() == null ? null : maintenance.getMaintenanceDate().toLocalDate(),
-                maintenance.getComments()
+                maintenance.getNextMaintenanceDate() == null ? null : maintenance.getNextMaintenanceDate().toLocalDate(),
+                maintenance.getComments(),
+                maintenance.getDocumentation() == null ? null : maintenanceDocumentationService.toDto(maintenance.getDocumentation())
         );
     }
 }

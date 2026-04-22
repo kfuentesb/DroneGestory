@@ -14,6 +14,8 @@ public record MaintenanceDTO(
         Integer monthsRequired,
         Integer hoursFlightRequired,
         LocalDate maintenanceDate,
-        String comments
+        LocalDate nextMaintenanceDate,
+        String comments,
+        MaintenanceDocumentationDTO documentation
 ) {
 }

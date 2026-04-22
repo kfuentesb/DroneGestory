@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { apiFetch } from "../../api";
-import LoadingSpinner from "../commons/Loading";
-import Pagination from "../commons/props/Pagination";
-import SearchBar from "../commons/props/SearchBar";
-import ButtonProp from "../commons/props/ButtonProp";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
+import LoadingSpinner from "../commons/Loading";
+import ButtonProp from "../commons/props/ButtonProp";
+import Pagination from "../commons/props/Pagination";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
+import SearchBar from "../commons/props/SearchBar";
 
 type MaintenanceRecord = {
     id: number;
@@ -21,6 +21,7 @@ type MaintenanceRecord = {
     monthsRequired?: number | null;
     hoursFlightRequired?: number | null;
     maintenanceDate?: string | null;
+    nextMaintenanceDate?: string | null;
     comments?: string | null;
 };
 
@@ -79,7 +80,8 @@ export default function MaintenanceAircraftList() {
 
     const headers: TableHeader[] = [
         { label: "Fecha", key: "maintenanceDate", sortable: true },
-        { label: "Revisión", key: "reviewType", sortable: true },
+        { label: "Proximo mantenimiento", key: "nextMaintenanceDate", sortable: true },
+        { label: "Revision", key: "reviewType", sortable: true },
         { label: "Meses", key: "monthsRequired", sortable: true },
         { label: "Horas de vuelo", key: "hoursFlightRequired", sortable: true },
         { label: "Comentarios", key: "comments", sortable: false },
@@ -130,13 +132,14 @@ export default function MaintenanceAircraftList() {
                         renderRow={(record: MaintenanceRecord) => (
                             <>
                                 <td>{record.maintenanceDate ? new Date(record.maintenanceDate).toLocaleDateString() : "N/A"}</td>
+                                <td>{record.nextMaintenanceDate ? new Date(record.nextMaintenanceDate).toLocaleDateString() : "N/A"}</td>
                                 <td>{record.reviewType || "N/A"}</td>
                                 <td>{record.monthsRequired ?? "N/A"}</td>
                                 <td>{record.hoursFlightRequired ?? "N/A"}</td>
                                 <td>{record.comments || "-"}</td>
                             </>
                         )}
-                        emptyText={records.length === 0 ? "No hay datos de mantenimiento para esta aeronave." : "No hay resultados para la búsqueda."}
+                        emptyText={records.length === 0 ? "No hay datos de mantenimiento para esta aeronave." : "No hay resultados para la busqueda."}
                     />
 
                     <Pagination

@@ -35,6 +35,12 @@ public class Maintenance {
     @Column(name = "maintenance_date", nullable = false)
     private Date maintenanceDate;
 
+    @Column(name = "next_maintenance_date")
+    private Date nextMaintenanceDate;
+
     @Column(name = "comments", length = 500)
     private String comments;
+
+    @OneToOne(mappedBy = "maintenance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MaintenanceDocumentation documentation;
 }
