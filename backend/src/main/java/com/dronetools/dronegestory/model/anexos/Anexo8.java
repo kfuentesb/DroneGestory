@@ -8,6 +8,8 @@ import lombok.Setter;
 import com.dronetools.dronegestory.model.Anexo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "anexo8")
@@ -34,7 +36,14 @@ public class Anexo8 extends Anexo {
     // 2.2 Registro y comunicación de eventos significativos;
     private Boolean anotacionEventosOcurridosOperacion;
     private Boolean comunicacionIncidentes;
-    // 2.3 OTROS TODO
+    // 2.3 OTROS - tabla expandible de limitaciones (máx 8 filas)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "anexo8_otras_limitaciones",
+            joinColumns = @JoinColumn(name = "anexo8_id")
+    )
+    @OrderColumn(name = "indice")
+    private List<ItemTablaExpandible> otrasLimitacionesItems = new ArrayList<>();
 
     public Anexo8() {
         super();

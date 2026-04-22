@@ -20,11 +20,14 @@ Para montar el proyecto en un servidor desde 0:<br>
 # Creamos el docker (el que está en la raíz, no el que está en backend)
 > docker system prune <br>
 > docker image prune -a <br>
+<<<<<<< HEAD
 
 > docker compose build backend <br >
 > docker compose build frontend <br>
 > docker compose up -d <br>
 
+=======
+>>>>>>> main
 > docker compose up -d --build <br>
 > docker exec -it dronegestory-db psql -U admin -d aeronaves_db <br>
 

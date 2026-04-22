@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 @Service
 public class Anexo6Service extends AnexoServiceBase<Anexo6> {
     private final Anexo6Repository anexo6Repository;
+    private static final Set<String> OPCIONES_ELEMENTOS_AUX = Set.of("Correcto", "Incorrecto", "N/A");
 
     public Anexo6Service(Anexo6Repository repository, OperationRepository operationRepository) {
         super(repository, operationRepository);
@@ -139,6 +141,13 @@ public class Anexo6Service extends AnexoServiceBase<Anexo6> {
         destino.setTransmisionDatos(origen.getTransmisionDatos());
         destino.setInformacionActualizada(origen.getInformacionActualizada());
         destino.setSistemaActivado(origen.getSistemaActivado());
+        destino.setElementosAuxiliaresItems(
+            TablaExpandibleUtils.normalizeItems(
+                origen.getElementosAuxiliaresItems(),
+                OPCIONES_ELEMENTOS_AUX,
+                "N/A"
+            )
+        );
     }
 
     private Anexo6 crearRegistro(Operation operation, Anexo6 datosNuevos, int version) {

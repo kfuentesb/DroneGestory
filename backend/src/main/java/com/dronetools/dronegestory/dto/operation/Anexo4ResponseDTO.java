@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter @Setter
 public class Anexo4ResponseDTO {
@@ -58,7 +60,10 @@ public class Anexo4ResponseDTO {
     private Boolean notams;
     private Boolean revisaNotams;
     private Boolean tsaOCondicionada;
-    private Boolean otrasLimitaciones;
+    
+    // 6.3 - Otras limitaciones (tabla expandible)
+    private String otrasLimitacionesValor; // SI, NO, N/A
+    private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 
     // Método estático de ayuda
     public static Anexo4ResponseDTO fromEntity(Anexo4 anexo) {
@@ -114,7 +119,16 @@ public class Anexo4ResponseDTO {
         dto.setNotams(anexo.getNotams());
         dto.setRevisaNotams(anexo.getRevisaNotams());
         dto.setTsaOCondicionada(anexo.getTsaOCondicionada());
-        dto.setOtrasLimitaciones(anexo.getOtrasLimitaciones());
+        
+        // Manejar otras limitaciones
+        dto.setOtrasLimitacionesValor(anexo.getOtrasLimitacionesValor());
+        if (anexo.getOtrasLimitacionesItems() != null) {
+            dto.setOtrasLimitacionesItems(
+                anexo.getOtrasLimitacionesItems().stream()
+                    .map(item -> new ItemTablaExpandibleDTO(item.getDescripcion(), item.getValor()))
+                    .collect(Collectors.toList())
+            );
+        }
 
         return dto;
     }

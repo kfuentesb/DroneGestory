@@ -1,9 +1,11 @@
 package com.dronetools.dronegestory.dto.operation;
 
+import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,4 +24,7 @@ public class Anexo8RequestDTO {
     // 2.2
     private Boolean anotacionEventosOcurridosOperacion;
     private Boolean comunicacionIncidentes;
+    
+    // 2.3 - Otras limitaciones (tabla expandible)
+    private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 }

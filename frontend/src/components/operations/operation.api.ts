@@ -8,9 +8,16 @@ type AnexoBaseData = {
   estado?: AnexoStatus | null;
 };
 
+export type ExpandableTableItem = {
+  descripcion: string;
+  valor: string;
+};
+
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
   aircraftIds?: number[];
+  otrasLimitacionesValor?: string;
+  otrasLimitacionesItems?: ExpandableTableItem[];
   [key: string]: any;
 };
 
@@ -75,6 +82,8 @@ export type Anexo6Data = AnexoBaseData & {
   transmisionDatos?: boolean | null;
   informacionActualizada?: boolean | null;
   sistemaActivado?: boolean | null;
+  elementosAuxiliaresValor?: string;
+  elementosAuxiliaresItems?: ExpandableTableItem[];
 };
 
 export type Anexo7Data = AnexoBaseData & {
@@ -131,6 +140,8 @@ export type Anexo8Data = AnexoBaseData & {
   anotacionTIempoActividadPersonal?: boolean | null;
   anotacionEventosOcurridosOperacion?: boolean | null;
   comunicacionIncidentes?: boolean | null;
+  otrasLimitacionesValor?: string;
+  otrasLimitacionesItems?: ExpandableTableItem[];
 };
 
 export type AircraftOption = {

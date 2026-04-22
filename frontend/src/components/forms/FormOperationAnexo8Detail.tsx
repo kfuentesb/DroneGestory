@@ -1,8 +1,14 @@
-import { saveAnexo8Data, type Anexo8Data } from "../operations/operation.api";
+import { useEffect, useState } from "react";
+import {
+  saveAnexo8Data,
+  type Anexo8Data,
+  type ExpandableTableItem,
+} from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import { TablaExpandible } from "./TablaExpandible";
 
 type FormOperationAnexo8DetailProps = {
   operationId: number;
@@ -56,7 +62,6 @@ const SECCIONES_CONFIG: { seccion1: SectionItem[]; seccion2: SectionItem[] } = {
       level: 1,
     },
     { num: "2.2.2", title: "Comunicación de incidentes", key: "comunicacionIncidentes", level: 1 },
-    { num: "2.3", title: "Otros", inputType: "title", level: 0, bold: true},
   ],
 };
 
@@ -73,6 +78,24 @@ export default function FormOperationAnexo8Detail({
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
+  const [otrasLimitacionesItems, setOtrasLimitacionesItems] =
+    useState<ExpandableTableItem[]>([]);
+
+  useEffect(() => {
+    if (!initialValues || !Array.isArray(initialValues.otrasLimitacionesItems)) {
+      setOtrasLimitacionesItems([]);
+      return;
+    }
+
+    const parsedItems = initialValues.otrasLimitacionesItems
+      .map((item) => ({
+        descripcion: item?.descripcion ?? "",
+        valor: item?.valor ?? "N/A",
+      }))
+      .slice(0, 8);
+
+    setOtrasLimitacionesItems(parsedItems);
+  }, [initialValues]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +109,14 @@ export default function FormOperationAnexo8Detail({
         if (value !== undefined && value !== null && value !== "") {
           formData.append(key, value);
         }
+      });
+
+      otrasLimitacionesItems.slice(0, 8).forEach((item, index) => {
+        formData.append(
+          `otrasLimitacionesItems[${index}].descripcion`,
+          item.descripcion,
+        );
+        formData.append(`otrasLimitacionesItems[${index}].valor`, item.valor);
       });
 
       const savedData = await saveAnexo8Data(operationId, formData);
@@ -183,6 +214,21 @@ export default function FormOperationAnexo8Detail({
       <div className="bg-white border rounded p-3 mb-4 text-start">
         {SECCIONES_CONFIG.seccion2.map(renderApartadoRow)}
       </div>
+
+      <TablaExpandible
+        label="2.3 - Otras limitaciones operacionales"
+        selectLabel="Limitación"
+        items={otrasLimitacionesItems}
+        opciones={["N/A", "SI", "NO"]}
+        onItemsChange={setOtrasLimitacionesItems}
+        numeroBase="2.3"
+        mostrarSelectorPrincipal={false}
+        mostrarColumnaValor={false}
+        descripcionHeader="Descripción"
+        valorHeader="Resultado"
+        maxItems={8}
+        disabled={disabled || saving}
+      />
     </AnexoFormLayout>
   );
 }

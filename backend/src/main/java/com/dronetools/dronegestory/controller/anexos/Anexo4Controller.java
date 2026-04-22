@@ -4,6 +4,7 @@ import com.dronetools.dronegestory.controller.AnexoControllerBase;
 import com.dronetools.dronegestory.dto.operation.Anexo4RequestDTO;
 import com.dronetools.dronegestory.dto.operation.Anexo4ResponseDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
+import com.dronetools.dronegestory.model.anexos.ItemTablaExpandible;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo4")
@@ -163,7 +165,15 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         anexo.setNotams(dto.getNotams());
         anexo.setRevisaNotams(dto.getRevisaNotams());
         anexo.setTsaOCondicionada(dto.getTsaOCondicionada());
-        anexo.setOtrasLimitaciones(dto.getOtrasLimitaciones());
+        anexo.setOtrasLimitacionesValor(dto.getOtrasLimitacionesValor());
+
+        if (dto.getOtrasLimitacionesItems() != null) {
+            anexo.setOtrasLimitacionesItems(
+                    dto.getOtrasLimitacionesItems().stream()
+                            .map(item -> new ItemTablaExpandible(item.getDescripcion(), item.getValor()))
+                            .collect(Collectors.toList())
+            );
+        }
 
         return anexo;
     }

@@ -15,9 +15,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class Anexo4Service extends AnexoServiceBase<Anexo4> {
+
+    private static final Set<String> OPCIONES_LIMITACIONES = Set.of("SI", "NO", "N/A");
+    private static final Set<String> VALORES_HABILITADORES_LIMITACIONES = Set.of("SI");
 
     public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository) {
         super(repository, operationRepository);
@@ -94,7 +98,23 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         destino.setNotams(origen.getNotams());
         destino.setRevisaNotams(origen.getRevisaNotams());
         destino.setTsaOCondicionada(origen.getTsaOCondicionada());
-        destino.setOtrasLimitaciones(origen.getOtrasLimitaciones());
+        destino.setOtrasLimitacionesInicial(origen.getOtrasLimitacionesInicial());
+
+        String otrasLimitacionesValor = TablaExpandibleUtils.normalizeMainValue(
+            origen.getOtrasLimitacionesValor(),
+            OPCIONES_LIMITACIONES,
+            "N/A"
+        );
+        destino.setOtrasLimitacionesValor(otrasLimitacionesValor);
+        destino.setOtrasLimitacionesItems(
+            TablaExpandibleUtils.normalizeItems(
+                otrasLimitacionesValor,
+                VALORES_HABILITADORES_LIMITACIONES,
+                origen.getOtrasLimitacionesItems(),
+                OPCIONES_LIMITACIONES,
+                "N/A"
+            )
+        );
     }
 
     /**
@@ -155,7 +175,23 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         copia.setNotams(origen.getNotams());
         copia.setRevisaNotams(origen.getRevisaNotams());
         copia.setTsaOCondicionada(origen.getTsaOCondicionada());
-        copia.setOtrasLimitaciones(origen.getOtrasLimitaciones());
+        copia.setOtrasLimitacionesInicial(origen.getOtrasLimitacionesInicial());
+
+        String otrasLimitacionesValor = TablaExpandibleUtils.normalizeMainValue(
+            origen.getOtrasLimitacionesValor(),
+            OPCIONES_LIMITACIONES,
+            "N/A"
+        );
+        copia.setOtrasLimitacionesValor(otrasLimitacionesValor);
+        copia.setOtrasLimitacionesItems(
+            TablaExpandibleUtils.normalizeItems(
+                otrasLimitacionesValor,
+                VALORES_HABILITADORES_LIMITACIONES,
+                origen.getOtrasLimitacionesItems(),
+                OPCIONES_LIMITACIONES,
+                "N/A"
+            )
+        );
 
         return copia;
     }
