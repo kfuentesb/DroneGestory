@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const backendTarget = env.VITE_API_BASE_URL || `http://${env.SERVER_IP}:8080`;
+  const backendTarget = env.VITE_API_BASE_URL || 'http://localhost:8080';
 
   return {
     plugins: [

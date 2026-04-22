@@ -149,6 +149,10 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
 
+        if (!userService.canAccessUserScopedUpload(filename)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadsDir.resolve(filename).normalize();
 

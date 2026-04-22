@@ -28,10 +28,12 @@ import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 @Service
 public class UserService {
     private static final Pattern PASSWORD_POLICY = Pattern.compile("^(?=.*\\d).{8,}$");
+    private static final Pattern USER_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:/.*)?$");
 
     private final UserRepository userRepository;
     private final UserCertificateRepository userCertificateRepository;
@@ -55,6 +57,35 @@ public class UserService {
 
     public Optional<User> findByUsername(String username){
         return userRepository.findByUsername(username);
+    }
+
+    public User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new org.springframework.security.access.AccessDeniedException("User not authenticated.");
+        }
+
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException("Authenticated user not found."));
+    }
+
+    public boolean canAccessUserScopedUpload(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            return false;
+        }
+
+        Matcher matcher = USER_UPLOAD_PATH_PATTERN.matcher(relativePath);
+        if (!matcher.matches()) {
+            return false;
+        }
+
+        User currentUser = getAuthenticatedUser();
+        if (isPrivileged(currentUser)) {
+            return true;
+        }
+
+        Integer targetUserId = Integer.valueOf(matcher.group(1));
+        return targetUserId.equals(currentUser.getId());
     }
 
     private void ensureUniqueUsername(User user) {
@@ -374,6 +405,11 @@ public class UserService {
         }
         userCertificateRepository.deleteByUserId(id);
         userRepository.deleteById(id);
+    }
+
+    private boolean isPrivileged(User user) {
+        return user.getEffectiveRoles().contains(UserType.ADMIN)
+                || user.getEffectiveRoles().contains(UserType.MANAGER);
     }
 
 }

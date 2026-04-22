@@ -30,7 +30,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${app.frontend.url:https://${SERVER_IP:localhost}:5173}")
+    @Value("${app.frontend.url}")
     private String frontendUrl;
 
     @Bean

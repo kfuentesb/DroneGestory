@@ -8,8 +8,8 @@
 >DB_NAME=aeronaves_db <br>
 
 # Configuración de Red/URLs<br>
->SERVER_IP=YOUR_SERVER_IP <br>
->VITE_API_BASE_URL=http://${SERVER_IP}:8080 <br>
+>APP_FRONTEND_URL=https://tu-dominio-o-frontend <br>
+>VITE_API_BASE_URL=https://tu-dominio-o-backend <br>
 
 
 Para montar el proyecto en un servidor desde 0:<br>
@@ -103,10 +103,8 @@ VISUAL<br>
 -GENERALES<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
--Arreglar la toma de IP en local y en servidor<br>
 
 -USUARIO<br>
--Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
 
