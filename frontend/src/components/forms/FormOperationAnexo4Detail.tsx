@@ -267,7 +267,9 @@ export default function FormOperationAnexo4Detail({
     e.preventDefault();
     if (disabled) return;
 
-    validate();
+    if (!validate()) {
+      return;
+    }
 
     setSaving(true);
     try {
@@ -293,6 +295,9 @@ export default function FormOperationAnexo4Detail({
               );
               formData.append(`otrasLimitacionesItems[${index}].valor`, item.valor);
             });
+          return;
+        }
+        if (Array.isArray(value)) {
           return;
         }
         if (value instanceof File) {

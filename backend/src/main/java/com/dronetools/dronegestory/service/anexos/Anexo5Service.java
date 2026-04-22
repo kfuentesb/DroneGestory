@@ -18,7 +18,7 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
     @Transactional
     public Anexo5 registrarAnexo5(Long operationId, Anexo5 datosNuevos) {
         Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+                .orElseThrow(() -> new RuntimeException("Operacion no encontrada " + operationId));
         datosNuevos.setNombreConops(operation.getConops());
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo5Actual,
@@ -68,5 +68,5 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
         destino.setAtenuacionesARC(origen.getAtenuacionesARC());
         destino.setComprobacionesUasVuelo(origen.getComprobacionesUasVuelo());
     }
-}
 
+}

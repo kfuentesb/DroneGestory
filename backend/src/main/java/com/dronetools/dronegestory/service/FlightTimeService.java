@@ -5,6 +5,8 @@ import com.dronetools.dronegestory.dto.FlightTimeRequestDTO;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.FlightTime;
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.anexos.Anexo4;
+import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.FlightTimeRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
@@ -13,8 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -89,6 +96,68 @@ public class FlightTimeService {
         recalculateAircraftFlightTimes(aircraftId);
     }
 
+    public void registerFromAnexo7WhenOperationCompleted(Operation operation) {
+        if (operation == null || operation.getIdOperacion() == null || operation.getAnexos7() == null || operation.getAnexos7().isEmpty()) {
+            return;
+        }
+
+        Map<Long, Anexo7> latestAnexoByAircraft = operation.getAnexos7().stream()
+                .filter(anexo7 -> anexo7.getAircraftId() != null)
+                .collect(Collectors.toMap(
+                        Anexo7::getAircraftId,
+                        anexo7 -> anexo7,
+                        (left, right) -> left.getNumeroVersion() >= right.getNumeroVersion() ? left : right
+                ));
+
+        Set<Long> aircraftIdsInvolved = resolveAircraftIdsInvolved(operation, latestAnexoByAircraft.keySet());
+
+        for (Long aircraftId : aircraftIdsInvolved) {
+            Anexo7 anexo7 = latestAnexoByAircraft.get(aircraftId);
+            if (anexo7 == null) {
+                throw new IllegalArgumentException(
+                        "Falta el Anexo 7 para la aeronave " + aircraftId + " en la operacion " + operation.getCodigo()
+                );
+            }
+            validateAnexo7FlightTimeData(anexo7, operation.getCodigo());
+
+            boolean alreadyExists = flightTimeRepository.existsByOperation_IdOperacionAndAircraft_AircraftId(
+                    operation.getIdOperacion(),
+                    aircraftId
+            );
+            if (alreadyExists) {
+                continue;
+            }
+
+            create(new FlightTimeRequestDTO(
+                    aircraftId,
+                    operation.getIdOperacion(),
+                    LocalDate.from(anexo7.getFechaOp()),
+                    anexo7.getTiempoVueloMinutos(),
+                    buildAutomaticComment(anexo7)
+            ));
+        }
+    }
+
+    private Set<Long> resolveAircraftIdsInvolved(Operation operation, Set<Long> fallbackAircraftIds) {
+        Anexo4 latestAnexo4 = operation.getAnexo4Actual();
+        Set<Long> aircraftIds = new LinkedHashSet<>();
+        if (latestAnexo4 != null && latestAnexo4.getAircraftIds() != null) {
+            latestAnexo4.getAircraftIds().stream()
+                    .filter(id -> id != null && id > 0)
+                    .forEach(aircraftIds::add);
+        }
+        if (aircraftIds.isEmpty()) {
+            aircraftIds.addAll(fallbackAircraftIds);
+        }
+        return aircraftIds;
+    }
+
+    private String buildAutomaticComment(Anexo7 anexo7) {
+        LocalDate fechaOp = LocalDate.from(anexo7.getFechaOp());
+        return "Registro automatico desde Anexo7: +" + anexo7.getTiempoVueloMinutos()
+                + " min, fecha OP " + fechaOp;
+    }
+
     private void applyRequest(FlightTime flightTime, FlightTimeRequestDTO request) {
         if (request.aircraftId() == null) {
             throw new IllegalArgumentException("aircraftId is required");
@@ -123,6 +192,17 @@ public class FlightTimeService {
         flightTime.setComments(normalizeComments(request.comments()));
         if (flightTime.getTotalFlightTimeMinutes() == null) {
             flightTime.setTotalFlightTimeMinutes(0);
+        }
+    }
+
+    private void validateAnexo7FlightTimeData(Anexo7 anexo7, String operationCode) {
+        if (anexo7.getFechaOp() == null) {
+            throw new IllegalArgumentException("Anexo 7 sin fechaOp para la aeronave " + anexo7.getAircraftId() +
+                    " en la operacion " + operationCode);
+        }
+        if (anexo7.getTiempoVueloMinutos() == null || anexo7.getTiempoVueloMinutos() <= 0) {
+            throw new IllegalArgumentException("Anexo 7 sin tiempoVueloMinutos valido para la aeronave " + anexo7.getAircraftId() +
+                    " en la operacion " + operationCode);
         }
     }
 

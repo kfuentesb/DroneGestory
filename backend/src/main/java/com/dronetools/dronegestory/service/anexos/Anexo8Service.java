@@ -22,7 +22,7 @@ public class Anexo8Service extends AnexoServiceBase<Anexo8> {
     @Transactional
     public Anexo8 registrarAnexo8(Long operationId, Anexo8 datosNuevos) {
         Operation operation = operationRepository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
+                .orElseThrow(() -> new RuntimeException("Operacion no encontrada " + operationId));
         datosNuevos.setNombreConops(operation.getConops());
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo8Actual,
@@ -65,5 +65,5 @@ public class Anexo8Service extends AnexoServiceBase<Anexo8> {
             )
         );
     }
-}
 
+}

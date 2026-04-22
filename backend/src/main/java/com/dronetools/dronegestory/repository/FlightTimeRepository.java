@@ -11,4 +11,5 @@ public interface FlightTimeRepository extends JpaRepository<FlightTime, Long> {
     List<FlightTime> findAllByOrderByFlightDateDescFlightTimeIdDesc();
     List<FlightTime> findByAircraft_AircraftIdOrderByFlightDateDescFlightTimeIdDesc(Long aircraftId);
     List<FlightTime> findByAircraft_AircraftIdOrderByFlightDateAscFlightTimeIdAsc(Long aircraftId);
+    boolean existsByOperation_IdOperacionAndAircraft_AircraftId(Long operationId, Long aircraftId);
 }
