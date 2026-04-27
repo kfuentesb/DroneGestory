@@ -219,7 +219,7 @@ export default function OperationsTableView({
           <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
             <SearchBar
               value={search}
-              placeholder="Buscar por cÃ³digo, creador o estado..."
+              placeholder="Buscar por código, creador o estado..."
               onChange={setSearch}
             />
             {isPrivileged && (

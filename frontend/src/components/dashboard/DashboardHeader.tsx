@@ -63,10 +63,10 @@ export default function DashboardHeader({ username, navigate }: DashboardHeaderP
                 border: "none",
                 boxShadow: "0 4px 6px -1px rgba(59, 130, 246, 0.2)"
               }}
-                    onClick={() => navigate("/operations/details/mine")}
+                    onClick={() => navigate("/operations")}
             >
               <i className="bi bi-plus-lg" />
-              <span>Nueva Operación</span>
+              <span>Ver Operaciones</span>
             </button>
           </div>
         </div>

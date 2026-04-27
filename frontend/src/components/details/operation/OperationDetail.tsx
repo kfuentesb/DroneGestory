@@ -154,14 +154,14 @@ export default function OperationDetail() {
       setCancelling(true);
       const cancelled = await cancelOperation(operation.idOperacion);
       if (!cancelled) {
-        alert("No se pudo cancelar la operaciÃ³n.");
+        alert("No se pudo cancelar la operación.");
         return;
       }
       setShowCancelConfirm(false);
       await loadOperation();
     } catch (err) {
-      console.error("Error cancelando operaciÃ³n:", err);
-      alert("No se pudo cancelar la operaciÃ³n.");
+      console.error("Error cancelando operación:", err);
+      alert("No se pudo cancelar la operación.");
     } finally {
       setCancelling(false);
     }
@@ -218,7 +218,7 @@ export default function OperationDetail() {
               onClick={() => setShowCancelConfirm(true)}
               disabled={cancelling}
             >
-              {cancelling ? "Cancelando..." : "Cancelar operaciÃ³n"}
+              {cancelling ? "Cancelando..." : "Cancelar operación"}
             </ButtonProp>
           )}
           <ButtonProp
