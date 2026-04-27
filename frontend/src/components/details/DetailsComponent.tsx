@@ -18,8 +18,8 @@ import AircraftDocumentationSection, {
     type AdditionalDoc,
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags,getAircraftModelDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
+import { styles } from "../../global-const/styles";
 import {
-    styles,
     getDocumentationFetchUrl,
     validateCertificateFile,
     typeColors,
@@ -27,8 +27,6 @@ import {
     USER_CERTIFICATE_DEFAULTS,
     AIRCRAFT_DOCUMENTATION_DEFAULTS,
     MODEL_DOCUMENTATION_DEFAULTS,
-    // getFileNameFromPath,
-    // isAdditionalCertificate,
     type DetailsComponentProps,
     type UserCertificate,
     type AircraftDocumentation,

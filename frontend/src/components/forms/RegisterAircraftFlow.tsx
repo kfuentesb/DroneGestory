@@ -6,6 +6,9 @@ import { apiFetch } from "../../api";
 import LoadingSpinner from "../commons/Loading";
 import FormAircraft from "./FormAircraft";
 
+import { styles } from "../../global-const/styles";
+import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
+
 type Mode = "new" | "existing";
 
 type AircraftModelApiItem = {
@@ -155,15 +158,16 @@ export default function RegisterAircraftFlow() {
     return (
       <>
         <div className="container" style={{ maxWidth: "1000px" }}>
-          <button
-            type="button"
-            className="btn btn-link p-0 mb-3 d-flex align-items-center text-decoration-none text-muted hover-dark"
+          <button 
+            className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
             onClick={() => setShowForm(false)}
+            style={styles.backBtn}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            title="Volver"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-            </svg>
-            <span className="ms-2 fw-medium">Volver</span>
+              <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
+              <span className="ms-2 fw-medium text-muted" style={{ fontSize: '0.9rem' }}/>
           </button>
         </div>
 

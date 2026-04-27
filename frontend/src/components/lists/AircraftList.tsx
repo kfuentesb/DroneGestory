@@ -117,9 +117,11 @@ export default function AircraftList() {
             <SearchBar value={search} onChange={setSearch} />
 
             <div className="d-flex align-items-stretch gap-2">
-              <ButtonProp onClick={() => navigate("/aircraft-models")}>
-                Listar modelos
-              </ButtonProp>
+              {(roles.includes("ADMIN") || roles.includes("MANAGER")) && (
+                <ButtonProp onClick={() => navigate("/aircraft-models")}>
+                  Listar modelos
+                </ButtonProp>
+              )}
             </div>
           </div>
 

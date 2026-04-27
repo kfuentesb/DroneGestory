@@ -15,7 +15,6 @@ import ProfileDetail from "../components/details/user&profile/ProfileDetail";
 import AircraftDetail from "../components/details/aircraft/AircraftDetail";
 import AircraftModelDetail from "../components/details/aircraft/AircraftModelDetail";
 import OperationList from "../components/lists/OperationList";
-import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/operation/OperationDetail";
 import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";

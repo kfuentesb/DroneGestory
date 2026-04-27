@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import { apiFetch } from "../../api";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
 import LoadingSpinner from "../commons/Loading";
+import { useAuth } from "../commons/hooks/useAuth";
 
 type User = {
   id: number;
@@ -38,6 +40,9 @@ const roleColors: Record<string, { backgroundColor: string; color: string }> = {
 
 export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
+  const { hasRole } = useAuth();
+  const canOpenUserDetail = hasRole("ADMIN") || hasRole("MANAGER");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -145,6 +150,7 @@ export default function UserList() {
                 </td>
               </>
             )}
+            onRowClick={canOpenUserDetail ? (p) => navigate(`/users/${p.id}`) : undefined}
             emptyText="No hay usuarios registrados."
           />
 
