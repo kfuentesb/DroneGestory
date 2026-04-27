@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceConfig {
 
-    @Value("${spring.datasource.url:jdbc:postgresql://localhost:5432/aeronaves_db}")
+    @Value("${spring.datasource.url:jdbc:postgresql://localhost:5432/aeronaves_db?options=-c%20TimeZone%3DEurope%2FMadrid}")
     private String dbUrl;
 
     @Value("${spring.datasource.username:admin}")

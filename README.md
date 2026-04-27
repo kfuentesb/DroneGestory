@@ -8,8 +8,8 @@
 >DB_NAME=aeronaves_db <br>
 
 # Configuración de Red/URLs<br>
->APP_FRONTEND_URL=https://tu-dominio-o-frontend <br>
->VITE_API_BASE_URL=https://tu-dominio-o-backend <br>
+>SERVER_IP=YOUR_SERVER_IP <br>
+>VITE_API_BASE_URL=http://${SERVER_IP}:8080 <br>
 
 
 Para montar el proyecto en un servidor desde 0:<br>
@@ -103,9 +103,12 @@ VISUAL<br>
 -GENERALES<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
+-Arreglar la toma de IP en local y en servidor<br>
+-Ajustar servidor USO HORARIO
+-"ARREGLADO el uso horario PENDIENTE DE PRUEBA. Hay que reiniciar el docker-> " docker compose up -d --force-recreate db backend<br>
 
 -USUARIO<br>
-poder borrar fecha de nacimiento<br>
+-Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
 
@@ -118,7 +121,6 @@ poder borrar fecha de nacimiento<br>
 -Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
 -Meter opción cancelar
 -A5, aptitud para operar. Otros usuarios asignados pueden firmar
--Tiempo de vuelo no se suma a la tabla hora de vuelo
 
 
 

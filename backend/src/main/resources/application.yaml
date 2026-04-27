@@ -25,7 +25,7 @@ spring:
     location: banner.txt
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aeronaves_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/aeronaves_db?options=-c%20TimeZone%3DEurope%2FMadrid}
     username: ${SPRING_DATASOURCE_USERNAME:admin}
     password: ${SPRING_DATASOURCE_PASSWORD:admin123}
     driver-class-name: org.postgresql.Driver
@@ -37,6 +37,10 @@ spring:
       # ddl-auto: create-drop
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Europe/Madrid
 #    show-sql: true
     # ESTO YA VIENE POR DEFAULT
     # properties:
