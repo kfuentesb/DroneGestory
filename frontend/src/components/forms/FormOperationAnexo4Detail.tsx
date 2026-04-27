@@ -446,7 +446,7 @@ export default function FormOperationAnexo4Detail({
       </div>
       <div className="mb-3">
         <label className="form-label fw-bold small text-uppercase text-muted">
-          Personal seleccionado (Anexo 4)
+          Personal seleccionado
         </label>
         <div className="d-flex align-items-center mb-2">
           <select
@@ -481,7 +481,7 @@ export default function FormOperationAnexo4Detail({
               selectedPersonnelIds.includes(selectedPersonnelId)
             }
           >
-            Agregar
+            Añadir
           </button>
         </div>
 
@@ -515,7 +515,7 @@ export default function FormOperationAnexo4Detail({
       {/* NUEVA SECCIÓN SELECCIÓN DE AERONAVES */}
       <div className="mb-3">
         <label className="form-label fw-bold small text-uppercase text-muted">
-          Aeronaves seleccionadas (Anexo 4)
+          Aeronaves seleccionadas
         </label>
         <div className="d-flex align-items-center mb-2">
           <select

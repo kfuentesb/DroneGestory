@@ -193,12 +193,16 @@ export default function OperationDetail() {
           <div className="d-flex gap-2 flex-wrap">
             <Badge
                 label={
-                  operation.todosAnexosFirmados && !operation.completada
+                  operation.todosAnexosFirmados &&
+                  !operation.completada &&
+                  operation.estadoOperacion !== "CANCELADA"
                     ? "CIERRE PENDIENTE"
                     : operation.estadoOperacion
                 }
                 style={
-                  operation.todosAnexosFirmados && !operation.completada
+                  operation.todosAnexosFirmados &&
+                  !operation.completada &&
+                  operation.estadoOperacion !== "CANCELADA"
                     ? getOperationStatusStyle("PENDIENTE")
                     : getOperationStatusStyle(operation.estadoOperacion)
                 }
@@ -238,7 +242,7 @@ export default function OperationDetail() {
         </div>
       </div>
 
-      {operation.todosAnexosFirmados && !operation.completada && (
+      {operation.todosAnexosFirmados && !operation.completada && operation.estadoOperacion !== "CANCELADA" && (
         <div className="alert alert-warning">
           Todos los anexos están firmados. Ya puedes completar la operación.
         </div>

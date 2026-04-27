@@ -8,6 +8,7 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import DeleteIcon from "../../assets/commons/delete_white.svg";
+import CancelIcon from "../../assets/commons/cancel_white.svg";
 import { cancelOperation, createOperation, deleteOperation, fetchNextOperationCodigo, fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
@@ -73,7 +74,7 @@ export default function OperationsTableView({
   const filteredOperations = useSearchFilter(operations, search, (op) => [
     op.codigo,
     op.nombreCreador,
-    op.todosFirmadosPendiente ? "CIERRE PENDIENTE" : op.estado,
+    op.todosFirmadosPendiente && op.estado !== "CANCELADA" ? "CIERRE PENDIENTE" : op.estado,
     op.anexo4Version,
     op.anexo5Version,
     op.anexo6Version,
@@ -222,11 +223,9 @@ export default function OperationsTableView({
               placeholder="Buscar por código, creador o estado..."
               onChange={setSearch}
             />
-            {isPrivileged && (
-              <ButtonProp onClick={() => void handleOpenCreateModal()}>
-                <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
-              </ButtonProp>
-            )}
+            <ButtonProp onClick={() => void handleOpenCreateModal()}>
+              <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
+            </ButtonProp>
           </div>
           <ReusableTable
             headers={opHeaders}
@@ -263,7 +262,7 @@ export default function OperationsTableView({
                 <td className="text-center"><AnexoBadge version={operation.anexo7Version} color={operation.anexo7Color} /></td>
                 <td className="text-center"><AnexoBadge version={operation.anexo8Version} color={operation.anexo8Color} /></td>
                 <td className="text-center">
-                  {operation.todosFirmadosPendiente ? (
+                  {operation.todosFirmadosPendiente && operation.estado !== "CANCELADA" ? (
                     <StatusBadge label="CIERRE PENDIENTE" style={getOperationStatusStyle("PENDIENTE")} />
                   ) : (
                     <StatusBadge label={operation.estado} style={getOperationStatusStyle(operation.estado)} />
@@ -280,9 +279,9 @@ export default function OperationsTableView({
                         title="Cancelar operación"
                         disabled={operation.estado === "CANCELADA"}
                         style={{
-                          background: "#B91C1C",
+                          background: "#9A3412",
                           border: "none",
-                          padding: "6px 10px",
+                          padding: 6,
                           borderRadius: 8,
                           cursor: operation.estado === "CANCELADA" ? "not-allowed" : "pointer",
                           display: "flex",
@@ -290,14 +289,10 @@ export default function OperationsTableView({
                           justifyContent: "center",
                           margin: "0 auto",
                           opacity: operation.estado === "CANCELADA" ? 0.5 : 1,
-                          boxShadow: "0 1px 4px #7f1d1d33",
-                          color: "#FFFFFF",
-                          fontWeight: 600,
-                          gap: 6,
+                          boxShadow: "0 1px 4px #9a341233",
                         }}
                       >
-                        <span style={{ width: 14, height: 14, display: "inline-block" }} />
-                        <span>Cancelar</span>
+                        <img src={CancelIcon} alt="Cancelar" style={{ width: 20, height: 20 }} />
                       </button>
                       {isAdmin && (
                         <button

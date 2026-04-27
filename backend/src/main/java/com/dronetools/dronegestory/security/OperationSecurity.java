@@ -18,10 +18,7 @@ public class OperationSecurity {
 
     public boolean canCreateOperation(Authentication authentication) {
         User user = resolveUser(authentication);
-        if (user == null) {
-            return false;
-        }
-        return isPrivileged(user);
+        return user != null;
     }
 
     public boolean canDeleteOperation(Authentication authentication, Long operationId) {
