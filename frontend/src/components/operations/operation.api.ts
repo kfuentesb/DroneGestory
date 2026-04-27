@@ -51,6 +51,14 @@ export type Anexo5Data = AnexoBaseData & {
   atenuacionesGRC?: boolean | null;
   atenuacionesARC?: boolean | null;
   comprobacionesUasVuelo?: boolean | null;
+  signedPersonnelIds?: number[];
+  assignedPersonnel?: Array<{
+    id: number;
+    username: string;
+    fullName: string;
+    roles: string[];
+    signed: boolean;
+  }>;
 };
 
 export type Anexo6Data = AnexoBaseData & {

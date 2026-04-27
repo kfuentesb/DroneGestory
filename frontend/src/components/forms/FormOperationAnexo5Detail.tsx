@@ -1,8 +1,10 @@
-import { saveAnexo5Data, type Anexo5Data } from "../operations/operation.api";
+import { useState } from "react";
+import { saveAnexo5Data, signAnexo5Data, type Anexo5Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import { useAuth } from "../commons/hooks/useAuth";
 
 type FormOperationAnexo5DetailProps = {
   operationId: number;
@@ -150,11 +152,38 @@ export default function FormOperationAnexo5Detail({
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo5DetailProps) {
+  const { username } = useAuth();
   const { formValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
+  const [signingAptitud, setSigningAptitud] = useState(false);
+
+  const assignedPersonnel = initialValues?.assignedPersonnel ?? [];
+  const currentUserAssignedEntry = assignedPersonnel.find((person) => person.username === username);
+
+  const handleSignCurrentUser = async () => {
+    if (disabled || !initialValues?.id) {
+      return;
+    }
+
+    setSigningAptitud(true);
+    try {
+      const signedData = await signAnexo5Data(operationId, initialValues.id);
+      alert("Firma registrada correctamente.");
+      await onSaved?.(signedData);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message || "Error al registrar la firma.");
+      } else {
+        alert("Error al registrar la firma.");
+      }
+    } finally {
+      setSigningAptitud(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
@@ -277,6 +306,73 @@ export default function FormOperationAnexo5Detail({
       <div className="bg-white border rounded p-3 mb-4 text-start">{SECCIONES_CONFIG.seccion7.map(renderApartadoRow)}</div>
 
       <SectionTitle>SECCIÓN 8: Aptitud para operar</SectionTitle>
+      <div className="bg-white border rounded p-3 mb-4 text-start">
+        {assignedPersonnel.length === 0 ? (
+          <div className="alert alert-secondary mb-0">
+            No hay personal asignado en Anexo 4 para firmar la aptitud para operar.
+          </div>
+        ) : (
+          <>
+            <div className="table-responsive mb-3">
+              <table className="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Personal asignado</th>
+                    <th>Roles</th>
+                    <th>Estado de firma</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignedPersonnel.map((person) => (
+                    <tr key={person.id}>
+                      <td>{person.fullName}</td>
+                      <td>{person.roles.join(", ")}</td>
+                      <td>
+                        <span
+                          className="badge"
+                          style={
+                            person.signed
+                              ? { backgroundColor: "#DCFCE7", color: "#166534", border: "1px solid #86EFAC" }
+                              : { backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" }
+                          }
+                        >
+                          {person.signed ? "Firmado" : "Pendiente"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {!initialValues?.id ? (
+              <div className="text-muted small">
+                Guarda el borrador para habilitar la firma en esta sección.
+              </div>
+            ) : !currentUserAssignedEntry ? (
+              <div className="text-muted small">
+                Solo el personal asignado en Anexo 4 puede firmar su recuadro.
+              </div>
+            ) : currentUserAssignedEntry.signed ? (
+              <span
+                className="badge"
+                style={{ backgroundColor: "#DBEAFE", color: "#1D4ED8", border: "1px solid #93C5FD" }}
+              >
+                Ya has firmado tu aptitud para operar
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => void handleSignCurrentUser()}
+                disabled={disabled || saving || signingAptitud}
+              >
+                {signingAptitud ? "Firmando..." : "Firmar mi aptitud para operar"}
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </AnexoFormLayout>
   );
 }

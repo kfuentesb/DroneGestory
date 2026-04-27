@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/operations/{operationId}/anexo5")
@@ -36,7 +38,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
     @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public Anexo5ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
-        Anexo5 anexo = service.firmarAnexo(idAnexo, username);
+        Anexo5 anexo = service.firmarAptitud(operationId, idAnexo, username);
         return toResponse(anexo, operationId);
     }
 
@@ -88,7 +90,23 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
 
     private Anexo5ResponseDTO toResponse(Anexo5 anexo, Long operationId) {
         Anexo5ResponseDTO dto = Anexo5ResponseDTO.fromEntity(anexo);
-        operationRepository.findById(operationId).ifPresent(operation -> dto.setNombreConops(operation.getConops()));
+        operationRepository.findByIdWithAssignedUsers(operationId).ifPresent(operation -> {
+            dto.setNombreConops(operation.getConops());
+
+            Set<Integer> signedUserIds = anexo.getSignedUsers().stream()
+                    .map(user -> user.getId())
+                    .collect(Collectors.toSet());
+
+            dto.setAssignedPersonnel(operation.getAssignedUsers().stream().map(user -> {
+                Anexo5ResponseDTO.AssignedPersonnelSignatureDTO personnelDto = new Anexo5ResponseDTO.AssignedPersonnelSignatureDTO();
+                personnelDto.setId(user.getId());
+                personnelDto.setUsername(user.getUsername());
+                personnelDto.setFullName((user.getFirstName() + " " + user.getLastName()).trim());
+                personnelDto.setRoles(user.getEffectiveRoles().stream().toList());
+                personnelDto.setSigned(signedUserIds.contains(user.getId()));
+                return personnelDto;
+            }).toList());
+        });
         return dto;
     }
 }

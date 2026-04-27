@@ -1,12 +1,15 @@
 package com.dronetools.dronegestory.model.anexos;
 
 import com.dronetools.dronegestory.model.Anexo;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashSet;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "anexo5")
@@ -57,7 +60,15 @@ public class Anexo5 extends Anexo {
     private Boolean atenuacionesARC;
     // 7. El uas esta en condiciones adecuadas para operar
     private Boolean comprobacionesUasVuelo;
-    // 8. Aptitud para operar TODO
+    // 8. Aptitud para operar
+
+        @ManyToMany(fetch = FetchType.EAGER)
+        @JoinTable(
+            name = "anexo5_signed_users",
+            joinColumns = @JoinColumn(name = "anexo5_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+        )
+        private Set<User> signedUsers = new LinkedHashSet<>();
 
 
     public Anexo5() {

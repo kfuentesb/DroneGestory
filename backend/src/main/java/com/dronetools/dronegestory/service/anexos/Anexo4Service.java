@@ -25,10 +25,17 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
     private static final Set<String> OPCIONES_LIMITACIONES = Set.of("SI", "NO", "N/A");
     private static final Set<String> VALORES_HABILITADORES_LIMITACIONES = Set.of("SI");
     private final UserRepository userRepository;
+    private final Anexo5Service anexo5Service;
 
-    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository, UserRepository userRepository) {
+    public Anexo4Service(
+            Anexo4Repository repository,
+            OperationRepository operationRepository,
+            UserRepository userRepository,
+            Anexo5Service anexo5Service
+    ) {
         super(repository, operationRepository);
         this.userRepository = userRepository;
+        this.anexo5Service = anexo5Service;
     }
 
     @Transactional
@@ -40,6 +47,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         }
         applySelectedPersonnel(operation, datosNuevos.getSelectedPersonnelIds());
         operationRepository.save(operation);
+        anexo5Service.syncCurrentAnexo5SignaturesWithAssignedUsers(operationId);
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);

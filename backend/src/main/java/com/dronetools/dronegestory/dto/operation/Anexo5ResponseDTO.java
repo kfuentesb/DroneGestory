@@ -2,10 +2,12 @@ package com.dronetools.dronegestory.dto.operation;
 
 import com.dronetools.dronegestory.model.anexos.Anexo5;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
+import com.dronetools.dronegestory.model.enums.UserType;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -47,6 +49,18 @@ public class Anexo5ResponseDTO {
     private Boolean atenuacionesARC;
     // 7
     private Boolean comprobacionesUasVuelo;
+    private List<Long> signedPersonnelIds;
+    private List<AssignedPersonnelSignatureDTO> assignedPersonnel;
+
+    @Getter
+    @Setter
+    public static class AssignedPersonnelSignatureDTO {
+        private Integer id;
+        private String username;
+        private String fullName;
+        private List<UserType> roles;
+        private boolean signed;
+    }
 
     public static Anexo5ResponseDTO fromEntity(Anexo5 anexo) {
         Anexo5ResponseDTO dto = new Anexo5ResponseDTO();
@@ -76,6 +90,9 @@ public class Anexo5ResponseDTO {
         dto.setAtenuacionesGRC(anexo.getAtenuacionesGRC());
         dto.setAtenuacionesARC(anexo.getAtenuacionesARC());
         dto.setComprobacionesUasVuelo(anexo.getComprobacionesUasVuelo());
+        dto.setSignedPersonnelIds(anexo.getSignedUsers().stream()
+            .map(user -> user.getId().longValue())
+            .toList());
         return dto;
     }
 }

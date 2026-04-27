@@ -521,18 +521,20 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           >
             {remaking ? "Rehaciendo..." : "Rehacer versión"}
           </ButtonProp>
-          <ButtonProp
-            className="btn"
-            style={{
-              backgroundColor: "#1D4ED8",
-              color: "#FFFFFF",
-              fontWeight: "bold",
-            }}
-            onClick={() => setShowSignConfirm(true)}
-            disabled={!canSign || signing}
-          >
-            {signing ? "Firmando..." : "Firmar"}
-          </ButtonProp>
+          {tipoAnexo !== 5 && (
+            <ButtonProp
+              className="btn"
+              style={{
+                backgroundColor: "#1D4ED8",
+                color: "#FFFFFF",
+                fontWeight: "bold",
+              }}
+              onClick={() => setShowSignConfirm(true)}
+              disabled={!canSign || signing}
+            >
+              {signing ? "Firmando..." : "Firmar"}
+            </ButtonProp>
+          )}
         </div>
       </div>
 
@@ -585,6 +587,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         <div className="alert alert-info">
           La versión actual está firmada. Para editar, crea antes una nueva
           versión con "Rehacer versión".
+        </div>
+      )}
+
+      {tipoAnexo === 5 && !isViewingHistoricalVersion && !actualIsSigned && (
+        <div className="alert alert-info">
+          La firma del Anexo 5 se realiza en la Sección 8 por cada usuario asignado en Anexo 4.
         </div>
       )}
 
@@ -747,14 +755,16 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         </div>
       </div>
 
-      <ConfirmModal
-        show={showSignConfirm}
-        title={`Firmar ${getAnexoLabel(tipoAnexo)}`}
-        message="Se firmará la versión actual en borrador. Después ya no podrás editarla sin crear una nueva versión."
-        onConfirm={() => void handleSign()}
-        onCancel={() => setShowSignConfirm(false)}
-        variant="primary"
-      />
+      {tipoAnexo !== 5 && (
+        <ConfirmModal
+          show={showSignConfirm}
+          title={`Firmar ${getAnexoLabel(tipoAnexo)}`}
+          message="Se firmará la versión actual en borrador. Después ya no podrás editarla sin crear una nueva versión."
+          onConfirm={() => void handleSign()}
+          onCancel={() => setShowSignConfirm(false)}
+          variant="primary"
+        />
+      )}
 
       <ConfirmModal
         show={showRemakeConfirm}
