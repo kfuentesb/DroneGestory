@@ -104,8 +104,6 @@ VISUAL<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
 -Arreglar la toma de IP en local y en servidor<br>
--Ajustar servidor USO HORARIO
--"ARREGLADO el uso horario PENDIENTE DE PRUEBA. Hay que reiniciar el docker-> " docker compose up -d --force-recreate db backend<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
