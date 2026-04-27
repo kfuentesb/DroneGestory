@@ -111,11 +111,6 @@ export default function UserList() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             {/* Input de búsqueda */}
             <SearchBar value={search} placeholder="Buscar por usuario..." onChange={setSearch} />
-
-            {/* Botón añadir aeronave */}
-            <ButtonProp onClick={() => navigate("/register-user")}>
-              + Añadir usuario
-            </ButtonProp>
           </div>
 
           <ReusableTable

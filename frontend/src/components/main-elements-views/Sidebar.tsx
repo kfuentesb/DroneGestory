@@ -93,7 +93,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                 {/* 2. Admin Users Section */}
                 {canManage && (
                     <SubMenu
-                        label="Administrar usuarios"
+                        label="Usuarios"
                         open={openMenu === "users"}
                         onOpenChange={() => handleToggle("users")}
                         icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
@@ -105,7 +105,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
 
                 {/* 3. Admin Aircraft Section */}
                     <SubMenu
-                        label={canManage ? "Administrar aeronaves" : "Aeronaves"}
+                        label={"Aeronaves"}
                         open={openMenu === "aircraft"}
                         onOpenChange={() => handleToggle("aircraft")}
                         icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}

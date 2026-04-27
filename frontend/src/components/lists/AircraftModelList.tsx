@@ -121,7 +121,6 @@ export default function AircraftModelList() {
 
           <div className="d-flex justify-content-between align-items-center mb-4">
             <SearchBar value={search} placeholder="Buscar por fabricante o modelo..." onChange={setSearch} />
-            <ButtonProp onClick={() => navigate("/register-model")}>+ Registrar modelo</ButtonProp>
           </div>
 
           <ReusableTable
