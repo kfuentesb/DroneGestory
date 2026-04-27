@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class DashboardMaintenanceDateDTO {
     private Long aircraftId;
     private LocalDate maintenanceDate;
+    private LocalDate nextMaintenanceDate;
     private String description;
     private String serialNumber;
     private String manufacturer;

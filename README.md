@@ -103,8 +103,7 @@ VISUAL<br>
 -GENERALES<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Arreglar la toma de IP en local y en servidor<br>
--Hacer que el calendario muestre más de 6 meses, y también que se puedan ver los anteriores<br>
--Mostrar mantenimientos en el calendario de verde<br>
+-Arreglar lo de mostrar mantenimientos en el calendario<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>

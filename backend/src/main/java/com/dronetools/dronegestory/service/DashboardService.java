@@ -68,13 +68,19 @@ public class DashboardService {
                 return items.stream()
                         .map(m -> {
                                 java.time.LocalDate maintenanceDate = null;
+                                if (m.getMaintenanceDate() != null) {
+                                        maintenanceDate = new java.sql.Date(m.getMaintenanceDate().getTime()).toLocalDate();
+                                }
+
+                                java.time.LocalDate nextMaintenanceDate = null;
                                 if (m.getNextMaintenanceDate() != null) {
-                                maintenanceDate = new java.sql.Date(m.getNextMaintenanceDate().getTime()).toLocalDate();
+                                        nextMaintenanceDate = new java.sql.Date(m.getNextMaintenanceDate().getTime()).toLocalDate();
                                 }
 
                                 return new DashboardMaintenanceDateDTO(
                                         m.getAircraft().getAircraftId(),
                                         maintenanceDate,
+                                        nextMaintenanceDate,
                                         m.getReviewType(),          
                                         m.getAircraft().getSerialNumber(),
                                         m.getAircraft().getAircraftModel().getManufacturer(),

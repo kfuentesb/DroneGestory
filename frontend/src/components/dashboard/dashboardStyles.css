@@ -2,26 +2,21 @@
     font-weight: 700;
     border-radius: 999px;
     cursor: help;
+    transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker:hover {
+    transform: scale(1.1);
+    filter: brightness(0.9);
 }
 
 .dg-dashboard-calendar .dg-expiry-marker-certificate {
-    background: #fef2f2;
-    box-shadow: inset 0 0 0 1px #fca5a5;
-    color: #b91c1c;
-}
-
-.dg-dashboard-calendar .dg-expiry-marker-certificate:hover {
-    background: #fee2e2;
-    box-shadow: inset 0 0 0 1px #ef4444;
-}
-
-.dg-dashboard-calendar .dg-expiry-marker-certificate:not(.dg-expiry-marker-admin) {
     background: #fff7ed;
     box-shadow: inset 0 0 0 1px #fdba74;
     color: #c2410c;
 }
 
-.dg-dashboard-calendar .dg-expiry-marker-certificate:not(.dg-expiry-marker-admin):hover {
+.dg-dashboard-calendar .dg-expiry-marker-certificate:hover {
     background: #ffedd5;
     box-shadow: inset 0 0 0 1px #f97316;
 }
@@ -37,12 +32,6 @@
     box-shadow: inset 0 0 0 1px #3b82f6;
 }
 
-.dg-dashboard-calendar .dg-expiry-marker-mixed {
-    background: linear-gradient(135deg, #fee2e2 0%, #fee2e2 48%, #dbeafe 52%, #dbeafe 100%);
-    box-shadow: inset 0 0 0 1px #c084fc;
-    color: #312e81;
-}
-
 .dg-dashboard-calendar .dg-expiry-marker-birthday {
     background: #fefce8;
     box-shadow: inset 0 0 0 1px #facc15;
@@ -54,39 +43,32 @@
     box-shadow: inset 0 0 0 1px #eab308;
 }
 
+.dg-expiry-marker-maint-done {
+    background-color: #15803d !important;
+    box-shadow: inset 0 0 0 1px #166534 !important;
+    color: white !important;
+}
+
+.dg-expiry-marker-maint-pending {
+    background-color: #f0fdf4 !important;
+    border: 2px solid #22c55e !important;
+    color: #15803d !important;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-mixed {
+    background: var(--mixed-bg, #e5e7eb) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
 .dg-dashboard-calendar .wx-inactive,
 .dg-dashboard-calendar .wx-out {
     visibility: hidden !important;
     pointer-events: none !important;
-    border: none !important;
-    background: none !important;
-}
-
-.dg-dashboard-calendar .wx-inactive * {
-    display: none !important;
-}
-
-.dg-dashboard-calendar .dg-expiry-marker {
-    transition: transform 0.1s ease, filter 0.1s ease;
-}
-
-.dg-dashboard-calendar .dg-expiry-marker:hover {
-    transform: scale(1.1);
-    filter: brightness(0.9);
 }
 
 .dg-tooltip-container {
     padding-bottom: 15px; 
     margin-bottom: -15px;
-}
-
-.dg-dashboard-calendar .dg-expiry-marker-maintenance {
-    background: #f0fdf4;
-    box-shadow: inset 0 0 0 1px #86efac;
-    color: #15803d;
-}
-
-.dg-dashboard-calendar .dg-expiry-marker-maintenance:hover {
-    background: #dcfce7;
-    box-shadow: inset 0 0 0 1px #22c55e;
 }
