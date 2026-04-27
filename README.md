@@ -102,13 +102,10 @@ VISUAL<br>
 
 -GENERALES<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
--Crear la vista de opciones<br>
 
 -OPCIONES<br>
--Añadir opcion de descargar el log solo para administradores<br>
 
 -USUARIO<br>
--Mostrar lista de usuarios a cualquiera<br>
 -Al crear un nuevo usuario, la contraseña no se valida como cuando se modifica, arreglarlo<br>
 
 -DRONES<br>

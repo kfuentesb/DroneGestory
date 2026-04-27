@@ -54,7 +54,7 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/users" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute>
               <UserList />
             </ProtectedRoute>
           } 
@@ -62,7 +62,7 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/users/:id" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute>
               <UserDetail />
             </ProtectedRoute>
           } 

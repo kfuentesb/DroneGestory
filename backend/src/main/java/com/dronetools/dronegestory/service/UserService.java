@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 public class UserService {
     private static final Pattern PASSWORD_POLICY = Pattern.compile("^(?=.*\\d).{8,}$");
     private static final Pattern USER_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:/.*)?$");
+    private static final Pattern USER_PROFILE_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)/profile(?:/.*)?$");
 
     private final UserRepository userRepository;
     private final UserCertificateRepository userCertificateRepository;
@@ -74,18 +75,37 @@ public class UserService {
             return false;
         }
 
+        User currentUser = getAuthenticatedUser();
+        if (USER_PROFILE_UPLOAD_PATH_PATTERN.matcher(relativePath).matches()) {
+            return true;
+        }
+
         Matcher matcher = USER_UPLOAD_PATH_PATTERN.matcher(relativePath);
         if (!matcher.matches()) {
             return false;
         }
-
-        User currentUser = getAuthenticatedUser();
         if (isPrivileged(currentUser)) {
             return true;
         }
 
         Integer targetUserId = Integer.valueOf(matcher.group(1));
         return targetUserId.equals(currentUser.getId());
+    }
+
+    public boolean canCurrentUserViewUser(Integer targetUserId) {
+        if (targetUserId == null) {
+            return false;
+        }
+        getAuthenticatedUser();
+        return true;
+    }
+
+    public boolean canCurrentUserModifyUser(Integer targetUserId) {
+        if (targetUserId == null) {
+            return false;
+        }
+        User currentUser = getAuthenticatedUser();
+        return isPrivileged(currentUser) || targetUserId.equals(currentUser.getId());
     }
 
     private void ensureUniqueUsername(User user) {
