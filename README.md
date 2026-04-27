@@ -105,13 +105,16 @@ VISUAL<br>
 -Crear la vista de opciones<br>
 
 -USUARIO<br>
-poder borrar fecha de nacimiento<br>
+-Poder borrar fecha de nacimiento<br>
+-Mostrar lista de usuarios a cualquiera<br>
 
 -DRONES<br>
 
 -HORAS DE VUELO<br>
+-Hacer un log con los borrados<br>
 
 -MANTENIMIENTO<br>
+-Hacer un log con los borrados<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>

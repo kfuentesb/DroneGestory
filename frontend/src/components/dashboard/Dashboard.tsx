@@ -9,6 +9,7 @@ import { Month } from "@svar-ui/react-core";
 import "@svar-ui/react-core/all.css";
 
 interface DashboardCertificateExpiration {
+  id: number;
   expireDate: string;
   firstName: string;
   lastName: string;
@@ -18,6 +19,7 @@ interface DashboardCertificateExpiration {
 }
 
 interface DashboardAircraftDocumentationExpiration {
+  id: number;
   expireDate: string;
   documentationType: string | null;
   serialNumber: string | null;
@@ -26,6 +28,7 @@ interface DashboardAircraftDocumentationExpiration {
 }
 
 interface DashboardBirthday {
+  id: number;
   birthDate: string;
   firstName: string;
   lastName: string;
@@ -40,6 +43,15 @@ interface DashboardData {
   certificateExpirations: DashboardCertificateExpiration[];
   aircraftDocumentationExpirations: DashboardAircraftDocumentationExpiration[];
   birthdays: DashboardBirthday[];
+}
+
+interface TooltipSectionProps<T> {
+  title: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  items: T[];
+  renderContent: (entry: T) => React.ReactNode;
 }
 
 type SummaryState = DashboardData | { error: string } | null;
@@ -138,6 +150,41 @@ const getBirthdayMonthDay = (birthDate: ApiDateValue) => {
   return `${month}-${day}`;
 };
 
+const TooltipSection = <T,>({
+  title,
+  color,
+  bgColor,
+  borderColor,
+  items,
+  renderContent,
+  onItemClick,
+}: TooltipSectionProps<T> & { onItemClick?: (item: T) => void }) => (
+  <div style={{ padding: "12px 14px", borderBottom: "1px solid #E5E7EB" }}>
+    <div className="fw-semibold mb-2" style={{ color, fontSize: "0.875rem" }}>
+      {title}
+    </div>
+    <div className="d-flex flex-column gap-2">
+      {items.map((entry, i) => (
+        <div
+          key={i}
+          onClick={() => onItemClick?.(entry)}
+          style={{
+            backgroundColor: bgColor,
+            border: `1px solid ${borderColor}`,
+            borderRadius: "10px",
+            padding: "8px 10px",
+            cursor: onItemClick ? "pointer" : "default",
+            transition: "transform 0.1s ease",
+          }}
+          className="dg-tooltip-card"
+        >
+          {renderContent(entry)}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function Dashboard() {
   const { username, hasRole } = useAuth();
   const [summary, setSummary] = useState<SummaryState>(null);
@@ -146,6 +193,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const monthRefs = useRef<Array<HTMLDivElement | null>>([]);
   const baseDate = useMemo(() => new Date(), []);
+  const [selectedDay, setSelectedDay] = useState<CalendarDayDetails | null>(null);
 
   useEffect(() => {
     apiFetch("/api/dashboard")
@@ -155,7 +203,6 @@ export default function Dashboard() {
         return res.json();
       })
       .then((data: Partial<DashboardData>) => {
-        console.log("[Dashboard] /api/dashboard raw payload", data);
 
         const nextSummary: DashboardData = {
           totalUsuarios: data.totalUsuarios ?? 0,
@@ -166,16 +213,6 @@ export default function Dashboard() {
           aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
           birthdays: data.birthdays ?? [],
         };
-
-        console.log("[Dashboard] normalized payload counts", {
-          totalUsuarios: nextSummary.totalUsuarios,
-          totalPilotos: nextSummary.totalPilotos,
-          totalOperaciones: nextSummary.totalOperaciones,
-          totalDrones: nextSummary.totalDrones,
-          certificateExpirations: nextSummary.certificateExpirations.length,
-          aircraftDocumentationExpirations: nextSummary.aircraftDocumentationExpirations.length,
-          birthdays: nextSummary.birthdays.length,
-        });
 
         setSummary(nextSummary);
       })
@@ -240,88 +277,60 @@ export default function Dashboard() {
   }, [baseDate, isPrivilegedUser, summary]);
 
   useEffect(() => {
-    if (!isData(summary)) {
-      console.log("[Dashboard] no summary data available yet", summary);
-      return;
-    }
+    let cleanups: Array<() => void> = [];
 
-    console.log("[Dashboard] role visibility", {
-      username,
-      isPrivilegedUser,
-      certificateExpirations: summary.certificateExpirations,
-      aircraftDocumentationExpirations: summary.aircraftDocumentationExpirations,
-      birthdays: summary.birthdays,
-    });
-
-    console.log(
-      "[Dashboard] grouped date keys",
-      Array.from(expirationsByDate.entries()).map(([date, details]) => ({
-        date,
-        certificates: details.certificates.length,
-        aircraftDocumentation: details.aircraftDocumentation.length,
-        birthdays: details.birthdays.length,
-      }))
-    );
-  }, [expirationsByDate, isPrivilegedUser, summary, username]);
-
-  useEffect(() => {
-    const cleanups: Array<() => void> = [];
-    const frame = requestAnimationFrame(() => {
+    const timeoutId = setTimeout(() => {
       monthRefs.current.forEach((container) => {
-        if (!container) {
-          return;
-        }
+        if (!container) return;
 
         expirationsByDate.forEach((details, key) => {
           const markerClass = markerClassForDate(key);
-          container.querySelectorAll<HTMLElement>(`.${markerClass}`).forEach((node) => {
-            const handleEnter = (event: MouseEvent | FocusEvent) => {
+          const nodes = container.querySelectorAll<HTMLElement>(`.${markerClass}`);
+
+          nodes.forEach((node) => {
+            const handleEnter = (event: Event) => {
               const target = event.currentTarget as HTMLElement;
               const rect = target.getBoundingClientRect();
               setTooltip({
                 x: rect.left + rect.width / 2,
-                y: rect.top - 12,
+                y: rect.top - 8,
                 details,
               });
             };
 
-            const handleMove = (event: MouseEvent) => {
-              setTooltip((current) => {
-                if (!current || current.details !== details) {
-                  return current;
-                }
-                return {
-                  ...current,
-                  x: event.clientX,
-                  y: event.clientY - 16,
-                };
-              });
+            const handleLeave = (event: Event) => {
+              const mouseEv = event as MouseEvent;
+              const relatedTarget = mouseEv.relatedTarget as HTMLElement;
+              if (relatedTarget?.closest('.dg-tooltip-container')) return;
+              setTooltip(null);
             };
 
-            const handleLeave = () => setTooltip((current) => (current?.details === details ? null : current));
+            const handleClick = () => {
+              if (isPrivilegedUser) {
+                setTooltip(null);
+                setSelectedDay(details);
+              }
+            };
 
             node.addEventListener("mouseenter", handleEnter);
-            node.addEventListener("mousemove", handleMove);
             node.addEventListener("mouseleave", handleLeave);
-            node.addEventListener("focus", handleEnter);
-            node.addEventListener("blur", handleLeave);
+            node.addEventListener("click", handleClick);
+            
             cleanups.push(() => {
               node.removeEventListener("mouseenter", handleEnter);
-              node.removeEventListener("mousemove", handleMove);
               node.removeEventListener("mouseleave", handleLeave);
-              node.removeEventListener("focus", handleEnter);
-              node.removeEventListener("blur", handleLeave);
+              node.removeEventListener("click", handleClick);
             });
           });
         });
       });
-    });
+    }, 100);
 
     return () => {
-      cancelAnimationFrame(frame);
+      clearTimeout(timeoutId);
       cleanups.forEach((cleanup) => cleanup());
     };
-  }, [expirationsByDate]);
+  }, [expirationsByDate, loading, summary, isPrivilegedUser]);
 
   return (
     <main
@@ -388,6 +397,33 @@ export default function Dashboard() {
             background: #fef9c3;
             box-shadow: inset 0 0 0 1px #eab308;
           }
+
+          .dg-dashboard-calendar .wx-inactive,
+          .dg-dashboard-calendar .wx-out {
+            visibility: hidden !important;
+            pointer-events: none !important;
+            border: none !important;
+            background: none !important;
+          }
+
+          .dg-dashboard-calendar .wx-inactive * {
+            display: none !important;
+          }
+
+          .dg-dashboard-calendar .dg-expiry-marker {
+            cursor: ${isPrivilegedUser ? 'pointer' : 'help'};
+            transition: transform 0.1s ease, filter 0.1s ease;
+          }
+
+          .dg-dashboard-calendar .dg-expiry-marker:hover {
+            transform: scale(1.1);
+            filter: brightness(0.9);
+          }
+
+          .dg-tooltip-container {
+            padding-bottom: 15px; 
+            margin-bottom: -15px;
+          }
         `}
       </style>
 
@@ -445,53 +481,35 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="mt-5">
-        <div className="card border-0 shadow-sm p-4" style={{ borderRadius: "16px", backgroundColor: "white" }}>
-          <div className="d-flex align-items-center gap-2 mb-4">
-            <div style={{ width: "4px", height: "24px", backgroundColor: "#8B5CF6", borderRadius: "2px" }} />
-            <h5 className="mb-0 fw-semibold" style={{ color: "#111827", fontSize: "1.125rem" }}>
-              Calendario de planificación
-            </h5>
+      <section className="mt-4">
+        <div className="card border-0 shadow-sm p-3" style={{ borderRadius: "12px", backgroundColor: "white" }}>
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <div style={{ width: "3px", height: "20px", backgroundColor: "#8B5CF6", borderRadius: "2px" }} />
+            <h6 className="mb-0 fw-bold">Calendario de planificación</h6>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "20px",
-              justifyContent: "center",
-              padding: "10px",
-            }}
-          >
+          <div className="d-flex flex-wrap justify-content-center gap-3">
             {[0, 1, 2, 3, 4, 5].map((offset) => {
               const currentMonth = addMonth(baseDate, offset);
-
               return (
-                <div
-                  key={offset}
-                  ref={(node) => {
-                    monthRefs.current[offset] = node;
-                  }}
-                  className="dg-dashboard-calendar"
-                  style={{
-                    flex: "1 1 300px",
-                    maxWidth: "350px",
-                    border: "1px solid #F3F4F6",
-                    borderRadius: "12px",
-                    padding: "15px",
-                    backgroundColor: "#fff",
-                  }}
+                <div 
+                  key={offset} 
+                  ref={(el) => { monthRefs.current[offset] = el; }}
+                  className="dg-dashboard-calendar" 
+                  style={{ flex: "1 1 260px", maxWidth: "280px", border: "1px solid #F3F4F6", borderRadius: "10px", padding: "12px" }}
                 >
-                  <p className="text-muted small fw-bold mb-2">{getMonthLabel(currentMonth)}</p>
+                  <p className="small fw-bold mb-1" style={{ color: "#6B7280" }}>{getMonthLabel(currentMonth)}</p>
                   <Month
                     current={currentMonth}
                     markers={(date) => {
-                      const key = toDateKey(date);
-                      const markerClass = getMarkerClassName(expirationsByDate.get(key));
-                      if (!markerClass) {
-                        return "";
+                      if (date.getMonth() !== currentMonth.getMonth()) {
+                        return ""; 
                       }
-                      const adminClass = isPrivilegedUser && expirationsByDate.get(key)?.certificates.length ? " dg-expiry-marker-admin" : "";
+                      const key = toDateKey(date);
+                      const details = expirationsByDate.get(key);
+                      const markerClass = getMarkerClassName(details);
+                      if (!markerClass) return "";
+                      const adminClass = isPrivilegedUser && details?.certificates.length ? " dg-expiry-marker-admin" : "";
                       return `${markerClass}${adminClass} ${markerClassForDate(key)}`;
                     }}
                   />
@@ -500,127 +518,164 @@ export default function Dashboard() {
             })}
           </div>
         </div>
+
+        {tooltip && (
+          <div
+            className="dg-tooltip-container"
+            style={{
+              position: "fixed",
+              left: tooltip.x,
+              top: tooltip.y,
+              transform: "translate(-50%, -100%)",
+              zIndex: 2000,
+              width: "320px",
+              pointerEvents: "auto",
+            }}
+            onMouseLeave={() => setTooltip(null)}
+          >
+            <div className="card border-0 shadow-lg" style={{ borderRadius: "12px", overflow: "hidden", backgroundColor: "#FFF" }}>
+              
+              {/* 1. CERTIFICATES */}
+              {tooltip.details.certificates.length > 0 && (
+                <TooltipSection
+                  title="Expiración de certificado"
+                  color="#991B1B"
+                  bgColor="#FEF2F2"
+                  borderColor="#FECACA"
+                  items={tooltip.details.certificates}
+                  onItemClick={(e) => navigate(`/users/${e.id}`)}
+                  renderContent={(e) => (
+                    <>
+                      <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.firstName} {e.lastName}</div>
+                      <div style={{ color: "#6B7280", fontSize: "0.75rem" }}>@{e.username}</div>
+                      <div className="mt-1" style={{ color: "#991B1B", fontSize: "0.75rem" }}>
+                        <strong>Categoría:</strong> {formatCertificateCategory(e)}
+                      </div>
+                    </>
+                  )}
+                />
+              )}
+
+              {/* 2. AIRCRAFT DOCS */}
+              {tooltip.details.aircraftDocumentation.length > 0 && (
+                <TooltipSection
+                  title="Documentación de aeronaves"
+                  color="#1D4ED8"
+                  bgColor="#EFF6FF"
+                  borderColor="#BFDBFE"
+                  items={tooltip.details.aircraftDocumentation}
+                  onItemClick={(e) => navigate(`/users/${e.id}`)}
+                  renderContent={(e) => (
+                    <>
+                      <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{formatAircraftName(e) || "Aeronave"}</div>
+                      <div style={{ color: "#6B7280", fontSize: "0.75rem" }}>Serie: {e.serialNumber || "Sin serie"}</div>
+                      <div className="mt-1" style={{ color: "#1D4ED8", fontSize: "0.75rem" }}>
+                        <strong>Doc:</strong> {e.documentationType || "Seguro RC"}
+                      </div>
+                    </>
+                  )}
+                />
+              )}
+
+              {/* 3. BIRTHDAYS */}
+              {tooltip.details.birthdays.length > 0 && (
+                <TooltipSection
+                  title="Cumpleaños"
+                  color="#A16207"
+                  bgColor="#FEFCE8"
+                  borderColor="#FDE047"
+                  items={tooltip.details.birthdays}
+                  onItemClick={(e) => navigate(`/users/details/${e.username}`)}
+                  renderContent={(e) => (
+                    <>
+                      <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.firstName} {e.lastName}</div>
+                      <div style={{ color: "#6B7280", fontSize: "0.75rem" }}>@{e.username}</div>
+                    </>
+                  )}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
-      {tooltip && (
-        <div
+      {selectedDay && (
+        <div 
           style={{
-            position: "fixed",
-            left: tooltip.x,
-            top: tooltip.y,
-            transform: "translate(-50%, -100%)",
-            zIndex: 2000,
-            width: "min(360px, calc(100vw - 24px))",
-            pointerEvents: "none",
+            position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.5)", zIndex: 3000,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            backdropFilter: "blur(4px)"
           }}
+          onClick={() => setSelectedDay(null)}
         >
-          <div
-            className="card border-0 shadow-lg"
-            style={{
-              borderRadius: "16px",
-              overflow: "hidden",
-              backgroundColor: "#FFFFFF",
-              boxShadow: "0 24px 50px rgba(15, 23, 42, 0.18)",
-            }}
+          <div 
+            className="card border-0 shadow-lg" 
+            style={{ width: "90%", maxWidth: "500px", borderRadius: "20px", maxHeight: "80vh", overflowY: "auto" }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {tooltip.details.certificates.length > 0 && (
-              <div style={{ padding: "14px 16px", borderBottom: tooltip.details.aircraftDocumentation.length > 0 ? "1px solid #E5E7EB" : "none" }}>
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <span className="fw-semibold" style={{ color: "#991B1B" }}>
-                    Expiración de certificado de usuario
-                  </span>
+            <div className="p-4 border-bottom d-flex justify-content-between align-items-center">
+              <h5 className="mb-0 fw-bold">Detalles del día</h5>
+              <button className="btn-close" onClick={() => setSelectedDay(null)}></button>
+            </div>
+            
+            <div className="p-4">
+              {/* CERTIFICATES */}
+              {selectedDay?.certificates.map((item, i) => (
+                <div key={i} className="d-flex align-items-center justify-content-between p-3 mb-2" style={{ backgroundColor: "#FEF2F2", borderRadius: "12px", border: "1px solid #FECACA" }}>
+                  <div>
+                    <div className="fw-bold text-danger">Certificado Expirado</div>
+                    <small className="text-dark">{item.firstName} {item.lastName}</small>
+                  </div>
+                  <button 
+                    className="btn btn-sm btn-danger px-3 shadow-sm" 
+                    onClick={() => {
+                      setSelectedDay(null);
+                      navigate(`/users/${item.id}`);
+                    }}
+                  >
+                    Ver
+                  </button>
                 </div>
-                <div className="d-flex flex-column gap-2">
-                  {tooltip.details.certificates.map((entry, index) => (
-                    <div
-                      key={`${entry.username}-${entry.expireDate}-${entry.certificateType ?? index}-${index}`}
-                      style={{
-                        backgroundColor: "#FEF2F2",
-                        border: "1px solid #FECACA",
-                        borderRadius: "12px",
-                        padding: "10px 12px",
-                      }}
-                    >
-                      <div className="fw-semibold" style={{ color: "#111827" }}>
-                        {entry.firstName} {entry.lastName}
-                      </div>
-                      <div className="small" style={{ color: "#6B7280" }}>
-                        @{entry.username}
-                      </div>
-                      {/* <div className="small mt-2" style={{ color: "#991B1B" }}>
-                        <strong>Nombre:</strong> {formatCertificateTitle(entry)}
-                      </div> */}
-                      <div className="small" style={{ color: "#991B1B" }}>
-                        <strong>Categoría:</strong> {formatCertificateCategory(entry)}
-                      </div>
-                    </div>
-                  ))}
+              ))}
+              {/* AIRCRAFT */}
+              {selectedDay?.aircraftDocumentation.map((item, i) => (
+                <div key={i} className="d-flex align-items-center justify-content-between p-3 mb-2" style={{ backgroundColor: "#EFF6FF", borderRadius: "12px", border: "1px solid #BFDBFE" }}>
+                  <div>
+                    <div className="fw-bold text-primary">Doc. Aeronave</div>
+                    <small className="text-dark">{formatAircraftName(item)}</small>
+                  </div>
+                  <button 
+                    className="btn btn-sm btn-primary px-3 shadow-sm" 
+                    onClick={() => {
+                      setSelectedDay(null);
+                      navigate(`/aircraft/details/${item.serialNumber}`);
+                    }}
+                  >
+                    Ver
+                  </button>
                 </div>
-              </div>
-            )}
+              ))}
 
-            {tooltip.details.aircraftDocumentation.length > 0 && (
-              <div style={{ padding: "14px 16px" }}>
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <span className="fw-semibold" style={{ color: "#1D4ED8" }}>
-                    Expiración de documentación de aeronaves
-                  </span>
+              {/* BIRTHDAYS */}
+              {selectedDay?.birthdays.map((item, i) => (
+                <div key={i} className="d-flex align-items-center justify-content-between p-3 mb-2" style={{ backgroundColor: "#FEFCE8", borderRadius: "12px", border: "1px solid #FDE047" }}>
+                  <div>
+                    <div className="fw-bold text-warning" style={{ color: "#854d0e" }}>Cumpleaños</div>
+                    <small className="text-dark">{item.firstName} {item.lastName}</small>
+                  </div>
+                  <button 
+                    className="btn btn-sm btn-warning px-3 shadow-sm" 
+                    onClick={() => {
+                      setSelectedDay(null);
+                      navigate(`/users/${item.id}`);
+                    }}
+                  >
+                    Ver
+                  </button>
                 </div>
-                <div className="d-flex flex-column gap-2">
-                  {tooltip.details.aircraftDocumentation.map((entry, index) => (
-                    <div
-                      key={`${entry.serialNumber ?? "aircraft"}-${entry.expireDate}-${entry.documentationType ?? index}-${index}`}
-                      style={{
-                        backgroundColor: "#EFF6FF",
-                        border: "1px solid #BFDBFE",
-                        borderRadius: "12px",
-                        padding: "10px 12px",
-                      }}
-                    >
-                      <div className="fw-semibold" style={{ color: "#111827" }}>
-                        {formatAircraftName(entry) || "Aeronave"}
-                      </div>
-                      <div className="small" style={{ color: "#6B7280" }}>
-                        Serie: {entry.serialNumber || "Sin serie"}
-                      </div>
-                      <div className="small mt-2" style={{ color: "#1D4ED8" }}>
-                        <strong>Documentación:</strong> {entry.documentationType || "Seguro de responsabilidad civil"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {tooltip.details.birthdays.length > 0 && (
-              <div style={{ padding: "14px 16px", borderTop: tooltip.details.certificates.length > 0 || tooltip.details.aircraftDocumentation.length > 0 ? "1px solid #E5E7EB" : "none" }}>
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <span className="fw-semibold" style={{ color: "#A16207" }}>
-                    Cumpleaños
-                  </span>
-                </div>
-                <div className="d-flex flex-column gap-2">
-                  {tooltip.details.birthdays.map((entry, index) => (
-                    <div
-                      key={`${entry.username}-${entry.birthDate}-${index}`}
-                      style={{
-                        backgroundColor: "#FEFCE8",
-                        border: "1px solid #FDE047",
-                        borderRadius: "12px",
-                        padding: "10px 12px",
-                      }}
-                    >
-                      <div className="fw-semibold" style={{ color: "#111827" }}>
-                        {entry.firstName} {entry.lastName}
-                      </div>
-                      <div className="small" style={{ color: "#6B7280" }}>
-                        @{entry.username}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       )}
