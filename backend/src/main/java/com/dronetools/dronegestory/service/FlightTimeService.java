@@ -133,7 +133,8 @@ public class FlightTimeService {
                     operation.getIdOperacion(),
                     LocalDate.from(anexo7.getFechaOp()),
                     anexo7.getTiempoVueloMinutos(),
-                    buildAutomaticComment(anexo7)
+                    // buildAutomaticComment(anexo7)
+                    null
             ));
         }
     }
@@ -154,7 +155,7 @@ public class FlightTimeService {
 
     private String buildAutomaticComment(Anexo7 anexo7) {
         LocalDate fechaOp = LocalDate.from(anexo7.getFechaOp());
-        return "Registro automatico desde Anexo7: +" + anexo7.getTiempoVueloMinutos()
+        return "Registro automático desde Anexo 7: +" + anexo7.getTiempoVueloMinutos()
                 + " min, fecha OP " + fechaOp;
     }
 
