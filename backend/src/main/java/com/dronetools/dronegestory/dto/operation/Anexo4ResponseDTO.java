@@ -3,6 +3,7 @@ package com.dronetools.dronegestory.dto.operation;
 import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
+import com.dronetools.dronegestory.model.enums.UserType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +29,8 @@ public class Anexo4ResponseDTO {
 
     //private List<AircraftLightDTO> drones;
     private List<Long> aircraftIds;
+    private List<Long> selectedPersonnelIds;
+    private List<SelectedPersonnelDTO> selectedPersonnel;
 
     private String imagenEspacioAereo;
     private String imagenZonaVuelo;
@@ -65,6 +68,14 @@ public class Anexo4ResponseDTO {
     private String otrasLimitacionesValor; // SI, NO, N/A
     private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 
+    @Getter
+    @Setter
+    public static class SelectedPersonnelDTO {
+        private Integer id;
+        private String fullName;
+        private List<UserType> roles;
+    }
+
     // Método estático de ayuda
     public static Anexo4ResponseDTO fromEntity(Anexo4 anexo) {
         Anexo4ResponseDTO dto = new Anexo4ResponseDTO();
@@ -81,6 +92,9 @@ public class Anexo4ResponseDTO {
         dto.setAircraftIds(
                 anexo.getAircraftIds() == null ? List.of() : new ArrayList<>(anexo.getAircraftIds())
         );
+        dto.setSelectedPersonnelIds(anexo.getSelectedPersonnelIds() == null
+                ? List.of()
+                : new ArrayList<>(anexo.getSelectedPersonnelIds()));
 
 //        if (anexo.getDrones() != null) {
 //            dto.setDrones(anexo.getDrones().stream()

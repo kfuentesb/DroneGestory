@@ -16,6 +16,12 @@ export type ExpandableTableItem = {
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
   aircraftIds?: number[];
+  selectedPersonnelIds?: number[];
+  selectedPersonnel?: Array<{
+    id: number;
+    fullName: string;
+    roles: string[];
+  }>;
   otrasLimitacionesValor?: string;
   otrasLimitacionesItems?: ExpandableTableItem[];
   [key: string]: any;
@@ -149,6 +155,13 @@ export type AircraftOption = {
   manufacturer?: string;
   model?: string;
   serialNumber?: string;
+};
+
+export type SelectableUserOption = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  roles: string[];
 };
 
 export async function fetchOperations(path: string) {
@@ -333,6 +346,14 @@ export async function fetchAircraftOptions(): Promise<AircraftOption[]> {
     return [];
   }
   return (await response.json()) as AircraftOption[];
+}
+
+export async function fetchSelectableUsers(): Promise<SelectableUserOption[]> {
+  const response = await apiFetch(`${API_BASE_URL}/api/users/names`);
+  if (!response) {
+    return [];
+  }
+  return (await response.json()) as SelectableUserOption[];
 }
 
 export async function saveAnexo4Data(
@@ -580,6 +601,18 @@ export async function remakeAnexo(operationId: number, tipoAnexo: number, anexoI
 
 export async function completeOperation(operationId: number) {
   const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/completar`, {
+    method: "PUT",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as OperationDetailDTO;
+}
+
+export async function cancelOperation(operationId: number) {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/cancelar`, {
     method: "PUT",
   });
 

@@ -4,6 +4,7 @@ import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
 import { useAuth } from "../../commons/hooks/useAuth";
 import {
+  cancelOperation,
   fetchAnexo4Data,
   fetchAnexo4VersionData,
   fetchAnexo5Data,
@@ -81,7 +82,7 @@ function Badge({ label, style }: { label: string; style: CSSProperties }) {
 export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetailProps) {
   const { id, versionId } = useParams();
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { hasRole } = useAuth();
 
   // Barra de pasos superior
   const ANEXOS_STEPS = [
@@ -100,9 +101,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [loadingVersionData, setLoadingVersionData] = useState(false);
   const [signing, setSigning] = useState(false);
   const [remaking, setRemaking] = useState(false);
+  const [cancellingOperation, setCancellingOperation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
+  const [showCancelOperationConfirm, setShowCancelOperationConfirm] = useState(false);
   const [anexoAircraftOptions, setAnexoAircraftOptions] = useState<AircraftOption[]>([]);
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [aircraftsInVersion, setAircraftsInVersion] = useState<Anexo6Data[] | Anexo7Data[]>([]);
@@ -143,8 +146,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     ? (anexoData?.estado ?? null)
     : (anexoData?.estado ?? anexo?.actual.estado ?? null);
   const actualIsSigned = currentAnexoStatus === "FIRMADO";
-  const canManageCompletedOperation = role === "ADMIN";
-  const canCreate = !operation?.completada || canManageCompletedOperation;
+  const isAdmin = hasRole("ADMIN");
+  const isManager = hasRole("MANAGER");
+  const canCancelOperationByRole = isAdmin || isManager;
+  const canManageCompletedOperation = isAdmin;
+  const operationIsEditableForUser = Boolean(operation?.puedeEditarUsuarioActual);
+  const canCreate = operationIsEditableForUser && (!operation?.completada || canManageCompletedOperation) && operation?.estadoOperacion !== "CANCELADA";
   
   // Para anexos 6 y 7: en borrador se puede editar, en firmado solo lectura
   const canEditDraft = !isViewingHistoricalVersion && canCreate && !actualIsSigned;
@@ -396,6 +403,28 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     }
   };
 
+  const handleCancelOperation = async () => {
+    if (!operation) {
+      return;
+    }
+
+    try {
+      setCancellingOperation(true);
+      const cancelled = await cancelOperation(operation.idOperacion);
+      if (!cancelled) {
+        alert("No se pudo cancelar la operación.");
+        return;
+      }
+      setShowCancelOperationConfirm(false);
+      await loadOperation();
+    } catch (err) {
+      console.error("Error cancelando operación:", err);
+      alert("No se pudo cancelar la operación.");
+    } finally {
+      setCancellingOperation(false);
+    }
+  };
+
   const handleSaved = async (savedData: AnexoData | null) => {
     setAnexoData(savedData);
     if (!operation) return null;
@@ -518,6 +547,20 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           >
             {remaking ? "Rehaciendo..." : "Rehacer versión"}
           </ButtonProp>
+          {operation.estadoOperacion !== "CANCELADA" && canCancelOperationByRole && (
+            <ButtonProp
+              className="btn"
+              style={{
+                backgroundColor: "#B91C1C",
+                color: "#FFFFFF",
+                fontWeight: "bold",
+              }}
+              onClick={() => setShowCancelOperationConfirm(true)}
+              disabled={cancellingOperation}
+            >
+              {cancellingOperation ? "Cancelando..." : "Cancelar operación"}
+            </ButtonProp>
+          )}
           <ButtonProp
             className="btn"
             style={{
@@ -556,6 +599,18 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         <div className="alert alert-warning">
           La operación está completada. Solo un administrador puede modificar
           anexos.
+        </div>
+      )}
+
+      {operation.asignadoAlUsuarioActual && !isAdmin && !isManager && (
+        <div className="alert alert-info">
+          Estás asignado a esta operación. Tienes permisos para gestionar sus anexos.
+        </div>
+      )}
+
+      {!operationIsEditableForUser && (
+        <div className="alert alert-secondary">
+          Solo puedes consultar este anexo. Para editar, firmar o rehacer debes ser el creador o estar asignado a la operación.
         </div>
       )}
 
@@ -748,6 +803,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         onConfirm={() => void handleRemake()}
         onCancel={() => setShowRemakeConfirm(false)}
         variant="primary"
+      />
+      <ConfirmModal
+        show={showCancelOperationConfirm}
+        title="Cancelar operación"
+        message="La operación pasará a estado cancelada y este anexo quedará en modo solo lectura."
+        onConfirm={() => void handleCancelOperation()}
+        onCancel={() => setShowCancelOperationConfirm(false)}
+        variant="danger"
       />
     </div>
   );

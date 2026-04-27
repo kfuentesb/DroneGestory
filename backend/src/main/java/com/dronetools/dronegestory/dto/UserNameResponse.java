@@ -1,3 +1,7 @@
 package com.dronetools.dronegestory.dto;
 
-public record UserNameResponse(Integer id, String firstName, String lastName) {}
+import com.dronetools.dronegestory.model.enums.UserType;
+
+import java.util.List;
+
+public record UserNameResponse(Integer id, String firstName, String lastName, List<UserType> roles) {}

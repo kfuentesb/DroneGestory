@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.repository.AnexoBaseRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -36,6 +37,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
 //    }
 
     @GetMapping("/actual")
+    @PreAuthorize("isAuthenticated()")
     public AnexoInfoDTO getActual(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
@@ -43,6 +45,7 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     }
 
     @GetMapping("/historico")
+    @PreAuthorize("isAuthenticated()")
     public List<AnexoHistoricoDTO> getHistorico(@PathVariable Long operationId) {
         Operation op = operationRepository.findById(operationId)
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada"));
@@ -52,14 +55,16 @@ public abstract class AnexoControllerBase<T extends Anexo, S extends AnexoServic
     }
 
     @PutMapping("/{idAnexo}/firmar")
-    public AnexoInfoDTO firmar(@PathVariable Long idAnexo, Principal principal) {
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
+    public AnexoInfoDTO firmar(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
         T anexo = service.firmarAnexo(idAnexo, username);
         return AnexoInfoDTO.from(anexo);
     }
 
     @PostMapping("/{idAnexo}/rehacer")
-    public AnexoInfoDTO rehacer(@PathVariable Long idAnexo) {
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
+    public AnexoInfoDTO rehacer(@PathVariable Long operationId, @PathVariable Long idAnexo) {
         T anexoRehecho = rehacerDesde(idAnexo);
         return AnexoInfoDTO.from(anexoRehecho); // mapeo a DTO dentro de la sesión
     }

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
-import { completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
+import { useAuth } from "../../commons/hooks/useAuth";
+import { cancelOperation, completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
 import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
 import {
@@ -42,13 +43,17 @@ function DetailCard({ label, value }: { label: string; value: string }) {
 export default function OperationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
 
   const [operation, setOperation] = useState<OperationDetailDTO | null>(null);
   const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const canCancelByRole = hasRole("ADMIN") || hasRole("MANAGER");
 
   const loadOperation = async () => {
     if (!id) {
@@ -140,6 +145,28 @@ export default function OperationDetail() {
     }
   };
 
+  const handleCancelOperation = async () => {
+    if (!operation) {
+      return;
+    }
+
+    try {
+      setCancelling(true);
+      const cancelled = await cancelOperation(operation.idOperacion);
+      if (!cancelled) {
+        alert("No se pudo cancelar la operaciÃ³n.");
+        return;
+      }
+      setShowCancelConfirm(false);
+      await loadOperation();
+    } catch (err) {
+      console.error("Error cancelando operaciÃ³n:", err);
+      alert("No se pudo cancelar la operaciÃ³n.");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   if (loading) {
     return <div className="container py-4 text-center">Cargando operación...</div>;
   }
@@ -159,7 +186,7 @@ export default function OperationDetail() {
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
         <div>
-          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(`/operations/details/mine`)}>
+          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(`/operations`)}>
             Volver
           </button>
           <h2 className="mb-2">{operation.codigo}</h2>
@@ -184,11 +211,27 @@ export default function OperationDetail() {
         </div>
 
         <div className="d-flex gap-2 flex-wrap">
+          {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
+            <ButtonProp
+              className="btn"
+              style={{ backgroundColor: "#B91C1C", color: "#FFFFFF", fontWeight: "bold" }}
+              onClick={() => setShowCancelConfirm(true)}
+              disabled={cancelling}
+            >
+              {cancelling ? "Cancelando..." : "Cancelar operaciÃ³n"}
+            </ButtonProp>
+          )}
           <ButtonProp
             className="btn"
             style={{ backgroundColor: "#166534", color: "#FFFFFF", fontWeight: "bold" }}
             onClick={() => setShowCompleteConfirm(true)}
-            disabled={operation.completada || !operation.todosAnexosFirmados || completing}
+            disabled={
+              operation.completada ||
+              !operation.todosAnexosFirmados ||
+              completing ||
+              operation.estadoOperacion === "CANCELADA" ||
+              !operation.puedeEditarUsuarioActual
+            }
           >
             {completing ? "Completando..." : "Completar operación"}
           </ButtonProp>
@@ -303,6 +346,14 @@ export default function OperationDetail() {
         onConfirm={() => void handleComplete()}
         onCancel={() => setShowCompleteConfirm(false)}
         variant="primary"
+      />
+      <ConfirmModal
+        show={showCancelConfirm}
+        title="Cancelar operación"
+        message="La operación pasará a estado cancelada y quedarán en modo solo lectura."
+        onConfirm={() => void handleCancelOperation()}
+        onCancel={() => setShowCancelConfirm(false)}
+        variant="danger"
       />
     </div>
   );

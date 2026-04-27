@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  fetchSelectableUsers,
   saveAnexo4Data,
   type Anexo4Data,
   type ExpandableTableItem,
+  type SelectableUserOption,
 } from "../operations/operation.api";
 import type { FieldConfig } from "../details/FieldConfig";
 import { operationAnexo4DetailFields } from "../details/operation/OperationsAnexo4DetailFields";
@@ -83,6 +85,24 @@ const normalizeAircraftIds = (value: unknown): number[] => {
   return [];
 };
 
+const normalizeSelectedPersonnelIds = (value: unknown): number[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => Number(item))
+      .filter((item) => Number.isFinite(item));
+  }
+
+  if (typeof value === "string") {
+    if (!value.trim()) return [];
+    return value
+      .split(",")
+      .map((item) => Number(item.trim()))
+      .filter((item) => Number.isFinite(item));
+  }
+
+  return [];
+};
+
 const normalizeExpandableItems = (value: unknown): ExpandableTableItem[] => {
   if (!Array.isArray(value)) {
     return [];
@@ -132,6 +152,8 @@ export default function FormOperationAnexo4Detail({
   const [previewUrls, setPreviewUrls] = useState<Record<string, string | null>>({});
   const [aircraftOptions, setAircraftOptions] = useState<AircraftOption[]>([]);
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | "">("");
+  const [personnelOptions, setPersonnelOptions] = useState<SelectableUserOption[]>([]);
+  const [selectedPersonnelId, setSelectedPersonnelId] = useState<number | "">("");
 
   useEffect(() => {
     if (!initialValues) return;
@@ -153,6 +175,9 @@ export default function FormOperationAnexo4Detail({
         }
         if (k === "aircraftIds") {
           return [k, normalizeAircraftIds(v)];
+        }
+        if (k === "selectedPersonnelIds") {
+          return [k, normalizeSelectedPersonnelIds(v)];
         }
         if (k === "otrasLimitacionesItems") {
           return [k, normalizeExpandableItems(v)];
@@ -204,6 +229,19 @@ export default function FormOperationAnexo4Detail({
     void loadAircraft();
   }, []);
 
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const users = await fetchSelectableUsers();
+        setPersonnelOptions(users);
+      } catch (error) {
+        console.error("Error cargando personal para Anexo 4", error);
+        setPersonnelOptions([]);
+      }
+    };
+    void loadUsers();
+  }, []);
+
   const handleChange = (key: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
     if (value instanceof File) {
@@ -233,12 +271,29 @@ export default function FormOperationAnexo4Detail({
     setSelectedAircraftId("");
   };
 
+  const handleAddPersonnel = () => {
+    const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
+    if (selectedPersonnelId === "" || selectedPersonnelIds.includes(selectedPersonnelId)) {
+      return;
+    }
+    const newIds = [...selectedPersonnelIds, selectedPersonnelId];
+    handleChange("selectedPersonnelIds", newIds);
+    setSelectedPersonnelId("");
+  };
+
   // Quitar aeronave de la lista
   const handleRemoveAircraft = (id: number) => {
     const filtered = normalizeAircraftIds(formValues.aircraftIds).filter(
       (aircraftId: number) => aircraftId !== id
     );
     handleChange("aircraftIds", filtered);
+  };
+
+  const handleRemovePersonnel = (id: number) => {
+    const filtered = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds).filter(
+      (personId: number) => personId !== id
+    );
+    handleChange("selectedPersonnelIds", filtered);
   };
 
   // Revoke all object URLs when the component unmounts to prevent memory leaks
@@ -275,6 +330,12 @@ export default function FormOperationAnexo4Detail({
     try {
       const formData = new FormData();
       Object.entries(formValues).forEach(([key, value]) => {
+        if (key === "selectedPersonnelIds" && Array.isArray(value)) {
+          normalizeSelectedPersonnelIds(value).forEach((personId, index) =>
+            formData.append(`selectedPersonnelIds[${index}]`, String(personId))
+          );
+          return;
+        }
         if (key === "aircraftIds" && Array.isArray(value)) {
           normalizeAircraftIds(value).forEach((aircraftId, index) =>
             formData.append(`aircraftIds[${index}]`, String(aircraftId))
@@ -332,6 +393,7 @@ export default function FormOperationAnexo4Detail({
   );
 
   const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
+  const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
 
   return (
     <AnexoFormLayout
@@ -381,6 +443,74 @@ export default function FormOperationAnexo4Detail({
           onChange={(e) => handleChange("personal", e.target.value)}
           disabled={disabled || saving}
         />
+      </div>
+      <div className="mb-3">
+        <label className="form-label fw-bold small text-uppercase text-muted">
+          Personal seleccionado (Anexo 4)
+        </label>
+        <div className="d-flex align-items-center mb-2">
+          <select
+            className="form-select me-2"
+            value={selectedPersonnelId}
+            onChange={(e) =>
+              setSelectedPersonnelId(
+                e.target.value === "" ? "" : Number(e.target.value)
+              )
+            }
+            disabled={disabled || saving}
+            size={personnelOptions.length > 8 ? 8 : 1}
+            style={personnelOptions.length > 8 ? { overflowY: "auto" } : undefined}
+          >
+            <option value="">Selecciona una persona...</option>
+            {personnelOptions
+              .filter((user) => !selectedPersonnelIds.includes(user.id))
+              .map((user) => (
+                <option key={user.id} value={user.id}>
+                  {`${user.firstName} ${user.lastName} (${user.roles.join(", ")})`}
+                </option>
+              ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleAddPersonnel}
+            disabled={
+              disabled ||
+              saving ||
+              selectedPersonnelId === "" ||
+              selectedPersonnelIds.includes(selectedPersonnelId)
+            }
+          >
+            Agregar
+          </button>
+        </div>
+
+        {selectedPersonnelIds.length > 0 && (
+          <ul
+            className="list-group"
+            style={selectedPersonnelIds.length > 8 ? { maxHeight: "280px", overflowY: "auto" } : undefined}
+          >
+            {selectedPersonnelIds.map((id: number) => {
+              const user = personnelOptions.find((u) => u.id === id);
+              if (!user) return null;
+              return (
+                <li key={id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <span>
+                    {`${user.firstName} ${user.lastName} (${user.roles.join(", ")})`}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleRemovePersonnel(id)}
+                    disabled={disabled || saving}
+                  >
+                    Quitar
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
       {/* NUEVA SECCIÓN SELECCIÓN DE AERONAVES */}
       <div className="mb-3">

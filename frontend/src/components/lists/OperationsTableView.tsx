@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../commons/hooks/useAuth";
 import SearchBar from "../commons/props/SearchBar";
@@ -8,16 +8,10 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import DeleteIcon from "../../assets/commons/delete_white.svg";
-import { createOperation, fetchNextOperationCodigo, fetchOperations } from "../operations/operation.api";
+import { cancelOperation, createOperation, deleteOperation, fetchNextOperationCodigo, fetchOperations } from "../operations/operation.api";
 import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
-import { deleteOperation } from "../operations/operation.api";
-
-import {
-  formatDateTime,
-  getAnexoColorStyle,
-  getOperationStatusStyle,
-} from "../operations/operation.utils";
+import { formatDateTime, getAnexoColorStyle, getOperationStatusStyle } from "../operations/operation.utils";
 import LoadingSpinner from "../commons/Loading";
 
 type OperationsTableViewProps = {
@@ -57,8 +51,10 @@ export default function OperationsTableView({
   emptyText,
 }: OperationsTableViewProps) {
   const navigate = useNavigate();
-  const { role } = useAuth();
-  const isAdmin = role === "ADMIN";
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole("ADMIN");
+  const isManager = hasRole("MANAGER");
+  const isPrivileged = isAdmin || isManager;
 
   const [operations, setOperations] = useState<OperationListDTO[]>([]);
   const [search, setSearch] = useState("");
@@ -68,6 +64,10 @@ export default function OperationsTableView({
   const [showCreateConfirm, setShowCreateConfirm] = useState(false);
   const [nextCodigo, setNextCodigo] = useState<string | null>(null);
   const [creatingOperation, setCreatingOperation] = useState(false);
+  const [pendingDeleteOperationId, setPendingDeleteOperationId] = useState<number | null>(null);
+  const [pendingCancelOperationId, setPendingCancelOperationId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   const filteredOperations = useSearchFilter(operations, search, (op) => [
@@ -79,6 +79,7 @@ export default function OperationsTableView({
     op.anexo6Version,
     op.anexo7Version,
     op.anexo8Version,
+    op.asignadoAlUsuarioActual ? "ASIGNADO" : "",
   ]);
 
   const loadOperations = async () => {
@@ -99,7 +100,6 @@ export default function OperationsTableView({
     void loadOperations();
   }, [endpoint]);
 
-  // Resetear página al buscar o cambiar datos
   useEffect(() => {
     setCurrentPage(1);
   }, [search, operations.length]);
@@ -109,36 +109,18 @@ export default function OperationsTableView({
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Manejar el borrado
-  const handleDelete = async (operationId: number) => {
-  if (
-    window.confirm(
-      "¿Estás seguro que quieres borrar esta operación y todos sus anexos? Esta acción no se puede deshacer."
-    )
-  ) {
-    try {
-      await deleteOperation(operationId);
-      setOperations((ops) =>
-        ops.filter((op) => op.idOperacion !== operationId)
-      );
-    } catch (err: any) {
-      alert(err.message || "Error inesperado");
-    }
-  }
-};
-
   const handleOpenCreateModal = async () => {
     try {
       const codigo = await fetchNextOperationCodigo();
       if (!codigo) {
-        alert("No se pudo obtener el código de operación.");
+        alert("No se pudo obtener el cÃ³digo de operaciÃ³n.");
         return;
       }
       setNextCodigo(codigo);
       setShowCreateConfirm(true);
     } catch (err) {
-      console.error("Error obteniendo código de operación:", err);
-      alert("No se pudo obtener el código de operación.");
+      console.error("Error obteniendo cÃ³digo de operaciÃ³n:", err);
+      alert("No se pudo obtener el cÃ³digo de operaciÃ³n.");
     }
   };
 
@@ -147,22 +129,58 @@ export default function OperationsTableView({
       setCreatingOperation(true);
       const created = await createOperation();
       if (!created) {
-        alert("No se pudo crear la operación.");
+        alert("No se pudo crear la operaciÃ³n.");
         return;
       }
-
       await loadOperations();
       setShowCreateConfirm(false);
       setNextCodigo(null);
     } catch (err) {
-      console.error("Error creando operación:", err);
-      alert("No se pudo crear la operación.");
+      console.error("Error creando operaciÃ³n:", err);
+      alert("No se pudo crear la operaciÃ³n.");
     } finally {
       setCreatingOperation(false);
     }
   };
 
-  // Encabezados, añade la columna del botón borrar solo si eres admin
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteOperationId) return;
+    try {
+      setIsDeleting(true);
+      await deleteOperation(pendingDeleteOperationId);
+      setOperations((ops) => ops.filter((op) => op.idOperacion !== pendingDeleteOperationId));
+      setPendingDeleteOperationId(null);
+    } catch (err: any) {
+      alert(err.message || "Error inesperado");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!pendingCancelOperationId) return;
+    try {
+      setIsCancelling(true);
+      const cancelled = await cancelOperation(pendingCancelOperationId);
+      if (!cancelled) {
+        alert("No se pudo cancelar la operación.");
+        return;
+      }
+      setOperations((ops) =>
+        ops.map((op) =>
+          op.idOperacion === pendingCancelOperationId
+            ? { ...op, estado: "CANCELADA", completada: false, todosFirmadosPendiente: false }
+            : op
+        )
+      );
+      setPendingCancelOperationId(null);
+    } catch (err: any) {
+      alert(err.message || "No se pudo cancelar la operación.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const opHeaders: TableHeader[] = [
     { label: "Código", key: "codigo", sortable: true },
     { label: "Creador", key: "nombreCreador", sortable: true },
@@ -173,7 +191,7 @@ export default function OperationsTableView({
     { label: "Anexo 7", key: "anexo7Version", sortable: false },
     { label: "Anexo 8", key: "anexo8Version", sortable: false },
     { label: "Estado", key: "estado", sortable: true },
-    ...(isAdmin ? [{ label: "", key: "borrar", sortable: false }] : []),
+    ...(isPrivileged ? [{ label: "", key: "acciones", sortable: false }] : []),
   ];
 
   if (isLoading) {
@@ -201,19 +219,42 @@ export default function OperationsTableView({
           <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
             <SearchBar
               value={search}
-              placeholder="Buscar por código, creador o estado..."
+              placeholder="Buscar por cÃ³digo, creador o estado..."
               onChange={setSearch}
             />
-            <ButtonProp onClick={() => void handleOpenCreateModal()}>
-              <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
-            </ButtonProp>
+            {isPrivileged && (
+              <ButtonProp onClick={() => void handleOpenCreateModal()}>
+                <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
+              </ButtonProp>
+            )}
           </div>
           <ReusableTable
             headers={opHeaders}
             rows={paginatedOperations}
+            rowStyle={(operation) =>
+              operation.estado === "CANCELADA"
+                ? { backgroundColor: "#FEE2E2", color: "#7F1D1D" }
+                : {}
+            }
             renderRow={(operation) => (
               <>
-                <td>{operation.codigo}</td>
+                <td>
+                  <div className="d-flex align-items-center gap-2">
+                    <span>{operation.codigo}</span>
+                    {operation.asignadoAlUsuarioActual && (
+                      <span
+                        className="badge"
+                        style={{
+                          backgroundColor: "#DBEAFE",
+                          color: "#1D4ED8",
+                          border: "1px solid #93C5FD",
+                        }}
+                      >
+                        Asignado
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td>{operation.nombreCreador}</td>
                 <td>{formatDateTime(operation.fechaCreacion)}</td>
                 <td className="text-center"><AnexoBadge version={operation.anexo4Version} color={operation.anexo4Color} /></td>
@@ -228,36 +269,65 @@ export default function OperationsTableView({
                     <StatusBadge label={operation.estado} style={getOperationStatusStyle(operation.estado)} />
                   )}
                 </td>
-                {isAdmin && (
+                {isPrivileged && (
                   <td className="text-center">
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDelete(operation.idOperacion);
-                      }}
-                      title="Borrar operación"
-                      style={{
-                        background: "#DC2626",
-                        border: "none",
-                        padding: 6,
-                        borderRadius: 8,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        margin: "0 auto",
-                        boxShadow: "0 1px 4px #db464633",
-                      }}
-                    >
-                      <img src={DeleteIcon} alt="Borrar" style={{ width: 20, height: 20 }} />
-                    </button>
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingCancelOperationId(operation.idOperacion);
+                        }}
+                        title="Cancelar operación"
+                        disabled={operation.estado === "CANCELADA"}
+                        style={{
+                          background: "#B91C1C",
+                          border: "none",
+                          padding: "6px 10px",
+                          borderRadius: 8,
+                          cursor: operation.estado === "CANCELADA" ? "not-allowed" : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          margin: "0 auto",
+                          opacity: operation.estado === "CANCELADA" ? 0.5 : 1,
+                          boxShadow: "0 1px 4px #7f1d1d33",
+                          color: "#FFFFFF",
+                          fontWeight: 600,
+                          gap: 6,
+                        }}
+                      >
+                        <span style={{ width: 14, height: 14, display: "inline-block" }} />
+                        <span>Cancelar</span>
+                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingDeleteOperationId(operation.idOperacion);
+                          }}
+                          title="Borrar operaciÃ³n"
+                          style={{
+                            background: "#DC2626",
+                            border: "none",
+                            padding: 6,
+                            borderRadius: 8,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto",
+                            boxShadow: "0 1px 4px #db464633",
+                          }}
+                        >
+                          <img src={DeleteIcon} alt="Borrar" style={{ width: 20, height: 20 }} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 )}
               </>
             )}
-            onRowClick={operation =>
-              navigate(`/operations/${operation.idOperacion}`)
-            }
+            onRowClick={(operation) => navigate(`/operations/${operation.idOperacion}`)}
             emptyText={emptyText}
           />
           <Pagination
@@ -280,6 +350,30 @@ export default function OperationsTableView({
           }
         }}
         variant="primary"
+      />
+      <ConfirmModal
+        show={pendingCancelOperationId !== null}
+        title="Cancelar operación"
+        message="La operación quedaría cancelada y pasaría a modo solo lectura."
+        onConfirm={() => void handleConfirmCancel()}
+        onCancel={() => {
+          if (!isCancelling) {
+            setPendingCancelOperationId(null);
+          }
+        }}
+        variant="danger"
+      />
+      <ConfirmModal
+        show={pendingDeleteOperationId !== null}
+        title="Eliminar operación"
+        message="Se borraría la operación y todos sus anexos. Esta acción no se puede deshacer."
+        onConfirm={() => void handleConfirmDelete()}
+        onCancel={() => {
+          if (!isDeleting) {
+            setPendingDeleteOperationId(null);
+          }
+        }}
+        variant="danger"
       />
     </div>
   );

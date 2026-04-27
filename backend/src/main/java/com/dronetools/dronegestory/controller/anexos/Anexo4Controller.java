@@ -6,11 +6,13 @@ import com.dronetools.dronegestory.dto.operation.Anexo4ResponseDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.anexos.ItemTablaExpandible;
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +43,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public ResponseEntity<Anexo4ResponseDTO> createAnexo4WithImagen(
             @PathVariable Long operationId,
             @ModelAttribute Anexo4 anexo4,
@@ -59,11 +62,13 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
             anexo4.setOtrasLimitacionesItems(new ArrayList<>());
         }
         anexo4.setAircraftIds(resolveAircraftIds(anexo4, request));
+        anexo4.setSelectedPersonnelIds(resolveSelectedPersonnelIds(anexo4, request));
         Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
         return ResponseEntity.ok(toResponse(saved, operationId));
     }
 
     @PutMapping("/{idAnexo}/firmar/datos")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public Anexo4ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
         Anexo4 anexo = service.firmarAnexo(idAnexo, username);
@@ -71,6 +76,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
     }
 
     @PostMapping("/{idAnexo}/rehacer/datos")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public Anexo4ResponseDTO rehacerConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo) {
         Anexo4 anexoRehecho = service.rehacerAnexo4(idAnexo);
         return toResponse(anexoRehecho, operationId);
@@ -133,6 +139,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         // Personal como String
         anexo.setPersonal(dto.getPersonal());
         anexo.setAircraftIds(dto.getAircraftIds());
+        anexo.setSelectedPersonnelIds(dto.getSelectedPersonnelIds());
 
         // Imágenes
         anexo.setImagenEspacioAereo(dto.getImagenEspacioAereo());
@@ -190,7 +197,15 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
     private Anexo4ResponseDTO toResponse(Anexo4 anexo, Long operationId) {
         Anexo4ResponseDTO dto = Anexo4ResponseDTO.fromEntity(anexo);
-        operationRepository.findById(operationId).ifPresent(operation -> dto.setConops(operation.getConops()));
+        operationRepository.findByIdWithAssignedUsers(operationId).ifPresent(operation -> {
+            dto.setConops(operation.getConops());
+            dto.setSelectedPersonnelIds(operation.getAssignedUsers().stream()
+                    .map(user -> user.getId().longValue())
+                    .toList());
+            dto.setSelectedPersonnel(operation.getAssignedUsers().stream()
+                    .map(this::toSelectedPersonnelDto)
+                    .toList());
+        });
         return dto;
     }
 
@@ -207,6 +222,21 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         }
 
         return new ArrayList<>(aircraftIds);
+    }
+
+    private List<Long> resolveSelectedPersonnelIds(Anexo4 anexo4, HttpServletRequest request) {
+        LinkedHashSet<Long> selectedPersonnelIds = new LinkedHashSet<>();
+        addSelectedPersonnelIds(selectedPersonnelIds, anexo4.getSelectedPersonnelIds());
+        addSelectedPersonnelIds(selectedPersonnelIds, request.getParameterValues("selectedPersonnelIds"));
+        addSelectedPersonnelIds(selectedPersonnelIds, request.getParameterValues("selectedPersonnelIds[]"));
+
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            if (entry.getKey() != null && entry.getKey().startsWith("selectedPersonnelIds[")) {
+                addSelectedPersonnelIds(selectedPersonnelIds, entry.getValue());
+            }
+        }
+
+        return new ArrayList<>(selectedPersonnelIds);
     }
 
     private void addAircraftIds(LinkedHashSet<Long> target, List<Long> values) {
@@ -241,6 +271,48 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
                 }
             }
         }
+    }
+
+    private void addSelectedPersonnelIds(LinkedHashSet<Long> target, List<Long> values) {
+        if (values == null) {
+            return;
+        }
+        for (Long value : values) {
+            if (value != null) {
+                target.add(value);
+            }
+        }
+    }
+
+    private void addSelectedPersonnelIds(LinkedHashSet<Long> target, String[] values) {
+        if (values == null) {
+            return;
+        }
+        for (String value : values) {
+            if (value == null || value.isBlank()) {
+                continue;
+            }
+            String[] splitValues = value.split(",");
+            for (String raw : splitValues) {
+                String trimmed = raw.trim();
+                if (trimmed.isBlank()) {
+                    continue;
+                }
+                try {
+                    target.add(Long.parseLong(trimmed));
+                } catch (NumberFormatException ignored) {
+                    LOGGER.warn("Valor de selectedPersonnelId invÃ¡lido recibido en Anexo 4: {}", trimmed);
+                }
+            }
+        }
+    }
+
+    private Anexo4ResponseDTO.SelectedPersonnelDTO toSelectedPersonnelDto(User user) {
+        Anexo4ResponseDTO.SelectedPersonnelDTO dto = new Anexo4ResponseDTO.SelectedPersonnelDTO();
+        dto.setId(user.getId());
+        dto.setFullName((user.getFirstName() + " " + user.getLastName()).trim());
+        dto.setRoles(user.getEffectiveRoles().stream().toList());
+        return dto;
     }
 
 }

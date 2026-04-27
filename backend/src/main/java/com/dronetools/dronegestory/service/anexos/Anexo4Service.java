@@ -1,8 +1,10 @@
 package com.dronetools.dronegestory.service.anexos;
 
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
 import org.springframework.stereotype.Service;
@@ -22,9 +24,11 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
     private static final Set<String> OPCIONES_LIMITACIONES = Set.of("SI", "NO", "N/A");
     private static final Set<String> VALORES_HABILITADORES_LIMITACIONES = Set.of("SI");
+    private final UserRepository userRepository;
 
-    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository) {
+    public Anexo4Service(Anexo4Repository repository, OperationRepository operationRepository, UserRepository userRepository) {
         super(repository, operationRepository);
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -33,8 +37,9 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
         if (datosNuevos.getOperation() != null) {
             operation.setConops(datosNuevos.getOperation().getConops());
-            operationRepository.save(operation);
         }
+        applySelectedPersonnel(operation, datosNuevos.getSelectedPersonnelIds());
+        operationRepository.save(operation);
         return registrarAnexo(operationId, datosNuevos,
                 Operation::getAnexo4Actual,
                 Operation::getNextVersionAnexo4);
@@ -275,6 +280,19 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
     private List<Long> copyAircraftIds(List<Long> aircraftIds) {
         return aircraftIds == null ? new ArrayList<>() : new ArrayList<>(aircraftIds);
+    }
+
+    private void applySelectedPersonnel(Operation operation, List<Long> selectedPersonnelIds) {
+        List<Long> normalizedIds = selectedPersonnelIds == null
+                ? List.of()
+                : selectedPersonnelIds.stream().filter(id -> id != null).distinct().toList();
+
+        List<User> selectedUsers = normalizedIds.isEmpty()
+                ? List.of()
+                : userRepository.findAllById(normalizedIds.stream().map(Long::intValue).toList());
+
+        operation.getAssignedUsers().clear();
+        operation.getAssignedUsers().addAll(selectedUsers);
     }
 
 }

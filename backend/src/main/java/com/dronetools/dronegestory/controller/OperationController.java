@@ -25,7 +25,6 @@ public class OperationController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public List<OperationListDTO> getAll() {
         return operationService.getAllOperationListDTOs();
     }
@@ -40,11 +39,13 @@ public class OperationController {
 
     // Endpoint para mostrar en frontend el codigo real sugerido por backend.
     @GetMapping("/next-codigo")
+    @PreAuthorize("@operationSecurity.canCreateOperation(authentication)")
     public OperationCodePreviewDTO getNextCodigo() {
         return new OperationCodePreviewDTO(operationService.previewNextCodigo());
     }
 
     @PostMapping
+    @PreAuthorize("@operationSecurity.canCreateOperation(authentication)")
     public OperationDetailDTO create(
             @RequestParam(value = "conops", required = false, defaultValue = "") String conops,
             Principal principal
@@ -55,13 +56,21 @@ public class OperationController {
     }
 
     @PutMapping("/{operationId}")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public OperationDetailDTO update(@PathVariable Long operationId, @ModelAttribute Operation op) {
         return operationService.updateOperationDto(operationId, op);
     }
 
     @PutMapping("/{operationId}/completar")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public OperationDetailDTO completar(@PathVariable Long operationId) {
         return operationService.completarOperationDto(operationId);
+    }
+
+    @PutMapping("/{operationId}/cancelar")
+    @PreAuthorize("@operationSecurity.canCancelOperation(authentication, #operationId)")
+    public OperationDetailDTO cancelar(@PathVariable Long operationId) {
+        return operationService.cancelarOperationDto(operationId);
     }
 
     @GetMapping("/{operationId}")
@@ -69,7 +78,7 @@ public class OperationController {
         return operationService.findByIdDto(operationId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@operationSecurity.canDeleteOperation(authentication, #operationId)")
     @DeleteMapping("/{operationId}")
     public ResponseEntity<Void> deleteOperation(@PathVariable Long operationId) {
         operationService.deleteOperationWithAnexos(operationId);

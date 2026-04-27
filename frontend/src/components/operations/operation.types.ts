@@ -22,6 +22,8 @@ export type OperationListDTO = {
   anexo8Version: string;
   anexo8Color: AnexoColor;
   todosFirmadosPendiente: boolean;
+  asignadoAlUsuarioActual: boolean;
+  puedeEditarUsuarioActual: boolean;
 };
 
 export type AnexoInfoDTO = {
@@ -59,4 +61,6 @@ export type OperationDetailDTO = {
   completada: boolean;
   todosAnexosFirmados: boolean;
   anexos: OperationAnexoDetailDTO[];
+  asignadoAlUsuarioActual: boolean;
+  puedeEditarUsuarioActual: boolean;
 };

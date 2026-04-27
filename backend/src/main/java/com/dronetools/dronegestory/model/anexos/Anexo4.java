@@ -47,6 +47,9 @@ public class Anexo4 extends Anexo {
     @Column(name = "aircraft_id")
     private List<Long> aircraftIds = new ArrayList<>();
 
+    @Transient
+    private List<Long> selectedPersonnelIds = new ArrayList<>();
+
     // --- Imágenes ---
     @Column(name = "imagen_espacio_aereo")
     private String imagenEspacioAereo;

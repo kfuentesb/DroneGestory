@@ -9,6 +9,7 @@ import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.service.anexos.Anexo5Service;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -24,6 +25,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public ResponseEntity<Anexo5ResponseDTO> createAnexo5(@PathVariable Long operationId,
                                                           @ModelAttribute Anexo5 anexo5) {
         Anexo5 saved = service.registrarAnexo5(operationId, anexo5);
@@ -31,6 +33,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
     }
 
     @PutMapping("/{idAnexo}/firmar/datos")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public Anexo5ResponseDTO firmarConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
         String username = (principal != null) ? principal.getName() : "Sistema";
         Anexo5 anexo = service.firmarAnexo(idAnexo, username);
@@ -38,6 +41,7 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
     }
 
     @PostMapping("/{idAnexo}/rehacer/datos")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public Anexo5ResponseDTO rehacerConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo) {
         Anexo5 anexoRehecho = service.rehacerAnexo5(idAnexo);
         return toResponse(anexoRehecho, operationId);

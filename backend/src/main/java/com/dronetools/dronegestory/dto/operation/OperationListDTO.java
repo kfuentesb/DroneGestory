@@ -30,8 +30,10 @@ public class OperationListDTO {
 
     // Alerta: ¿se puede completar?
     private boolean todosFirmadosPendiente;
+    private boolean asignadoAlUsuarioActual;
+    private boolean puedeEditarUsuarioActual;
 
-    public OperationListDTO(Operation op) {
+    public OperationListDTO(Operation op, Integer currentUserId, boolean canEditCurrentUser) {
         this.idOperacion = op.getIdOperacion();
         this.codigo = op.getCodigo();
         this.nombreCreador = op.getCreador().getFirstName() + " " + op.getCreador().getLastName();
@@ -54,6 +56,10 @@ public class OperationListDTO {
 
         // Alerta: todos firmados pero operación no completada
         this.todosFirmadosPendiente = op.todosAnexosFirmados() && !completada;
+        this.asignadoAlUsuarioActual = currentUserId != null
+                && op.getAssignedUsers() != null
+                && op.getAssignedUsers().stream().anyMatch(u -> u.getId().equals(currentUserId));
+        this.puedeEditarUsuarioActual = canEditCurrentUser;
     }
 
     private String getVersionStr(com.dronetools.dronegestory.common.AnexoVersionado anexo) {

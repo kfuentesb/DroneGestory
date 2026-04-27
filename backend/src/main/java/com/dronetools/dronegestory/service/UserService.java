@@ -101,7 +101,12 @@ public class UserService {
 
     public List<UserNameResponse> findAllNames() {
         return userRepository.findAll().stream()
-                .map(u -> new UserNameResponse(u.getId(), u.getFirstName(), u.getLastName()))
+                .map(u -> new UserNameResponse(
+                        u.getId(),
+                        u.getFirstName(),
+                        u.getLastName(),
+                        u.getEffectiveRoles().stream().toList()
+                ))
                 .toList();
     }
 

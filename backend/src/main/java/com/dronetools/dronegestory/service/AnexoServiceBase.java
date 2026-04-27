@@ -93,6 +93,9 @@ public abstract class AnexoServiceBase<T extends Anexo> {
     }
 
     protected void validarOperacionEditable(Operation op) {
+        if (op.getEstado() == OperationStatus.CANCELADA) {
+            throw new RuntimeException("Operación cancelada. Solo lectura.");
+        }
         if (op.getEstado() == OperationStatus.COMPLETADA && !esAdminActual()) {
             throw new RuntimeException("Operación completada. Solo lectura para usuarios no administradores.");
         }

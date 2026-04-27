@@ -14,6 +14,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -52,6 +54,14 @@ public class Operation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK a app_user.user_id
     private User creador;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "operation_assigned_users",
+            joinColumns = @JoinColumn(name = "operation_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> assignedUsers = new LinkedHashSet<>();
 
     // FECHAS AUTOMÁTICAS
     @CreationTimestamp

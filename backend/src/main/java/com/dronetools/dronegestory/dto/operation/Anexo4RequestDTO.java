@@ -19,6 +19,7 @@ public class Anexo4RequestDTO {
 
     // RELACIONES
     private String personal;   // IDs de usuarios
+    private List<Long> selectedPersonnelIds;
 //    private List<Integer> dronesIds;     // IDs de drones
     private List<Long> aircraftIds;
 
