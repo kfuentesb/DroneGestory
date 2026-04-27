@@ -119,19 +119,19 @@ export function ApartadoRow({
   return (
     <div
       key={item.key ?? `${item.num}-${item.title}`}
-      className="d-flex align-items-center justify-content-between mb-1 py-2 border-bottom border-light"
+      className="anexo-apartado-row d-flex align-items-center justify-content-between mb-1 py-2 border-bottom border-light"
       style={{ paddingLeft }}
     >
-      <div className="d-flex align-items-baseline">
+      <div className="anexo-apartado-label d-flex align-items-baseline">
         {bullet}
         <div className={textClass}>
           {item.num}. {item.title}
         </div>
       </div>
 
-      <div className="ms-3">
+      <div className="anexo-apartado-control ms-3">
         <select
-          className={`form-select form-select-sm d-inline-block w-auto${error ? " is-invalid" : ""}`}
+          className={`anexo-apartado-select form-select form-select-sm d-inline-block w-auto${error ? " is-invalid" : ""}`}
           value={value}
           onChange={(e) => onChange?.(item.key!, e.target.value)}
           disabled={disabled}

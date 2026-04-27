@@ -43,4 +43,32 @@ footer{
   background: #F3F4F6;
 }
 
+@media (max-width: 767.98px) {
+  .anexo-apartado-row {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 0.5rem;
+  }
+
+  .anexo-apartado-row .anexo-apartado-label {
+    align-items: flex-start !important;
+    width: 100%;
+  }
+
+  .anexo-apartado-row .anexo-apartado-control {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .anexo-apartado-row .anexo-apartado-select {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .anexo7-check-select {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
 

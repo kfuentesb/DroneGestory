@@ -148,7 +148,7 @@ export default function FormOperationAnexo7Detail({
 
         <div className="d-flex flex-column flex-md-row gap-3">
           <select
-            className="form-select form-select-sm"
+            className="anexo7-check-select form-select form-select-sm"
             value={formValues[item.key]}
             onChange={(e) => handleChange(item.key, e.target.value)}
             disabled={disabled || saving}
