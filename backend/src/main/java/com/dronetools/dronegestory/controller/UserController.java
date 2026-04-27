@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,14 +42,17 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public List<UserResponse> getAll() {
         return userService.findAll().stream().map(this::toResponse).toList();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> getById(@PathVariable Integer id) {
+        if (!userService.canCurrentUserViewUser(id)) {
+            throw new AccessDeniedException("You do not have permission to view this user.");
+        }
         return userService.findById(id)
                 .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
@@ -66,6 +70,17 @@ public class UserController {
         return userService.findByUsername(authentication.getName())
                 .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @GetMapping("/self/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponse> getOwnUserById(@PathVariable Integer id) {
+        if (!userService.canCurrentUserModifyUser(id)) {
+            throw new AccessDeniedException("You do not have permission to view this user as self.");
+        }
+        return userService.findById(id)
+                .map(user -> ResponseEntity.ok(toResponse(user)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -89,7 +104,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<User> updateUserWithFile(
             @PathVariable Integer id,
             @ModelAttribute User user,
@@ -97,9 +112,29 @@ public class UserController {
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
-        
         boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
-        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, removeImage);
+        boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
+        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
+
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PutMapping(value = "/self/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<User> updateOwnUserWithFile(
+            @PathVariable Integer id,
+            @ModelAttribute User user,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
+            HttpServletRequest request
+    ) throws IOException {
+        if (!userService.canCurrentUserModifyUser(id)) {
+            throw new AccessDeniedException("You do not have permission to modify this user.");
+        }
+
+        boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
+        boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
+        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
 
         return ResponseEntity.ok(updatedUser);
     }

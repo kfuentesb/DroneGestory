@@ -31,17 +31,20 @@ public class FlightTimeService {
     private final AircraftRepository aircraftRepository;
     private final OperationRepository operationRepository;
     private final FlightTimeDocumentationService flightTimeDocumentationService;
+    private final AuditLogService auditLogService;
 
     public FlightTimeService(
             FlightTimeRepository flightTimeRepository,
             AircraftRepository aircraftRepository,
             OperationRepository operationRepository,
-            FlightTimeDocumentationService flightTimeDocumentationService
+            FlightTimeDocumentationService flightTimeDocumentationService,
+            AuditLogService auditLogService
     ) {
         this.flightTimeRepository = flightTimeRepository;
         this.aircraftRepository = aircraftRepository;
         this.operationRepository = operationRepository;
         this.flightTimeDocumentationService = flightTimeDocumentationService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional(readOnly = true)
@@ -76,12 +79,18 @@ public class FlightTimeService {
     public Optional<FlightTimeDTO> update(Long id, FlightTimeRequestDTO request) {
         return flightTimeRepository.findById(id).map(existing -> {
             Long previousAircraftId = existing.getAircraft().getAircraftId();
+            String before = summarize(existing);
             applyRequest(existing, request);
             FlightTime saved = flightTimeRepository.save(existing);
             recalculateAircraftFlightTimes(saved.getAircraft().getAircraftId());
             if (!previousAircraftId.equals(saved.getAircraft().getAircraftId())) {
                 recalculateAircraftFlightTimes(previousAircraftId);
             }
+            auditLogService.record(
+                    "MODIFICAR_HORAS_VUELO",
+                    saved.getFlightTimeId(),
+                    "antes={" + before + "} despues={" + summarize(saved) + "}"
+            );
             return toDto(saved);
         });
     }
@@ -91,9 +100,11 @@ public class FlightTimeService {
                 .orElseThrow(() -> new EntityNotFoundException("Flight time not found with id: " + id));
 
         Long aircraftId = flightTime.getAircraft().getAircraftId();
+        String snapshot = summarize(flightTime);
         flightTimeDocumentationService.deleteByFlightTimeId(id);
         flightTimeRepository.delete(flightTime);
         recalculateAircraftFlightTimes(aircraftId);
+        auditLogService.record("BORRAR_HORAS_VUELO", id, snapshot);
     }
 
     public void registerFromAnexo7WhenOperationCompleted(Operation operation) {
@@ -255,5 +266,19 @@ public class FlightTimeService {
             return null;
         }
         return minutes / 60.0;
+    }
+
+    private String summarize(FlightTime flightTime) {
+        return "flightTimeId=" + flightTime.getFlightTimeId()
+                + ", aircraftId=" + (flightTime.getAircraft() == null ? null : flightTime.getAircraft().getAircraftId())
+                + ", aircraftManufacturer=" + flightTime.getAircraftManufacturer()
+                + ", aircraftModel=" + flightTime.getAircraftModel()
+                + ", aircraftSerialNumber=" + flightTime.getAircraftSerialNumber()
+                + ", operationId=" + (flightTime.getOperation() == null ? null : flightTime.getOperation().getIdOperacion())
+                + ", operationCode=" + (flightTime.getOperation() == null ? null : flightTime.getOperation().getCodigo())
+                + ", flightDate=" + (flightTime.getFlightDate() == null ? null : flightTime.getFlightDate().toLocalDate())
+                + ", durationMinutes=" + flightTime.getDurationMinutes()
+                + ", totalFlightTimeMinutes=" + flightTime.getTotalFlightTimeMinutes()
+                + ", comments=" + flightTime.getComments();
     }
 }

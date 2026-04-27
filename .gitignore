@@ -39,3 +39,4 @@ build/
 ## BACKEND
 
 /backend/uploads/*
+/backend/AuditLog.txt

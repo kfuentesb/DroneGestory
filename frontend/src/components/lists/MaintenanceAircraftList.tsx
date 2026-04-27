@@ -152,7 +152,7 @@ export default function MaintenanceAircraftList() {
         setUpdateError(null);
         if (!editingMaintenance) return;
         const totalMinutes = editingHours * 60 + editingMinutes;
-        if (totalMinutes <= 0) {
+        if (totalMinutes < 0) {
             setUpdateError("Las horas de vuelo deben ser un valor valido mayor que 0.");
             return;
         }

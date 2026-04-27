@@ -29,6 +29,7 @@ import FlightTimeList from "../components/lists/FlightTimeList";
 import MaintenanceList from "../components/lists/MaintenanceList";
 import MaintenanceAircraftList from "../components/lists/MaintenanceAircraftList";
 import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
+import Settings from "../components/main-elements-views/Settings";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -40,12 +41,20 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/home" element={<Home />} />
         <Route path="/login" element={<LogIn />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Users */}
         <Route 
           path="/users" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute>
               <UserList />
             </ProtectedRoute>
           } 
@@ -53,7 +62,7 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/users/:id" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute>
               <UserDetail />
             </ProtectedRoute>
           } 

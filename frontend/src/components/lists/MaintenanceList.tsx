@@ -149,7 +149,7 @@ export default function MaintenanceList() {
             <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
                 <div className="card-body">
                     <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-                        Mantenimiento de aeronaves
+                        Mantenimiento de Aeronaves
                     </h2>
 
                     <div className="d-flex justify-content-between align-items-center mb-4">

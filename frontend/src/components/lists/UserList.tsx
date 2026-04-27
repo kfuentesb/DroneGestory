@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 import { apiFetch } from "../../api";
-import { useNavigate } from "react-router-dom";
 import SearchBar from "../commons/props/SearchBar";
-import ButtonProp from "../commons/props/ButtonProp";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
@@ -40,7 +38,6 @@ const roleColors: Record<string, { backgroundColor: string; color: string }> = {
 
 export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
-  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -111,11 +108,6 @@ export default function UserList() {
           <div className="d-flex justify-content-between align-items-center mb-4">
             {/* Input de búsqueda */}
             <SearchBar value={search} placeholder="Buscar por usuario..." onChange={setSearch} />
-
-            {/* Botón añadir aeronave */}
-            <ButtonProp onClick={() => navigate("/register-user")}>
-              + Añadir usuario
-            </ButtonProp>
           </div>
 
           <ReusableTable
@@ -153,7 +145,6 @@ export default function UserList() {
                 </td>
               </>
             )}
-                        onRowClick={(p) => navigate(`/users/${p.id}`)}
             emptyText="No hay usuarios registrados."
           />
 

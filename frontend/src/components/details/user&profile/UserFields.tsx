@@ -64,8 +64,8 @@ export const userFields: FieldConfig[] = [
         label: "Fecha de Nacimiento",
         key: "fechaNac",
         type: "date",
-        validate: (v: string | null | undefined) => {
-            if (!v || v.toString().trim() === "") return true;
+        validate: (v: any) => {
+            if (v === null || v === undefined || String(v).trim() === "") return true;
             return new Date(v).getTime() <= Date.now();
         },
         error: "La fecha de nacimiento no puede ser futura",

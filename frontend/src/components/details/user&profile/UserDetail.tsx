@@ -1,39 +1,35 @@
-import { useParams, useNavigate } from "react-router-dom"
-import DetailsComponent from "../DetailsComponent"
-import { apiFetch } from "../../../api"
-import { userFields } from "./UserFields"
+import { useParams, useNavigate } from "react-router-dom";
+import DetailsComponent from "../DetailsComponent";
+import { apiFetch } from "../../../api";
+import { userFields } from "./UserFields";
+import { useAuth } from "../../commons/hooks/useAuth";
 
-
-// esta es la vista que ve un admin cuando selecciona un usario de la lista de usuarios
 export default function UserDetail() {
-
-    const { id } = useParams()
-    const navigate = useNavigate()
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { hasRole } = useAuth();
+    const canManageUsers = hasRole("ADMIN") || hasRole("MANAGER");
 
     const handleDelete = async () => {
-
         await apiFetch(`/api/users/${id}`, {
             method: "DELETE"
-        })
+        });
 
-        navigate("/users")
-    }
+        navigate("/users");
+    };
 
-    const validateForm = (values:any) => {
-
-        const errors: Record<string,string|null> = {}
+    const validateForm = (values: any) => {
+        const errors: Record<string, string | null> = {};
 
         userFields.forEach(field => {
-
             if (field.validate) {
-                const valid = field.validate(values[field.key])
-                errors[field.key] = valid ? null : field.error || "Campo inválido"
+                const valid = field.validate(values[field.key]);
+                errors[field.key] = valid ? null : field.error || "Campo invalido";
             }
+        });
 
-        })
-
-        return errors
-    }
+        return errors;
+    };
 
     const Icons = {
         Key: (
@@ -53,117 +49,114 @@ export default function UserDetail() {
                 <div className="card border-0 bg-light shadow-sm">
                     <div className="card-body py-2">
                         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                            
-                            {/* Left Text Block */}
                             <div className="text-truncate" style={{ minWidth: 0 }}>
-                                <h6 className="mb-0 text-muted uppercase fw-bold text-truncate" style={{ fontSize: '0.82rem' }}>
-                                    Gestión de Usuario ID: {id}
+                                <h6 className="mb-0 text-muted uppercase fw-bold text-truncate" style={{ fontSize: "0.82rem" }}>
+                                    Gestion de Usuario ID: {id}
                                 </h6>
                                 <small className="text-muted d-block text-truncate" style={{ fontSize: "0.72rem" }}>
-                                    Actualmente solo funciona el cambio de contraseña
+                                    {canManageUsers ? "Actualmente solo funciona el cambio de contrasena" : "Vista de solo lectura"}
                                 </small>
                             </div>
 
-                            {/* Button Panel - Unified h-100 and align-items-stretch */}
-                            <div className="d-flex flex-wrap gap-2 align-items-center">
-                                
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-warning d-flex align-items-center px-2"
-                                    style={{ height: '32px' }}
-                                    onClick={() => navigate(`/users/${id}/password`)}
-                                >
-                                    {Icons.Key}
-                                    <span className="ms-2 d-none d-sm-inline">Contraseña</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-danger d-flex align-items-center px-2"
-                                    style={{ height: '32px' }}
-                                    onClick={handleDelete}
-                                >
-                                    {Icons.Trash}
-                                    <span className="ms-2 d-none d-sm-inline">Borrar</span>
-                                </button>
-
-                                {/* Export Dropdown */}
-                                <div className="dropdown d-flex align-items-center">
+                            {canManageUsers && (
+                                <div className="d-flex flex-wrap gap-2 align-items-center">
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center px-2"
-                                        style={{ height: '32px' }}
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
+                                        className="btn btn-sm btn-outline-warning d-flex align-items-center px-2"
+                                        style={{ height: "32px" }}
+                                        onClick={() => navigate(`/users/${id}/password`)}
                                     >
-                                        <span className="d-flex align-items-center">{Icons.Download}</span>
-                                        <span className="ms-2 d-none d-sm-inline">Exportar</span>
+                                        {Icons.Key}
+                                        <span className="ms-2 d-none d-sm-inline">Contrasena</span>
                                     </button>
-                                    <ul className="dropdown-menu dropdown-menu-end shadow border-0 py-2" style={{ fontSize: '0.85rem' }}>
-                                        <li className="px-3 py-1 bg-light border-bottom mb-2">
-                                            <small className="text-muted fw-bold" style={{fontSize: '0.65rem'}}>
-                                                Queda registrado el uso de esta función
-                                            </small>
-                                        </li>
-                                        <li>
-                                            <button className="dropdown-item d-flex align-items-center py-2">
-                                                <span className="text-success me-2 d-flex">{Icons.File}</span> 
-                                                Datos personales (CSV)
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button className="dropdown-item d-flex align-items-center py-2">
-                                                <span className="text-warning me-2 d-flex">{Icons.File}</span> 
-                                                Certificados (ZIP)
-                                            </button>
-                                        </li>
-                                        <li><hr className="dropdown-divider" /></li>
-                                        <li>
-                                            <button className="dropdown-item d-flex align-items-center py-2 fw-bold text-primary">
-                                                <span className="me-2 d-flex">{Icons.Download}</span> 
-                                                Exportar todo (ZIP)
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
 
-                                {/* More Actions Dropdown */}
-                                <div className="dropdown d-flex align-items-center">
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-secondary d-flex align-items-center px-2"
-                                        style={{ height: '32px' }}
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
+                                        className="btn btn-sm btn-outline-danger d-flex align-items-center px-2"
+                                        style={{ height: "32px" }}
+                                        onClick={handleDelete}
                                     >
-                                        <span className="d-flex align-items-center">{Icons.Dots}</span>
+                                        {Icons.Trash}
+                                        <span className="ms-2 d-none d-sm-inline">Borrar</span>
                                     </button>
-                                    <ul className="dropdown-menu dropdown-menu-end shadow border-0">
-                                        <li><button className="dropdown-item py-2">Desactivar cuenta</button></li>
-                                        <li><button className="dropdown-item py-2">Enviar recordatorio</button></li>
-                                        <li><hr className="dropdown-divider" /></li>
-                                        <li><button className="dropdown-item py-2 text-danger font-weight-bold">Forzar cierre sesión</button></li>
-                                    </ul>
+
+                                    <div className="dropdown d-flex align-items-center">
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center px-2"
+                                            style={{ height: "32px" }}
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                        >
+                                            <span className="d-flex align-items-center">{Icons.Download}</span>
+                                            <span className="ms-2 d-none d-sm-inline">Exportar</span>
+                                        </button>
+                                        <ul className="dropdown-menu dropdown-menu-end shadow border-0 py-2" style={{ fontSize: "0.85rem" }}>
+                                            <li className="px-3 py-1 bg-light border-bottom mb-2">
+                                                <small className="text-muted fw-bold" style={{ fontSize: "0.65rem" }}>
+                                                    Queda registrado el uso de esta funcion
+                                                </small>
+                                            </li>
+                                            <li>
+                                                <button className="dropdown-item d-flex align-items-center py-2">
+                                                    <span className="text-success me-2 d-flex">{Icons.File}</span>
+                                                    Datos personales (CSV)
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button className="dropdown-item d-flex align-items-center py-2">
+                                                    <span className="text-warning me-2 d-flex">{Icons.File}</span>
+                                                    Certificados (ZIP)
+                                                </button>
+                                            </li>
+                                            <li><hr className="dropdown-divider" /></li>
+                                            <li>
+                                                <button className="dropdown-item d-flex align-items-center py-2 fw-bold text-primary">
+                                                    <span className="me-2 d-flex">{Icons.Download}</span>
+                                                    Exportar todo (ZIP)
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="dropdown d-flex align-items-center">
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-secondary d-flex align-items-center px-2"
+                                            style={{ height: "32px" }}
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                        >
+                                            <span className="d-flex align-items-center">{Icons.Dots}</span>
+                                        </button>
+                                        <ul className="dropdown-menu dropdown-menu-end shadow border-0">
+                                            <li><button className="dropdown-item py-2">Desactivar cuenta</button></li>
+                                            <li><button className="dropdown-item py-2">Enviar recordatorio</button></li>
+                                            <li><hr className="dropdown-divider" /></li>
+                                            <li><button className="dropdown-item py-2 text-danger font-weight-bold">Forzar cierre sesion</button></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
             <DetailsComponent
-            id={id}
-            endpoint={`/api/users`}
-            imageEndpoint={`/api/users/images`}
-            entityType="user"
-            fields={userFields}
-            allowEdit
-            allowDelete
-            onDelete={handleDelete}
-            onBack={() => navigate("/users")}
-            validateForm={validateForm}
-            certificateSectionType="user"
-            defaultImage="user"
+                id={id}
+                endpoint={`/api/users`}
+                imageEndpoint={`/api/users/images`}
+                entityType="user"
+                fields={userFields}
+                allowEdit={canManageUsers}
+                allowDelete={canManageUsers}
+                onDelete={canManageUsers ? handleDelete : undefined}
+                onBack={() => navigate(canManageUsers ? "/users" : "/home")}
+                validateForm={validateForm}
+                certificateSectionType="user"
+                defaultImage="user"
+                clearableFieldKeys={["fechaNac"]}
             />
         </>
     );
