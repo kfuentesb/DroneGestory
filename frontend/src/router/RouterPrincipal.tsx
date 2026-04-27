@@ -15,7 +15,6 @@ import ProfileDetail from "../components/details/user&profile/ProfileDetail";
 import AircraftDetail from "../components/details/aircraft/AircraftDetail";
 import AircraftModelDetail from "../components/details/aircraft/AircraftModelDetail";
 import OperationList from "../components/lists/OperationList";
-import MyOperationList from "../components/lists/MyOperationList";
 import OperationDetail from "../components/details/operation/OperationDetail";
 import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
@@ -29,6 +28,7 @@ import FlightTimeList from "../components/lists/FlightTimeList";
 import MaintenanceList from "../components/lists/MaintenanceList";
 import MaintenanceAircraftList from "../components/lists/MaintenanceAircraftList";
 import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
+import Settings from "../components/main-elements-views/Settings";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -40,12 +40,20 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/home" element={<Home />} />
         <Route path="/login" element={<LogIn />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Users */}
         <Route 
           path="/users" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute>
               <UserList />
             </ProtectedRoute>
           } 
@@ -53,7 +61,7 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/users/:id" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute>
               <UserDetail />
             </ProtectedRoute>
           } 

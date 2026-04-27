@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 public class DashboardAircraftDocumentationExpiryDTO {
+    private final Long aircraftId;
     private final LocalDate expireDate;
     private final String documentationType;
     private final String serialNumber;

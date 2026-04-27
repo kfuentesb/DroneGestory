@@ -1,4 +1,3 @@
-import { useState, type ChangeEvent, type CSSProperties, type Dispatch, type SetStateAction } from "react";
 import { aircraftDocumentationFields, MODEL_SPECIFIC_KEYS } from "../certificates/AircraftDocumentationSection";
 import { staticUserCertificateFields as staticUserCertificateConfig } from "../certificates/staticUserCertificateFields";
 
@@ -174,31 +173,4 @@ export const typeColors: Record<string, { backgroundColor: string; color: string
 export const stateColors: Record<string, { backgroundColor: string; color: string }> = {
     active: { backgroundColor: "#DCFCE7", color: "#166534" },
     inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
-};
-
-export const styles: { [key: string]: CSSProperties } = {
-    backBtn: {
-        borderRadius: "8px",
-        width: "48px",
-        height: "48px",
-        transition: "all 0.2s ease",
-        marginTop: "4px",
-        border: "none",
-        backgroundColor: "transparent"
-    },
-    backIcon: {
-        width: "32px",
-        height: "32px",
-        filter: "invert(42%) sepia(93%) saturate(395%) hue-rotate(102deg) brightness(92%) contrast(85%)"
-    },
-    profileImg: {
-        width: "110px", 
-        height: "110px", 
-        objectFit: "cover"
-    },
-    badge: {
-        borderRadius: "4px",
-        fontSize: "0.85rem",
-        border: "1px solid currentColor"
-    }
 };

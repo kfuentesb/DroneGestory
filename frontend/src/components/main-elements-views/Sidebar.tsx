@@ -91,21 +91,21 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                 <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "0 10px 10px 10px" }} />
 
                 {/* 2. Admin Users Section */}
-                {canManage && (
-                    <SubMenu
-                        label="Administrar usuarios"
-                        open={openMenu === "users"}
-                        onOpenChange={() => handleToggle("users")}
-                        icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
-                    >
-                        <MenuItem onClick={() => { navigate("/users"); setToggled(false); }}>Listar usuarios</MenuItem>
+                <SubMenu
+                    label="Usuarios"
+                    open={openMenu === "users"}
+                    onOpenChange={() => handleToggle("users")}
+                    icon={<img src={UsersIcon} alt="Users" style={{ width: "18px", height: "18px" }} />}
+                >
+                    <MenuItem onClick={() => { navigate("/users"); setToggled(false); }}>Listar usuarios</MenuItem>
+                    {canManage && (
                         <MenuItem onClick={() => { navigate("/register-user"); setToggled(false); }}>Registrar usuario</MenuItem>
-                    </SubMenu>
-                )}
+                    )}
+                </SubMenu>
 
                 {/* 3. Admin Aircraft Section */}
                     <SubMenu
-                        label={canManage ? "Administrar aeronaves" : "Aeronaves"}
+                        label={"Aeronaves"}
                         open={openMenu === "aircraft"}
                         onOpenChange={() => handleToggle("aircraft")}
                         icon={<img src={DroneIcon} alt="Drone" style={{ width: "18px", height: "18px" }} />}

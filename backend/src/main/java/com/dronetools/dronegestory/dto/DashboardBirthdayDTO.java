@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 public class DashboardBirthdayDTO {
+    private final Integer userId;
     private final LocalDate birthDate;
     private final String firstName;
     private final String lastName;

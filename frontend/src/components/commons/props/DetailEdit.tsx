@@ -14,9 +14,10 @@ type Props = {
     errors: Record<string, string | null>;
     removeImage: boolean;
     setRemoveImage: (v: boolean) => void;
+    clearableFieldKeys?: string[];
 };
 
-export default function DetailEdit({ values, setValues, fields, errors, removeImage, setRemoveImage }: Props) {
+export default function DetailEdit({ values, setValues, fields, errors, removeImage, setRemoveImage, clearableFieldKeys = [] }: Props) {
     const normalize = (v: string) =>
         v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
@@ -274,7 +275,8 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                                 value={values[field.key] ? values[field.key].toString().split(/[T ]/)[0] : ""}
                                 onChange={(e) => {
                                     const newValue = e.target.value;
-                                    setValues({ ...values, [field.key]: newValue });
+                                    const shouldStoreNull = clearableFieldKeys.includes(field.key) && newValue === "";
+                                    setValues({ ...values, [field.key]: shouldStoreNull ? null : newValue });
                                 }}
                             />
                     ) : field.type === "textarea" ? (

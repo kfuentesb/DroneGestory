@@ -216,7 +216,7 @@ export default function FormOperationAnexo8Detail({
       </div>
 
       <TablaExpandible
-        label="2.3 - Otras limitaciones operacionales"
+        label="2.3 - Otros"
         selectLabel="Limitación"
         items={otrasLimitacionesItems}
         opciones={["N/A", "SI", "NO"]}

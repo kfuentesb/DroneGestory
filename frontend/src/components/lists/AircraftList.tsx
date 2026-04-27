@@ -117,16 +117,9 @@ export default function AircraftList() {
             <SearchBar value={search} onChange={setSearch} />
 
             <div className="d-flex align-items-stretch gap-2">
-              <ButtonProp onClick={() => navigate("/aircraft-models")}>
-                Listar modelos
-              </ButtonProp>
-
               {(roles.includes("ADMIN") || roles.includes("MANAGER")) && (
-                <ButtonProp
-                  onClick={() => navigate("/register-aircraft")}
-                  className="d-flex align-items-center justify-content-center"
-                >
-                  <img src={DronePlusIcon} style={{ width: "30px", height: "30px" }} alt="plus icon" />
+                <ButtonProp onClick={() => navigate("/aircraft-models")}>
+                  Listar modelos
                 </ButtonProp>
               )}
             </div>

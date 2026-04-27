@@ -21,15 +21,18 @@ public class MaintenanceService {
     private final MaintenanceRepository maintenanceRepository;
     private final AircraftRepository aircraftRepository;
     private final MaintenanceDocumentationService maintenanceDocumentationService;
+    private final AuditLogService auditLogService;
 
     public MaintenanceService(
             MaintenanceRepository maintenanceRepository,
             AircraftRepository aircraftRepository,
-            MaintenanceDocumentationService maintenanceDocumentationService
+            MaintenanceDocumentationService maintenanceDocumentationService,
+            AuditLogService auditLogService
     ) {
         this.maintenanceRepository = maintenanceRepository;
         this.aircraftRepository = aircraftRepository;
         this.maintenanceDocumentationService = maintenanceDocumentationService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional(readOnly = true)
@@ -61,17 +64,26 @@ public class MaintenanceService {
 
     public Optional<MaintenanceDTO> update(Long id, MaintenanceRequestDTO request) {
         return maintenanceRepository.findById(id).map(existing -> {
+            String before = summarize(existing);
             applyRequest(existing, request);
-            return toDto(maintenanceRepository.save(existing));
+            Maintenance saved = maintenanceRepository.save(existing);
+            auditLogService.record(
+                    "MODIFICAR_MANTENIMIENTO",
+                    saved.getMaintenanceId(),
+                    "antes={" + before + "} despues={" + summarize(saved) + "}"
+            );
+            return toDto(saved);
         });
     }
 
     public void delete(Long id) {
-        if (!maintenanceRepository.existsById(id)) {
-            throw new EntityNotFoundException("Maintenance not found with id: " + id);
-        }
+        Maintenance maintenance = maintenanceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Maintenance not found with id: " + id));
+
+        String snapshot = summarize(maintenance);
         maintenanceDocumentationService.deleteByMaintenanceId(id);
-        maintenanceRepository.deleteById(id);
+        maintenanceRepository.delete(maintenance);
+        auditLogService.record("BORRAR_MANTENIMIENTO", id, snapshot);
     }
 
     private void applyRequest(Maintenance maintenance, MaintenanceRequestDTO request) {
@@ -118,5 +130,20 @@ public class MaintenanceService {
                 maintenance.getComments(),
                 maintenance.getDocumentation() == null ? null : maintenanceDocumentationService.toDto(maintenance.getDocumentation())
         );
+    }
+
+    private String summarize(Maintenance maintenance) {
+        return "maintenanceId=" + maintenance.getMaintenanceId()
+                + ", aircraftId=" + (maintenance.getAircraft() == null ? null : maintenance.getAircraft().getAircraftId())
+                + ", aircraftClass=" + (maintenance.getAircraft() == null || maintenance.getAircraft().getAircraftClass() == null ? null : maintenance.getAircraft().getAircraftClass().name())
+                + ", manufacturer=" + (maintenance.getAircraft() == null || maintenance.getAircraft().getAircraftModel() == null ? null : maintenance.getAircraft().getAircraftModel().getManufacturer())
+                + ", model=" + (maintenance.getAircraft() == null || maintenance.getAircraft().getAircraftModel() == null ? null : maintenance.getAircraft().getAircraftModel().getModel())
+                + ", serialNumber=" + (maintenance.getAircraft() == null ? null : maintenance.getAircraft().getSerialNumber())
+                + ", reviewType=" + maintenance.getReviewType()
+                + ", monthsRequired=" + maintenance.getMonthsRequired()
+                + ", hoursFlightRequired=" + maintenance.getHoursFlightRequired()
+                + ", maintenanceDate=" + (maintenance.getMaintenanceDate() == null ? null : maintenance.getMaintenanceDate().toLocalDate())
+                + ", nextMaintenanceDate=" + (maintenance.getNextMaintenanceDate() == null ? null : maintenance.getNextMaintenanceDate().toLocalDate())
+                + ", comments=" + maintenance.getComments();
     }
 }
