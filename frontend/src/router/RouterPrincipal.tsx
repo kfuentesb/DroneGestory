@@ -152,7 +152,7 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Operations */}
         <Route path="/operations" element={<OperationList />} />
-        <Route path="/operations/details/mine" element={<MyOperationList />} />
+        {/* <Route path="/operations/details/mine" element={<MyOperationList />} /> */}
         <Route path="/operations/:id" element={<OperationDetail />} />
         <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
         <Route path="/operations/:id/anexo4/version/:versionId" element={<OperationAnexoDetail tipoAnexo={4} />} />

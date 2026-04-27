@@ -129,9 +129,9 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                     icon={<img src={FlyIcon} alt="Fly" style={{ width: "18px", height: "18px" }} />}
                 >
                     {canManage && (
-                        <MenuItem onClick={() => { navigate("/operations"); setToggled(false); }}>Listar operaciones (admin)</MenuItem>
+                        <MenuItem onClick={() => { navigate("/operations"); setToggled(false); }}>Listar Operaciones</MenuItem>
                     )}
-                    <MenuItem onClick={() => { navigate("/operations/details/mine"); setToggled(false); }}>Mis operaciones</MenuItem>
+                    {/* <MenuItem onClick={() => { navigate("/operations/details/mine"); setToggled(false); }}>Mis operaciones</MenuItem> */}
                 </SubMenu>
                 
                 {/* 5. Docs Section */}
