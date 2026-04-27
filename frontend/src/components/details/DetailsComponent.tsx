@@ -1617,6 +1617,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                                     errors={errors}
                                     removeImage={removeImage}
                                     setRemoveImage={setRemoveImage}
+                                    clearableFieldKeys={props.clearableFieldKeys}
                                 />
                             )}
 

@@ -273,7 +273,14 @@ public class UserService {
     }
 
     @Transactional
-    public User updateWithFile(Integer id, User updatedUser, MultipartFile imageFile, boolean phoneNumberPresent, boolean removeImage) throws IOException {
+    public User updateWithFile(
+            Integer id,
+            User updatedUser,
+            MultipartFile imageFile,
+            boolean phoneNumberPresent,
+            boolean fechaNacPresent,
+            boolean removeImage
+    ) throws IOException {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -294,6 +301,8 @@ public class UserService {
                 throw new IllegalArgumentException("La fecha de nacimiento no puede ser en el futuro");
             }
             user.setFechaNac(updatedUser.getFechaNac());
+        } else if (fechaNacPresent) {
+            user.setFechaNac(null);
         }
 
         if (updatedUser.getPhoneNumber() != null) {

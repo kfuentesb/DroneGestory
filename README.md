@@ -104,19 +104,18 @@ VISUAL<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
 -Crear la vista de opciones<br>
 
+-OPCIONES<br>
+-Añadir opcion de descargar el log solo para administradores<br>
+
 -USUARIO<br>
--Poder borrar fecha de nacimiento<br>
 -Mostrar lista de usuarios a cualquiera<br>
 -Al crear un nuevo usuario, la contraseña no se valida como cuando se modifica, arreglarlo<br>
 
 -DRONES<br>
 
 -HORAS DE VUELO<br>
--Hacer un log con los borrados<br>
 
 -MANTENIMIENTO<br>
--Hacer un log con los borrados<br>
--Validar el modal, que las horas de vuelo puedan ser 0<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>

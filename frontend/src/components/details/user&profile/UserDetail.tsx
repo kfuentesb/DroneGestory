@@ -164,6 +164,7 @@ export default function UserDetail() {
             validateForm={validateForm}
             certificateSectionType="user"
             defaultImage="user"
+            clearableFieldKeys={["fechaNac"]}
             />
         </>
     );

@@ -99,7 +99,8 @@ public class UserController {
     ) throws IOException {
         
         boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
-        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, removeImage);
+        boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
+        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
 
         return ResponseEntity.ok(updatedUser);
     }
