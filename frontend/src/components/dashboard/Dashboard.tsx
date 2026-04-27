@@ -7,6 +7,7 @@ import StatCardSkeleton from "../commons/props/StatCardSkeleton";
 import DashboardHeader from "./DashboardHeader";
 import { Month } from "@svar-ui/react-core";
 import "@svar-ui/react-core/all.css";
+import "./dashboardStyles.css";
 
 interface DashboardCertificateExpiration {
   userId: number;
@@ -35,6 +36,15 @@ interface DashboardBirthday {
   username: string;
 }
 
+interface DashboardMaintenanceDate {
+  aircraftId: number;
+  maintenanceDate: string;
+  description: string | null;
+  serialNumber: string | null;
+  manufacturer: string | null;
+  model: string | null;
+}
+
 interface DashboardData {
   totalUsuarios: number;
   totalPilotos: number;
@@ -43,6 +53,7 @@ interface DashboardData {
   certificateExpirations: DashboardCertificateExpiration[];
   aircraftDocumentationExpirations: DashboardAircraftDocumentationExpiration[];
   birthdays: DashboardBirthday[];
+  maintenance: DashboardMaintenanceDate[]
 }
 
 interface TooltipSectionProps<T> {
@@ -60,6 +71,7 @@ type CalendarDayDetails = {
   certificates: DashboardCertificateExpiration[];
   aircraftDocumentation: DashboardAircraftDocumentationExpiration[];
   birthdays: DashboardBirthday[];
+  maintenance: DashboardMaintenanceDate[];
 };
 
 type TooltipState = {
@@ -76,6 +88,9 @@ const addMonth = (date: Date, n: number) => {
   return next;
 };
 
+const MIN_CALENDAR_YEAR = 2000;
+const MAX_CALENDAR_YEAR = 2100;
+
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}-${`${date.getDate()}`.padStart(2, "0")}`;
 
@@ -87,26 +102,23 @@ const getMonthLabel = (date: Date) => {
 };
 
 const getMarkerClassName = (details?: CalendarDayDetails) => {
-  if (!details) {
-    return "";
-  }
+  if (!details) return "";
 
-  const hasCertificates = details.certificates.length > 0;
-  const hasAircraftDocumentation = details.aircraftDocumentation.length > 0;
-  const hasBirthdays = details.birthdays.length > 0;
+  const hasCert = details.certificates.length > 0;
+  const hasAir = details.aircraftDocumentation.length > 0;
+  const hasBirth = details.birthdays.length > 0;
+  const hasMaint = details.maintenance.length > 0;
 
-  if (hasCertificates && hasAircraftDocumentation) {
+  const activeCategories = [hasCert, hasAir, hasBirth, hasMaint].filter(Boolean).length;
+
+  if (activeCategories > 1) {
     return "dg-expiry-marker dg-expiry-marker-mixed";
   }
-  if (hasCertificates) {
-    return "dg-expiry-marker dg-expiry-marker-certificate";
-  }
-  if (hasAircraftDocumentation) {
-    return "dg-expiry-marker dg-expiry-marker-aircraft";
-  }
-  if (hasBirthdays) {
-    return "dg-expiry-marker dg-expiry-marker-birthday";
-  }
+  
+  if (hasCert) return "dg-expiry-marker dg-expiry-marker-certificate";
+  if (hasAir) return "dg-expiry-marker dg-expiry-marker-aircraft";
+  if (hasMaint) return "dg-expiry-marker dg-expiry-marker-maintenance";
+  if (hasBirth) return "dg-expiry-marker dg-expiry-marker-birthday";
 
   return "";
 };
@@ -193,6 +205,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const monthRefs = useRef<Array<HTMLDivElement | null>>([]);
   const baseDate = useMemo(() => new Date(), []);
+  const [selectedYear, setSelectedYear] = useState(baseDate.getFullYear());
   const [selectedDay, setSelectedDay] = useState<CalendarDayDetails | null>(null);
 
   useEffect(() => {
@@ -203,6 +216,8 @@ export default function Dashboard() {
         return res.json();
       })
       .then((data: Partial<DashboardData>) => {
+        console.log("Dashboard API Data:", data);
+        console.log("Maintenance Data Received:", data.maintenance);
 
         const nextSummary: DashboardData = {
           totalUsuarios: data.totalUsuarios ?? 0,
@@ -212,11 +227,15 @@ export default function Dashboard() {
           certificateExpirations: data.certificateExpirations ?? [],
           aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
           birthdays: data.birthdays ?? [],
+          maintenance: data.maintenance ?? [],
         };
 
         setSummary(nextSummary);
       })
-      .catch((err) => setSummary({ error: err.message }))
+      .catch((err) => {
+        console.error("Fetch Error:", err);
+        setSummary({ error: err.message });
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -226,55 +245,65 @@ export default function Dashboard() {
   const isPrivilegedUser = hasRole("ADMIN") || hasRole("MANAGER");
 
   const expirationsByDate = useMemo(() => {
-    const grouped = new Map<string, CalendarDayDetails>();
-    if (!isData(summary)) {
-      return grouped;
-    }
-
-    summary.certificateExpirations.forEach((entry) => {
-      const dateKey = normalizeDateKey(entry.expireDate);
-      if (!dateKey) {
-        return;
+      const grouped = new Map<string, CalendarDayDetails>();
+      if (!isData(summary)) {
+          return grouped;
       }
 
-      const current = grouped.get(dateKey) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
-      current.certificates.push(entry);
-      grouped.set(dateKey, current);
-    });
-
-    if (isPrivilegedUser) {
-      summary.aircraftDocumentationExpirations.forEach((entry) => {
-        const dateKey = normalizeDateKey(entry.expireDate);
-        if (!dateKey) {
-          return;
-        }
-
-        const current = grouped.get(dateKey) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
-        current.aircraftDocumentation.push(entry);
-        grouped.set(dateKey, current);
+      // Helper to create a fresh empty day detail object
+      const createEmptyDay = (): CalendarDayDetails => ({
+          certificates: [],
+          aircraftDocumentation: [],
+          birthdays: [],
+          maintenance: []
       });
-    }
 
-    [0, 1, 2, 3].forEach((offset) => {
-      const monthDate = addMonth(baseDate, offset);
-      const year = monthDate.getFullYear();
-      const month = `${monthDate.getMonth() + 1}`.padStart(2, "0");
+      summary.certificateExpirations.forEach((entry) => {
+          const dateKey = normalizeDateKey(entry.expireDate);
+          if (!dateKey) return;
 
-      summary.birthdays.forEach((entry) => {
-        const monthDay = getBirthdayMonthDay(entry.birthDate);
-        if (!monthDay || monthDay.slice(0, 2) !== month) {
-          return;
-        }
-
-        const key = `${year}-${month}-${monthDay.slice(3, 5)}`;
-        const current = grouped.get(key) ?? { certificates: [], aircraftDocumentation: [], birthdays: [] };
-        current.birthdays.push(entry);
-        grouped.set(key, current);
+          const current = grouped.get(dateKey) ?? createEmptyDay();
+          current.certificates.push(entry);
+          grouped.set(dateKey, current);
       });
-    });
 
-    return grouped;
-  }, [baseDate, isPrivilegedUser, summary]);
+      // 2. Process Maintenance
+      summary.maintenance.forEach((entry) => {
+          const dateKey = normalizeDateKey(entry.maintenanceDate);
+          if (!dateKey) return;
+
+          const current = grouped.get(dateKey) ?? createEmptyDay();
+          current.maintenance.push(entry);
+          grouped.set(dateKey, current);
+      });
+
+      if (isPrivilegedUser) {
+          summary.aircraftDocumentationExpirations.forEach((entry) => {
+              const dateKey = normalizeDateKey(entry.expireDate);
+              if (!dateKey) return;
+
+              const current = grouped.get(dateKey) ?? createEmptyDay();
+              current.aircraftDocumentation.push(entry);
+              grouped.set(dateKey, current);
+          });
+      }
+
+      Array.from({ length: 12 }, (_, monthIndex) => {
+          const month = `${monthIndex + 1}`.padStart(2, "0");
+
+          summary.birthdays.forEach((entry) => {
+              const monthDay = getBirthdayMonthDay(entry.birthDate);
+              if (!monthDay || monthDay.slice(0, 2) !== month) return;
+
+              const key = `${selectedYear}-${month}-${monthDay.slice(3, 5)}`;
+              const current = grouped.get(key) ?? createEmptyDay();
+              current.birthdays.push(entry);
+              grouped.set(key, current);
+          });
+      });
+
+      return grouped;
+  }, [isPrivilegedUser, selectedYear, summary]);
 
   useEffect(() => {
     let cleanups: Array<() => void> = [];
@@ -340,92 +369,6 @@ export default function Dashboard() {
         padding: "2rem",
       }}
     >
-      <style>
-        {`
-          .dg-dashboard-calendar .dg-expiry-marker {
-            font-weight: 700;
-            border-radius: 999px;
-            cursor: help;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-certificate {
-            background: #fef2f2;
-            box-shadow: inset 0 0 0 1px #fca5a5;
-            color: #b91c1c;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-certificate:hover {
-            background: #fee2e2;
-            box-shadow: inset 0 0 0 1px #ef4444;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-certificate:not(.dg-expiry-marker-admin) {
-            background: #fff7ed;
-            box-shadow: inset 0 0 0 1px #fdba74;
-            color: #c2410c;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-certificate:not(.dg-expiry-marker-admin):hover {
-            background: #ffedd5;
-            box-shadow: inset 0 0 0 1px #f97316;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-aircraft {
-            background: #eff6ff;
-            box-shadow: inset 0 0 0 1px #93c5fd;
-            color: #1d4ed8;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-aircraft:hover {
-            background: #dbeafe;
-            box-shadow: inset 0 0 0 1px #3b82f6;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-mixed {
-            background: linear-gradient(135deg, #fee2e2 0%, #fee2e2 48%, #dbeafe 52%, #dbeafe 100%);
-            box-shadow: inset 0 0 0 1px #c084fc;
-            color: #312e81;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-birthday {
-            background: #fefce8;
-            box-shadow: inset 0 0 0 1px #facc15;
-            color: #a16207;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker-birthday:hover {
-            background: #fef9c3;
-            box-shadow: inset 0 0 0 1px #eab308;
-          }
-
-          .dg-dashboard-calendar .wx-inactive,
-          .dg-dashboard-calendar .wx-out {
-            visibility: hidden !important;
-            pointer-events: none !important;
-            border: none !important;
-            background: none !important;
-          }
-
-          .dg-dashboard-calendar .wx-inactive * {
-            display: none !important;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker {
-            cursor: ${isPrivilegedUser ? 'pointer' : 'help'};
-            transition: transform 0.1s ease, filter 0.1s ease;
-          }
-
-          .dg-dashboard-calendar .dg-expiry-marker:hover {
-            transform: scale(1.1);
-            filter: brightness(0.9);
-          }
-
-          .dg-tooltip-container {
-            padding-bottom: 15px; 
-            margin-bottom: -15px;
-          }
-        `}
-      </style>
 
       <DashboardHeader username={username ?? ""} navigate={navigate} />
 
@@ -488,13 +431,64 @@ export default function Dashboard() {
             <h6 className="mb-0 fw-bold">Calendario de planificación</h6>
           </div>
 
+          <div className="d-flex flex-column align-items-center gap-2 mb-4">
+            <div className="fw-semibold" style={{ color: "#111827", fontSize: "1rem" }}>
+              Año {selectedYear}
+            </div>
+
+            <div className="d-flex align-items-center gap-3">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setSelectedYear((year) => Math.max(MIN_CALENDAR_YEAR, year - 1))}
+                disabled={selectedYear <= MIN_CALENDAR_YEAR}
+                style={{ borderRadius: "6px" }}
+              >
+                Anterior
+              </button>
+              
+              <small className="text-muted" style={{ fontSize: "0.75rem" }}>Ir al año:</small>
+              <select
+                className="form-select form-select-sm shadow-none"
+                style={{
+                  width: "90px",
+                  cursor: "pointer",
+                  borderColor: "#D1D5DB",
+                  fontSize: "0.8rem"
+                }}
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                {Array.from(
+                  { length: MAX_CALENDAR_YEAR - MIN_CALENDAR_YEAR + 1 },
+                  (_, i) => MIN_CALENDAR_YEAR + i
+                ).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setSelectedYear((year) => Math.min(MAX_CALENDAR_YEAR, year + 1))}
+                disabled={selectedYear >= MAX_CALENDAR_YEAR}
+                style={{ borderRadius: "6px" }}
+              >
+                Siguiente
+              </button>
+            </div>
+
+          </div>
+
           <div className="d-flex flex-wrap justify-content-center gap-3">
-            {[0, 1, 2, 3, 4, 5].map((offset) => {
-              const currentMonth = addMonth(baseDate, offset);
+            {Array.from({ length: 12 }, (_, monthIndex) => {
+              const currentMonth = new Date(selectedYear, monthIndex, 1);
               return (
                 <div 
-                  key={offset} 
-                  ref={(el) => { monthRefs.current[offset] = el; }}
+                  key={`${selectedYear}-${monthIndex}`} 
+                  ref={(el) => { monthRefs.current[monthIndex] = el; }}
                   className="dg-dashboard-calendar" 
                   style={{ flex: "1 1 260px", maxWidth: "280px", border: "1px solid #F3F4F6", borderRadius: "10px", padding: "12px" }}
                 >
@@ -594,6 +588,30 @@ export default function Dashboard() {
                   )}
                 />
               )}
+
+              {/* 4. MAINTENANCE */}
+              {tooltip.details.maintenance.length > 0 && (
+                <TooltipSection
+                  title="Mantenimiento Programado"
+                  color="#15803D"
+                  bgColor="#F0FDF4"
+                  borderColor="#BBF7D0"
+                  items={tooltip.details.maintenance}
+                  onItemClick={(e) => navigate(`/aircrafts/${e.aircraftId}`)}
+                  renderContent={(e) => (
+                    <>
+                      <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>
+                        {e.manufacturer} {e.model}
+                      </div>
+                      <div style={{ color: "#6B7280", fontSize: "0.75rem" }}>SN: {e.serialNumber}</div>
+                      <div className="mt-1" style={{ color: "#15803D", fontSize: "0.75rem", fontStyle: "italic" }}>
+                        {e.description || "Revisión rutinaria"}
+                      </div>
+                    </>
+                  )}
+                />
+              )}
+
             </div>
           </div>
         )}
@@ -669,6 +687,26 @@ export default function Dashboard() {
                     onClick={() => {
                       setSelectedDay(null);
                       navigate(`/users/${item.userId}`);
+                    }}
+                  >
+                    Ver
+                  </button>
+                </div>
+              ))}
+
+              {/* MAINTENANCE IN MODAL */}
+              {selectedDay?.maintenance.map((item, i) => (
+                <div key={i} className="d-flex align-items-center justify-content-between p-3 mb-2" style={{ backgroundColor: "#F0FDF4", borderRadius: "12px", border: "1px solid #BBF7D0" }}>
+                  <div>
+                    <div className="fw-bold" style={{ color: "#15803D" }}>Mantenimiento</div>
+                    <small className="text-dark">{item.manufacturer} {item.model} ({item.serialNumber})</small>
+                  </div>
+                  <button 
+                    className="btn btn-sm px-3 shadow-sm" 
+                    style={{ backgroundColor: "#22C55E", color: "white" }}
+                    onClick={() => {
+                      setSelectedDay(null);
+                      navigate(`/aircrafts/${item.aircraftId}`);
                     }}
                   >
                     Ver
