@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 public class DashboardCertificateExpiryDTO {
+    private final Integer userId;
     private final LocalDate expireDate;
     private final String firstName;
     private final String lastName;

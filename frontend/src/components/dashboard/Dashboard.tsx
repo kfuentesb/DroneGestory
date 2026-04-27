@@ -9,7 +9,7 @@ import { Month } from "@svar-ui/react-core";
 import "@svar-ui/react-core/all.css";
 
 interface DashboardCertificateExpiration {
-  id: number;
+  userId: number;
   expireDate: string;
   firstName: string;
   lastName: string;
@@ -19,7 +19,7 @@ interface DashboardCertificateExpiration {
 }
 
 interface DashboardAircraftDocumentationExpiration {
-  id: number;
+  aircraftId: number;
   expireDate: string;
   documentationType: string | null;
   serialNumber: string | null;
@@ -28,7 +28,7 @@ interface DashboardAircraftDocumentationExpiration {
 }
 
 interface DashboardBirthday {
-  id: number;
+  userId: number;
   birthDate: string;
   firstName: string;
   lastName: string;
@@ -543,7 +543,7 @@ export default function Dashboard() {
                   bgColor="#FEF2F2"
                   borderColor="#FECACA"
                   items={tooltip.details.certificates}
-                  onItemClick={(e) => navigate(`/users/${e.id}`)}
+                  onItemClick={(e) => navigate(`/users/${e.userId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.firstName} {e.lastName}</div>
@@ -564,7 +564,7 @@ export default function Dashboard() {
                   bgColor="#EFF6FF"
                   borderColor="#BFDBFE"
                   items={tooltip.details.aircraftDocumentation}
-                  onItemClick={(e) => navigate(`/users/${e.id}`)}
+                  onItemClick={(e) => navigate(`/aircrafts/${e.aircraftId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{formatAircraftName(e) || "Aeronave"}</div>
@@ -585,7 +585,7 @@ export default function Dashboard() {
                   bgColor="#FEFCE8"
                   borderColor="#FDE047"
                   items={tooltip.details.birthdays}
-                  onItemClick={(e) => navigate(`/users/details/${e.username}`)}
+                  onItemClick={(e) => navigate(`/users/${e.userId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.firstName} {e.lastName}</div>
@@ -631,7 +631,7 @@ export default function Dashboard() {
                     className="btn btn-sm btn-danger px-3 shadow-sm" 
                     onClick={() => {
                       setSelectedDay(null);
-                      navigate(`/users/${item.id}`);
+                      navigate(`/users/${item.userId}`);
                     }}
                   >
                     Ver
@@ -649,7 +649,7 @@ export default function Dashboard() {
                     className="btn btn-sm btn-primary px-3 shadow-sm" 
                     onClick={() => {
                       setSelectedDay(null);
-                      navigate(`/aircraft/details/${item.serialNumber}`);
+                      navigate(`/aircrafts/${item.aircraftId}`);
                     }}
                   >
                     Ver
@@ -668,7 +668,7 @@ export default function Dashboard() {
                     className="btn btn-sm btn-warning px-3 shadow-sm" 
                     onClick={() => {
                       setSelectedDay(null);
-                      navigate(`/users/${item.id}`);
+                      navigate(`/users/${item.userId}`);
                     }}
                   >
                     Ver

@@ -107,6 +107,7 @@ VISUAL<br>
 -USUARIO<br>
 -Poder borrar fecha de nacimiento<br>
 -Mostrar lista de usuarios a cualquiera<br>
+-Al crear un nuevo usuario, la contraseña no se valida como cuando se modifica, arreglarlo<br>
 
 -DRONES<br>
 
@@ -115,6 +116,7 @@ VISUAL<br>
 
 -MANTENIMIENTO<br>
 -Hacer un log con los borrados<br>
+-Validar el modal, que las horas de vuelo puedan ser 0<br>
 
 -OPERACIONES<br>
 -Implementar lista de usuarios para clickar y añadir al anexo<br>

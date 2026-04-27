@@ -86,6 +86,7 @@ public class DashboardService {
     private List<DashboardCertificateExpiryDTO> mapCertificateExpirations(List<UserCertificate> certificates) {
         return certificates.stream()
                 .map(certificate -> new DashboardCertificateExpiryDTO(
+                        certificate.getUser().getId(),
                         certificate.getExpireDate(),
                         certificate.getUser().getFirstName(),
                         certificate.getUser().getLastName(),
@@ -99,6 +100,7 @@ public class DashboardService {
     private List<DashboardBirthdayDTO> mapBirthdays(List<User> users) {
         return users.stream()
                 .map(user -> new DashboardBirthdayDTO(
+                        user.getId(),
                         user.getFechaNac(),
                         user.getFirstName(),
                         user.getLastName(),
@@ -110,6 +112,7 @@ public class DashboardService {
     private List<DashboardAircraftDocumentationExpiryDTO> mapAircraftDocumentationExpirations(List<AircraftDocumentation> documentations) {
         return documentations.stream()
                 .map(documentation -> new DashboardAircraftDocumentationExpiryDTO(
+                        documentation.getAircraft().getAircraftId(),
                         documentation.getExpireDate(),
                         documentation.getDocumentationType(),
                         documentation.getAircraft().getSerialNumber(),
