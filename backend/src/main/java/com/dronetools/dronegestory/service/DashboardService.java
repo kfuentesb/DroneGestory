@@ -42,7 +42,10 @@ public class DashboardService {
                 dto.setTotalOperaciones(operationRepo.count());
                 dto.setTotalPilotos(userRepo.countByRoleAndStateTrue(UserType.PILOT));
                 dto.setTotalUsuarios(userRepo.count());
+                dto.setTotalDocumentacionUsuarios(userCertificateRepository.count());
                 dto.setTotalDrones(aircraftRepo.count());
+                dto.setTotalMantenimientos(maintenanceRepo.count());
+                dto.setTotalDocumentacionAeronaves(aircraftDocumentationRepository.count());
                 
                 List<User> usersWithBirthday = userRepo.findAllWithBirthday();
                 dto.setBirthdays(mapBirthdays(usersWithBirthday));
