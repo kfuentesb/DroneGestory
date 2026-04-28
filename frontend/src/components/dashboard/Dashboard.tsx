@@ -46,6 +46,12 @@
     model: string | null;
   }
 
+  interface DashboardOperationPlanned {
+    operationId: number;
+    codigo: string;
+    fechaPrevista: string;
+  }
+
   interface DashboardData {
     totalUsuarios: number;
     totalPilotos: number;
@@ -57,7 +63,8 @@
     certificateExpirations: DashboardCertificateExpiration[];
     aircraftDocumentationExpirations: DashboardAircraftDocumentationExpiration[];
     birthdays: DashboardBirthday[];
-    maintenance: DashboardMaintenanceDate[]
+    maintenance: DashboardMaintenanceDate[];
+    operations: DashboardOperationPlanned[];
   }
 
   interface TooltipSectionProps<T> {
@@ -228,7 +235,8 @@
             certificateExpirations: data.certificateExpirations ?? [],
             aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
             birthdays: data.birthdays ?? [],
-            maintenance: data.maintenance ?? []
+            maintenance: data.maintenance ?? [],
+            operations: data.operations ?? [],
           };
 
           setSummary(nextSummary);

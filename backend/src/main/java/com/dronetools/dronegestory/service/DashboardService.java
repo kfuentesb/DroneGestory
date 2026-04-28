@@ -5,8 +5,10 @@ import com.dronetools.dronegestory.dto.DashboardBirthdayDTO;
 import com.dronetools.dronegestory.dto.DashboardCertificateExpiryDTO;
 import com.dronetools.dronegestory.dto.DashboardDTO;
 import com.dronetools.dronegestory.dto.DashboardMaintenanceDateDTO;
+import com.dronetools.dronegestory.dto.DashboardOperationDTO;
 import com.dronetools.dronegestory.model.AircraftDocumentation;
 import com.dronetools.dronegestory.model.Maintenance;
+import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
@@ -46,6 +48,8 @@ public class DashboardService {
                 dto.setTotalDrones(aircraftRepo.count());
                 dto.setTotalMantenimientos(maintenanceRepo.count());
                 dto.setTotalDocumentacionAeronaves(aircraftDocumentationRepository.count());
+
+                dto.setOperations(mapOperations(operationRepo.findAllWithAnexos4()));
                 
                 List<User> usersWithBirthday = userRepo.findAllWithBirthday();
                 dto.setBirthdays(mapBirthdays(usersWithBirthday));
@@ -129,6 +133,25 @@ public class DashboardService {
                                 documentation.getAircraft().getAircraftModel().getManufacturer(),
                                 documentation.getAircraft().getAircraftModel().getModel()
                         ))
+                        .toList();
+        }
+
+        private List<DashboardOperationDTO> mapOperations(List<Operation> operations) {
+                return operations.stream()
+                        .map(operation -> {
+                                if (operation.getAnexo4Actual() == null) {
+                                        return null;
+                                }
+                                if (operation.getAnexo4Actual().getFechaHoraPrevista() == null) {
+                                        return null;
+                                }
+                                return new DashboardOperationDTO(
+                                        operation.getIdOperacion(),
+                                        operation.getCodigo(),
+                                        operation.getAnexo4Actual().getFechaHoraPrevista()
+                                );
+                        })
+                        .filter(item -> item != null)
                         .toList();
         }
 

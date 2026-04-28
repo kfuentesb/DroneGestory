@@ -44,6 +44,13 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
     @Query("""
         SELECT DISTINCT o
         FROM Operation o
+        LEFT JOIN FETCH o.anexos4
+    """)
+    List<Operation> findAllWithAnexos4();
+
+    @Query("""
+        SELECT DISTINCT o
+        FROM Operation o
         LEFT JOIN FETCH o.assignedUsers
         WHERE o.idOperacion = :id
     """)

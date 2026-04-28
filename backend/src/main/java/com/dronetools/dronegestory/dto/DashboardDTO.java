@@ -19,4 +19,5 @@ public class DashboardDTO {
     private List<DashboardAircraftDocumentationExpiryDTO> aircraftDocumentationExpirations = new ArrayList<>();
     private List<DashboardBirthdayDTO> birthdays = new ArrayList<>();
     private List<DashboardMaintenanceDateDTO> maintenance = new ArrayList<>();
+    private List<DashboardOperationDTO> operations = new ArrayList<>();
 }
