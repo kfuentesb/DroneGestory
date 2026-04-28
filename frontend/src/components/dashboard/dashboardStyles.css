@@ -1,0 +1,74 @@
+.dg-dashboard-calendar .dg-expiry-marker {
+    font-weight: 700;
+    border-radius: 999px;
+    cursor: help;
+    transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker:hover {
+    transform: scale(1.1);
+    filter: brightness(0.9);
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-certificate {
+    background: #fff7ed;
+    box-shadow: inset 0 0 0 1px #fdba74;
+    color: #c2410c;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-certificate:hover {
+    background: #ffedd5;
+    box-shadow: inset 0 0 0 1px #f97316;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-aircraft {
+    background: #eff6ff;
+    box-shadow: inset 0 0 0 1px #93c5fd;
+    color: #1d4ed8;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-aircraft:hover {
+    background: #dbeafe;
+    box-shadow: inset 0 0 0 1px #3b82f6;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-birthday {
+    background: #fefce8;
+    box-shadow: inset 0 0 0 1px #facc15;
+    color: #a16207;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-birthday:hover {
+    background: #fef9c3;
+    box-shadow: inset 0 0 0 1px #eab308;
+}
+
+.dg-expiry-marker-maint-done {
+    background-color: #15803d !important;
+    box-shadow: inset 0 0 0 1px #166534 !important;
+    color: white !important;
+}
+
+.dg-expiry-marker-maint-pending {
+    background-color: #f0fdf4 !important;
+    border: 2px solid #22c55e !important;
+    color: #15803d !important;
+}
+
+.dg-dashboard-calendar .dg-expiry-marker-mixed {
+    background: var(--mixed-bg, #e5e7eb) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.dg-dashboard-calendar .wx-inactive,
+.dg-dashboard-calendar .wx-out {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.dg-tooltip-container {
+    padding-bottom: 15px; 
+    margin-bottom: -15px;
+}

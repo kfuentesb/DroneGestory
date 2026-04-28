@@ -4,11 +4,14 @@ import com.dronetools.dronegestory.dto.DashboardAircraftDocumentationExpiryDTO;
 import com.dronetools.dronegestory.dto.DashboardBirthdayDTO;
 import com.dronetools.dronegestory.dto.DashboardCertificateExpiryDTO;
 import com.dronetools.dronegestory.dto.DashboardDTO;
+import com.dronetools.dronegestory.dto.DashboardMaintenanceDateDTO;
 import com.dronetools.dronegestory.model.AircraftDocumentation;
+import com.dronetools.dronegestory.model.Maintenance;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftRepository;
+import com.dronetools.dronegestory.repository.MaintenanceRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
@@ -22,108 +25,113 @@ import java.util.List;
 
 @Service
 public class DashboardService {
-    private static final Logger log = LoggerFactory.getLogger(DashboardService.class);
+        private static final Logger log = LoggerFactory.getLogger(DashboardService.class);
 
-    @Autowired private OperationRepository operationRepo;
-    @Autowired private UserRepository userRepo;
-    @Autowired private AircraftRepository aircraftRepo;
-    @Autowired private AircraftDocumentationRepository aircraftDocumentationRepository;
-    @Autowired private UserCertificateRepository userCertificateRepository;
-    @Autowired private UserService userService;
+        @Autowired private OperationRepository operationRepo;
+        @Autowired private UserRepository userRepo;
+        @Autowired private AircraftRepository aircraftRepo;
+        @Autowired private AircraftDocumentationRepository aircraftDocumentationRepository;
+        @Autowired private UserCertificateRepository userCertificateRepository;
+        @Autowired private MaintenanceRepository maintenanceRepo;
+        @Autowired private UserService userService;
 
-    public DashboardDTO getDashboard() {
-        DashboardDTO dto = new DashboardDTO();
-        dto.setTotalOperaciones(operationRepo.count());
-        dto.setTotalPilotos(userRepo.countByRoleAndStateTrue(UserType.PILOT));
-        dto.setTotalUsuarios(userRepo.count());
-        dto.setTotalDrones(aircraftRepo.count());
-        List<User> usersWithBirthday = userRepo.findAllWithBirthday();
-        dto.setBirthdays(mapBirthdays(usersWithBirthday));
+        public DashboardDTO getDashboard() {
+                DashboardDTO dto = new DashboardDTO();
+                
 
-        User currentUser = userService.getAuthenticatedUser();
-        boolean privileged = isPrivileged(currentUser);
-        log.info(
-                "Dashboard request user={} privileged={} rawCounts users={} usersWithBirthday={} userCertificates={} aircraftDocumentation={}",
-                currentUser.getUsername(),
-                privileged,
-                userRepo.count(),
-                usersWithBirthday.size(),
-                userCertificateRepository.count(),
-                aircraftDocumentationRepository.count()
-        );
+                dto.setTotalOperaciones(operationRepo.count());
+                dto.setTotalPilotos(userRepo.countByRoleAndStateTrue(UserType.PILOT));
+                dto.setTotalUsuarios(userRepo.count());
+                dto.setTotalDrones(aircraftRepo.count());
+                
+                List<User> usersWithBirthday = userRepo.findAllWithBirthday();
+                dto.setBirthdays(mapBirthdays(usersWithBirthday));
 
-        if (isPrivileged(currentUser)) {
-            List<UserCertificate> expiringCertificates = userCertificateRepository.findAllExpiringWithUser();
-            List<AircraftDocumentation> expiringAircraftDocumentation =
-                    aircraftDocumentationRepository.findAllInsuranceExpiringWithAircraft();
+                List<Maintenance> maintenanceList = maintenanceRepo.findAll(); 
+                dto.setMaintenance(mapMaintenance(maintenanceList));
 
-            dto.setCertificateExpirations(mapCertificateExpirations(expiringCertificates));
-            dto.setAircraftDocumentationExpirations(mapAircraftDocumentationExpirations(expiringAircraftDocumentation));
+                User currentUser = userService.getAuthenticatedUser();
+                if (isPrivileged(currentUser)) {
+                dto.setCertificateExpirations(mapCertificateExpirations(
+                        userCertificateRepository.findAllExpiringWithUser()));
+                dto.setAircraftDocumentationExpirations(mapAircraftDocumentationExpirations(
+                        aircraftDocumentationRepository.findAllInsuranceExpiringWithAircraft()));
+                } else {
+                dto.setCertificateExpirations(mapCertificateExpirations(
+                        userCertificateRepository.findAllExpiringWithUserByUserId(currentUser.getId())));
+                }
 
-            log.info(
-                    "Dashboard filtered privileged user={} certificateExpirations={} aircraftDocumentationExpirations={} birthdays={}",
-                    currentUser.getUsername(),
-                    expiringCertificates.size(),
-                    expiringAircraftDocumentation.size(),
-                    usersWithBirthday.size()
-            );
-        } else {
-            List<UserCertificate> userCertificates =
-                    userCertificateRepository.findAllExpiringWithUserByUserId(currentUser.getId());
-            dto.setCertificateExpirations(mapCertificateExpirations(userCertificates));
-
-            log.info(
-                    "Dashboard filtered standard user={} certificateExpirations={} birthdays={}",
-                    currentUser.getUsername(),
-                    userCertificates.size(),
-                    usersWithBirthday.size()
-            );
+                return dto;
         }
 
-        return dto;
-    }
+        private List<DashboardMaintenanceDateDTO> mapMaintenance(List<Maintenance> items) {
+                return items.stream()
+                        .map(m -> {
+                                java.time.LocalDate maintenanceDate = null;
+                                if (m.getMaintenanceDate() != null) {
+                                        maintenanceDate = new java.sql.Date(m.getMaintenanceDate().getTime()).toLocalDate();
+                                }
 
-    private List<DashboardCertificateExpiryDTO> mapCertificateExpirations(List<UserCertificate> certificates) {
-        return certificates.stream()
-                .map(certificate -> new DashboardCertificateExpiryDTO(
-                        certificate.getUser().getId(),
-                        certificate.getExpireDate(),
-                        certificate.getUser().getFirstName(),
-                        certificate.getUser().getLastName(),
-                        certificate.getUser().getUsername(),
-                        certificate.getCertificateName(),
-                        certificate.getCertificateType()
-                ))
-                .toList();
-    }
+                                java.time.LocalDate nextMaintenanceDate = null;
+                                if (m.getNextMaintenanceDate() != null) {
+                                        nextMaintenanceDate = new java.sql.Date(m.getNextMaintenanceDate().getTime()).toLocalDate();
+                                }
 
-    private List<DashboardBirthdayDTO> mapBirthdays(List<User> users) {
-        return users.stream()
-                .map(user -> new DashboardBirthdayDTO(
-                        user.getId(),
-                        user.getFechaNac(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getUsername()
-                ))
-                .toList();
-    }
+                                return new DashboardMaintenanceDateDTO(
+                                        m.getAircraft().getAircraftId(),
+                                        maintenanceDate,
+                                        nextMaintenanceDate,
+                                        m.getReviewType(),          
+                                        m.getAircraft().getSerialNumber(),
+                                        m.getAircraft().getAircraftModel().getManufacturer(),
+                                        m.getAircraft().getAircraftModel().getModel()
+                                );
+                        })
+                        .toList();
+        }
 
-    private List<DashboardAircraftDocumentationExpiryDTO> mapAircraftDocumentationExpirations(List<AircraftDocumentation> documentations) {
-        return documentations.stream()
-                .map(documentation -> new DashboardAircraftDocumentationExpiryDTO(
-                        documentation.getAircraft().getAircraftId(),
-                        documentation.getExpireDate(),
-                        documentation.getDocumentationType(),
-                        documentation.getAircraft().getSerialNumber(),
-                        documentation.getAircraft().getAircraftModel().getManufacturer(),
-                        documentation.getAircraft().getAircraftModel().getModel()
-                ))
-                .toList();
-    }
+        private List<DashboardCertificateExpiryDTO> mapCertificateExpirations(List<UserCertificate> certificates) {
+                return certificates.stream()
+                        .map(certificate -> new DashboardCertificateExpiryDTO(
+                                certificate.getUser().getId(),
+                                certificate.getExpireDate(),
+                                certificate.getUser().getFirstName(),
+                                certificate.getUser().getLastName(),
+                                certificate.getUser().getUsername(),
+                                certificate.getCertificateName(),
+                                certificate.getCertificateType()
+                        ))
+                        .toList();
+        }
 
-    private boolean isPrivileged(User user) {
-        return user.getEffectiveRoles().contains(UserType.ADMIN)
-                || user.getEffectiveRoles().contains(UserType.MANAGER);
-    }
-}
+        private List<DashboardBirthdayDTO> mapBirthdays(List<User> users) {
+                return users.stream()
+                        .map(user -> new DashboardBirthdayDTO(
+                                user.getId(),
+                                user.getFechaNac(),
+                                user.getFirstName(),
+                                user.getLastName(),
+                                user.getUsername()
+                        ))
+                        .toList();
+        }
+
+        private List<DashboardAircraftDocumentationExpiryDTO> mapAircraftDocumentationExpirations(List<AircraftDocumentation> documentations) {
+                return documentations.stream()
+                        .map(documentation -> new DashboardAircraftDocumentationExpiryDTO(
+                                documentation.getAircraft().getAircraftId(),
+                                documentation.getExpireDate(),
+                                documentation.getDocumentationType(),
+                                documentation.getAircraft().getSerialNumber(),
+                                documentation.getAircraft().getAircraftModel().getManufacturer(),
+                                documentation.getAircraft().getAircraftModel().getModel()
+                        ))
+                        .toList();
+        }
+
+        private boolean isPrivileged(User user) {
+                return user.getEffectiveRoles().contains(UserType.ADMIN)
+                        || user.getEffectiveRoles().contains(UserType.MANAGER);
+        }
+
+        }

@@ -102,15 +102,13 @@ VISUAL<br>
 
 -GENERALES<br>
 -Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
--Crear la vista de opciones<br>
 -Arreglar la toma de IP en local y en servidor<br>
+-Arreglar lo de mostrar mantenimientos en el calendario<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
--Arreglar mostrar usuario en detalle<br>
 
 -DRONES<br>
--Si me meto como piloto, esconder mostrar por modelo<br>
 
 -HORAS DE VUELO<br>
 

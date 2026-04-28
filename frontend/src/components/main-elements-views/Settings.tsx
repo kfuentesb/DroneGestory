@@ -36,7 +36,7 @@ export default function Settings() {
     <div className="container py-4">
       <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
         <div className="card-body p-4">
-          <h2 className="mb-3" style={{ color: "#1E1E1E" }}>Configuracion</h2>
+          <h2 className="mb-3" style={{ color: "#1E1E1E" }}>Configuración</h2>
           <p className="text-muted mb-4">Opciones generales del sistema.</p>
 
           {canDownloadAuditLog ? (
