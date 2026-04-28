@@ -12,7 +12,6 @@ export interface DetailsComponentProps {
     allowEdit?: boolean
     allowDelete?: boolean
     onDelete?: () => Promise<void>
-    onBack?: () => void
     validateForm?: (values: any) => Record<string, string | null>
     showCertificates?: boolean
     certificateSectionType?: "user" | "aircraft" | "model"

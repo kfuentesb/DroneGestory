@@ -41,7 +41,6 @@ export default function AircraftModelDetail() {
       allowEdit={canManage}
       allowDelete={canManage}
       onDelete={handleDelete}
-      onBack={() => navigate("/aircraft-models")}
       validateForm={validateForm}
       certificateSectionType="model"
       clearableFieldKeys={[

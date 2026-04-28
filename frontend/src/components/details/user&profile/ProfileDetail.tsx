@@ -76,7 +76,6 @@ export default function ProfileDetail() {
             fields={processedFields}
             allowEdit={true}
             allowDelete={false}
-            onBack={() => navigate("/home")}
             validateForm={validateForm}
             certificateSectionType="user"
             defaultImage="user"

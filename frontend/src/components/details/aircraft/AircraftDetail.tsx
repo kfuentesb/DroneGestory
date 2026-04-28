@@ -90,7 +90,6 @@ export default function AircraftDetail() {
             allowDelete={canManage}
 
             onDelete={handleDelete}
-            onBack={() => navigate("/aircrafts")}
 
             validateForm={validateForm}
             certificateSectionType="aircraft"

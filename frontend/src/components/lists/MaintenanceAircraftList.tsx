@@ -219,7 +219,7 @@ export default function MaintenanceAircraftList() {
                 <div className="card-body">
                     <button 
                         className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                        onClick={() => navigate("/maintenance")}
+                        onClick={() => navigate(-1)}
                         style={styles.backBtn}
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}

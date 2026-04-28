@@ -238,86 +238,75 @@
     const isData = (s: SummaryState): s is DashboardData => s !== null && !("error" in s);
 
     const isPrivilegedUser = hasRole("ADMIN") || hasRole("MANAGER");
+    const isMaintenanceEnabled = hasRole("ADMIN") || hasRole("MAINTENANCE");
 
     const expirationsByDate = useMemo(() => {
       const grouped = new Map<string, CalendarDayDetails>();
-      if (!isData(summary)) {
-          return grouped;
-      }
+      if (!isData(summary)) return grouped;
+
       const createEmptyDay = (): CalendarDayDetails => ({
-          certificates: [],
-          aircraftDocumentation: [],
-          birthdays: [],
-          maintenance: []
+        certificates: [],
+        aircraftDocumentation: [],
+        birthdays: [],
+        maintenance: []
       });
 
       summary.certificateExpirations.forEach((entry) => {
-          const dateKey = normalizeDateKey(entry.expireDate);
-          if (!dateKey) return;
-
-          const current = grouped.get(dateKey) ?? createEmptyDay();
-          current.certificates.push(entry);
-          grouped.set(dateKey, current);
-      });
-
-      summary.maintenance.forEach((entry) => {
-          const dateKey = normalizeDateKey(entry.maintenanceDate);
-          if (!dateKey) return;
-
-          const current = grouped.get(dateKey) ?? createEmptyDay();
-          current.maintenance.push(entry);
-          grouped.set(dateKey, current);
+        const dateKey = normalizeDateKey(entry.expireDate);
+        if (!dateKey) return;
+        const current = grouped.get(dateKey) ?? createEmptyDay();
+        current.certificates.push(entry);
+        grouped.set(dateKey, current);
       });
 
       if (isPrivilegedUser) {
-          summary.aircraftDocumentationExpirations.forEach((entry) => {
-              const dateKey = normalizeDateKey(entry.expireDate);
-              if (!dateKey) return;
-
-              const current = grouped.get(dateKey) ?? createEmptyDay();
-              current.aircraftDocumentation.push(entry);
-              grouped.set(dateKey, current);
-          });
+        summary.aircraftDocumentationExpirations.forEach((entry) => {
+          const dateKey = normalizeDateKey(entry.expireDate);
+          if (!dateKey) return;
+          const current = grouped.get(dateKey) ?? createEmptyDay();
+          current.aircraftDocumentation.push(entry);
+          grouped.set(dateKey, current);
+        });
       }
 
       summary.birthdays.forEach((entry) => {
-          const monthDay = getBirthdayMonthDay(entry.birthDate);
-          if (!monthDay) return;
-
-          const key = `${selectedYear}-${monthDay}`;
-          const current = grouped.get(key) ?? createEmptyDay();
-          current.birthdays.push(entry);
-          grouped.set(key, current);
+        const monthDay = getBirthdayMonthDay(entry.birthDate);
+        if (!monthDay) return;
+        const key = `${selectedYear}-${monthDay}`;
+        const current = grouped.get(key) ?? createEmptyDay();
+        current.birthdays.push(entry);
+        grouped.set(key, current);
       });
+      
+      if(!isMaintenanceEnabled) return grouped;
 
-      // Mantenimiento Realizado (Historial)
       summary.maintenance.forEach((entry) => {
-          const dateKey = normalizeDateKey(entry.maintenanceDate);
-          if (!dateKey) return;
+        const dateKey = normalizeDateKey(entry.maintenanceDate);
+        if (!dateKey) return;
 
-          const current = grouped.get(dateKey) ?? createEmptyDay();
-          // Añadimos una bandera "isDone" para el CSS
-          current.maintenance.push({ ...entry, isDone: true } as any); 
-          grouped.set(dateKey, current);
+        const current = grouped.get(dateKey) ?? createEmptyDay();
+        current.maintenance.push({ ...entry, isDone: true } as any);
+        grouped.set(dateKey, current);
       });
 
-      // Mantenimiento Programado (Solo el último de cada dron)
       const latestMaintenanceMap = new Map<number, DashboardMaintenanceDate>();
+      
       summary.maintenance.forEach((entry) => {
-          const existing = latestMaintenanceMap.get(entry.aircraftId);
-          if (!existing || new Date(entry.nextMaintenanceDate) > new Date(existing.nextMaintenanceDate)) {
-              latestMaintenanceMap.set(entry.aircraftId, entry);
-          }
+        if (!entry.nextMaintenanceDate) return;
+        
+        const existing = latestMaintenanceMap.get(entry.aircraftId);
+        if (!existing || new Date(entry.nextMaintenanceDate) > new Date(existing.nextMaintenanceDate)) {
+          latestMaintenanceMap.set(entry.aircraftId, entry);
+        }
       });
 
       latestMaintenanceMap.forEach((entry) => {
-          const dateKey = normalizeDateKey(entry.nextMaintenanceDate); 
-          if (!dateKey) return;
+        const dateKey = normalizeDateKey(entry.nextMaintenanceDate); 
+        if (!dateKey) return;
 
-          const current = grouped.get(dateKey) ?? createEmptyDay();
-          // Añadimos una bandera "isDone: false"
-          current.maintenance.push({ ...entry, isDone: false } as any);
-          grouped.set(dateKey, current);
+        const current = grouped.get(dateKey) ?? createEmptyDay();
+        current.maintenance.push({ ...entry, isDone: false } as any);
+        grouped.set(dateKey, current);
       });
 
       return grouped;
@@ -643,12 +632,12 @@
                     renderContent={(e: any) => (
                       <>
                         <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>
-                          {e.manufacturer} {e.model}
+                          {e.manufacturer} {e.model} {e.serialNumber ? `(S/N: ${e.serialNumber})` : ""}
                         </div>
                         <div className="mt-1" style={{ 
                             color: e.isDone ? "#15803D" : "#166534", 
                             fontSize: "0.75rem",
-                            fontWeight: e.isDone ? "normal" : "bold"
+                            fontWeight: e.isDone ? "bold" : "normal"
                         }}>
                           {e.isDone ? "Realizado" : "Programado"}
                         </div>
