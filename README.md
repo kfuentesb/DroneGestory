@@ -102,6 +102,7 @@ VISUAL<br>
 
 -GENERALES<br>
 -Cuando el log está vacío da error 404 al intentar descargar el AuditLog.txt<br>
+-Arreglar agregar eventos especiales, el backend no da correctamente la key de la fecha<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>

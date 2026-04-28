@@ -9,178 +9,15 @@ import { Month } from "@svar-ui/react-core";
 import "@svar-ui/react-core/all.css";
 import "./dashboardStyles.css";
 
-interface DashboardCertificateExpiration {
-  userId: number;
-  expireDate: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-  certificateName: string | null;
-  certificateType: string | null;
-}
-
-interface DashboardAircraftDocumentationExpiration {
-  aircraftId: number;
-  expireDate: string;
-  documentationType: string | null;
-  serialNumber: string | null;
-  manufacturer: string | null;
-  model: string | null;
-}
-
-interface DashboardBirthday {
-  userId: number;
-  birthDate: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-}
-
-interface DashboardMaintenanceDate {
-  aircraftId: number;
-  maintenanceDate: string;
-  nextMaintenanceDate: string;
-  description: string | null;
-  serialNumber: string | null;
-  manufacturer: string | null;
-  model: string | null;
-}
-
-interface DashboardOperationPlanned {
-  operationId: number;
-  codigo: string;
-  fechaPrevista: string;
-}
-
-interface DashboardData {
-  totalUsuarios: number;
-  totalPilotos: number;
-  totalDocumentacionUsuarios: number;
-  totalOperaciones: number;
-  totalDrones: number;
-  totalMantenimientos: number;
-  totalDocumentacionAeronaves: number;
-  certificateExpirations: DashboardCertificateExpiration[];
-  aircraftDocumentationExpirations: DashboardAircraftDocumentationExpiration[];
-  birthdays: DashboardBirthday[];
-  maintenance: DashboardMaintenanceDate[];
-  operations: DashboardOperationPlanned[];
-  extraEvents: ExtraDate[];
-}
-
-interface TooltipSectionProps<T> {
-  title: string;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  items: T[];
-  renderContent: (entry: T) => React.ReactNode;
-}
-
-type SummaryState = DashboardData | { error: string } | null;
-
-type CalendarDayDetails = {
-  dateKey: string;
-  certificates: DashboardCertificateExpiration[];
-  aircraftDocumentation: DashboardAircraftDocumentationExpiration[];
-  birthdays: DashboardBirthday[];
-  maintenance: DashboardMaintenanceDate[];
-  operations: DashboardOperationPlanned[];
-  extraEvents: ExtraDate[];
-};
-
-type TooltipState = {
-  x: number;
-  y: number;
-  details: CalendarDayDetails;
-} | null;
-
-interface ExtraDate {
-  idExtraDate?: number;
-  extraDate: string;
-  description: string;
-}
-
-type ApiDateValue = string | number[] | null | undefined;
-
-const MIN_CALENDAR_YEAR = 2000;
-const MAX_CALENDAR_YEAR = 2100;
-
-const toDateKey = (date: Date) =>
-  `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}-${`${date.getDate()}`.padStart(2, "0")}`;
-
-const markerClassForDate = (dateKey: string) => `dg-expiry-date-${dateKey}`;
-
-const getMonthLabel = (date: Date) => {
-  const value = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" }).format(date);
-  return value.charAt(0).toUpperCase() + value.slice(1);
-};
-
-const getMarkerClassName = (details?: CalendarDayDetails) => {
-  if (!details) return "";
-
-  const hasCert = details.certificates.length > 0;
-  const hasAir = details.aircraftDocumentation.length > 0;
-  const hasBirth = details.birthdays.length > 0;
-  const hasMaint = details.maintenance.length > 0;
-  const hasOps = details.operations.length > 0;
-  const hasExtra = details.extraEvents.length > 0;
-
-  const activeCategories = [hasCert, hasAir, hasBirth, hasMaint, hasOps, hasExtra].filter(Boolean).length;
-
-  if (activeCategories === 1 && hasMaint) {
-    const hasPending = details.maintenance.some((m: any) => !m.isDone);
-    return `dg-expiry-marker ${hasPending ? "dg-expiry-marker-maint-pending" : "dg-expiry-marker-maint-done"}`;
-  }
-
-  if (activeCategories > 1) return "dg-expiry-marker dg-expiry-marker-mixed";
-  if (hasCert) return "dg-expiry-marker dg-expiry-marker-certificate";
-  if (hasAir) return "dg-expiry-marker dg-expiry-marker-aircraft";
-  if (hasBirth) return "dg-expiry-marker dg-expiry-marker-birthday";
-  if (hasOps) return "dg-expiry-marker dg-expiry-marker-operation";
-  if (hasExtra) return "dg-expiry-marker dg-expiry-marker-extra";
-
-  return "";
-};
-const formatCertificateTitle = (entry: DashboardCertificateExpiration) =>
-  entry.certificateName?.trim() || entry.certificateType?.trim() || "Certificado";
-
-const formatCertificateCategory = (entry: DashboardCertificateExpiration) =>
-  entry.certificateType?.trim() || "Sin categoría";
-
-const formatAircraftName = (entry: DashboardAircraftDocumentationExpiration) =>
-  [entry.manufacturer, entry.model].filter(Boolean).join(" ");
-
-const formatOperationTime = (value: ApiDateValue) => {
-  if (!value || typeof value !== "string") {
-    return null;
-  }
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-  return new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(parsed);
-};
-
-const normalizeDateKey = (value: ApiDateValue): string | null => {
-  if (!value) {
-    return null;
-  }
-
-  if (Array.isArray(value) && value.length >= 3) {
-    const [year, month, day] = value;
-    return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  }
-
-  if (typeof value === "string") {
-    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (match) {
-      return `${match[1]}-${match[2]}-${match[3]}`;
-    }
-  }
-
-  return null;
-};
+import {
+  type DashboardMaintenanceDate, type DashboardData, 
+  type TooltipSectionProps, type SummaryState, 
+  type CalendarDayDetails, type TooltipState, 
+  type ExtraDate , type ApiDateValue,
+  markerClassForDate, getMonthLabel, toDateKey, MIN_CALENDAR_YEAR, MAX_CALENDAR_YEAR,
+  normalizeDateKey, formatCertificateCategory, formatAircraftName, formatOperationTime,
+  getMarkerClassName
+} from "./utilsDashboard";
 
 const getBirthdayMonthDay = (birthDate: ApiDateValue) => {
   const normalized = normalizeDateKey(birthDate);
@@ -487,7 +324,6 @@ export default function Dashboard() {
     }
   };
 
-  // 3. Función para iniciar edición
   const handleStartEdit = (item: ExtraDate) => {
     if (item.idExtraDate) {
       setNewDescription(item.description);
@@ -496,50 +332,36 @@ export default function Dashboard() {
     }
   };
 
-  // 4. Función de Guardado Unificada (Crear y Editar)
   const handleSaveExtraDate = async () => {
-    if (!newDescription.trim() || !selectedDay) return;
-
-    // Si es nuevo, validar límite
-    if (!editingEventId && selectedDay.extraEvents.length >= 3) {
-      alert("No puedes añadir más de 3 eventos extra en un mismo día.");
-      return;
-    }
+    if (!newDescription.trim() || !selectedDay?.dateKey) return;
+    const cleanDate = typeof selectedDay.dateKey === 'string' 
+      ? selectedDay.dateKey.split('T')[0] 
+      : selectedDay.dateKey;
 
     const payload = {
-      extraDate: selectedDay.dateKey,
+      extraDate: cleanDate, 
       description: newDescription.trim()
     };
 
-    try {
-      const url = editingEventId ? `/api/extra-dates/${editingEventId}` : "/api/extra-dates";
-      const method = editingEventId ? "PUT" : "POST";
+    console.log("Payload final enviado:", payload);
 
-      const res = await apiFetch(url, {
-        method,
+    try {
+      const res = await apiFetch(editingEventId ? `/api/extra-dates/${editingEventId}` : "/api/extra-dates", {
+        method: editingEventId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
 
-      if (res && res.ok) {
-        // Limpiar estados y cerrar
-        setNewDescription("");
-        setEditingEventId(null);
-        setShowForm(false);
-        setSelectedDay(null);
-        
-        // Recargar para ver los cambios en el calendario global
-        window.location.reload(); 
+      if (res?.ok) {
+        window.location.reload();
       } else {
         const errorData = await res?.json();
-        alert("Error: " + (errorData?.message || "Operación fallida"));
+        console.error("Detalle del error 500:", errorData);
       }
     } catch (error) {
-      console.error(error);
-      alert("Error de conexión");
+      console.error("Error de red:", error);
     }
   };
-
 
   return (
     <main
@@ -594,7 +416,7 @@ export default function Dashboard() {
               </div>
             ) : isData(summary) ? (
               <>
-                {hasRole("ADMIN") || hasRole("MANAGER") ? (
+                {isPrivilegedUser ? (
                   <>
                     <StatCard icon="bi-people-fill" value={summary.totalUsuarios} label="Usuarios Registrados" color="orange" delay={0} />
                     <StatCard icon="bi-file-earmark-text-fill" value={summary.totalDocumentacionUsuarios} label="Docs. Usuarios" color="orange" delay={50} />
@@ -708,7 +530,10 @@ export default function Dashboard() {
                       const existingDetails = expirationsByDate.get(key);
                       
                       if (existingDetails) {
-                        setSelectedDay(existingDetails);
+                        setSelectedDay({
+                          ...existingDetails,
+                          dateKey: key 
+                        });
                       } else {
                         setSelectedDay({
                           dateKey: key,
@@ -877,75 +702,77 @@ export default function Dashboard() {
             
             <div className="p-4">
               {/* Solo administradores/managers pueden ver el botón de añadir y el formulario */}
-              {(hasRole("ADMIN") || hasRole("MANAGER")) && selectedDay && (
-              <>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h6 className="fw-bold mb-0">Eventos especiales</h6>
-                  <button
-                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-                    onClick={() => {
-                      if (showForm) {
-                        setEditingEventId(null);
-                        setNewDescription("");
-                      }
-                      setShowForm(!showForm);
-                    }}
-                    disabled={!showForm && selectedDay.extraEvents.length >= 3}
-                  >
-                    <i className={`bi ${showForm ? "bi-x-lg" : "bi-plus-lg"}`}></i>
-                    {showForm ? "Cancelar" : "Añadir"}
-                  </button>
-                </div>
-
-                {/* 1. Formulario de Creación/Edición */}
-                {showForm && (
-                  <div className="mb-3 p-3" style={{ backgroundColor: "#F9FAFB", borderRadius: "12px", border: "1px solid #E5E7EB" }}>
-                    <input
-                      className="form-control form-control-sm mb-2"
-                      placeholder="Descripción del evento..."
-                      value={newDescription}
-                      onChange={(e) => setNewDescription(e.target.value)}
-                    />
+              {isPrivilegedUser && selectedDay && (
+                <>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h6 className="fw-bold mb-0">Eventos especiales</h6>
                     <button
-                      className="btn btn-sm w-100"
-                      style={{ backgroundColor: editingEventId ? "#0D6EFD" : "#DB2777", color: "white" }}
-                      onClick={handleSaveExtraDate}
+                      className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+                      onClick={() => {
+                        if (showForm) {
+                          setEditingEventId(null);
+                          setNewDescription("");
+                        }
+                        setShowForm(!showForm);
+                      }}
+                      disabled={!showForm && selectedDay.extraEvents.length >= 3}
                     >
-                      {editingEventId ? "Actualizar Evento" : "Guardar Evento"}
+                      <i className={`bi ${showForm ? "bi-x-lg" : "bi-plus-lg"}`}></i>
+                      {showForm ? "Cancelar" : "Añadir"}
                     </button>
                   </div>
-                )}
 
-                {/* 2. Lista de Eventos Extra con botones de acción */}
-                {selectedDay.extraEvents.map((item, i) => (
-                  <div key={item.idExtraDate || i} className="p-3 mb-2" style={{ backgroundColor: "#FDF2F8", borderRadius: "12px", border: "1px solid #FBCFE8" }}>
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div className="fw-bold" style={{ color: "#BE185D" }}>Evento Extra</div>
-                        <small className="text-dark">{item.description}</small>
-                      </div>
-                      <div className="d-flex gap-1">
-                        <button
-                          className="btn btn-sm text-primary p-1"
-                          title="Editar"
-                          onClick={() => handleStartEdit(item)} // Asegúrate de tener esta función
-                        >
-                          <i className="bi bi-pencil-square"></i>
-                        </button>
-                        <button
-                          className="btn btn-sm text-danger p-1"
-                          title="Eliminar"
-                          onClick={() => item.idExtraDate && handleDeleteExtraEvent(item.idExtraDate)} // Asegúrate de tener esta función
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
-                      </div>
+                  {/* 1. Formulario de Creación/Edición */}
+                  {showForm && (
+                    <div className="mb-3 p-3" style={{ backgroundColor: "#F9FAFB", borderRadius: "12px", border: "1px solid #E5E7EB" }}>
+                      <input
+                        className="form-control form-control-sm mb-2"
+                        placeholder="Descripción del evento..."
+                        value={newDescription}
+                        onChange={(e) => setNewDescription(e.target.value)}
+                      />
+                      <button
+                        className="btn btn-sm w-100"
+                        style={{ backgroundColor: editingEventId ? "#0D6EFD" : "#DB2777", color: "white" }}
+                        onClick={handleSaveExtraDate}
+                      >
+                        {editingEventId ? "Actualizar Evento" : "Guardar Evento"}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+              {selectedDay.extraEvents.map((item, i) => (
+                <div key={item.idExtraDate || i} className="p-3 mb-2" style={{ backgroundColor: "#FDF2F8", borderRadius: "12px", border: "1px solid #FBCFE8" }}>
+                  <div className="d-flex justify-content-between align-items-start">
+                    <div>
+                      <div className="fw-bold" style={{ color: "#BE185D" }}>Evento Extra</div>
+                      <small className="text-dark">{item.description}</small>
+                    </div>
+                    <div className="d-flex gap-1">
+                      {isPrivilegedUser && (
+                        <>
+                          <button
+                            className="btn btn-sm text-primary p-1"
+                            title="Editar"
+                            onClick={() => handleStartEdit(item)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-sm text-danger p-1"
+                            title="Eliminar"
+                            onClick={() => item.idExtraDate && handleDeleteExtraEvent(item.idExtraDate)}
+                          >
+                            Eliminar
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
-                ))}
-                <hr /> {/* Separador visual entre eventos manuales y automáticos */}
-              </>
-            )}
+                </div>
+              ))}
+              <hr/>
               {/* CERTIFICATES */}
               {selectedDay?.certificates.map((item, i) => (
                 <div key={i} className="d-flex align-items-center justify-content-between p-3 mb-2" style={{ backgroundColor: "#FEF2F2", borderRadius: "12px", border: "1px solid #FECACA" }}>
