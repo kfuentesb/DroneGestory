@@ -167,7 +167,7 @@ public class FlightTimeService {
     private String buildAutomaticComment(Anexo7 anexo7) {
         LocalDate fechaOp = LocalDate.from(anexo7.getFechaOp());
         return "Registro automático desde Anexo 7: +" + anexo7.getTiempoVueloMinutos()
-                + " min, fecha OP " + fechaOp;
+                + " min, fecha OP: " + fechaOp;
     }
 
     private void applyRequest(FlightTime flightTime, FlightTimeRequestDTO request) {
