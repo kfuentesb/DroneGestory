@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type Dispatch, type SetStateAction, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../commons/hooks/useAuth";
 import DetailView from "../commons/props/DetailView";
 import DetailEdit from "../commons/props/DetailEdit";
@@ -49,6 +50,7 @@ import defaultDroneImg from '../../../public/default-drone.png';
 
 export default function DetailsComponent(props: DetailsComponentProps) {
     const { token } = useAuth();
+    const navigate = useNavigate();
     
     // UI Logic centralizada
     const ui = useMemo(() => {
@@ -1524,18 +1526,16 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                         <div className="d-flex align-items-start mb-4">
                             
                             {/* BOTÓN VOLVER */}
-                            {props.onBack && (
-                                <button 
-                                    className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                                    onClick={props.onBack}
-                                    style={styles.backBtn}
-                                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
-                                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                                    title="Volver"
-                                >
-                                    <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
-                                </button>
-                            )}
+                            <button 
+                                className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
+                                onClick={() => navigate(-1)}
+                                style={styles.backBtn}
+                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
+                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                                title="Volver"
+                            >
+                                <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
+                            </button>
 
                             {/* IMAGEN DE PERFIL */}
                             <img

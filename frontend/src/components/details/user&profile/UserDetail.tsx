@@ -152,7 +152,6 @@ export default function UserDetail() {
                 allowEdit={canManageUsers}
                 allowDelete={canManageUsers}
                 onDelete={canManageUsers ? handleDelete : undefined}
-                onBack={() => navigate(canManageUsers ? "/users" : "/home")}
                 validateForm={validateForm}
                 certificateSectionType="user"
                 defaultImage="user"
