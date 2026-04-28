@@ -271,9 +271,25 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             case 4:
               data = await fetchAnexo4Data(operation.idOperacion);
               break;
-            case 5:
+            case 5: {
               data = await fetchAnexo5Data(operation.idOperacion);
+              if (!data) {
+                const anexo4 = await fetchAnexo4Data(operation.idOperacion);
+                if (anexo4) {
+                  data = {
+                    assignedPersonnel: (anexo4.selectedPersonnel ?? []).map((person) => ({
+                      id: person.id,
+                      username: "",
+                      fullName: person.fullName,
+                      roles: person.roles,
+                      signed: false,
+                    })),
+                    signedPersonnelIds: [],
+                  } as Anexo5Data;
+                }
+              }
               break;
+            }
             case 6:
               data = selectedAircraftId ? await fetchAnexo6Data(operation.idOperacion, selectedAircraftId) : null;
               break;

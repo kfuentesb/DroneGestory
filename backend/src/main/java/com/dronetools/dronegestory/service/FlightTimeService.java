@@ -144,8 +144,8 @@ public class FlightTimeService {
                     operation.getIdOperacion(),
                     LocalDate.from(anexo7.getFechaOp()),
                     anexo7.getTiempoVueloMinutos(),
-                    // buildAutomaticComment(anexo7)
-                    null
+                    buildAutomaticComment(anexo7)
+
             ));
         }
     }

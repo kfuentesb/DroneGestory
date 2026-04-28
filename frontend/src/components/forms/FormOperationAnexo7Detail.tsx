@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { saveAnexo7Data, type Anexo7Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
@@ -108,9 +109,20 @@ export default function FormOperationAnexo7Detail({
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
+  const [fechaOpError, setFechaOpError] = useState(false);
+  const fechaOpInputRef = useRef<HTMLInputElement | null>(null);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
+    if (!formValues.fechaOp) {
+      alert("La fecha de operación es obligatoria.");
+      setFechaOpError(true);
+      if (fechaOpInputRef.current) {
+        fechaOpInputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        fechaOpInputRef.current.focus();
+      }
+      return;
+    }
 
     setSaving(true);
     try {
@@ -228,11 +240,24 @@ export default function FormOperationAnexo7Detail({
           <label className="form-label fw-bold small text-uppercase text-muted">Fecha operación</label>
           <input
             type="datetime-local"
-            className="form-control bg-white border"
+            className={`form-control bg-white border${fechaOpError ? " is-invalid" : ""}`}
             value={formValues.fechaOp}
-            onChange={(e) => handleChange("fechaOp", e.target.value)}
+            onChange={(e) => {
+              if (fechaOpError) {
+                setFechaOpError(false);
+              }
+              handleChange("fechaOp", e.target.value);
+            }}
             disabled={disabled || saving}
+            ref={fechaOpInputRef}
+            aria-invalid={fechaOpError}
+            aria-describedby={fechaOpError ? "anexo7-fechaop-error" : undefined}
           />
+          {fechaOpError && (
+            <div id="anexo7-fechaop-error" className="invalid-feedback">
+              La fecha de operación es obligatoria.
+            </div>
+          )}
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Tiempo de vuelo (minutos)</label>
