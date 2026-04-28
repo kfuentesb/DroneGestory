@@ -101,16 +101,11 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
--Cambiar panel principal para mostrar datos dependiendo del tipo de usuario en sesion.<br>
--Arreglar la toma de IP en local y en servidor<br>
--Arreglar lo de mostrar mantenimientos en el calendario<br>
--Hay que hacer que el resumen del sistema valga como leyenda<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
--En registrar modelo pone anadir<br>
 
 -HORAS DE VUELO<br>
 
@@ -120,6 +115,7 @@ VISUAL<br>
 
 
 -DOCUMENTACIONES<br>
+-Arreglar el borrado de documentaciones, deja las carpetas por detrás<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
