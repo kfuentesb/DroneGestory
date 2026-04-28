@@ -4,7 +4,7 @@ interface StatCardProps {
   icon: string;
   value: number;
   label: string;
-  color: "blue" | "red" | "orange" | "purple";
+  color: "blue" | "red" | "orange" | "purple" |"green";
   delay: number;
 }
 
@@ -13,6 +13,7 @@ const colorStyles = {
   red: { bg: "#EF4444", gradient: "from-red-500 to-rose-600", light: "#FEE2E2" },
   orange: { bg: "#F59E0B", gradient: "from-amber-500 to-orange-500", light: "#FEF3C7" },
   purple: { bg: "#8B5CF6", gradient: "from-violet-500 to-purple-600", light: "#EDE9FE" },
+  green: { bg: "#10B981", gradient: "from-green-500 to-green-600", light: "#D1FAE5" }
 };
 
 const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay }) => {
@@ -37,7 +38,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay })
           borderRadius: "16px",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
           cursor: "pointer",
-          backgroundColor: "#e5faee" // El color del fondo de las cartas
+          backgroundColor: "#f3f8f5" // El color del fondo de las cartas
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-4px)";

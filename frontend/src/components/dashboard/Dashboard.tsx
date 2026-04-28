@@ -49,8 +49,11 @@
   interface DashboardData {
     totalUsuarios: number;
     totalPilotos: number;
+    totalDocumentacionUsuarios: number;
     totalOperaciones: number;
     totalDrones: number;
+    totalMantenimientos: number;
+    totalDocumentacionAeronaves: number;
     certificateExpirations: DashboardCertificateExpiration[];
     aircraftDocumentationExpirations: DashboardAircraftDocumentationExpiration[];
     birthdays: DashboardBirthday[];
@@ -217,8 +220,11 @@
           const nextSummary: DashboardData = {
             totalUsuarios: data.totalUsuarios ?? 0,
             totalPilotos: data.totalPilotos ?? 0,
+            totalDocumentacionUsuarios: data.totalDocumentacionUsuarios ?? 0,
             totalOperaciones: data.totalOperaciones ?? 0,
             totalDrones: data.totalDrones ?? 0,
+            totalMantenimientos: data.totalMantenimientos ?? 0,
+            totalDocumentacionAeronaves: data.totalDocumentacionAeronaves ?? 0,
             certificateExpirations: data.certificateExpirations ?? [],
             aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
             birthdays: data.birthdays ?? [],
@@ -438,10 +444,17 @@
                 </div>
               ) : isData(summary) ? (
                 <>
-                  <StatCard icon="bi-people-fill" value={summary.totalUsuarios} label="Usuarios Registrados" color="blue" delay={0} />
+                  {hasRole("ADMIN") || hasRole("MANAGER") ? (
+                    <>
+                      <StatCard icon="bi-people-fill" value={summary.totalUsuarios} label="Usuarios Registrados" color="orange" delay={0} />
+                      <StatCard icon="bi-file-earmark-text-fill" value={summary.totalDocumentacionUsuarios} label="Docs. Usuarios" color="orange" delay={50} />
+                    </>
+                  ) : null}
                   <StatCard icon="bi-person-badge-fill" value={summary.totalPilotos} label="Pilotos Activos" color="red" delay={100} />
-                  <StatCard icon="bi-clipboard-check" value={summary.totalOperaciones} label="Operaciones Totales" color="orange" delay={200} />
-                  <StatCard icon="bi-airplane-engines-fill" value={summary.totalDrones} label="Drones en Flota" color="purple" delay={300} />
+                  <StatCard icon="bi-airplane-engines-fill" value={summary.totalDrones} label="Drones en Flota" color="blue" delay={150} />
+                  <StatCard icon="bi-file-earmark-text-fill" value={summary.totalDocumentacionAeronaves} label="Docs. Aeronaves" color="blue" delay={200} />
+                  <StatCard icon="bi-clipboard-check" value={summary.totalOperaciones} label="Operaciones Totales" color="purple" delay={250} />
+                  <StatCard icon="bi-clipboard-check" value={summary.totalMantenimientos} label="Mantenimientos Totales" color="green" delay={300} />
                 </>
               ) : null}
             </div>
@@ -764,28 +777,20 @@
                       <small className="text-muted" style={{ fontSize: "0.75rem" }}>
                         S/N: {item.serialNumber || "N/A"}
                       </small>
-
-                      {/* Si es programado, quizás quieras mostrar el motivo si existe */}
-                      {!item.isDone && item.description && (
-                        <div className="fst-italic text-muted" style={{ fontSize: "0.7rem" }}>
-                          "{item.description}"
-                        </div>
-                      )}
                     </div>
 
                     <button 
                       className="btn btn-sm px-3 shadow-sm" 
                       style={{ 
                         backgroundColor: item.isDone ? "#15803D" : "#26e56c", 
-                        color: "white",
-                        borderRadius: "8px"
+                        color: "white"
                       }}
                       onClick={() => {
                         setSelectedDay(null);
                         navigate(`/maintenance/aircraft/${item.aircraftId}`);
                       }}
                     >
-                      Detalles
+                      Ver
                     </button>
                   </div>
                 ))}
