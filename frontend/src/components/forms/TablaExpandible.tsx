@@ -197,7 +197,7 @@ export function TablaExpandible({
 
           {items.length === 0 && (
             <p className="text-muted small mb-2">
-              No hay {selectLabel.toLowerCase()}s añadidas aún.
+              No hay {selectLabel.toLowerCase()}s añadidos aún.
             </p>
           )}
 

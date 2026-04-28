@@ -751,7 +751,7 @@ export default function FormOperationAnexo4Detail({
 
       <TablaExpandible
         label="6.3 - Otras limitaciones operacionales"
-        selectLabel="Limitación"
+        selectLabel="Elemento"
         valorPrincipal={formValues.otrasLimitacionesValor ?? "N/A"}
         items={normalizeExpandableItems(formValues.otrasLimitacionesItems)}
         opciones={["N/A", "SI", "NO"]}
