@@ -83,6 +83,7 @@
     aircraftDocumentation: DashboardAircraftDocumentationExpiration[];
     birthdays: DashboardBirthday[];
     maintenance: DashboardMaintenanceDate[];
+    operations: DashboardOperationPlanned[];
   };
 
   type TooltipState = {
@@ -113,8 +114,9 @@
     const hasAir = details.aircraftDocumentation.length > 0;
     const hasBirth = details.birthdays.length > 0;
     const hasMaint = details.maintenance.length > 0;
+    const hasOps = details.operations.length > 0;
 
-    const activeCategories = [hasCert, hasAir, hasBirth, hasMaint].filter(Boolean).length;
+    const activeCategories = [hasCert, hasAir, hasBirth, hasMaint, hasOps].filter(Boolean).length;
 
     if (activeCategories === 1 && hasMaint) {
       const hasPending = details.maintenance.some((m: any) => !m.isDone);
@@ -125,6 +127,7 @@
     if (hasCert) return "dg-expiry-marker dg-expiry-marker-certificate";
     if (hasAir) return "dg-expiry-marker dg-expiry-marker-aircraft";
     if (hasBirth) return "dg-expiry-marker dg-expiry-marker-birthday";
+    if (hasOps) return "dg-expiry-marker dg-expiry-marker-operation";
 
     return "";
   };
@@ -136,6 +139,17 @@
 
   const formatAircraftName = (entry: DashboardAircraftDocumentationExpiration) =>
     [entry.manufacturer, entry.model].filter(Boolean).join(" ");
+
+  const formatOperationTime = (value: ApiDateValue) => {
+    if (!value || typeof value !== "string") {
+      return null;
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+    return new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(parsed);
+  };
 
   const normalizeDateKey = (value: ApiDateValue): string | null => {
     if (!value) {
@@ -262,7 +276,8 @@
         certificates: [],
         aircraftDocumentation: [],
         birthdays: [],
-        maintenance: []
+        maintenance: [],
+        operations: []
       });
 
       summary.certificateExpirations.forEach((entry) => {
@@ -290,6 +305,14 @@
         const current = grouped.get(key) ?? createEmptyDay();
         current.birthdays.push(entry);
         grouped.set(key, current);
+      });
+
+      summary.operations.forEach((entry) => {
+        const dateKey = normalizeDateKey(entry.fechaPrevista);
+        if (!dateKey) return;
+        const current = grouped.get(dateKey) ?? createEmptyDay();
+        current.operations.push(entry);
+        grouped.set(dateKey, current);
       });
       
       if(!isMaintenanceEnabled) return grouped;
@@ -346,6 +369,7 @@
               }
               if (details.birthdays.length > 0) colors.push("#facc15");
               if (details.aircraftDocumentation.length > 0) colors.push("#3b82f6");
+              if (details.operations.length > 0) colors.push("#8b5cf6");
 
               if (colors.length > 1) {
                 const step = 100 / colors.length;
@@ -554,6 +578,7 @@
                         }
                         if (details.birthdays.length > 0) activeColors.push("#facc15");
                         if (details.aircraftDocumentation.length > 0) activeColors.push("#3b82f6");
+                        if (details.operations.length > 0) activeColors.push("#8b5cf6");
                         const colorCount = activeColors.length;
                         const markerClass = getMarkerClassName(details);
                         return `${markerClass} ${markerClassForDate(key)} color-count-${colorCount}`;
@@ -641,7 +666,27 @@
                   />
                 )}
 
-                {/* 4. MAINTENANCE */}
+                {/* 4. OPERATIONS */}
+                {tooltip.details.operations.length > 0 && (
+                  <TooltipSection
+                    title="Operaciones previstas"
+                    color="#6D28D9"
+                    bgColor="#F5F3FF"
+                    borderColor="#DDD6FE"
+                    items={tooltip.details.operations}
+                    onItemClick={(e) => navigate(`/operations/${e.operationId}`)}
+                    renderContent={(e) => (
+                      <>
+                        <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.codigo}</div>
+                        <div style={{ color: "#6B7280", fontSize: "0.75rem" }}>
+                          Hora prevista: {formatOperationTime(e.fechaPrevista) ?? "--:--"}
+                        </div>
+                      </>
+                    )}
+                  />
+                )}
+
+                {/* 5. MAINTENANCE */}
                 {tooltip.details.maintenance.length > 0 && (
                   <TooltipSection
                     title="Mantenimiento"
@@ -742,6 +787,29 @@
                       onClick={() => {
                         setSelectedDay(null);
                         navigate(`/users/${item.userId}`);
+                      }}
+                    >
+                      Ver
+                    </button>
+                  </div>
+                ))}
+
+                {/* OPERATIONS */}
+                {selectedDay?.operations.map((item, i) => (
+                  <div key={i} className="d-flex align-items-center justify-content-between p-3 mb-2" style={{ backgroundColor: "#F5F3FF", borderRadius: "12px", border: "1px solid #DDD6FE" }}>
+                    <div>
+                      <div className="fw-bold" style={{ color: "#6D28D9" }}>Operacion prevista</div>
+                      <small className="text-dark">{item.codigo}</small>
+                      <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        Hora prevista: {formatOperationTime(item.fechaPrevista) ?? "--:--"}
+                      </div>
+                    </div>
+                    <button
+                      className="btn btn-sm px-3 shadow-sm"
+                      style={{ backgroundColor: "#6D28D9", color: "white" }}
+                      onClick={() => {
+                        setSelectedDay(null);
+                        navigate(`/operations/${item.operationId}`);
                       }}
                     >
                       Ver
