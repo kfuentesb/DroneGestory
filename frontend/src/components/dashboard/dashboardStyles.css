@@ -55,9 +55,9 @@
 }
 
 .dg-expiry-marker-maint-done {
-    background-color: #15803d !important;
+    background-color: #4bb973 !important;
     box-shadow: inset 0 0 0 1px #166534 !important;
-    color: white !important;
+    color: #166534 !important;
 }
 
 .dg-expiry-marker-maint-pending {
@@ -82,4 +82,11 @@
 .dg-tooltip-container {
     padding-bottom: 15px; 
     margin-bottom: -15px;
+}
+
+.dg-expiry-marker-extra {
+    background-color: #ffe8f2 !important;
+    /* border: 2px solid #db2777 !important; */
+    box-shadow: inset 0 0 0 1px #db2777 !important;
+    color: #db2777 !important;
 }

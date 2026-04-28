@@ -20,4 +20,5 @@ public class DashboardDTO {
     private List<DashboardBirthdayDTO> birthdays = new ArrayList<>();
     private List<DashboardMaintenanceDateDTO> maintenance = new ArrayList<>();
     private List<DashboardOperationDTO> operations = new ArrayList<>();
+    private List<ExtraDateDTO> extraEvents;
 }

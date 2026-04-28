@@ -6,20 +6,21 @@ import com.dronetools.dronegestory.dto.DashboardCertificateExpiryDTO;
 import com.dronetools.dronegestory.dto.DashboardDTO;
 import com.dronetools.dronegestory.dto.DashboardMaintenanceDateDTO;
 import com.dronetools.dronegestory.dto.DashboardOperationDTO;
+import com.dronetools.dronegestory.dto.ExtraDateDTO;
 import com.dronetools.dronegestory.model.AircraftDocumentation;
+import com.dronetools.dronegestory.model.ExtraDate;
 import com.dronetools.dronegestory.model.Maintenance;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftRepository;
+import com.dronetools.dronegestory.repository.ExtraDateRepository;
 import com.dronetools.dronegestory.repository.MaintenanceRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.dronetools.dronegestory.model.enums.UserType;
 
@@ -27,7 +28,6 @@ import java.util.List;
 
 @Service
 public class DashboardService {
-        private static final Logger log = LoggerFactory.getLogger(DashboardService.class);
 
         @Autowired private OperationRepository operationRepo;
         @Autowired private UserRepository userRepo;
@@ -36,6 +36,7 @@ public class DashboardService {
         @Autowired private UserCertificateRepository userCertificateRepository;
         @Autowired private MaintenanceRepository maintenanceRepo;
         @Autowired private UserService userService;
+        @Autowired private ExtraDateRepository extraDateRepository;
 
         public DashboardDTO getDashboard() {
                 DashboardDTO dto = new DashboardDTO();
@@ -67,6 +68,11 @@ public class DashboardService {
                 dto.setCertificateExpirations(mapCertificateExpirations(
                         userCertificateRepository.findAllExpiringWithUserByUserId(currentUser.getId())));
                 }
+
+                List<ExtraDate> extraEvents = extraDateRepository.findAll();
+                dto.setExtraEvents(extraEvents.stream()
+                        .map(e -> new ExtraDateDTO(e.getIdExtraDate(), e.getExtraDate(), e.getDescription()))
+                        .toList());
 
                 return dto;
         }
