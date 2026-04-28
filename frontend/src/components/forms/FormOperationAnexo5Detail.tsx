@@ -320,6 +320,7 @@ export default function FormOperationAnexo5Detail({
                     <th>Personal asignado</th>
                     <th>Roles</th>
                     <th>Estado de firma</th>
+                    <th>Accion</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -328,16 +329,34 @@ export default function FormOperationAnexo5Detail({
                       <td>{person.fullName}</td>
                       <td>{person.roles.join(", ")}</td>
                       <td>
-                        <span
-                          className="badge"
-                          style={
-                            person.signed
-                              ? { backgroundColor: "#DCFCE7", color: "#166534", border: "1px solid #86EFAC" }
-                              : { backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" }
-                          }
-                        >
-                          {person.signed ? "Firmado" : "Pendiente"}
+                        <span className="d-inline-flex align-items-center gap-2">
+                          {person.signed ? (
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <circle cx="8" cy="8" r="7" stroke="#16A34A" strokeWidth="1.5" fill="#DCFCE7" />
+                              <path d="M5 8.2l1.9 1.9L11 6" stroke="#166534" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                              <circle cx="8" cy="8" r="7" stroke="#D97706" strokeWidth="1.5" fill="#FEF3C7" />
+                              <path d="M8 4.6v3.7l2.2 1.2" stroke="#92400E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                          <span>{person.signed ? "Firmado" : "Pendiente"}</span>
                         </span>
+                      </td>
+                      <td>
+                        {currentUserAssignedEntry?.id === person.id && initialValues?.id && !person.signed ? (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            onClick={() => void handleSignCurrentUser()}
+                            disabled={disabled || saving || signingAptitud}
+                          >
+                            {signingAptitud ? "Firmando..." : "Firmar"}
+                          </button>
+                        ) : (
+                          <span className="text-muted small">-</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -361,14 +380,9 @@ export default function FormOperationAnexo5Detail({
                 Ya has firmado tu aptitud para operar
               </span>
             ) : (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => void handleSignCurrentUser()}
-                disabled={disabled || saving || signingAptitud}
-              >
-                {signingAptitud ? "Firmando..." : "Firmar mi aptitud para operar"}
-              </button>
+              <div className="text-muted small">
+                Usa el boton "Firmar" de tu fila para registrar la aptitud.
+              </div>
             )}
           </>
         )}
