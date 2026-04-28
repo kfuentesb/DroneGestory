@@ -117,10 +117,7 @@ VISUAL<br>
 -MANTENIMIENTO<br>
 
 -OPERACIONES<br>
--Implementar lista de usuarios para clickar y añadir al anexo<br>
--Completar una operacion y rehacer algo como admin, la deja como completada peor se puede editar
--Meter opción cancelar
--A5, aptitud para operar. Otros usuarios asignados pueden firmar
+
 
 
 

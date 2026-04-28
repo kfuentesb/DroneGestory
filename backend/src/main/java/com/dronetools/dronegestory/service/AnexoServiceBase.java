@@ -59,6 +59,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
                     throw new RuntimeException("Ya existe un borrador para este anexo. Debes editarlo o firmarlo antes.");
                 });
 
+        reopenOperationIfCompleted(op);
         T nuevaVersion = crearCopia(anexoOrigen);
         nuevaVersion.setOperation(op);
         nuevaVersion.setNumeroVersion(getNextVersion.get(op));
@@ -86,10 +87,18 @@ public abstract class AnexoServiceBase<T extends Anexo> {
     }
 
     private T crearNuevaVersion(Operation op, T datos, GetNextVersionFunction<Operation> getNextVersion) {
+        reopenOperationIfCompleted(op);
         datos.setOperation(op);
         datos.setNumeroVersion(getNextVersion.get(op));
         datos.setEstado(AnexoStatus.BORRADOR);
         return repository.save(datos);
+    }
+
+    private void reopenOperationIfCompleted(Operation op) {
+        if (op != null && op.getEstado() == OperationStatus.COMPLETADA && esAdminActual()) {
+            op.setEstado(OperationStatus.EN_CURSO);
+            operationRepository.save(op);
+        }
     }
 
     protected void validarOperacionEditable(Operation op) {
