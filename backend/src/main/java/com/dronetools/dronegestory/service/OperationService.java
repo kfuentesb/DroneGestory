@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -25,15 +27,18 @@ public class OperationService {
     private final OperationRepository operationRepository;
     private final FlightTimeService flightTimeService;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     public OperationService(
             OperationRepository operationRepository,
             FlightTimeService flightTimeService,
-            UserRepository userRepository
+            UserRepository userRepository,
+            AuditLogService auditLogService
     ) {
         this.operationRepository = operationRepository;
         this.flightTimeService = flightTimeService;
         this.userRepository = userRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional(readOnly = true)
@@ -174,8 +179,10 @@ public class OperationService {
 
     @Transactional
     public void deleteOperationWithAnexos(Long idOperacion) {
-        Operation op = operationRepository.findById(idOperacion)
+        Operation op = operationRepository.findByIdWithAssignedUsers(idOperacion)
                 .orElseThrow(() -> new RuntimeException("OperaciÃ³n no encontrada: " + idOperacion));
+
+        String snapshot = summarizeOperation(op, LocalDateTime.now());
 
         if (op.getAnexos4() != null) {
             op.getAnexos4().forEach(a4 -> {
@@ -185,6 +192,35 @@ public class OperationService {
         }
 
         operationRepository.delete(op);
+        auditLogService.record("BORRAR_OPERACION", idOperacion, snapshot);
+    }
+
+    private String summarizeOperation(Operation operation, LocalDateTime deletedAt) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String assignedUserIds = operation.getAssignedUsers() == null
+            ? "[]"
+            : operation.getAssignedUsers().stream()
+            .map(user -> String.valueOf(user.getId()))
+            .sorted()
+            .toList()
+            .toString();
+        String creator = operation.getCreador() == null
+            ? "null"
+            : (operation.getCreador().getFirstName() + " " + operation.getCreador().getLastName()).trim();
+        return "deletedAt=" + deletedAt.format(formatter)
+            + ", operationId=" + operation.getIdOperacion()
+            + ", codigo=" + operation.getCodigo()
+            + ", conops=" + operation.getConops()
+            + ", estado=" + operation.getEstado()
+            + ", creador=" + creator
+            + ", fechaCreacion=" + operation.getFechaCreacion()
+            + ", fechaActualizacion=" + operation.getFechaActualizacion()
+            + ", assignedUserIds=" + assignedUserIds
+            + ", anexos4Count=" + (operation.getAnexos4() == null ? 0 : operation.getAnexos4().size())
+            + ", anexos5Count=" + (operation.getAnexos5() == null ? 0 : operation.getAnexos5().size())
+            + ", anexos6Count=" + (operation.getAnexos6() == null ? 0 : operation.getAnexos6().size())
+            + ", anexos7Count=" + (operation.getAnexos7() == null ? 0 : operation.getAnexos7().size())
+            + ", anexos8Count=" + (operation.getAnexos8() == null ? 0 : operation.getAnexos8().size());
     }
 
     private void borrarArchivo(String filePath) {
