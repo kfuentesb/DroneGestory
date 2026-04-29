@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../commons/hooks/useAuth";
 import { apiFetch } from "../../api";
 import { useNavigate } from "react-router-dom";
@@ -121,7 +121,7 @@ export default function Dashboard() {
   const isData = (s: SummaryState): s is DashboardData => s !== null && !("error" in s);
 
   const isPrivilegedUser = hasRole("ADMIN") || hasRole("MANAGER");
-  const isMaintenanceEnabled = hasRole("ADMIN") || hasRole("MAINTENANCE");
+  const isMaintenanceEnabled = hasRole("ADMIN") || hasRole("MAINTAINER");
 
   const expirationsByDate = useMemo(() => {
     const grouped = new Map<string, CalendarDayDetails>();
@@ -312,9 +312,8 @@ export default function Dashboard() {
           ...prev,
           extraEvents: prev.extraEvents.filter(e => e.idExtraDate !== eventId)
         } : null);
-        
-        // Opcional: Refrescar datos globales para que desaparezca el marcador del calendario
-        // fetchDashboardData(); 
+        window.location.reload();
+
       } else {
         alert("No se pudo eliminar el evento");
       }
@@ -334,19 +333,23 @@ export default function Dashboard() {
 
   const handleSaveExtraDate = async () => {
     if (!newDescription.trim() || !selectedDay?.dateKey) return;
+
     const cleanDate = typeof selectedDay.dateKey === 'string' 
       ? selectedDay.dateKey.split('T')[0] 
       : selectedDay.dateKey;
 
     const payload = {
+      ...(editingEventId && { idExtraDate: editingEventId }),
       extraDate: cleanDate, 
       description: newDescription.trim()
     };
 
-    console.log("Payload final enviado:", payload);
-
     try {
-      const res = await apiFetch(editingEventId ? `/api/extra-dates/${editingEventId}` : "/api/extra-dates", {
+      const url = editingEventId 
+        ? `/api/extra-dates/${editingEventId}` 
+        : "/api/extra-dates";
+        
+      const res = await apiFetch(url, {
         method: editingEventId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -355,8 +358,7 @@ export default function Dashboard() {
       if (res?.ok) {
         window.location.reload();
       } else {
-        const errorData = await res?.json();
-        console.error("Detalle del error 500:", errorData);
+        alert("Error en el servidor al intentar guardar.");
       }
     } catch (error) {
       console.error("Error de red:", error);
@@ -577,7 +579,6 @@ export default function Dashboard() {
                   bgColor="#FEF2F2"
                   borderColor="#FECACA"
                   items={tooltip.details.certificates}
-                  onItemClick={(e) => navigate(`/users/${e.userId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.firstName} {e.lastName}</div>
@@ -598,7 +599,6 @@ export default function Dashboard() {
                   bgColor="#EFF6FF"
                   borderColor="#BFDBFE"
                   items={tooltip.details.aircraftDocumentation}
-                  onItemClick={(e) => navigate(`/aircrafts/${e.aircraftId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{formatAircraftName(e) || "Aeronave"}</div>
@@ -619,7 +619,6 @@ export default function Dashboard() {
                   bgColor="#FEFCE8"
                   borderColor="#FDE047"
                   items={tooltip.details.birthdays}
-                  onItemClick={(e) => navigate(`/users/${e.userId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.firstName} {e.lastName}</div>
@@ -637,7 +636,6 @@ export default function Dashboard() {
                   bgColor="#F5F3FF"
                   borderColor="#DDD6FE"
                   items={tooltip.details.operations}
-                  onItemClick={(e) => navigate(`/operations/${e.operationId}`)}
                   renderContent={(e) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.codigo}</div>
@@ -657,7 +655,6 @@ export default function Dashboard() {
                   bgColor="#F0FDF4"
                   borderColor="#BBF7D0"
                   items={tooltip.details.maintenance}
-                  onItemClick={(e: any) => navigate(`/maintenance/aircraft/${e.aircraftId}`)}
                   renderContent={(e: any) => (
                     <>
                       <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>
@@ -670,6 +667,22 @@ export default function Dashboard() {
                       }}>
                         {e.isDone ? "Realizado" : "Programado"}
                       </div>
+                    </>
+                  )}
+                />
+              )}
+
+              {/* 6. EVENTOS ESPECIALES */}
+              {tooltip.details.extraEvents.length > 0 && (
+                <TooltipSection
+                  title="Evento especial"
+                  color="#DB2777"
+                  bgColor="#FDF2F8"
+                  borderColor="#f8acce"
+                  items={tooltip.details.extraEvents}
+                  renderContent={(e) => (
+                    <>
+                      <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.description}</div>
                     </>
                   )}
                 />
@@ -697,6 +710,13 @@ export default function Dashboard() {
           >
             <div className="p-4 border-bottom d-flex justify-content-between align-items-center">
               <h5 className="mb-0 fw-bold">Detalles del día</h5>
+              <small className="text-muted fw-medium">
+                {selectedDay?.dateKey ? new Date(selectedDay.dateKey + "T00:00:00").toLocaleDateString('es-ES', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                }) : ""}
+              </small>
               <button className="btn-close" onClick={() => setSelectedDay(null)}></button>
             </div>
             
@@ -746,7 +766,7 @@ export default function Dashboard() {
                 <div key={item.idExtraDate || i} className="p-3 mb-2" style={{ backgroundColor: "#FDF2F8", borderRadius: "12px", border: "1px solid #FBCFE8" }}>
                   <div className="d-flex justify-content-between align-items-start">
                     <div>
-                      <div className="fw-bold" style={{ color: "#BE185D" }}>Evento Extra</div>
+                      <div className="fw-bold" style={{ color: "#BE185D" }}>Evento especial</div>
                       <small className="text-dark">{item.description}</small>
                     </div>
                     <div className="d-flex gap-1">
@@ -816,15 +836,17 @@ export default function Dashboard() {
                     <div className="fw-bold text-warning" style={{ color: "#854d0e" }}>Cumpleaños</div>
                     <small className="text-dark">{item.firstName} {item.lastName}</small>
                   </div>
-                  <button 
-                    className="btn btn-sm btn-warning px-3 shadow-sm" 
-                    onClick={() => {
-                      setSelectedDay(null);
-                      navigate(`/users/${item.userId}`);
-                    }}
-                  >
-                    Ver
-                  </button>
+                  {isPrivilegedUser && (
+                    <button 
+                      className="btn btn-sm btn-warning px-3 shadow-sm" 
+                      onClick={() => {
+                        setSelectedDay(null);
+                        navigate(`/users/${item.userId}`);
+                      }}
+                    >
+                      Ver
+                    </button>
+                  )}
                 </div>
               ))}
               {/* OPERATIONS */}

@@ -44,4 +44,16 @@ public class ExtraDateService {
                 entity.getDescription()
         );
     }
+
+    @Transactional
+    public ExtraDateDTO updateEvent(ExtraDateDTO dto) {
+        ExtraDate entity = extraDateRepository.findById(dto.getIdExtraDate())
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado con ID: " + dto.getIdExtraDate()));
+        
+        entity.setExtraDate(dto.getExtraDate());
+        entity.setDescription(dto.getDescription());
+        
+        ExtraDate saved = extraDateRepository.save(entity);
+        return convertToDTO(saved);
+    }
 }

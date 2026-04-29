@@ -59,14 +59,19 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/operations/anexo4/images/**").authenticated()
 
+                        // Permite que cualquier logueado vea su propia info básica
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/users/self/*").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/self/*").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
+
+                        // RESTRICCIÓN CLAVE: Solo ADMIN o MANAGER pueden consultar a otros usuarios por ID
+                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/users/{id}").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("ADMIN", "MANAGER")
+
+                        // El listado general también debería ser solo para privilegiados
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/aircraft/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")

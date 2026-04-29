@@ -22,4 +22,10 @@ public class ExtraDateController {
         service.deleteEvent(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ExtraDateDTO> update(@PathVariable Long id, @RequestBody ExtraDateDTO dto) {
+        dto.setIdExtraDate(id);
+        return ResponseEntity.ok(service.updateEvent(dto));
+    }
 }

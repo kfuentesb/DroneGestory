@@ -67,7 +67,7 @@ export default function UserDetail() {
                                         onClick={() => navigate(`/users/${id}/password`)}
                                     >
                                         {Icons.Key}
-                                        <span className="ms-2 d-none d-sm-inline">Contrasena</span>
+                                        <span className="ms-2 d-none d-sm-inline">Contraseña</span>
                                     </button>
 
                                     <button
@@ -94,7 +94,7 @@ export default function UserDetail() {
                                         <ul className="dropdown-menu dropdown-menu-end shadow border-0 py-2" style={{ fontSize: "0.85rem" }}>
                                             <li className="px-3 py-1 bg-light border-bottom mb-2">
                                                 <small className="text-muted fw-bold" style={{ fontSize: "0.65rem" }}>
-                                                    Queda registrado el uso de esta funcion
+                                                    Queda registrado el uso de esta función
                                                 </small>
                                             </li>
                                             <li>
