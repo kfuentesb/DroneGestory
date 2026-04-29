@@ -64,6 +64,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/self/*").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/self/*").authenticated()
 
+                        // Acceso al personal
+                        .requestMatchers("/api/users/names").authenticated()
+
                         // RESTRICCIÓN CLAVE: Solo ADMIN o MANAGER pueden consultar a otros usuarios por ID
                         .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/users/{id}").hasAnyRole("ADMIN", "MANAGER")
