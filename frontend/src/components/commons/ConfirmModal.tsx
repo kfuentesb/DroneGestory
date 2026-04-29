@@ -1,4 +1,5 @@
 import React from "react";
+import cancelIcon from "../../assets/commons/cancel_white.svg";
 
 // para usar este componente, pon el propio componente abajo del todo para renderizarlo
 // y luego le pones los titulos, mensajes, y metodos a hacer según confirme o cancele
@@ -31,7 +32,16 @@ export default function ConfirmModal({ show, title, message, onConfirm, onCancel
                 <div className="d-flex justify-content-end gap-2 mt-3">
                     {/* Ocultamos cancelar si es solo un aviso de validación */}
                     {variant !== "warning" && (
-                        <button className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
+                        <button className="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-2" onClick={onCancel}>
+                            <img
+                                src={cancelIcon}
+                                alt=""
+                                aria-hidden="true"
+                                className="d-inline d-md-none"
+                                style={{ width: 16, height: 16 }}
+                            />
+                            <span>Cancelar</span>
+                        </button>
                     )}
                     <button className={buttonClass} onClick={onConfirm}>
                         {variant === "warning" ? "Entendido" : "Confirmar"}

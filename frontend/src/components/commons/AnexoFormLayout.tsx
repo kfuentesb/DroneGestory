@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import saveIcon from "../../assets/commons/file_save.svg";
 
 /**
  * Shared layout wrapper for all Anexo detail forms.
@@ -50,9 +51,18 @@ export function AnexoFormLayout({
             <div className="d-flex justify-content-end mt-5 pt-3 border-top">
               <button
                 type="submit"
-                className="btn btn-success btn-lg px-5 shadow-sm"
+                className="btn btn-success btn-lg px-5 shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
                 disabled={disabled || saving}
               >
+                {!saving && (
+                  <img
+                    src={saveIcon}
+                    alt=""
+                    aria-hidden="true"
+                    className="d-inline d-md-none"
+                    style={{ width: 16, height: 16 }}
+                  />
+                )}
                 {saving ? (
                   <>
                     <span

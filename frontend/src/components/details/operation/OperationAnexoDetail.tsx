@@ -54,6 +54,8 @@ import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
 
 import { styles } from "../../../global-const/styles";
 import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
+import refreshIcon from '../../../assets/commons/renew.svg';
+import signIcon from '../../../assets/commons/sign_operation.svg';
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
@@ -540,20 +542,22 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
           <div className="d-flex gap-2">
             <ButtonProp
-              className="btn btn-sm px-3"
+              className="btn btn-sm px-3 d-inline-flex align-items-center justify-content-center gap-2"
               style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', fontWeight: '600' }}
               onClick={() => setShowRemakeConfirm(true)}
               disabled={!canRemake || remaking}
             >
+              <img src={refreshIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
               {remaking ? "Rehaciendo..." : "Rehacer versión"}
             </ButtonProp>
             {tipoAnexo !== 5 && (
               <ButtonProp
-                className="btn btn-sm px-4"
+                className="btn btn-sm px-4 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{ backgroundColor: '#2563eb', color: '#ffffff', fontWeight: '600', boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)' }}
                 onClick={() => setShowSignConfirm(true)}
                 disabled={!canSign || signing}
               >
+                <img src={signIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
                 {signing ? "Firmando..." : "Firmar Anexo"}
               </ButtonProp>
             )}
