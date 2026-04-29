@@ -31,17 +31,29 @@ export default function FileBrowserView() {
     }, [loadRoot]);
 
     const openFileInTab = useCallback(async (id: string) => {
-        const res = await fetch(
-            `${API_BASE_URL}/api/files/content?path=${encodeURIComponent(id)}`,
-            { headers: authHeaders() }
-        );
-        if (!res.ok) {
-            throw new Error(`Failed file open (${res.status})`);
+        const newTab = window.open("about:blank", "_blank");
+        if (!newTab) {
+            alert("Please allow popups for this site");
+            return;
         }
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank", "noopener,noreferrer");
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+        try {
+            const res = await fetch(
+                `${API_BASE_URL}/api/files/content?path=${encodeURIComponent(id)}`,
+                { headers: authHeaders() }
+            );
+            
+            if (!res.ok) throw new Error(`Failed file open (${res.status})`);
+            
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            newTab.location.href = url;
+
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch (err) {
+            newTab.close();
+            console.error("Error opening file:", err);
+        }
     }, []);
 
     const init = useCallback((api: IApi) => {

@@ -88,6 +88,7 @@ export interface ExtraDate {
     idExtraDate?: number;
     extraDate: string;
     description: string;
+    roles?: string[];
 }
 
 export type ApiDateValue = string | number[] | null | undefined;
