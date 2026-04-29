@@ -69,6 +69,12 @@ const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation)
     if (!path) {
         return;
     }
+    const newTab = window.open("about:blank", "_blank");
+    
+    if (!newTab) {
+        alert("El bloqueador de ventanas emergentes impidió abrir el documento.");
+        return;
+    }
 
     const encodedPath = path
         .split("/")
@@ -77,21 +83,27 @@ const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation)
 
     try {
         const response = await apiFetch(`/api/flight-time-documentation/files/${encodedPath}`);
+        
         if (!response) {
             throw new Error("No se obtuvo respuesta del servidor");
         }
+
         const blob = await response.blob();
         const isPdfByExtension = path.toLowerCase().endsWith(".pdf");
+        
         const fileBlob =
             isPdfByExtension && (!blob.type || blob.type === "application/octet-stream")
                 ? new Blob([blob], { type: "application/pdf" })
                 : blob;
+
         const objectUrl = URL.createObjectURL(fileBlob);
-        window.open(objectUrl, "_blank", "noopener,noreferrer");
+        newTab.location.href = objectUrl;
+
         setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
     } catch (error) {
+        newTab.close();
         console.error("No se pudo cargar el documento", error);
-        alert("No se pudo abrir el documento. Intenta de nuevo mas tarde.");
+        alert("No se pudo abrir el documento. Intenta de nuevo más tarde.");
     }
 };
 

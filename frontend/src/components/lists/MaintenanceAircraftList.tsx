@@ -56,17 +56,30 @@ const toInputDateValue = (value?: string | null) => {
 async function openDocumentationInNewTab(documentation: MaintenanceDocumentation) {
     const path = documentation.documentationName || documentation.filePath;
     if (!path) return;
+    const newTab = window.open("about:blank", "_blank");
+    
+    if (!newTab) {
+        alert("El bloqueador de ventanas emergentes impidió abrir el documento.");
+        return;
+    }
     const encodedPath = path.split("/").map(encodeURIComponent).join("/");
     try {
         const response = await apiFetch(`/api/maintenance-documentation/files/${encodedPath}`);
         if (!response) throw new Error("No se obtuvo respuesta del servidor");
         const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        window.open(objectUrl, "_blank", "noopener,noreferrer");
+        const isPdf = path.toLowerCase().endsWith(".pdf");
+        const fileBlob = isPdf && (!blob.type || blob.type === "application/octet-stream")
+            ? new Blob([blob], { type: "application/pdf" })
+            : blob;
+
+        const objectUrl = URL.createObjectURL(fileBlob);
+        newTab.location.href = objectUrl;
+
         setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
     } catch (error) {
+        newTab.close();
         console.error("No se pudo cargar el documento", error);
-        alert("No se pudo abrir el documento. Intenta de nuevo mas tarde.");
+        alert("No se pudo abrir el documento. Intenta de nuevo más tarde.");
     }
 }
 

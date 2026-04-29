@@ -463,38 +463,60 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         setShowConfirm(true);
     };
 
-    const openCertificate = async (certificate: UserCertificate) => {
-        if (!certificate.certificateName) {
+    const fetchAndOpenBlob = async (url: string, fileName: string, errorMessage: string) => {
+        const newTab = window.open("about:blank", "_blank");
+        
+        if (!newTab) {
+            alert("El bloqueador de ventanas emergentes impidió abrir el documento.");
             return;
         }
 
         try {
-            const encodedPath = certificate.certificateName
-                .split("/")
-                .map(encodeURIComponent)
-                .join("/");
-
-            const res = await fetch(`/api/users/images/${encodedPath}`, {
+            const res = await fetch(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (!res.ok) {
-                throw new Error(`Error loading certificate: ${res.status}`);
-            }
+            if (!res.ok) throw new Error(`Status: ${res.status}`);
 
             const blob = await res.blob();
-            const isPdfByExtension = certificate.certificateName.toLowerCase().endsWith(".pdf");
-            const fileBlob =
-                isPdfByExtension && (!blob.type || blob.type === "application/octet-stream")
-                    ? new Blob([blob], { type: "application/pdf" })
-                    : blob;
+            const isPdf = fileName.toLowerCase().endsWith(".pdf");
+            
+            const fileBlob = isPdf && (!blob.type || blob.type === "application/octet-stream")
+                ? new Blob([blob], { type: "application/pdf" })
+                : blob;
+
             const objectUrl = URL.createObjectURL(fileBlob);
-            window.open(objectUrl, "_blank", "noopener,noreferrer");
-            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+
+            newTab.location.href = objectUrl;
+
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
         } catch (error) {
-            console.error("Error opening certificate:", error);
-            alert("No se pudo abrir el certificado.");
+            newTab.close();
+            console.error(`Error: ${errorMessage}`, error);
+            alert(errorMessage);
         }
+    };
+
+    const openAircraftDocumentation = async (documentation: AircraftDocumentation) => {
+        if (!documentation.documentationName) return;
+
+        const encodedPath = documentation.documentationName.split("/").map(encodeURIComponent).join("/");
+        const isModel = documentation.documentationName.startsWith("aircraft-model/");
+        
+        const url = isModel 
+            ? `/api/aircraft-models/images/${encodedPath}` 
+            : `/api/aircraft/images/${encodedPath}`;
+
+        await fetchAndOpenBlob(url, documentation.documentationName, "No se pudo abrir la documentación.");
+    };
+
+    const openCertificate = async (certificate: UserCertificate) => {
+        if (!certificate.certificateName) return;
+
+        const encodedPath = certificate.certificateName.split("/").map(encodeURIComponent).join("/");
+        const url = `/api/users/images/${encodedPath}`;
+
+        await fetchAndOpenBlob(url, certificate.certificateName, "No se pudo abrir el certificado.");
     };
 
     const formatCertificateDate = (certificate: UserCertificate) => {
@@ -1162,45 +1184,6 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         // Ejecución y refresco
         if (tasks.length > 0) await Promise.all(tasks);
         await loadAircraftDocumentations();
-    };
-
-    const openAircraftDocumentation = async (documentation: AircraftDocumentation) => {
-        if (!documentation.documentationName) {
-            return;
-        }
-
-        try {
-            const encodedPath = documentation.documentationName
-                .split("/")
-                .map(encodeURIComponent)
-                .join("/");
-
-            const isModelDocumentation = documentation.documentationName.startsWith("aircraft-model/");
-            const url = isModelDocumentation
-                ? `/api/aircraft-models/images/${encodedPath}`
-                : `/api/aircraft/images/${encodedPath}`;
-
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!res.ok) {
-                throw new Error(`Error loading documentation: ${res.status}`);
-            }
-
-            const blob = await res.blob();
-            const isPdfByExtension = documentation.documentationName.toLowerCase().endsWith(".pdf");
-            const fileBlob =
-                isPdfByExtension && (!blob.type || blob.type === "application/octet-stream")
-                    ? new Blob([blob], { type: "application/pdf" })
-                    : blob;
-            const objectUrl = URL.createObjectURL(fileBlob);
-            window.open(objectUrl, "_blank", "noopener,noreferrer");
-            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
-        } catch (error) {
-            console.error("Error opening documentation:", error);
-            alert("No se pudo abrir la documentación.");
-        }
     };
 
     const loadAircraftDocumentations = async () => {
