@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import saveIcon from "../../assets/commons/file_save.svg";
 
 export type AnexoFormLayoutProps = {
   title: string;
