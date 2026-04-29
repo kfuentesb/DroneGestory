@@ -7,6 +7,7 @@ export default function Settings() {
   const canDownloadAuditLog = hasRole("ADMIN") || hasRole("MANAGER");
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEmptyAlert, setShowEmptyAlert] = useState(false);
 
   const handleDownloadAuditLog = async () => {
     setIsDownloading(true);
@@ -17,6 +18,13 @@ export default function Settings() {
       if (!res) return;
 
       const blob = await res.blob();
+
+      // Si el archivo está vacío mostramos modal bonito
+      if (blob.size === 0) {
+        setShowEmptyAlert(true);
+        return;
+      }
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -25,8 +33,13 @@ export default function Settings() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.txt");
+
+    } catch (err: any) {
+      if (err.status = 404) {
+        setShowEmptyAlert(true);
+      } else {
+        setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.txt");
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -70,6 +83,50 @@ export default function Settings() {
           )}
         </div>
       </div>
+
+      {/* Modal bonito Bootstrap - se muestra solo si showEmptyAlert es true */}
+      {showEmptyAlert && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Archivo vacío</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Cerrar"
+                  onClick={() => setShowEmptyAlert(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>El archivo de auditoría está vacío.</p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowEmptyAlert(false)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Backdrop */}
+      {showEmptyAlert && (
+        <div
+          className="modal-backdrop fade show"
+          style={{ zIndex: 1040 }}
+        ></div>
+      )}
     </div>
   );
 }
