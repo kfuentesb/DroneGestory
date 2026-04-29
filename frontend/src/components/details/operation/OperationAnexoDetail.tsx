@@ -52,6 +52,9 @@ import FormOperationAnexo7Detail from "../../forms/FormOperationAnexo7Detail";
 import FormOperationAnexo8Detail from "../../forms/FormOperationAnexo8Detail";
 import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
 
+import { styles } from "../../../global-const/styles";
+import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
+
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
 };
@@ -107,6 +110,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [aircraftsInVersion, setAircraftsInVersion] = useState<Anexo6Data[] | Anexo7Data[]>([]);
   const [autoSaving, setAutoSaving] = useState(false);
+
+  const [isSticky, setIsSticky] = useState(false);
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -462,6 +467,15 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     setSelectedAircraftId(newAircraftId);
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsSticky(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (loading) {
     return <div className="container py-4 text-center">Cargando anexo...</div>;
   }
@@ -478,99 +492,118 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }
 
   return (
-    <div className="container py-4">
-      <button
-        className="btn btn-link ps-0 text-decoration-none mb-2"
-        onClick={() => navigate(`/operations/${operation.idOperacion}`)}
-      >
-        Volver a la operación
-      </button>
-
-      <StepProgressBar
-        steps={ANEXOS_STEPS}
-        currentStep={currentStep}
-        onStepClick={(step) => {
-          if (operation) navigate(`/operations/${operation.idOperacion}/anexo${step.anexo}`);
+    <div className="container py-2" style={{ maxWidth: '1100px' }}>
+      <div 
+        style={{ 
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 1050,
+          // DESCOMENTAR ESTO SI NO SE QUIERE EL EFECTO DE BLUR
+          // backgroundColor: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(12px)',
+          margin: isSticky ? '0 -20px 1rem -20px' : '0 -20px 2rem -20px',
+          padding: isSticky ? '0.5rem 20px 0.25rem 20px' : '1.25rem 20px',
+          borderBottom: '1px solid #e5e7eb',
+          boxShadow: isSticky ? '0 10px 15px -3px rgba(0, 0, 0, 0.07)' : '0 4px 6px -1px rgba(0, 0, 0, 0.02)',
+          transition: 'all 0.2s ease-in-out',
         }}
-      />
+      >
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center">
+            <button 
+              className="btn d-flex align-items-center justify-content-center me-2 flex-shrink-0" 
+              onClick={() => navigate(`/operations/${operation.idOperacion}`)}
+              style={{
+                ...styles.backBtn,
+                transform: isSticky ? 'scale(0.9)' : 'scale(1)',
+                transition: 'transform 0.2s'
+              }}
+            >
+              <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
+            </button>
 
-      <div className="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
-        <div>
-          <h2 className="mb-2">{getAnexoLabel(tipoAnexo)}</h2>
-          <p className="text-muted mb-2">{operation.codigo}</p>
-          <div className="d-flex gap-2 flex-wrap">
-            <Badge
-              label={operation.estadoOperacion}
-              style={getOperationStatusStyle(operation.estadoOperacion)}
-            />
-            <Badge
-              label={
-                currentAnexoVersion > 0
-                  ? `v${currentAnexoVersion}`
-                  : "Sin versión"
-              }
-              style={getAnexoColorStyle(anexo.actual.color)}
-            />
-            <Badge
-              label={currentAnexoStatus ?? "SIN DATOS"}
-              style={getAnexoColorStyle(anexo.actual.color)}
-            />
-            {isViewingHistoricalVersion && selectedVersion && (
-              <Badge
-                label={`Consultando v${selectedVersion.numeroVersion}`}
-                style={getAnexoColorStyle(selectedVersion.color)}
-              />
+            <h4 
+              className="fw-bold mb-0 text-dark"
+              style={{ 
+                fontSize: isSticky ? '1.1rem' : '1.25rem',
+                transition: 'font-size 0.2s' 
+              }}
+            >
+              {getAnexoLabel(tipoAnexo)} 
+              {!isSticky && (
+                <span className="text-muted fw-normal ms-2" style={{ fontSize: '0.9rem' }}>
+                  {operation.codigo}
+                </span>
+              )}
+            </h4>
+          </div>
+
+          <div className="d-flex gap-2">
+            <ButtonProp
+              className="btn btn-sm px-3"
+              style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', fontWeight: '600' }}
+              onClick={() => setShowRemakeConfirm(true)}
+              disabled={!canRemake || remaking}
+            >
+              {remaking ? "Rehaciendo..." : "Rehacer versión"}
+            </ButtonProp>
+            {tipoAnexo !== 5 && (
+              <ButtonProp
+                className="btn btn-sm px-4"
+                style={{ backgroundColor: '#2563eb', color: '#ffffff', fontWeight: '600', boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)' }}
+                onClick={() => setShowSignConfirm(true)}
+                disabled={!canSign || signing}
+              >
+                {signing ? "Firmando..." : "Firmar Anexo"}
+              </ButtonProp>
             )}
           </div>
         </div>
 
-        <div className="d-flex gap-2 flex-wrap">
-          <ButtonProp
-            className="btn"
-            style={{
-              backgroundColor: "#92400E",
-              color: "#FFFFFF",
-              fontWeight: "bold",
+        <div className="mt-3">
+          <StepProgressBar
+            steps={ANEXOS_STEPS}
+            currentStep={currentStep}
+            onStepClick={(step) => {
+              if (operation) navigate(`/operations/${operation.idOperacion}/anexo${step.anexo}`);
             }}
-            onClick={() => setShowRemakeConfirm(true)}
-            disabled={!canRemake || remaking}
-          >
-            {remaking ? "Rehaciendo..." : "Rehacer versión"}
-          </ButtonProp>
-          {tipoAnexo !== 5 && (
-            <ButtonProp
-              className="btn"
-              style={{
-                backgroundColor: "#1D4ED8",
-                color: "#FFFFFF",
-                fontWeight: "bold",
-              }}
-              onClick={() => setShowSignConfirm(true)}
-              disabled={!canSign || signing}
-            >
-              {signing ? "Firmando..." : "Firmar"}
-            </ButtonProp>
-          )}
+          />
         </div>
       </div>
 
-      <div className="row mb-4">
-        <div className="col-md-6 col-12 mb-3">
-          <div className="border rounded p-3 h-100">
-            <small className="text-muted d-block mb-1">
-              Creación operación
-            </small>
-            <strong>{formatDateTime(operation.fechaCreacion)}</strong>
+      {/* --- STATUS & METADATA SECTION --- */}
+      <div className="row g-3 mb-4">
+        <div className="col-lg-8">
+          <div className="d-flex gap-2 flex-wrap align-items-center">
+            <span className="text-muted small fw-bold text-uppercase me-2">Estado:</span>
+            <Badge label={operation.estadoOperacion} style={getOperationStatusStyle(operation.estadoOperacion)} />
+            <Badge label={currentAnexoVersion > 0 ? `v${currentAnexoVersion}` : "Sin versión"} style={getAnexoColorStyle(anexo.actual.color)} />
+            <Badge label={currentAnexoStatus ?? "SIN DATOS"} style={getAnexoColorStyle(anexo.actual.color)} />
+            {isViewingHistoricalVersion && selectedVersion && (
+              <Badge label={`Consultando v${selectedVersion.numeroVersion}`} style={{ backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db' }} />
+            )}
           </div>
         </div>
-        <div className="col-md-6 col-12 mb-3">
-          <div className="border rounded p-3 h-100">
-            <small className="text-muted d-block mb-1">
-              Última actualización
-            </small>
-            <strong>{formatDateTime(operation.fechaActualizacion)}</strong>
+        <div className="col-lg-4 text-lg-end">
+          <div className="text-muted" style={{ fontSize: '0.85rem' }}>
+            <div>Creado: <strong>{formatDateTime(operation.fechaCreacion)}</strong></div>
+            <div>Actualizado: <strong>{formatDateTime(operation.fechaActualizacion)}</strong></div>
           </div>
         </div>
+      </div>
+
+      {/* --- CONTEXTUAL MESSAGES --- */}
+      <div className="space-y-2 mb-4">
+        {operation.completada && (
+          <div className="p-3 mb-2 rounded-3 border-start border-4 border-warning bg-light" style={{ fontSize: '0.9rem' }}>
+            <strong>Operación Completada:</strong> {canManageCompletedOperation ? "Tienes permisos de edición administrativa." : "Vista de solo lectura para este anexo."}
+          </div>
+        )}
+        {actualIsSigned && !isViewingHistoricalVersion && (
+          <div className="p-3 mb-2 rounded-3 border-start border-4 border-primary bg-light" style={{ fontSize: '0.9rem' }}>
+            <strong>Versión Firmada:</strong> Esta versión está bloqueada. Use "Rehacer" para editar.
+          </div>
+        )}
       </div>
 
       {operation.completada && !canManageCompletedOperation && (

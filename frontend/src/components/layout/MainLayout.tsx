@@ -15,7 +15,7 @@ export default function MainLayout({ children }: any) {
             <div 
                 className="flex-grow-1" 
                 style={{ 
-                    overflowY: "auto", 
+                    // overflowY: "auto", 
                     width: "100%",
                     display: "flex", 
                     flexDirection: "column" 
