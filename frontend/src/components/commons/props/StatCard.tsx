@@ -37,7 +37,8 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay })
         style={{
           borderRadius: "16px",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          backgroundColor: "#f3f8f5", // El color del fondo de las cartas
+          backgroundColor: "#f3f8f5",
+          maxHeight: "180px", // Limita la altura máxima de la tarjeta
         }}
       >
         <div
@@ -52,16 +53,11 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay })
                 width: "56px",
                 height: "56px",
                 backgroundColor: style.light,
-                transition: "transform 0.2s ease"
               }}
             >
               <i
                 className={`bi ${icon}`}
-                style={{
-                  fontSize: "28px",
-                  color: style.bg,
-                  transition: "transform 0.2s ease"
-                }}
+                style={{ fontSize: "28px", color: style.bg }}
               />
             </div>
             <span
@@ -76,16 +72,40 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay })
               Total
             </span>
           </div>
+          
           <h2
             className="mb-1 fw-bold"
-            style={{ fontSize: "2.25rem", color: "#1F2937", letterSpacing: "-0.025em" }}
+            style={{ 
+              fontSize: "2.25rem", 
+              color: "#1F2937", 
+              letterSpacing: "-0.025em",
+              whiteSpace: "nowrap",    // Evita saltos de línea en el número
+              overflow: "hidden", 
+              textOverflow: "ellipsis" 
+            }}
           >
             {value.toLocaleString()}
           </h2>
-          <p className="mb-0" style={{ color: "#6B7280", fontSize: "0.95rem", fontWeight: 500 }}>
+
+          <p 
+            className="mb-0" 
+            title={label} // Muestra el texto completo al pasar el ratón
+            style={{ 
+              color: "#6B7280", 
+              fontSize: "0.95rem", 
+              fontWeight: 500,
+              // Estilos para truncar texto en una sola línea:
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block" 
+            }}
+          >
             {label}
           </p>
         </div>
+
+        {/* Círculo decorativo de fondo */}
         <div
           className="position-absolute"
           style={{
@@ -103,5 +123,4 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label, color, delay })
     </div>
   );
 };
-
 export default StatCard;
