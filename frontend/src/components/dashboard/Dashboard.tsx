@@ -6,6 +6,7 @@ import StatCard from "../commons/props/StatCard";
 import StatCardSkeleton from "../commons/props/StatCardSkeleton";
 import DashboardHeader from "./DashboardHeader";
 import { Month } from "@svar-ui/react-core";
+import Select from 'react-select';
 import "@svar-ui/react-core/all.css";
 import "./dashboardStyles.css";
 
@@ -27,6 +28,25 @@ const getBirthdayMonthDay = (birthDate: ApiDateValue) => {
 
   const [, month = "", day = ""] = normalized.split("-");
   return `${month}-${day}`;
+};
+
+type RoleOption = {
+  value: string;
+  label: string;
+};
+
+const roleOptions: RoleOption[] = [
+  { value: "MANAGER", label: "Gestor" },
+  { value: "MAINTAINER", label: "Mantenedor" },
+  { value: "PILOT", label: "Piloto" }
+];
+
+const backgroundBorderInputsSelect = {
+    control: (provided: any) => ({
+        ...provided,
+        backgroundColor: "#F3F4F6",
+        borderColor: "#D1D5DB"
+    })
 };
 
 const TooltipSection = <T,>({
@@ -76,6 +96,7 @@ export default function Dashboard() {
   const [selectedDay, setSelectedDay] = useState<CalendarDayDetails | null>(null);
   const [newDescription, setNewDescription] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [selectedRoles, setSelectedRoles] = useState<RoleOption[]>([]);
 
   const handleCloseModal = () => {
     setSelectedDay(null);
@@ -300,7 +321,7 @@ export default function Dashboard() {
     };
   }, [expirationsByDate, loading, summary, isPrivilegedUser]);
 
-  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [editingEventId, setEditingEventId] = useState<number | null | undefined>(null);
 
   const handleDeleteExtraEvent = async (eventId: number) => {
     if (!window.confirm("¿Estás seguro de eliminar este evento?") || !selectedDay) return;
@@ -324,11 +345,19 @@ export default function Dashboard() {
   };
 
   const handleStartEdit = (item: ExtraDate) => {
-    if (item.idExtraDate) {
-      setNewDescription(item.description);
-      setEditingEventId(item.idExtraDate);
-      setShowForm(true);
+    setEditingEventId(item.idExtraDate ?? null);
+    setNewDescription(item.description);
+    if (item.roles && item.roles.length > 0) {
+      const rolesToEdit = item.roles.map(roleName => ({
+        value: roleName,
+        label: roleName
+      }));
+      setSelectedRoles(rolesToEdit);
+    } else {
+      setSelectedRoles([]);
     }
+    
+    setShowForm(true);
   };
 
   const handleSaveExtraDate = async () => {
@@ -341,7 +370,8 @@ export default function Dashboard() {
     const payload = {
       ...(editingEventId && { idExtraDate: editingEventId }),
       extraDate: cleanDate, 
-      description: newDescription.trim()
+      description: newDescription.trim(),
+      roles: selectedRoles.map(r => r.value)
     };
 
     try {
@@ -364,6 +394,8 @@ export default function Dashboard() {
       console.error("Error de red:", error);
     }
   };
+
+  const userHasAnyRoleFromList = roleOptions.some(option => hasRole(option.value));
 
   return (
     <main
@@ -521,10 +553,18 @@ export default function Dashboard() {
                       if (details.birthdays.length > 0) activeColors.push("#facc15");
                       if (details.aircraftDocumentation.length > 0) activeColors.push("#3b82f6");
                       if (details.operations.length > 0) activeColors.push("#8b5cf6");
-                      if (details.extraEvents && details.extraEvents.length > 0) activeColors.push("#db2777");
+
+                      const visibleExtraEvents = details.extraEvents?.filter(item => {
+                        if (hasRole("ADMIN")) return true;
+                        const hasRestrictions = item.roles && item.roles.length > 0;
+                        if (!hasRestrictions) return false;
+                        const userMatchesRole = item.roles?.some(role => hasRole(role));
+                        return userMatchesRole;
+                      }) || [];
+                      if (visibleExtraEvents.length > 0) activeColors.push("#db2777");
 
                       const colorCount = activeColors.length;
-                      const markerClass = getMarkerClassName(details);
+                      const markerClass = getMarkerClassName({...details, extraEvents: visibleExtraEvents});
                       return `${markerClass} ${markerClassForDate(key)} color-count-${colorCount}`;
                     }}
                     onChange={(date: Date) => {
@@ -673,20 +713,30 @@ export default function Dashboard() {
               )}
 
               {/* 6. EVENTOS ESPECIALES */}
-              {tooltip.details.extraEvents.length > 0 && (
-                <TooltipSection
-                  title="Evento especial"
-                  color="#DB2777"
-                  bgColor="#FDF2F8"
-                  borderColor="#f8acce"
-                  items={tooltip.details.extraEvents}
-                  renderContent={(e) => (
-                    <>
-                      <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.description}</div>
-                    </>
-                  )}
-                />
-              )}
+              {(() => {
+                const visibleEvents = tooltip.details.extraEvents.filter(e => {
+                  const hasRestrictions = e.roles && e.roles.length > 0;
+                  const userMatchesRole = e.roles?.some(role => hasRole(role));
+                  return hasRole("ADMIN") || (hasRestrictions && userMatchesRole);
+                });
+
+                if (visibleEvents.length === 0) return null;
+
+                return (
+                  <TooltipSection
+                    title="Evento especial"
+                    color="#DB2777"
+                    bgColor="#FDF2F8"
+                    borderColor="#f8acce"
+                    items={visibleEvents}
+                    renderContent={(e) => (
+                      <>
+                        <div className="fw-semibold" style={{ color: "#111827", fontSize: "0.85rem" }}>{e.description}</div>
+                      </>
+                    )}
+                  />
+                );
+              })()}
 
             </div>
           </div>
@@ -721,77 +771,143 @@ export default function Dashboard() {
             </div>
             
             <div className="p-4">
-              {/* Solo administradores/managers pueden ver el botón de añadir y el formulario */}
-              {isPrivilegedUser && selectedDay && (
+              {(hasRole("ADMIN") || userHasAnyRoleFromList) && selectedDay && (
                 <>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h6 className="fw-bold mb-0">Eventos especiales</h6>
-                    <button
-                      className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-                      onClick={() => {
-                        if (showForm) {
-                          setEditingEventId(null);
-                          setNewDescription("");
-                        }
-                        setShowForm(!showForm);
-                      }}
-                      disabled={!showForm && selectedDay.extraEvents.length >= 3}
-                    >
-                      <i className={`bi ${showForm ? "bi-x-lg" : "bi-plus-lg"}`}></i>
-                      {showForm ? "Cancelar" : "Añadir"}
-                    </button>
-                  </div>
+                  {/* Debug del bloque principal */}
+                  {console.log("DEBUG: Renderizando bloque de Eventos Especiales", { 
+                    isAdmin: hasRole("ADMIN"), 
+                    hasAnyRole: userHasAnyRoleFromList, 
+                    totalEvents: selectedDay.extraEvents.length 
+                  })}
 
-                  {/* 1. Formulario de Creación/Edición */}
-                  {showForm && (
-                    <div className="mb-3 p-3" style={{ backgroundColor: "#F9FAFB", borderRadius: "12px", border: "1px solid #E5E7EB" }}>
-                      <input
-                        className="form-control form-control-sm mb-2"
-                        placeholder="Descripción del evento..."
-                        value={newDescription}
-                        onChange={(e) => setNewDescription(e.target.value)}
-                      />
-                      <button
-                        className="btn btn-sm w-100"
-                        style={{ backgroundColor: editingEventId ? "#0D6EFD" : "#DB2777", color: "white" }}
-                        onClick={handleSaveExtraDate}
-                      >
-                        {editingEventId ? "Actualizar Evento" : "Guardar Evento"}
-                      </button>
-                    </div>
+                  {isPrivilegedUser && selectedDay && (
+                    <>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h6 className="fw-bold mb-0">Eventos especiales</h6>
+                        <button
+                          className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+                          onClick={() => {
+                            if (showForm) {
+                              setEditingEventId(null);
+                              setNewDescription("");
+                            }
+                            setShowForm(!showForm);
+                          }}
+                          disabled={!showForm && selectedDay.extraEvents.length >= 3}
+                        >
+                          <i className={`bi ${showForm ? "bi-x-lg" : "bi-plus-lg"}`}></i>
+                          {showForm ? "Cancelar" : "Añadir"}
+                        </button>
+                      </div>
+
+                      {/* Formulario de Creación/Edición */}
+                      {showForm && (
+                        <div className="mb-3 p-3" style={{ backgroundColor: "#F9FAFB", borderRadius: "12px", border: "1px solid #E5E7EB" }}>
+                          <input
+                            className="form-control form-control-sm mb-2"
+                            placeholder="Descripción del evento..."
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                          />
+                          <div className="col-12 col-md mb-3 mb-md-2">
+                            <Select
+                              options={roleOptions}
+                              styles={backgroundBorderInputsSelect}
+                              placeholder="Seleccione visivilidad del evento"
+                              value={selectedRoles}
+                              isMulti
+                              closeMenuOnSelect={false}
+                              onChange={(val) => {
+                                setSelectedRoles(val ? (val as RoleOption[]) : []);
+                              }}
+                            />
+                          </div>
+                          <button
+                            className="btn btn-sm w-100"
+                            style={{ backgroundColor: editingEventId ? "#0D6EFD" : "#DB2777", color: "white" }}
+                            onClick={handleSaveExtraDate}
+                          >
+                            {editingEventId ? "Actualizar Evento" : "Guardar Evento"}
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
+
+                  {/* Mapeo de eventos con filtro de seguridad y Logs */}
+                  {selectedDay.extraEvents.map((item, i) => {
+                    const isAdmin = hasRole("ADMIN");
+                    const hasRestrictions = item.roles && item.roles.length > 0;
+                    const userMatchesRole = item.roles?.some(role => hasRole(role));
+                    const canSeeThisEvent = hasRole("ADMIN") || (hasRestrictions && userMatchesRole);
+
+                    console.log(`DEBUG: Evento [${i}]`, {
+                      rolesDelEvento: item.roles,
+                      hasRestrictions: hasRestrictions,
+                      userMatchesRole: userMatchesRole,
+                      resultadoFinal: canSeeThisEvent ? "VISIBLE" : "OCULTO"
+                    });
+
+                    if (!canSeeThisEvent) return null;
+
+                    return (
+                      <div 
+                        key={item.idExtraDate || i} 
+                        className="p-3 mb-2" 
+                        style={{ 
+                          backgroundColor: "#FDF2F8", 
+                          borderRadius: "12px", 
+                          border: "1px solid #FBCFE8" 
+                        }}
+                      >
+                        <div className="d-flex justify-content-between align-items-start">
+                          <div>
+                            <div className="fw-bold" style={{ color: "#BE185D" }}>
+                              Evento especial
+                            </div>
+                            <small className="text-dark">{item.description}</small>
+                            
+                            {isPrivilegedUser && item.roles && item.roles.length > 0 && (
+                              <div className="mt-1 d-flex flex-wrap gap-1">
+                                {item.roles.map(r => (
+                                  <span 
+                                    key={r} 
+                                    className="badge bg-light text-secondary border" 
+                                    style={{ fontSize: "0.6rem" }}
+                                  >
+                                    {r}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="d-flex gap-1">
+                            {isPrivilegedUser && (
+                              <>
+                                <button
+                                  className="btn btn-sm text-primary p-1"
+                                  title="Editar"
+                                  onClick={() => handleStartEdit(item)}
+                                >
+                                  <i className="bi bi-pencil-square"></i> Editar
+                                </button>
+                                <button
+                                  className="btn btn-sm text-danger p-1"
+                                  title="Eliminar"
+                                  onClick={() => item.idExtraDate && handleDeleteExtraEvent(item.idExtraDate)}
+                                >
+                                  <i className="bi bi-trash"></i> Eliminar
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </>
               )}
-              {selectedDay.extraEvents.map((item, i) => (
-                <div key={item.idExtraDate || i} className="p-3 mb-2" style={{ backgroundColor: "#FDF2F8", borderRadius: "12px", border: "1px solid #FBCFE8" }}>
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div>
-                      <div className="fw-bold" style={{ color: "#BE185D" }}>Evento especial</div>
-                      <small className="text-dark">{item.description}</small>
-                    </div>
-                    <div className="d-flex gap-1">
-                      {isPrivilegedUser && (
-                        <>
-                          <button
-                            className="btn btn-sm text-primary p-1"
-                            title="Editar"
-                            onClick={() => handleStartEdit(item)}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-sm text-danger p-1"
-                            title="Eliminar"
-                            onClick={() => item.idExtraDate && handleDeleteExtraEvent(item.idExtraDate)}
-                          >
-                            Eliminar
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
               <hr/>
               {/* CERTIFICATES */}
               {selectedDay?.certificates.map((item, i) => (

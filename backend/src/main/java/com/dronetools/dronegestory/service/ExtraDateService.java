@@ -27,6 +27,7 @@ public class ExtraDateService {
         ExtraDate entity = new ExtraDate();
         entity.setExtraDate(dto.getExtraDate());
         entity.setDescription(dto.getDescription());
+        entity.setRoles(dto.getRoles());
         
         ExtraDate saved = extraDateRepository.save(entity);
         return convertToDTO(saved);
@@ -41,7 +42,8 @@ public class ExtraDateService {
         return new ExtraDateDTO(
                 entity.getIdExtraDate(),
                 entity.getExtraDate(),
-                entity.getDescription()
+                entity.getDescription(),
+                entity.getRoles()
         );
     }
 
@@ -52,6 +54,7 @@ public class ExtraDateService {
         
         entity.setExtraDate(dto.getExtraDate());
         entity.setDescription(dto.getDescription());
+        entity.setRoles(dto.getRoles());
         
         ExtraDate saved = extraDateRepository.save(entity);
         return convertToDTO(saved);

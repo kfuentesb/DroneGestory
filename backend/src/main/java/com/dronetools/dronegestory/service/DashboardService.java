@@ -71,7 +71,7 @@ public class DashboardService {
 
                 List<ExtraDate> extraEvents = extraDateRepository.findAll();
                 dto.setExtraEvents(extraEvents.stream()
-                        .map(e -> new ExtraDateDTO(e.getIdExtraDate(), e.getExtraDate(), e.getDescription()))
+                        .map(e -> new ExtraDateDTO(e.getIdExtraDate(), e.getExtraDate(), e.getDescription(), e.getRoles()))
                         .toList());
 
                 return dto;
