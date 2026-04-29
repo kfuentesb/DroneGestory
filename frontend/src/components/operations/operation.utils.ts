@@ -5,16 +5,19 @@ export const OPERATION_ANEXOS = [4, 5, 6, 7, 8] as const;
 export function formatDateTime(value?: string | null) {
   if (!value) return "-";
 
+  const date = new Date(value);
+
   return new Date(value).toLocaleString("es-ES", {
     dateStyle: "short",
     timeStyle: "short",
+    timeZone: "Europe/Madrid",
   });
 }
 
 export function formatDate(value?: string | null) {
   if (!value) return "-";
 
-  return new Date(value).toLocaleDateString("es-ES");
+  return new Date(value).toLocaleDateString("es-ES", {timeZone: "Europe/Madrid"});
 }
 
 export function getOperationStatusStyle(status: OperationStatus) {
