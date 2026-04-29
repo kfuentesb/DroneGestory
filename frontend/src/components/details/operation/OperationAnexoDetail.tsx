@@ -105,6 +105,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [loadingVersionData, setLoadingVersionData] = useState(false);
   const [signing, setSigning] = useState(false);
   const [remaking, setRemaking] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
@@ -423,6 +424,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   };
 
   const handleSaved = async (savedData: AnexoData | null) => {
+    setSaving(false);
     setAnexoData(savedData);
     if (!operation) return null;
     navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
@@ -493,6 +495,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     );
   }
 
+  const handleTriggerSubmit = () => {
+    const form = document.getElementById('anexo-main-form') as HTMLFormElement;
+    if (form) {
+      setSaving(true);
+      form.requestSubmit(); 
+    }
+  };
+
   return (
     <div className="container py-2" style={{ maxWidth: '1100px' }}>
       <div 
@@ -559,6 +569,22 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               >
                 <img src={signIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
                 {signing ? "Firmando..." : "Firmar Anexo"}
+              </ButtonProp>
+            )}
+            {canEditDraft && !isViewingHistoricalVersion && (
+              <ButtonProp
+                className="btn btn-sm px-3"
+                style={{ 
+                  backgroundColor: '#10b981', 
+                  color: '#ffffff', 
+                  fontWeight: '600',
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)' 
+                }}
+                onClick={handleTriggerSubmit}
+                disabled={saving} // You'll need to pass the 'saving' state up if you want the spinner here
+              >
+                {saving ? "Guardando..." : "Guardar Borrador"}
               </ButtonProp>
             )}
           </div>
@@ -726,7 +752,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={(anexoData as Anexo4Data | null) ?? {}}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."
@@ -742,7 +768,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo5Data | null}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."
@@ -759,7 +785,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
                   selectedAircraftId={selectedAircraftId}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."
@@ -776,7 +802,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
                   selectedAircraftId={selectedAircraftId}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."
@@ -792,7 +818,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo8Data | null}
-                  disabled={isViewingHistoricalVersion || !canEditDraft}
+                  disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
                       ? "Estás consultando una versión histórica. Esta vista es solo lectura."

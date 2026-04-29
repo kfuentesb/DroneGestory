@@ -17,9 +17,6 @@ import { TablaExpandible } from "./TablaExpandible";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
-/** * CONFIGURACIÓN DE TEXTOS:
- * Modifica solo este objeto para cambiar los nombres de los puntos en el futuro.
- */
 const SECCIONES_CONFIG: { seccion4: SectionItem[]; seccion6: SectionItem[] } = {
   seccion4: [
     { num: "4.1", title: "Espacio aéreo controlado y en zonas de información de vuelo (FIZ)", key: "espacioAereoControlado", level: 0 },
