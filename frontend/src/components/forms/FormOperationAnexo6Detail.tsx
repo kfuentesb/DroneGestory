@@ -16,6 +16,7 @@ type FormOperationAnexo6DetailProps = {
   initialValues?: Anexo6Data | null;
   selectedAircraftId?: number | null;
   sharedConops?: string;
+  fallbackFechaOp?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
@@ -138,11 +139,12 @@ export default function FormOperationAnexo6Detail({
   initialValues,
   selectedAircraftId,
   sharedConops,
+  fallbackFechaOp,
   disabled,
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo6DetailProps) {
-  const { formValues, saving, setSaving, handleChange } = useAnexoForm({
+  const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
@@ -150,6 +152,11 @@ export default function FormOperationAnexo6Detail({
   const [materialesAuxiliares, setMaterialesAuxiliares] = useState<string[]>([""]);
   const [elementosAuxiliaresItems, setElementosAuxiliaresItems] =
     useState<ExpandableTableItem[]>([]);
+
+  useEffect(() => {
+    if (!fallbackFechaOp) return;
+    setFormValues((prev) => (prev.fechaOp ? prev : { ...prev, fechaOp: fallbackFechaOp }));
+  }, [fallbackFechaOp, setFormValues]);
 
   useEffect(() => {
     if (!initialValues) {
