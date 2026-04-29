@@ -13,14 +13,12 @@ export default function MainLayout({ children }: any) {
             )}
 
             <div 
-                className="flex-grow-1" 
-                style={{ 
-                    minWidth: 0,
+                className="flex-grow-1 main-scroll-container" 
+                style={{
                     width: "100%",
                     display: "flex", 
                     flexDirection: "column",
-                    height: "100vh",
-                    overflowY: "auto"
+                    minWidth: 0,
                 }}
             >
                 {/* Mobile Header - Button aligned to the left */}
