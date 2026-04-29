@@ -113,7 +113,6 @@ VISUAL<br>
 -MANTENIMIENTO<br>
 
 -OPERACIONES<br>
--Cambiar iconos registrar operacion de vuelo<br>
 
 -DOCUMENTACIONES<br>
 -En ipad no se pueden ver las documentaciones<br>

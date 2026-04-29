@@ -514,6 +514,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           // DESCOMENTAR ESTO SI NO SE QUIERE EL EFECTO DE BLUR
           // backgroundColor: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           margin: isSticky ? '0 -20px 1rem -20px' : '0 -20px 2rem -20px',
           padding: isSticky ? '0.5rem 20px 0.25rem 20px' : '1.25rem 20px',
           borderBottom: '1px solid #e5e7eb',
