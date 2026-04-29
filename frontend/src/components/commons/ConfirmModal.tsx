@@ -32,7 +32,7 @@ export default function ConfirmModal({ show, title, message, onConfirm, onCancel
                 <div className="d-flex justify-content-end gap-2 mt-3">
                     {/* Ocultamos cancelar si es solo un aviso de validación */}
                     {variant !== "warning" && (
-                        <button className="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-2" onClick={onCancel}>
+                        <button className="btn btn-secondary px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2" onClick={onCancel}>
                             <img
                                 src={cancelIcon}
                                 alt=""
@@ -40,10 +40,10 @@ export default function ConfirmModal({ show, title, message, onConfirm, onCancel
                                 className="d-inline d-md-none"
                                 style={{ width: 16, height: 16 }}
                             />
-                            <span>Cancelar</span>
+                            <span className="d-none d-md-inline">Cancelar</span>
                         </button>
                     )}
-                    <button className={buttonClass} onClick={onConfirm}>
+                    <button className={`${buttonClass} px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2`} onClick={onConfirm}>
                         {variant === "warning" ? "Entendido" : "Confirmar"}
                     </button>
                 </div>

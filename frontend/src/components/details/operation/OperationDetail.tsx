@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
 import { useAuth } from "../../commons/hooks/useAuth";
+import checkIcon from '../../../assets/commons/check_white.svg';
+import cancelIcon from '../../../assets/commons/cancel_white.svg';
 import { cancelOperation, completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
 import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
@@ -261,7 +263,7 @@ export default function OperationDetail() {
           <div className="d-flex gap-2">
             {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
               <ButtonProp
-                className="btn btn-sm px-3"
+                className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{ 
                   backgroundColor: "#B91C1C", 
                   color: "#FFFFFF", 
@@ -271,11 +273,18 @@ export default function OperationDetail() {
                 onClick={() => setShowCancelConfirm(true)}
                 disabled={cancelling}
               >
-                {cancelling ? "..." : "Cancelar"}
+                {cancelling ? (
+                  <span>...</span>
+                ) : (
+                  <>
+                    <img src={cancelIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
+                    <span className="d-none d-md-inline">Cancelar</span>
+                  </>
+                )}
               </ButtonProp>
             )}
             <ButtonProp
-              className="btn btn-sm px-3"
+              className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
               style={{ 
                 backgroundColor: "#166534", 
                 color: "#FFFFFF", 
@@ -291,7 +300,14 @@ export default function OperationDetail() {
                 !operation.puedeEditarUsuarioActual
               }
             >
-              {completing ? "..." : isSticky ? "Completar" : "Completar operación"}
+              {completing ? (
+                <span>...</span>
+              ) : (
+                <>
+                  <img src={checkIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
+                  <span className="d-none d-md-inline">{isSticky ? "Completar" : "Completar operación"}</span>
+                </>
+              )}
             </ButtonProp>
           </div>
         </div>

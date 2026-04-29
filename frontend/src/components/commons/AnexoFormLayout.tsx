@@ -51,7 +51,7 @@ export function AnexoFormLayout({
             <div className="d-flex justify-content-end mt-5 pt-3 border-top">
               <button
                 type="submit"
-                className="btn btn-success btn-lg px-5 shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+                className="btn btn-success btn-lg px-3 px-md-5 py-2 py-md-3 shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
                 disabled={disabled || saving}
               >
                 {!saving && (
@@ -66,14 +66,14 @@ export function AnexoFormLayout({
                 {saving ? (
                   <>
                     <span
-                      className="spinner-border spinner-border-sm me-2"
+                      className="spinner-border spinner-border-sm me-0 me-md-2"
                       role="status"
                       aria-hidden="true"
                     ></span>
-                    Guardando...
+                    <span className="d-none d-md-inline">Guardando...</span>
                   </>
                 ) : (
-                  "Guardar borrador"
+                  <span className="d-none d-md-inline">Guardar borrador</span>
                 )}
               </button>
             </div>
