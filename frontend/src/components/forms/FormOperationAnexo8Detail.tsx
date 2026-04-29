@@ -14,6 +14,7 @@ type FormOperationAnexo8DetailProps = {
   operationId: number;
   initialValues?: Anexo8Data | null;
   sharedConops?: string;
+  fallbackFechaOp?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo8Data | null) => void | Promise<void>;
@@ -69,17 +70,23 @@ export default function FormOperationAnexo8Detail({
   operationId,
   initialValues,
   sharedConops,
+  fallbackFechaOp,
   disabled,
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo8DetailProps) {
-  const { formValues, saving, setSaving, handleChange } = useAnexoForm({
+  const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
   const [otrasLimitacionesItems, setOtrasLimitacionesItems] =
     useState<ExpandableTableItem[]>([]);
+
+  useEffect(() => {
+    if (!fallbackFechaOp) return;
+    setFormValues((prev) => (prev.fechaOp ? prev : { ...prev, fechaOp: fallbackFechaOp }));
+  }, [fallbackFechaOp, setFormValues]);
 
   useEffect(() => {
     if (!initialValues || !Array.isArray(initialValues.otrasLimitacionesItems)) {

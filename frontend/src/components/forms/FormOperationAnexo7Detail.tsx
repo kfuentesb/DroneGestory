@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { saveAnexo7Data, type Anexo7Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
@@ -9,6 +9,7 @@ type FormOperationAnexo7DetailProps = {
   initialValues?: Anexo7Data | null;
   selectedAircraftId?: number | null;
   sharedConops?: string;
+  fallbackFechaOp?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo7Data | null) => void | Promise<void>;
@@ -100,17 +101,23 @@ export default function FormOperationAnexo7Detail({
   initialValues,
   selectedAircraftId,
   sharedConops,
+  fallbackFechaOp,
   disabled,
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo7DetailProps) {
-  const { formValues, saving, setSaving, handleChange } = useAnexoForm({
+  const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
   const [fechaOpError, setFechaOpError] = useState(false);
   const fechaOpInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!fallbackFechaOp) return;
+    setFormValues((prev) => (prev.fechaOp ? prev : { ...prev, fechaOp: fallbackFechaOp }));
+  }, [fallbackFechaOp, setFormValues]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;

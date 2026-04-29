@@ -51,6 +51,7 @@ import FormOperationAnexo6Detail from "../../forms/FormOperationAnexo6Detail";
 import FormOperationAnexo7Detail from "../../forms/FormOperationAnexo7Detail";
 import FormOperationAnexo8Detail from "../../forms/FormOperationAnexo8Detail";
 import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
+import { normalizeDateTimeLocal } from "../../commons/hooks/useAnexoForm";
 
 import { styles } from "../../../global-const/styles";
 import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
@@ -114,6 +115,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [aircraftsInVersion, setAircraftsInVersion] = useState<Anexo6Data[] | Anexo7Data[]>([]);
   const [autoSaving, setAutoSaving] = useState(false);
+  const [sharedConops, setSharedConops] = useState("");
+  const [fallbackFechaAnexo5, setFallbackFechaAnexo5] = useState("");
+  const [fallbackFechaAnexos678, setFallbackFechaAnexos678] = useState("");
 
   const [isSticky, setIsSticky] = useState(false);
 
@@ -324,6 +328,48 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     void loadSelectedAnexoData();
   }, [operation, selectedVersion, selectedVersionId, selectedAircraftId, tipoAnexo]);
+
+  useEffect(() => {
+    if (!operation) {
+      setSharedConops("");
+      setFallbackFechaAnexo5("");
+      setFallbackFechaAnexos678("");
+      return;
+    }
+
+    setSharedConops(operation.conops ?? "");
+
+    const loadSharedDefaults = async () => {
+      try {
+        if (tipoAnexo === 5) {
+          const anexo4 = await fetchAnexo4Data(operation.idOperacion);
+          setFallbackFechaAnexo5(
+            normalizeDateTimeLocal((anexo4?.fechaHoraPrevista as string | null | undefined) ?? ""),
+          );
+          setFallbackFechaAnexos678("");
+          return;
+        }
+
+        if (tipoAnexo === 6 || tipoAnexo === 7 || tipoAnexo === 8) {
+          const anexo5 = await fetchAnexo5Data(operation.idOperacion);
+          setFallbackFechaAnexos678(
+            normalizeDateTimeLocal((anexo5?.fechaOp as string | null | undefined) ?? ""),
+          );
+          setFallbackFechaAnexo5("");
+          return;
+        }
+
+        setFallbackFechaAnexo5("");
+        setFallbackFechaAnexos678("");
+      } catch (err) {
+        console.error("Error cargando valores compartidos entre anexos:", err);
+        setFallbackFechaAnexo5("");
+        setFallbackFechaAnexos678("");
+      }
+    };
+
+    void loadSharedDefaults();
+  }, [operation, tipoAnexo]);
 
   const handleSign = async () => {
     if (!operation) {
@@ -771,6 +817,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo5Data | null}
+                  sharedConops={sharedConops}
+                  fallbackFechaOp={fallbackFechaAnexo5}
                   disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -788,6 +836,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo6Data | null}
                   selectedAircraftId={selectedAircraftId}
+                  sharedConops={sharedConops}
+                  fallbackFechaOp={fallbackFechaAnexos678}
                   disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -805,6 +855,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}
                   selectedAircraftId={selectedAircraftId}
+                  sharedConops={sharedConops}
+                  fallbackFechaOp={fallbackFechaAnexos678}
                   disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
@@ -821,6 +873,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo8Data | null}
+                  sharedConops={sharedConops}
+                  fallbackFechaOp={fallbackFechaAnexos678}
                   disabled={isViewingHistoricalVersion || !canEditDraft || saving}
                   readOnlyMessage={
                     isViewingHistoricalVersion
