@@ -300,7 +300,7 @@ export default function OperationsTableView({
                             e.stopPropagation();
                             setPendingDeleteOperationId(operation.idOperacion);
                           }}
-                          title="Borrar operaciÃ³n"
+                          title="Borrar operación"
                           style={{
                             background: "#DC2626",
                             border: "none",
