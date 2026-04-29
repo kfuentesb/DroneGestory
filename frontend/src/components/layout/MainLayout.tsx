@@ -15,10 +15,12 @@ export default function MainLayout({ children }: any) {
             <div 
                 className="flex-grow-1" 
                 style={{ 
-                    // overflowY: "auto", 
+                    minWidth: 0,
                     width: "100%",
                     display: "flex", 
-                    flexDirection: "column" 
+                    flexDirection: "column",
+                    height: "100vh",
+                    overflowY: "auto"
                 }}
             >
                 {/* Mobile Header - Button aligned to the left */}

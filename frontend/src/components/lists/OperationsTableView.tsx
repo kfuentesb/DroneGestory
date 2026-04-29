@@ -192,7 +192,7 @@ export default function OperationsTableView({
     { label: "Anexo 7", key: "anexo7Version", sortable: false },
     { label: "Anexo 8", key: "anexo8Version", sortable: false },
     { label: "Estado", key: "estado", sortable: true },
-    ...(isPrivileged ? [{ label: "", key: "acciones", sortable: false }] : []),
+    ...(isPrivileged ? [{ label: "Acciones", key: "acciones", sortable: false }] : []),
   ];
 
   if (isLoading) {
