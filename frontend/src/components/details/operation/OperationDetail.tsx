@@ -13,6 +13,8 @@ import {
   getOperationStatusStyle,
   OPERATION_ANEXOS,
 } from "../../operations/operation.utils";
+import { styles } from "../../../global-const/styles";
+import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -54,6 +56,8 @@ export default function OperationDetail() {
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const canCancelByRole = hasRole("ADMIN") || hasRole("MANAGER");
+
+  const [isSticky, setIsSticky] = useState(false);
 
   const loadOperation = async () => {
     if (!id) {
@@ -183,62 +187,135 @@ export default function OperationDetail() {
   }
 
   return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
-        <div>
-          <button className="btn btn-link ps-0 text-decoration-none" onClick={() => navigate(`/operations`)}>
-            Volver
-          </button>
-          <h2 className="mb-2">{operation.codigo}</h2>
-          <div className="d-flex gap-2 flex-wrap">
-            <Badge
-                label={
-                  operation.todosAnexosFirmados &&
-                  !operation.completada &&
-                  operation.estadoOperacion !== "CANCELADA"
-                    ? "CIERRE PENDIENTE"
-                    : operation.estadoOperacion
-                }
-                style={
-                  operation.todosAnexosFirmados &&
-                  !operation.completada &&
-                  operation.estadoOperacion !== "CANCELADA"
-                    ? getOperationStatusStyle("PENDIENTE")
-                    : getOperationStatusStyle(operation.estadoOperacion)
-                }
-              />
-            <Badge
-              label={operation.completada ? "Completada" : "En edición"}
-              style={operation.completada ? getAnexoColorStyle("VERDE") : getAnexoColorStyle("AMARILLO")}
-            />
+    <div className="container py-2" style={{ maxWidth: '1100px' }}>
+      {/* --- STICKY HEADER --- */}
+      <div 
+        style={{ 
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 1050,
+          // backgroundColor: isSticky ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          margin: isSticky ? '0 -20px 1rem -20px' : '0 -20px 2rem -20px',
+          padding: isSticky ? '0.6rem 20px' : '1.25rem 20px',
+          borderBottom: '1px solid #e5e7eb',
+          boxShadow: isSticky ? '0 10px 15px -3px rgba(0, 0, 0, 0.07)' : '0 4px 6px -1px rgba(0, 0, 0, 0.02)',
+          transition: 'all 0.3s ease-in-out',
+        }}
+      >
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center">
+            {/* Back Button */}
+            <button 
+              className="btn d-flex align-items-center justify-content-center me-2 flex-shrink-0" 
+              onClick={() => navigate(`/operations`)}
+              style={{
+                ...styles.backBtn,
+                transform: isSticky ? 'scale(0.9)' : 'scale(1)',
+                transition: 'transform 0.2s'
+              }}
+            >
+              <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
+            </button>
+
+            {/* Title and Badges */}
+            <div>
+              <h4 
+                className="fw-bold mb-0 text-dark"
+                style={{ 
+                  fontSize: isSticky ? '1.1rem' : '1.5rem',
+                  transition: 'font-size 0.2s' 
+                }}
+              >
+                {operation.codigo}
+              </h4>
+              {!isSticky && (
+                <div className="d-flex gap-2 mt-2">
+                  <Badge
+                    label={
+                      operation.todosAnexosFirmados &&
+                      !operation.completada &&
+                      operation.estadoOperacion !== "CANCELADA"
+                        ? "CIERRE PENDIENTE"
+                        : operation.estadoOperacion
+                    }
+                    style={
+                      operation.todosAnexosFirmados &&
+                      !operation.completada &&
+                      operation.estadoOperacion !== "CANCELADA"
+                        ? getOperationStatusStyle("PENDIENTE")
+                        : getOperationStatusStyle(operation.estadoOperacion)
+                    }
+                  />
+                  <Badge
+                    label={operation.completada ? "Completada" : "En edición"}
+                    style={operation.completada ? getAnexoColorStyle("VERDE") : getAnexoColorStyle("AMARILLO")}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="d-flex gap-2">
+            {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
+              <ButtonProp
+                className="btn btn-sm px-3"
+                style={{ 
+                  backgroundColor: "#B91C1C", 
+                  color: "#FFFFFF", 
+                  fontWeight: "bold",
+                  transform: isSticky ? 'scale(0.9)' : 'scale(1)'
+                }}
+                onClick={() => setShowCancelConfirm(true)}
+                disabled={cancelling}
+              >
+                {cancelling ? "..." : "Cancelar"}
+              </ButtonProp>
+            )}
+            <ButtonProp
+              className="btn btn-sm px-3"
+              style={{ 
+                backgroundColor: "#166534", 
+                color: "#FFFFFF", 
+                fontWeight: "bold",
+                transform: isSticky ? 'scale(0.9)' : 'scale(1)'
+              }}
+              onClick={() => setShowCompleteConfirm(true)}
+              disabled={
+                operation.completada ||
+                !operation.todosAnexosFirmados ||
+                completing ||
+                operation.estadoOperacion === "CANCELADA" ||
+                !operation.puedeEditarUsuarioActual
+              }
+            >
+              {completing ? "..." : isSticky ? "Completar" : "Completar operación"}
+            </ButtonProp>
           </div>
         </div>
+      </div>
 
-        <div className="d-flex gap-2 flex-wrap">
-          {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
-            <ButtonProp
-              className="btn"
-              style={{ backgroundColor: "#B91C1C", color: "#FFFFFF", fontWeight: "bold" }}
-              onClick={() => setShowCancelConfirm(true)}
-              disabled={cancelling}
-            >
-              {cancelling ? "Cancelando..." : "Cancelar operación"}
-            </ButtonProp>
-          )}
-          <ButtonProp
-            className="btn"
-            style={{ backgroundColor: "#166534", color: "#FFFFFF", fontWeight: "bold" }}
-            onClick={() => setShowCompleteConfirm(true)}
-            disabled={
-              operation.completada ||
-              !operation.todosAnexosFirmados ||
-              completing ||
-              operation.estadoOperacion === "CANCELADA" ||
-              !operation.puedeEditarUsuarioActual
-            }
-          >
-            {completing ? "Completando..." : "Completar operación"}
-          </ButtonProp>
+      <div 
+        className="card border-0 shadow-sm mb-4" 
+        style={{ borderRadius: '12px', overflow: 'hidden' }}
+      >        
+        <div className="card-body p-4">
+          <div className="row g-4">
+            {resumen.map((item, index) => (
+              <div key={item.label} className="col-md-6 col-lg-3">
+                <div className="p-3 rounded-3 bg-light h-100 border border-white" style={{ transition: 'transform 0.2s' }}>
+                  <label className="text-uppercase text-muted fw-bold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    {item.label}
+                  </label>
+                  <div className="h6 fw-bold text-dark mb-0" style={{ wordBreak: 'break-word' }}>
+                    {item.value || <span className="text-muted fw-normal">No definido</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -247,12 +324,6 @@ export default function OperationDetail() {
           Todos los anexos están firmados. Ya puedes completar la operación.
         </div>
       )}
-
-      <div className="row mb-4">
-        {resumen.map((item) => (
-          <DetailCard key={item.label} label={item.label} value={item.value} />
-        ))}
-      </div>
 
       <div className="row g-4">
         {OPERATION_ANEXOS.map((tipoAnexo) => {
