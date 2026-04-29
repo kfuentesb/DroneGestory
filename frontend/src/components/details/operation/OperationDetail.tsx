@@ -195,7 +195,7 @@ export default function OperationDetail() {
         style={{ 
           position: 'sticky', 
           top: 0, 
-          zIndex: 1050,
+          zIndex: 3,
           // backgroundColor: isSticky ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',

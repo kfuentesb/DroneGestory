@@ -510,7 +510,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         style={{ 
           position: 'sticky', 
           top: 0, 
-          zIndex: 1050,
+          zIndex: 3,
           // DESCOMENTAR ESTO SI NO SE QUIERE EL EFECTO DE BLUR
           // backgroundColor: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(12px)',
