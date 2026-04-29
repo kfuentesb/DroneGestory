@@ -17,7 +17,7 @@ const StepProgressBar: React.FC<StepProgressBarProps> = ({ steps, currentStep, o
   const progress = ((currentStep) / (totalSteps - 1)) * 100;
 
   return (
-    <div className="mb-5" style={{ userSelect: "none" }}>
+    <div className="" style={{ userSelect: "none" }}>
       <div className="position-relative" style={{ minHeight: "60px" }}>
         {/* Línea de progreso de fondo */}
         <div style={{
