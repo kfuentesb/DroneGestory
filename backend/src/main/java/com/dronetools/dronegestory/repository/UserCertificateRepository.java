@@ -31,5 +31,14 @@ public interface UserCertificateRepository extends JpaRepository<UserCertificate
             """)
     List<UserCertificate> findAllExpiringWithUser();
 
+    @Query("""
+            select uc 
+            from UserCertificate uc 
+            join fetch uc.user u 
+            where uc.expireDate = :targetDate 
+              and (uc.dateIndefinite = false or uc.dateIndefinite is null)
+            """)
+    List<UserCertificate> findByExpireDateWithUser(@Param("targetDate") java.time.LocalDate targetDate);
+
     void deleteByUserId(Integer userId);
 }

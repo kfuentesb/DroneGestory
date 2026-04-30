@@ -57,6 +57,18 @@ spring:
             include-binding-errors: always
             whitelabel:
                 enabled: false
+    mail:
+        host: smtp.gmail.com
+        port: 587
+        username: dronegestoryemailsender1@gmail.com
+        password: lqovzebszmdnpjwq
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                        required: true
 
 jwt:
     secret: ${JWT_SECRET:change-this-in-prod-min-32-chars}

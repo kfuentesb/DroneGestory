@@ -88,6 +88,10 @@ npm i react-pro-sidebar
 npm i react-hook-form
 npm i @svar-ui/react-filemanager
 ```
+PARA MONTAR EL ENVIO DE CORREO<br>
+export EMAIL_USER=tu-correo@gmail.com
+export EMAIL_PASSWORD=tu-contraseña-de-app
+mvn spring-boot:run
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
 ```
@@ -104,6 +108,7 @@ VISUAL<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
+-Al subir un certificado hay que preguntar el id del usuario en sesion para que no se pueda subir certificados a usuario diferentes<br>
 
 -DRONES<br>
 
@@ -118,7 +123,6 @@ VISUAL<br>
 -Arreglar el borrado de documentaciones, deja las carpetas por detrás<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
-
 
 
 MIGRACION
