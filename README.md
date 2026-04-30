@@ -6,6 +6,8 @@
 >DB_USER=admin <br>
 >DB_PASSWORD=admin123 <br>
 >DB_NAME=aeronaves_db <br>
+>EMAIL_USER=tu-correo@gmail.com <br>
+>EMAIL_PASSWORD=tu-contraseña-de-app <br>
 
 # Configuración de Red/URLs<br>
 >SERVER_IP=YOUR_SERVER_IP <br>
@@ -93,6 +95,9 @@ export EMAIL_USER=tu-correo@gmail.com
 export EMAIL_PASSWORD=tu-contraseña-de-app
 mvn spring-boot:run
 
+En Docker/servidor, estas dos variables deben estar en el `.env` de la raiz,
+junto a `DB_USER`, `DB_PASSWORD` y `DB_NAME`.
+
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
 ```
 pip install bcrypt
@@ -124,6 +129,20 @@ VISUAL<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
+
+cat <<EOF > .env
+# Configuracion de Base de Datos
+DB_USER=admin
+DB_PASSWORD=admin123
+DB_NAME=aeronaves_db
+
+# Configuracion de Red/URLs
+VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
+
+# Configuracion de Email
+EMAIL_USER=dronegestoryemailsender1@gmail.com
+EMAIL_PASSWORD=lqovzebszmdnpjwq
+EOF
 
 MIGRACION
 
