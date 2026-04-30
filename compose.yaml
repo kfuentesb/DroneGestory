@@ -16,8 +16,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - APP_FRONTEND_URL=https://quizzical-morse.213-165-78-203.plesk.page
-      - EMAIL_USER=${EMAIL_USER}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_USER=${EMAIL_USER:?EMAIL_USER is required}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:?EMAIL_PASSWORD is required}
     volumes:
       - ./backend/uploads:/app/uploads
     networks:

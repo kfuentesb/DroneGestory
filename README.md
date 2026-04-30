@@ -6,6 +6,8 @@
 >DB_USER=admin <br>
 >DB_PASSWORD=admin123 <br>
 >DB_NAME=aeronaves_db <br>
+>EMAIL_USER=tu-correo@gmail.com <br>
+>EMAIL_PASSWORD=tu-contraseña-de-app <br>
 
 # Configuración de Red/URLs<br>
 >SERVER_IP=YOUR_SERVER_IP <br>
@@ -92,6 +94,9 @@ PARA MONTAR EL ENVIO DE CORREO<br>
 export EMAIL_USER=tu-correo@gmail.com
 export EMAIL_PASSWORD=tu-contraseña-de-app
 mvn spring-boot:run
+
+En Docker/servidor, estas dos variables deben estar en el `.env` de la raiz,
+junto a `DB_USER`, `DB_PASSWORD` y `DB_NAME`.
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
 ```
