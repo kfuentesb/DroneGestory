@@ -7,6 +7,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,18 +44,18 @@ public class SentMail {
     @Column(name = "recipient_mode", nullable = false, length = 20)
     private String recipientMode;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "sent_mail_selected_users", joinColumns = @JoinColumn(name = "sent_mail_id"))
     @Column(name = "username", nullable = false, length = 80)
     private List<String> selectedUsernames = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "sent_mail_selected_roles", joinColumns = @JoinColumn(name = "sent_mail_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 50)
     private List<UserType> selectedRoles = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "sent_mail_recipients", joinColumns = @JoinColumn(name = "sent_mail_id"))
     @Column(name = "recipient", nullable = false, length = 140)
     private List<String> recipients = new ArrayList<>();
