@@ -16,9 +16,13 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -190,6 +194,7 @@ public class OperationService {
                 borrarArchivo(a4.getImagenZonaVuelo());
             });
         }
+        borrarDirectorioUploadsOperacion(idOperacion);
 
         operationRepository.delete(op);
         auditLogService.record("BORRAR_OPERACION", idOperacion, snapshot);
@@ -226,7 +231,30 @@ public class OperationService {
     private void borrarArchivo(String filePath) {
         if (filePath == null) return;
         try {
-            java.nio.file.Files.deleteIfExists(java.nio.file.Paths.get(filePath));
+            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path candidate = uploadsDir.resolve(filePath).normalize();
+            if (candidate.startsWith(uploadsDir)) {
+                Files.deleteIfExists(candidate);
+            }
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void borrarDirectorioUploadsOperacion(Long idOperacion) {
+        Path operationDir = Paths.get("uploads", "operations", String.valueOf(idOperacion))
+                .toAbsolutePath()
+                .normalize();
+        if (!Files.exists(operationDir)) {
+            return;
+        }
+        try (var paths = Files.walk(operationDir)) {
+            paths.sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.deleteIfExists(path);
+                        } catch (IOException ignored) {
+                        }
+                    });
         } catch (IOException ignored) {
         }
     }
