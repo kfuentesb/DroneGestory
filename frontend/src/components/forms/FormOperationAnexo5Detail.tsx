@@ -5,6 +5,7 @@ import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 import { useAuth } from "../commons/hooks/useAuth";
+import ConfirmModal from "../commons/ConfirmModal";
 
 type FormOperationAnexo5DetailProps = {
   operationId: number;
@@ -161,6 +162,11 @@ export default function FormOperationAnexo5Detail({
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
   const [signingAptitud, setSigningAptitud] = useState(false);
+  const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
+    show: false,
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (!fallbackFechaOp) return;
@@ -178,13 +184,13 @@ export default function FormOperationAnexo5Detail({
     setSigningAptitud(true);
     try {
       const signedData = await signAnexo5Data(operationId, initialValues.id);
-      alert("Firma registrada correctamente.");
+      setAlertModal({ show: true, title: "Anexo 5", message: "Firma registrada correctamente." });
       await onSaved?.(signedData);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        alert(err.message || "Error al registrar la firma.");
+        setAlertModal({ show: true, title: "Error", message: err.message || "Error al registrar la firma." });
       } else {
-        alert("Error al registrar la firma.");
+        setAlertModal({ show: true, title: "Error", message: "Error al registrar la firma." });
       }
     } finally {
       setSigningAptitud(false);
@@ -206,13 +212,13 @@ export default function FormOperationAnexo5Detail({
       });
 
       const savedData = await saveAnexo5Data(operationId, formData);
-      alert("Anexo 5 guardado correctamente");
+      setAlertModal({ show: true, title: "Anexo 5", message: "Anexo 5 guardado correctamente." });
       await onSaved?.(savedData);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        alert(err.message || "Error al guardar el anexo.");
+        setAlertModal({ show: true, title: "Error", message: err.message || "Error al guardar el anexo." });
       } else {
-        alert("Error al guardar el anexo.");
+        setAlertModal({ show: true, title: "Error", message: "Error al guardar el anexo." });
       }
     } finally {
       setSaving(false);
@@ -394,6 +400,14 @@ export default function FormOperationAnexo5Detail({
           </>
         )}
       </div>
+      <ConfirmModal
+        show={alertModal.show}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={() => setAlertModal({ show: false, title: "", message: "" })}
+        onCancel={() => setAlertModal({ show: false, title: "", message: "" })}
+        variant="warning"
+      />
     </AnexoFormLayout>
   );
 }

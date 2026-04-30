@@ -1,11 +1,12 @@
 // src/components/commons/ImageUploadField.tsx
-import { useRef, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import {
   useImageUpload,
   type ImageUploadConfig,
   type ImageUploadState,
   type ImageUploadHandlers,
 } from "./hooks/useImageUpload";
+import { apiFetch } from "../../api";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIPOS
@@ -77,6 +78,7 @@ export default function ImageUploadField({
   );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [serverImageBlobUrl, setServerImageBlobUrl] = useState<string | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -93,10 +95,54 @@ export default function ImageUploadField({
 
   const acceptString = acceptedTypes.join(",");
 
+  const normalizeImagePath = (filename: string) => {
+    const clean = filename.trim().replace(/^\/+/, "");
+    return clean.startsWith("operations/")
+      ? clean
+      : `operations/${clean}`;
+  };
+
   // URL de la imagen guardada en el servidor
   const savedImageUrl = state.savedFilename
-    ? `${apiBaseUrl}${imageEndpointPath}${state.savedFilename}`
+    ? `${apiBaseUrl}${imageEndpointPath}${normalizeImagePath(state.savedFilename)}`
     : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    let createdUrl: string | null = null;
+
+    const loadServerImage = async () => {
+      if (!savedImageUrl || state.previewUrl) {
+        setServerImageBlobUrl(null);
+        return;
+      }
+      try {
+        const response = await apiFetch(savedImageUrl);
+        if (!response) {
+          setServerImageBlobUrl(null);
+          return;
+        }
+        const blob = await response.blob();
+        createdUrl = URL.createObjectURL(blob);
+        if (!cancelled) {
+          setServerImageBlobUrl(createdUrl);
+        }
+      } catch {
+        if (!cancelled) {
+          setServerImageBlobUrl(null);
+        }
+      }
+    };
+
+    void loadServerImage();
+
+    return () => {
+      cancelled = true;
+      if (createdUrl) {
+        URL.revokeObjectURL(createdUrl);
+      }
+    };
+  }, [savedImageUrl, state.previewUrl]);
 
   const isDisabled = disabled || saving;
 
@@ -183,7 +229,7 @@ export default function ImageUploadField({
             )}
           </div>
           <img
-            src={savedImageUrl}
+            src={serverImageBlobUrl ?? savedImageUrl}
             alt={`${label} guardada`}
             className="img-fluid rounded border"
             style={{ maxHeight: "220px", objectFit: "contain" }}

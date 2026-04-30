@@ -14,6 +14,7 @@ import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { apiFetch } from "../../api";
 import { TablaExpandible } from "./TablaExpandible";
 import ImageUploadField, { appendImageToFormData } from "../commons/ImageUpload";
+import ConfirmModal from "../commons/ConfirmModal";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
@@ -152,6 +153,11 @@ export default function FormOperationAnexo4Detail({
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | "">("");
   const [personnelOptions, setPersonnelOptions] = useState<SelectableUserOption[]>([]);
   const [selectedPersonnelId, setSelectedPersonnelId] = useState<number | "">("");
+  const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
+    show: false,
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (!initialValues) return;
@@ -393,11 +399,19 @@ export default function FormOperationAnexo4Detail({
         return {};
       });
 
-      alert("Anexo 4 guardado correctamente");
+      setAlertModal({
+        show: true,
+        title: "Anexo 4",
+        message: "Anexo 4 guardado correctamente.",
+      });
       await onSaved?.(savedData);
       // window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
-      alert(err?.message || "Error al guardar el anexo.");
+      setAlertModal({
+        show: true,
+        title: "Error",
+        message: err?.message || "Error al guardar el anexo.",
+      });
     } finally {
       setSaving(false);
     }
@@ -671,7 +685,7 @@ export default function FormOperationAnexo4Detail({
         label="Imagen del espacio aéreo"
         fieldName="imagenEspacioAereoFile"
         apiBaseUrl={API_BASE_URL}
-        imageEndpointPath={`/api/operations/${operationId}/anexo4/images/`}
+        imageEndpointPath="/api/operations/anexo4/images/"
         savedFilename={formValues.imagenEspacioAereo}
         maxHeight={220}
         disabled={disabled || saving}
@@ -692,7 +706,7 @@ export default function FormOperationAnexo4Detail({
         label="Imagen zona de vuelo"
         fieldName="imagenZonaVueloFile"
         apiBaseUrl={API_BASE_URL}
-        imageEndpointPath={`/api/operations/${operationId}/anexo4/images/`}
+        imageEndpointPath="/api/operations/anexo4/images/"
         savedFilename={formValues.imagenZonaVuelo}
         maxHeight={220}
         disabled={disabled || saving}
@@ -725,6 +739,14 @@ export default function FormOperationAnexo4Detail({
         valorHeader="Resultado"
         maxItems={8}
         disabled={disabled || saving}
+      />
+      <ConfirmModal
+        show={alertModal.show}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={() => setAlertModal({ show: false, title: "", message: "" })}
+        onCancel={() => setAlertModal({ show: false, title: "", message: "" })}
+        variant="warning"
       />
     </AnexoFormLayout>
   );
