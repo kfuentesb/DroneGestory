@@ -13,6 +13,7 @@ import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { apiFetch } from "../../api";
 import { TablaExpandible } from "./TablaExpandible";
+import ImageUploadField, { appendImageToFormData } from "../commons/ImageUpload";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
@@ -367,6 +368,21 @@ export default function FormOperationAnexo4Detail({
 
       const savedData = await saveAnexo4Data(operationId, formData);
 
+      // Actualizar formValues con los filenames guardados para que la preview persista
+      setFormValues((prev) => ({
+        ...prev,
+        imagenEspacioAereo: savedData?.imagenEspacioAereo ?? prev.imagenEspacioAereo,
+        imagenZonaVuelo: savedData?.imagenZonaVuelo ?? prev.imagenZonaVuelo,
+      }));
+
+      // Limpiar previews de archivo nuevo (ya están guardadas)
+      setPreviewUrls((prev) => {
+        Object.values(prev).forEach((url) => {
+          if (url) URL.revokeObjectURL(url);
+        });
+        return {};
+      });
+
       alert("Anexo 4 guardado correctamente");
       await onSaved?.(savedData);
       // window.scrollTo({ top: 0, behavior: "smooth" });
@@ -641,48 +657,18 @@ export default function FormOperationAnexo4Detail({
 
       {/* SECCIÓN 3 */}
       <SectionTitle>SECCIÓN 3: Espacio aéreo</SectionTitle>
-      <div className="mb-3 border rounded p-3 bg-white">
-        <label className="form-label fw-bold small text-uppercase text-muted">
-          Imagen del espacio aéreo
-        </label>
-        <input
-          type="file"
-          accept="image/jpeg,image/jpg,image/png"
-          className="form-control"
-          onChange={(e) =>
-            handleChange("imagenEspacioAereoFile", e.target.files?.[0] ?? null)
-          }
-          disabled={disabled || saving}
-        />
-        {errors.imagenEspacioAereoFile && (
-          <div className="text-danger small mt-1">
-            {errors.imagenEspacioAereoFile}
-          </div>
-        )}
-        {/* Preview: newly selected file */}
-        {previewUrls.imagenEspacioAereoFile && (
-          <div className="mt-2">
-            <img
-              src={previewUrls.imagenEspacioAereoFile}
-              alt="Vista previa espacio aéreo"
-              className="img-fluid rounded border"
-              style={{ maxHeight: "220px", objectFit: "contain" }}
-            />
-          </div>
-        )}
-        {/* Preview: existing saved image */}
-        {!previewUrls.imagenEspacioAereoFile && formValues.imagenEspacioAereo && (
-          <div className="mt-2">
-            <p className="small text-muted mb-1">Imagen guardada:</p>
-            <img
-              src={`${API_BASE_URL}/api/operations/anexo4/images/${formValues.imagenEspacioAereo}`}
-              alt="Espacio aéreo guardado"
-              className="img-fluid rounded border"
-              style={{ maxHeight: "220px", objectFit: "contain" }}
-            />
-          </div>
-        )}
-      </div>
+      <ImageUploadField
+        label="Imagen del espacio aéreo"
+        fieldName="imagenEspacioAereoFile"
+        apiBaseUrl={API_BASE_URL}
+        imageEndpointPath="/api/operations/anexo4/images/"
+        savedFilename={formValues.imagenEspacioAereo}
+        maxHeight={220}
+        disabled={disabled || saving}
+        helpText="Adjunte el mapa del espacio aéreo (JPG o PNG, máx. 5 MB)"
+        externalError={errors.imagenEspacioAereoFile}
+        onChange={(file, fieldName) => handleChange(fieldName, file)}
+      />
 
       {/* SECCIÓN 4 */}
       <SectionTitle>SECCIÓN 4: Zonas geográficas de UAS</SectionTitle>
@@ -692,51 +678,18 @@ export default function FormOperationAnexo4Detail({
 
       {/* SECCIÓN 5 */}
       <SectionTitle>SECCIÓN 5: Zona de vuelo</SectionTitle>
-      <div className="mb-3 p-3 bg-white rounded border shadow-none">
-        <label className="form-label fw-bold text-uppercase small text-muted">
-          Imagen zona de vuelo
-        </label>
-        <input
-          type="file"
-          accept="image/jpeg,image/jpg,image/png"
-          className="form-control"
-          onChange={(e) =>
-            handleChange("imagenZonaVueloFile", e.target.files?.[0] ?? null)
-          }
-          disabled={disabled || saving}
-        />
-        {errors.imagenZonaVueloFile && (
-          <div className="text-danger small mt-1">
-            {errors.imagenZonaVueloFile}
-          </div>
-        )}
-        <div className="form-text mt-2">
-          Adjunte el mapa detallado de la zona de operación.
-        </div>
-        {/* Preview: newly selected file */}
-        {previewUrls.imagenZonaVueloFile && (
-          <div className="mt-2">
-            <img
-              src={previewUrls.imagenZonaVueloFile}
-              alt="Vista previa zona de vuelo"
-              className="img-fluid rounded border"
-              style={{ maxHeight: "220px", objectFit: "contain" }}
-            />
-          </div>
-        )}
-        {/* Preview: existing saved image */}
-        {!previewUrls.imagenZonaVueloFile && formValues.imagenZonaVuelo && (
-          <div className="mt-2">
-            <p className="small text-muted mb-1">Imagen guardada:</p>
-            <img
-              src={`${API_BASE_URL}/api/operations/anexo4/images/${formValues.imagenZonaVuelo}`}
-              alt="Zona de vuelo guardada"
-              className="img-fluid rounded border"
-              style={{ maxHeight: "220px", objectFit: "contain" }}
-            />
-          </div>
-        )}
-      </div>
+      <ImageUploadField
+        label="Imagen zona de vuelo"
+        fieldName="imagenZonaVueloFile"
+        apiBaseUrl={API_BASE_URL}
+        imageEndpointPath="/api/operations/anexo4/images/"
+        savedFilename={formValues.imagenZonaVuelo}
+        maxHeight={220}
+        disabled={disabled || saving}
+        helpText="Adjunte el mapa detallado de la zona de operación (JPG o PNG, máx. 5 MB)"
+        externalError={errors.imagenZonaVueloFile}
+        onChange={(file, fieldName) => handleChange(fieldName, file)}
+      />
 
       {/* SECCIÓN 6 */}
       <SectionTitle>
