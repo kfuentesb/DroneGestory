@@ -8,11 +8,17 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.OperationService;
 import com.dronetools.dronegestory.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 
@@ -83,5 +89,45 @@ public class OperationController {
     public ResponseEntity<Void> deleteOperation(@PathVariable Long operationId) {
         operationService.deleteOperationWithAnexos(operationId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ✅ NUEVO: Endpoint para servir imágenes guardadas en el Anexo 4
+    // Acceso: GET /api/operations/{operationId}/anexo4/images/{filename}
+    @GetMapping("/{operationId}/anexo4/images/{filename}")
+    public ResponseEntity<Resource> getAnexo4Image(
+            @PathVariable Long operationId,
+            @PathVariable String filename) {
+        try {
+            // Validar que el filename es seguro (no contiene path traversal)
+            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Construir ruta segura al archivo: uploads/operations/{operationId}/anexo4/{filename}
+            Path imagePath = Paths.get("uploads", "operations", String.valueOf(operationId), "anexo4", filename);
+            
+            // Verificar que el archivo existe
+            if (!Files.exists(imagePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Determinar el tipo MIME basado en la extensión
+            String contentType = "image/jpeg";
+            if (filename.toLowerCase().endsWith(".png")) {
+                contentType = "image/png";
+            } else if (filename.toLowerCase().endsWith(".gif")) {
+                contentType = "image/gif";
+            } else if (filename.toLowerCase().endsWith(".webp")) {
+                contentType = "image/webp";
+            }
+
+            // Servir la imagen
+            Resource resource = new FileSystemResource(imagePath.toFile());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

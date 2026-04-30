@@ -118,6 +118,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [sharedConops, setSharedConops] = useState("");
   const [fallbackFechaAnexo5, setFallbackFechaAnexo5] = useState("");
   const [fallbackFechaAnexos678, setFallbackFechaAnexos678] = useState("");
+  const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
+    show: false,
+    title: "",
+    message: "",
+  });
 
   const [isSticky, setIsSticky] = useState(false);
 
@@ -383,7 +388,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       // Para anexos 6 y 7, firmar solo la aeronave seleccionada
       if (tipoAnexo === 6 || tipoAnexo === 7) {
         if (!currentAnexoId) {
-          alert("No hay borrador para la aeronave seleccionada.");
+          setAlertModal({
+            show: true,
+            title: "Firma no disponible",
+            message: "No hay borrador para la aeronave seleccionada.",
+          });
           return;
         }
 
@@ -397,7 +406,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
           await loadOperation();
         } else {
-          alert(`No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`);
+          setAlertModal({
+            show: true,
+            title: "Error",
+            message: `No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`,
+          });
         }
       } else {
         // Para otros anexos, firmar individualmente
@@ -424,7 +437,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       }
     } catch (err) {
       console.error(`Error firmando ${getAnexoLabel(tipoAnexo)}:`, err);
-      alert(`No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`);
+      setAlertModal({
+        show: true,
+        title: "Error",
+        message: `No se pudo firmar ${getAnexoLabel(tipoAnexo)}.`,
+      });
     } finally {
       setSigning(false);
     }
@@ -465,7 +482,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       await loadOperation();
     } catch (err) {
       console.error(`Error rehaciendo ${getAnexoLabel(tipoAnexo)}:`, err);
-      alert(`No se pudo rehacer ${getAnexoLabel(tipoAnexo)}.`);
+      setAlertModal({
+        show: true,
+        title: "Error",
+        message: `No se pudo rehacer ${getAnexoLabel(tipoAnexo)}.`,
+      });
     } finally {
       setRemaking(false);
     }
@@ -914,6 +935,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         onConfirm={() => void handleRemake()}
         onCancel={() => setShowRemakeConfirm(false)}
         variant="primary"
+      />
+      <ConfirmModal
+        show={alertModal.show}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={() => setAlertModal({ show: false, title: "", message: "" })}
+        onCancel={() => setAlertModal({ show: false, title: "", message: "" })}
+        variant="warning"
       />
     </div>
   );

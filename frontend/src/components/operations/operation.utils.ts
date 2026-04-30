@@ -10,14 +10,13 @@ export function formatDateTime(value?: string | null) {
   return new Date(value).toLocaleString("es-ES", {
     dateStyle: "short",
     timeStyle: "short",
-    timeZone: "Europe/Madrid",
   });
 }
 
 export function formatDate(value?: string | null) {
   if (!value) return "-";
 
-  return new Date(value).toLocaleDateString("es-ES", {timeZone: "Europe/Madrid"});
+  return new Date(value).toLocaleDateString("es-ES");
 }
 
 export function getOperationStatusStyle(status: OperationStatus) {
