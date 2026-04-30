@@ -2,12 +2,21 @@
 
 # Crea un -env
 >nano .env <br>
-# Configuración de Base de Datos<br>
->DB_USER=admin <br>
->DB_PASSWORD=admin123 <br>
->DB_NAME=aeronaves_db <br>
->EMAIL_USER=tu-correo@gmail.com <br>
->EMAIL_PASSWORD=tu-contraseña-de-app <br>
+```
+cat <<EOF > .env
+# Configuracion de Base de Datos
+DB_USER=admin
+DB_PASSWORD=admin123
+DB_NAME=aeronaves_db
+
+# Configuracion de Red/URLs
+VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
+
+# Configuracion de Email
+EMAIL_USER=**CORREO**
+EMAIL_PASSWORD=**TU TOKEN 2FA**
+EOF
+```
 
 # Configuración de Red/URLs<br>
 >SERVER_IP=YOUR_SERVER_IP <br>
@@ -130,20 +139,6 @@ VISUAL<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
-
-cat <<EOF > .env
-# Configuracion de Base de Datos
-DB_USER=admin
-DB_PASSWORD=admin123
-DB_NAME=aeronaves_db
-
-# Configuracion de Red/URLs
-VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
-
-# Configuracion de Email
-EMAIL_USER=**CORREO**
-EMAIL_PASSWORD=**TU TOKEN 2FA**
-EOF
 
 VER SI EL SERVIDOR PERMITE ENVIAR CORREOS POR EL PUERTO 587
 ```
