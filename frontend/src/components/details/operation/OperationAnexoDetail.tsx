@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
@@ -49,6 +49,7 @@ import FormOperationAnexo4Detail from "../../forms/FormOperationAnexo4Detail";
 import FormOperationAnexo5Detail from "../../forms/FormOperationAnexo5Detail";
 import FormOperationAnexo6Detail from "../../forms/FormOperationAnexo6Detail";
 import FormOperationAnexo7Detail from "../../forms/FormOperationAnexo7Detail";
+import type { FormOperationAnexo7DetailRef } from "../../forms/FormOperationAnexo7Detail";
 import FormOperationAnexo8Detail from "../../forms/FormOperationAnexo8Detail";
 import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
 import { normalizeDateTimeLocal } from "../../commons/hooks/useAnexoForm";
@@ -125,6 +126,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   });
 
   const [isSticky, setIsSticky] = useState(false);
+  const anexo7FormRef = useRef<FormOperationAnexo7DetailRef | null>(null);
 
   const anexo = useMemo(
     () => operation?.anexos.find((item) => item.tipoAnexo === tipoAnexo) ?? null,
@@ -572,6 +574,16 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     }
   };
 
+  const handleTriggerSign = () => {
+    if (tipoAnexo === 7) {
+      const isFechaOpValid = anexo7FormRef.current?.validateFechaOp() ?? true;
+      if (!isFechaOpValid) {
+        return;
+      }
+    }
+    setShowSignConfirm(true);
+  };
+
   return (
     <div className="container py-2" style={{ maxWidth: '1100px' }}>
       <div 
@@ -634,7 +646,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               <ButtonProp
                 className="btn btn-sm px-2 px-md-4 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{ backgroundColor: '#2563eb', color: '#ffffff', fontWeight: '600', boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)' }}
-                onClick={() => setShowSignConfirm(true)}
+                onClick={handleTriggerSign}
                 disabled={!canSign || signing}
               >
                 <img src={signIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
@@ -877,6 +889,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               )}
               {tipoAnexo === 7 && (
                 <FormOperationAnexo7Detail
+                  ref={anexo7FormRef}
                   key={selectedVersionId ?? anexo.actual.id ?? "current"}
                   operationId={operation.idOperacion}
                   initialValues={anexoData as Anexo7Data | null}

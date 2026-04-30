@@ -2,21 +2,10 @@
 
 # Crea un -env
 >nano .env <br>
-```
-cat <<EOF > .env
-# Configuracion de Base de Datos
-DB_USER=admin
-DB_PASSWORD=admin123
-DB_NAME=aeronaves_db
-
-# Configuracion de Red/URLs
-VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
-
-# Configuracion de Email
-EMAIL_USER=**CORREO**
-EMAIL_PASSWORD=**TU TOKEN 2FA**
-EOF
-```
+# Configuración de Base de Datos<br>
+>DB_USER=admin <br>
+>DB_PASSWORD=admin123 <br>
+>DB_NAME=aeronaves_db <br>
 
 # Configuración de Red/URLs<br>
 >SERVER_IP=YOUR_SERVER_IP <br>
@@ -45,7 +34,6 @@ Para montar el proyecto en un servidor desde 0:<br>
 
 # Checkear logs
 > docker logs dronegestory-backend <br>
-> docker logs -f dronegestory-backend <br>
 
 
 # Para probarlo en local y solo usando docker para postgresql:
@@ -100,13 +88,6 @@ npm i react-pro-sidebar
 npm i react-hook-form
 npm i @svar-ui/react-filemanager
 ```
-PARA MONTAR EL ENVIO DE CORREO<br>
-export EMAIL_USER=tu-correo@gmail.com
-export EMAIL_PASSWORD=tu-contraseña-de-app
-mvn spring-boot:run
-
-En Docker/servidor, estas dos variables deben estar en el `.env` de la raiz,
-junto a `DB_USER`, `DB_PASSWORD` y `DB_NAME`.
 
 > Hay un script de python para convertir un string a hash de springboot security, usa esta libreria
 ```
@@ -120,10 +101,10 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
+-Mirar blur el primero no va, el segundo si<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
--Al subir un certificado hay que preguntar el id del usuario en sesion para que no se pueda subir certificados a usuario diferentes<br>
 
 -DRONES<br>
 
@@ -134,16 +115,12 @@ VISUAL<br>
 -OPERACIONES<br>
 
 -DOCUMENTACIONES<br>
+-En ipad no se pueden ver las documentaciones<br>
 -La sidebar no se muestra en safari<br>
 -Arreglar el borrado de documentaciones, deja las carpetas por detrás<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
-
-VER SI EL SERVIDOR PERMITE ENVIAR CORREOS POR EL PUERTO 587
-```
-docker exec dronegestory-backend bash -lc 'timeout 5 bash -c "</dev/tcp/smtp.gmail.com/587" && echo OK || echo FAIL'
-```
 MIGRACION
 
 server

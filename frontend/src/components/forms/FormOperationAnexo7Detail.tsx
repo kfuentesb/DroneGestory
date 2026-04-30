@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { saveAnexo7Data, type Anexo7Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
-import ConfirmModal from "../commons/ConfirmModal";
 
 type FormOperationAnexo7DetailProps = {
   operationId: number;
@@ -14,6 +13,10 @@ type FormOperationAnexo7DetailProps = {
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo7Data | null) => void | Promise<void>;
+};
+
+export type FormOperationAnexo7DetailRef = {
+  validateFechaOp: () => boolean;
 };
 
 const FORM_FIELDS = [
@@ -97,7 +100,7 @@ const RECOGIDA_CONFIG: CheckItem[] = [
   { num: "2.5", title: "Otros (generadores, herramientas, manga, viento, etc)", key: "otrosRecogidaCorrecto", obsKey: "otrosRecogidaObservaciones" },
 ];
 
-export default function FormOperationAnexo7Detail({
+const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormOperationAnexo7DetailProps>(function FormOperationAnexo7Detail({
   operationId,
   initialValues,
   selectedAircraftId,
@@ -106,7 +109,7 @@ export default function FormOperationAnexo7Detail({
   disabled,
   readOnlyMessage,
   onSaved,
-}: FormOperationAnexo7DetailProps) {
+}: FormOperationAnexo7DetailProps, ref) {
   const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
@@ -114,26 +117,32 @@ export default function FormOperationAnexo7Detail({
   });
   const [fechaOpError, setFechaOpError] = useState(false);
   const fechaOpInputRef = useRef<HTMLInputElement | null>(null);
-  const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
-    show: false,
-    title: "",
-    message: "",
-  });
 
   useEffect(() => {
     if (!fallbackFechaOp) return;
     setFormValues((prev) => (prev.fechaOp ? prev : { ...prev, fechaOp: fallbackFechaOp }));
   }, [fallbackFechaOp, setFormValues]);
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (disabled) return;
+
+  const validateFechaOp = () => {
     if (!formValues.fechaOp) {
-      setAlertModal({ show: true, title: "Validación", message: "La fecha de operación es obligatoria." });
       setFechaOpError(true);
       if (fechaOpInputRef.current) {
         fechaOpInputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
         fechaOpInputRef.current.focus();
       }
+      return false;
+    }
+    return true;
+  };
+
+  useImperativeHandle(ref, () => ({
+    validateFechaOp,
+  }), [formValues.fechaOp]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (disabled) return;
+    if (!validateFechaOp()) {
       return;
     }
 
@@ -151,14 +160,9 @@ export default function FormOperationAnexo7Detail({
       });
 
       const savedData = await saveAnexo7Data(operationId, formData);
-      setAlertModal({ show: true, title: "Anexo 7", message: "Anexo 7 guardado correctamente." });
       await onSaved?.(savedData);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setAlertModal({ show: true, title: "Error", message: err.message || "Error al guardar el anexo." });
-      } else {
-        setAlertModal({ show: true, title: "Error", message: "Error al guardar el anexo." });
-      }
+      console.error("Error al guardar el anexo 7:", err);
     } finally {
       setSaving(false);
     }
@@ -267,7 +271,7 @@ export default function FormOperationAnexo7Detail({
             aria-describedby={fechaOpError ? "anexo7-fechaop-error" : undefined}
           />
           {fechaOpError && (
-            <div id="anexo7-fechaop-error" className="invalid-feedback">
+            <div id="anexo7-fechaop-error" className="text-danger small mt-1">
               La fecha de operación es obligatoria.
             </div>
           )}
@@ -304,14 +308,8 @@ export default function FormOperationAnexo7Detail({
       <div className="bg-white border rounded p-3">
         {RECOGIDA_CONFIG.map(renderRow)}
       </div>
-      <ConfirmModal
-        show={alertModal.show}
-        title={alertModal.title}
-        message={alertModal.message}
-        onConfirm={() => setAlertModal({ show: false, title: "", message: "" })}
-        onCancel={() => setAlertModal({ show: false, title: "", message: "" })}
-        variant="warning"
-      />
     </AnexoFormLayout>
   );
-}
+});
+
+export default FormOperationAnexo7Detail;
