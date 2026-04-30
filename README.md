@@ -36,6 +36,7 @@ Para montar el proyecto en un servidor desde 0:<br>
 
 # Checkear logs
 > docker logs dronegestory-backend <br>
+> docker logs -f dronegestory-backend <br>
 
 
 # Para probarlo en local y solo usando docker para postgresql:
@@ -144,6 +145,10 @@ EMAIL_USER=**CORREO**
 EMAIL_PASSWORD=**TU TOKEN 2FA**
 EOF
 
+VER SI EL SERVIDOR PERMITE ENVIAR CORREOS POR EL PUERTO 587
+```
+docker exec dronegestory-backend bash -lc 'timeout 5 bash -c "</dev/tcp/smtp.gmail.com/587" && echo OK || echo FAIL'
+```
 MIGRACION
 
 server
