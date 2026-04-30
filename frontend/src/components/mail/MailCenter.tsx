@@ -18,14 +18,14 @@ type SentMail = {
   username: string;
   header: string;
   text: string;
-  recipientMode: "USERS" | "ROLES";
+  recipientMode: "USERS" | "ROLES" | "BOTH";
   selectedUsernames: string[];
   selectedRoles: string[];
   recipients: string[];
   sentAt: string;
 };
 
-const ROLE_OPTIONS = ["ADMIN", "MANAGER", "MAINTAINER", "PILOT"];
+const ROLE_OPTIONS = ["MANAGER", "MAINTAINER", "PILOT"];
 const ITEMS_PER_PAGE = 8;
 
 export default function MailCenter() {
@@ -39,7 +39,7 @@ export default function MailCenter() {
 
   const [header, setHeader] = useState("");
   const [text, setText] = useState("");
-  const [showSegmentation, setShowSegmentation] = useState<"SENT_MAILS" | "HISTORY">();
+  const [showSegmentation, setShowSegmentation] = useState<"SENT_MAILS" | "HISTORY">("SENT_MAILS");
   const [recipientMode, setRecipientMode] = useState<"USERS" | "ROLES">("USERS");
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -72,12 +72,11 @@ export default function MailCenter() {
   };
 
   const previewRecipients = useMemo(() => {
-    if (recipientMode === "USERS") {
-      return users.filter((user) => selectedUserIds.includes(user.id));
-    }
-
-    return users.filter((user) => user.roles.some((role) => selectedRoles.includes(role)));
-  }, [recipientMode, selectedRoles, selectedUserIds, users]);
+    return users.filter((user) =>
+      selectedUserIds.includes(user.id) ||
+      user.roles.some((role) => selectedRoles.includes(role))
+    );
+  }, [selectedRoles, selectedUserIds, users]);
 
   const paginatedMails = sentMails.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -121,15 +120,17 @@ export default function MailCenter() {
 
     setIsSending(true);
     try {
+      const hasUsers = selectedUserIds.length > 0;
+      const hasRoles = selectedRoles.length > 0;
       const response = await apiFetch("/api/sent-mails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           header,
           text,
-          recipientMode,
-          userIds: recipientMode === "USERS" ? selectedUserIds : [],
-          roles: recipientMode === "ROLES" ? selectedRoles : [],
+          recipientMode: hasUsers && hasRoles ? "BOTH" : hasUsers ? "USERS" : "ROLES",
+          userIds: selectedUserIds,
+          roles: selectedRoles,
         }),
       });
 
@@ -164,30 +165,44 @@ export default function MailCenter() {
         <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3 text-center" style={{ letterSpacing: "1px" }}>
           Panel de Control de Mensajería
         </label>
+        <small>😞🤷‍♂️De momento no se puede enviar un mismo correo a una persona y a un rol a la vez, y pueden acceder no admins/managers</small>
+        <br/>
         <div className="btn-group p-2 bg-white rounded-4 w-100 shadow-sm border" role="group" style={{ height: "60px" }}>
           <button
             type="button"
             className={`btn btn-sm rounded-3 border-0 transition-all d-flex align-items-center justify-content-center gap-2 ${
               showSegmentation === "SENT_MAILS" 
-                ? "bg-success text-white shadow fw-bold" 
+                ? "text-white shadow fw-bold" 
                 : "text-muted hover-bg-light"
             }`}
             onClick={() => setShowSegmentation("SENT_MAILS")}
-            style={{ transition: "0.3s px-4" }}
+            style={{ 
+              paddingLeft: "1.5rem",
+              paddingRight: "1.5rem",
+              background: showSegmentation === "SENT_MAILS" 
+                ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                : "transparent" 
+            }}
           >
-            <span style={{ fontSize: "1.2rem" }}>🚀</span> Enviar Correos
+            Enviar Correos
           </button>
           <button
             type="button"
             className={`btn btn-sm rounded-3 border-0 transition-all d-flex align-items-center justify-content-center gap-2 ${
               showSegmentation === "HISTORY" 
-                ? "bg-primary text-white shadow fw-bold" 
+                ? "text-white shadow fw-bold"
                 : "text-muted hover-bg-light"
             }`}
             onClick={() => setShowSegmentation("HISTORY")}
-            style={{ transition: "0.3s px-4" }}
+            style={{
+              paddingLeft: "1.5rem",
+              paddingRight: "1.5rem",
+              background: showSegmentation === "HISTORY" 
+                ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                : "transparent" 
+            }}
           >
-            <span style={{ fontSize: "1.2rem" }}>📋</span> Historial
+            Historial
           </button>
         </div>
       </div>
@@ -237,14 +252,14 @@ export default function MailCenter() {
                           className={`btn btn-sm rounded-pill border-0 py-2 ${recipientMode === "USERS" ? "bg-success text-white shadow-sm" : "text-muted"}`}
                           onClick={() => setRecipientMode("USERS")}
                         >
-                          👤 Usuarios Seleccionados
+                          Usuarios Seleccionados
                         </button>
                         <button
                           type="button"
                           className={`btn btn-sm rounded-pill border-0 py-2 ${recipientMode === "ROLES" ? "bg-success text-white shadow-sm" : "text-muted"}`}
                           onClick={() => setRecipientMode("ROLES")}
                         >
-                          🏷️ Filtrar por Roles
+                          Filtrar por Roles
                         </button>
                       </div>
 
@@ -295,7 +310,7 @@ export default function MailCenter() {
           </section>
         ) : (
           <section className="card border-0 shadow-lg" style={{ borderRadius: "20px" }}>
-            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#36a269" }}>
+            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }}>
               <h2 className="h4 fw-bold mb-1">Registro de Actividad</h2>
               <p className="small mb-3 text-white-50">Auditoría completa de correos emitidos</p>
             </div>
@@ -306,19 +321,23 @@ export default function MailCenter() {
                   rows={paginatedMails}
                   emptyText="No hay historial disponible."
                   renderRow={(mail) => (
-                    <tr className="align-middle">
-                      <td className="small fw-bold text-muted">{mail.sentAt ? new Date(mail.sentAt).toLocaleDateString() : "-"}</td>
-                      <td className="fw-bold"><span className="text-primary">@</span>{mail.username}</td>
+                    /* ELIMINAMOS EL <tr className="align-middle"> */
+                    <>
+                      <td className="small fw-bold text-muted">
+                        {mail.sentAt ? new Date(mail.sentAt).toLocaleDateString() : "-"}
+                      </td>
+                      <td className="fw-bold">
+                        {mail.username}
+                      </td>
                       <td className="small fw-semibold">{mail.header}</td>
                       <td>
-                        <span className={`badge rounded-pill px-3 py-2 ${mail.recipientMode === "ROLES" ? "bg-primary-subtle text-primary border border-primary-subtle" : "bg-info-subtle text-info border border-info-subtle"}`}>
-                          {mail.recipientMode === "ROLES" ? "Por Roles" : "Directo"}
-                        </span>
+                        {mail.recipientMode === "ROLES" ? "Por Roles" : "Directo"}
                       </td>
                       <td className="small text-muted italic">
                         {mail.recipients.length} personas alcanzadas
                       </td>
-                    </tr>
+                    </>
+                    /* ELIMINAMOS EL </tr> */
                   )}
                 />
               </div>
