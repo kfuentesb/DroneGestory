@@ -241,18 +241,23 @@ export default function FormOperationAnexo4Detail({
   }, []);
 
   const handleChange = (key: string, value: any) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
+    // Si es un File (desde ImageUploadField), almacenarlo como File para FormData
     if (value instanceof File) {
-      const url = URL.createObjectURL(value);
-      setPreviewUrls((prev) => {
-        if (prev[key]) URL.revokeObjectURL(prev[key]!);
-        return { ...prev, [key]: url };
-      });
-    } else if (value == null) {
-      setPreviewUrls((prev) => {
-        if (prev[key]) URL.revokeObjectURL(prev[key]!);
-        return { ...prev, [key]: null };
-      });
+      setFormValues((prev) => ({ ...prev, [key]: value }));
+      // La preview URL ya la maneja ImageUploadField, no necesitamos duplicarla aquí
+    }
+    // Si es null (limpiar imagen), limpiar el valor
+    else if (value == null) {
+      setFormValues((prev) => ({ ...prev, [key]: null }));
+      // La URL ya está revocada en ImageUploadField
+    }
+    // Si es un string (nombre de archivo guardado desde initialValues o después de guardar)
+    else if (typeof value === "string") {
+      setFormValues((prev) => ({ ...prev, [key]: value }));
+    }
+    // Otros casos (valores normales de input)
+    else {
+      setFormValues((prev) => ({ ...prev, [key]: value }));
     }
   };
 
@@ -368,14 +373,19 @@ export default function FormOperationAnexo4Detail({
 
       const savedData = await saveAnexo4Data(operationId, formData);
 
-      // Actualizar formValues con los filenames guardados para que la preview persista
+      // ✅ CRÍTICO: Actualizar formValues con los filenames guardados del servidor
+      // Esto hace que ImageUploadField sincronice su savedFilename prop
       setFormValues((prev) => ({
         ...prev,
+        // Los campos de archivo guardados
         imagenEspacioAereo: savedData?.imagenEspacioAereo ?? prev.imagenEspacioAereo,
         imagenZonaVuelo: savedData?.imagenZonaVuelo ?? prev.imagenZonaVuelo,
+        // Limpiar los Files después de guardar (ya fueron enviados al servidor)
+        imagenEspacioAereoFile: null,
+        imagenZonaVueloFile: null,
       }));
 
-      // Limpiar previews de archivo nuevo (ya están guardadas)
+      // Limpiar previewUrls locales (ya están guardadas en el servidor)
       setPreviewUrls((prev) => {
         Object.values(prev).forEach((url) => {
           if (url) URL.revokeObjectURL(url);
