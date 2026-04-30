@@ -642,7 +642,25 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           <div className="d-flex gap-2">
             <ButtonProp
               className="btn btn-sm px-2 px-md-3 d-inline-flex align-items-center justify-content-center gap-2"
-              style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', fontWeight: '600' }}
+              style={
+                !canRemake || remaking
+                  ? {
+                      // Estado DESACTIVADO: gris apagado para máximo contraste
+                      backgroundColor: '#e5e7eb',
+                      color: '#6b7280',
+                      border: '1px solid #d1d5db',
+                      fontWeight: '600',
+                      cursor: 'not-allowed',
+                      opacity: 0.8,
+                    }
+                  : {
+                      // Estado ACTIVO: conserva tu color original
+                      backgroundColor: '#fee7c7',
+                      color: '#92400e',
+                      border: '1px solid #fcd34d',
+                      fontWeight: '600',
+                    }
+              }
               onClick={() => setShowRemakeConfirm(true)}
               disabled={!canRemake || remaking}
             >
