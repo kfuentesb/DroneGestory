@@ -101,7 +101,6 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
--Mirar blur el primero no va, el segundo si<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
@@ -115,7 +114,6 @@ VISUAL<br>
 -OPERACIONES<br>
 
 -DOCUMENTACIONES<br>
--En ipad no se pueden ver las documentaciones<br>
 -La sidebar no se muestra en safari<br>
 -Arreglar el borrado de documentaciones, deja las carpetas por detrás<br>
 -Arreglar la barra de busqueda<br>

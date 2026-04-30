@@ -4,6 +4,7 @@ import Footer from './components/main-elements-views/Footer';
 import RouterPrincipal from './router/RouterPrincipal';
 import Navbar from './components/main-elements-views/Navbar';
 import MainLayout from './components/layout/MainLayout';
+import ScrollToTop from './components/commons/ScrollToTop';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         </MainLayout>
 
         <Footer />
+        <ScrollToTop />
       </AuthProvider>
     </div>
   );
