@@ -140,8 +140,8 @@ DB_NAME=aeronaves_db
 VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
 
 # Configuracion de Email
-EMAIL_USER=dronegestoryemailsender1@gmail.com
-EMAIL_PASSWORD=lqovzebszmdnpjwq
+EMAIL_USER=**CORREO**
+EMAIL_PASSWORD=**TU TOKEN 2FA**
 EOF
 
 MIGRACION
