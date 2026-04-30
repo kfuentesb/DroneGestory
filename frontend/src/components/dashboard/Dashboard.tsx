@@ -813,7 +813,7 @@ export default function Dashboard() {
                             <Select
                               options={roleOptions}
                               styles={backgroundBorderInputsSelect}
-                              placeholder="Seleccione visivilidad del evento"
+                              placeholder="Seleccione visibilidad del evento"
                               value={selectedRoles}
                               isMulti
                               closeMenuOnSelect={false}
