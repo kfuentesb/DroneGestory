@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Select, { type StylesConfig } from "react-select";
 import { useNavigate } from "react-router-dom";
 
-import { apiFetch } from "../../api";
+import { apiFetch, API_BASE_URL } from "../../api";
 import { aircraftClasses, configs, LIMITS, yesNoOptions,
   cautiveOptions, powerSources, powerSourcesNonElectric } from "../../global-const/aircraft-const";
 import { InfoBadge } from "../commons/InfoBadge";
@@ -15,8 +15,6 @@ import AircraftDocumentationSection, {
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 import "../../styles/generic-form.css";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 type SelectOption = { value: string; label: string };
 

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DetailsComponent from "../DetailsComponent";
 import { apiFetch } from "../../../api";
 import { userFields } from "./UserFields";
