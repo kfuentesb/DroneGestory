@@ -671,7 +671,7 @@ export default function FormOperationAnexo4Detail({
         label="Imagen del espacio aéreo"
         fieldName="imagenEspacioAereoFile"
         apiBaseUrl={API_BASE_URL}
-        imageEndpointPath="/api/operations/anexo4/images/"
+        imageEndpointPath={`/api/operations/${operationId}/anexo4/images/`}
         savedFilename={formValues.imagenEspacioAereo}
         maxHeight={220}
         disabled={disabled || saving}
@@ -692,7 +692,7 @@ export default function FormOperationAnexo4Detail({
         label="Imagen zona de vuelo"
         fieldName="imagenZonaVueloFile"
         apiBaseUrl={API_BASE_URL}
-        imageEndpointPath="/api/operations/anexo4/images/"
+        imageEndpointPath={`/api/operations/${operationId}/anexo4/images/`}
         savedFilename={formValues.imagenZonaVuelo}
         maxHeight={220}
         disabled={disabled || saving}
