@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUsername(String username);
@@ -15,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("select count(distinct u) from User u join u.roles r where u.state = true and r = :role")
     long countByRoleAndStateTrue(@Param("role") UserType role);
+
+    @Query("select distinct u from User u join u.roles r where u.state = true and r in :roles")
+    List<User> findActiveUsersByAnyRole(@Param("roles") Set<UserType> roles);
 
     @Query("""
             select u

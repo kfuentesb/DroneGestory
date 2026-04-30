@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/maintenance/**").hasAnyRole("ADMIN", "MAINTAINER")
                         .requestMatchers("/api/flight-times/**").authenticated()
                         .requestMatchers("/api/flight-time-documentation/**").authenticated()
+                        .requestMatchers("/api/sent-mails/**").hasAnyRole("ADMIN", "MANAGER")
 
                         .requestMatchers(HttpMethod.GET, "/api/operations/anexo4/images/**").authenticated()
 
