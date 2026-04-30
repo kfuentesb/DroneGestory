@@ -1,6 +1,5 @@
-import { apiFetch } from "../../api";
+import { apiFetch, API_BASE_URL } from "../../api";
 import type { AnexoStatus, OperationDetailDTO, OperationListDTO } from "./operation.types";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 type AnexoBaseData = {
   id?: number;

@@ -29,6 +29,7 @@ import MaintenanceList from "../components/lists/MaintenanceList";
 import MaintenanceAircraftList from "../components/lists/MaintenanceAircraftList";
 import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
 import Settings from "../components/main-elements-views/Settings";
+import MailCenter from "../components/mail/MailCenter";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -81,6 +82,14 @@ export default class RouterPrincipal extends React.Component {
               <FormUser />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/sent-mails"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+              <MailCenter />
+            </ProtectedRoute>
+          }
         />
 
         <Route path="/profile/:id" element={<ProfileDetail />} />

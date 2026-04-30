@@ -101,6 +101,9 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                     {canManage && (
                         <MenuItem onClick={() => { navigate("/register-user"); setToggled(false); }}>Registrar usuario</MenuItem>
                     )}
+                    {canManage && (
+                        <MenuItem onClick={() => { navigate("/sent-mails"); setToggled(false); }}>Correos</MenuItem>
+                    )}
                 </SubMenu>
 
                 {/* 3. Admin Aircraft Section */}

@@ -3,9 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DetailsComponent from "../DetailsComponent";
 import { useAuth } from "../../commons/hooks/useAuth";
 import { aircraftModelFields } from "./AircraftModelFields";
-import { apiFetch } from "../../../api";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
+import { apiFetch, API_BASE_URL } from "../../../api";
 
 export default function AircraftModelDetail() {
   const { id } = useParams();

@@ -11,13 +11,10 @@ import { operationAnexo4DetailFields } from "../details/operation/OperationsAnex
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
-import { apiFetch } from "../../api";
+import { apiFetch, API_BASE_URL } from "../../api";
 import { TablaExpandible } from "./TablaExpandible";
 import ImageUploadField, { appendImageToFormData } from "../commons/ImageUpload";
 import ConfirmModal from "../commons/ConfirmModal";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`;
 
 const SECCIONES_CONFIG: { seccion4: SectionItem[]; seccion6: SectionItem[] } = {
   seccion4: [
