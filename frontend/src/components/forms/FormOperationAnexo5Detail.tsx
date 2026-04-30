@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveAnexo5Data, signAnexo5Data, type Anexo5Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
@@ -10,6 +10,7 @@ type FormOperationAnexo5DetailProps = {
   operationId: number;
   initialValues?: Anexo5Data | null;
   sharedConops?: string;
+  fallbackFechaOp?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo5Data | null) => void | Promise<void>;
@@ -148,17 +149,23 @@ export default function FormOperationAnexo5Detail({
   operationId,
   initialValues,
   sharedConops,
+  fallbackFechaOp,
   disabled,
   readOnlyMessage,
   onSaved,
 }: FormOperationAnexo5DetailProps) {
   const { username } = useAuth();
-  const { formValues, saving, setSaving, handleChange } = useAnexoForm({
+  const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
     defaultValues: DEFAULT_VALUES,
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
   const [signingAptitud, setSigningAptitud] = useState(false);
+
+  useEffect(() => {
+    if (!fallbackFechaOp) return;
+    setFormValues((prev) => (prev.fechaOp ? prev : { ...prev, fechaOp: fallbackFechaOp }));
+  }, [fallbackFechaOp, setFormValues]);
 
   const assignedPersonnel = initialValues?.assignedPersonnel ?? [];
   const currentUserAssignedEntry = assignedPersonnel.find((person) => person.username === username);
