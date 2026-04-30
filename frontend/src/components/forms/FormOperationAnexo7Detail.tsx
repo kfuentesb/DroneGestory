@@ -3,6 +3,7 @@ import { saveAnexo7Data, type Anexo7Data } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
+import ConfirmModal from "../commons/ConfirmModal";
 
 type FormOperationAnexo7DetailProps = {
   operationId: number;
@@ -113,6 +114,11 @@ export default function FormOperationAnexo7Detail({
   });
   const [fechaOpError, setFechaOpError] = useState(false);
   const fechaOpInputRef = useRef<HTMLInputElement | null>(null);
+  const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
+    show: false,
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (!fallbackFechaOp) return;
@@ -122,7 +128,7 @@ export default function FormOperationAnexo7Detail({
     e.preventDefault();
     if (disabled) return;
     if (!formValues.fechaOp) {
-      alert("La fecha de operación es obligatoria.");
+      setAlertModal({ show: true, title: "Validación", message: "La fecha de operación es obligatoria." });
       setFechaOpError(true);
       if (fechaOpInputRef.current) {
         fechaOpInputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -145,13 +151,13 @@ export default function FormOperationAnexo7Detail({
       });
 
       const savedData = await saveAnexo7Data(operationId, formData);
-      alert("Anexo 7 guardado correctamente");
+      setAlertModal({ show: true, title: "Anexo 7", message: "Anexo 7 guardado correctamente." });
       await onSaved?.(savedData);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        alert(err.message || "Error al guardar el anexo.");
+        setAlertModal({ show: true, title: "Error", message: err.message || "Error al guardar el anexo." });
       } else {
-        alert("Error al guardar el anexo.");
+        setAlertModal({ show: true, title: "Error", message: "Error al guardar el anexo." });
       }
     } finally {
       setSaving(false);
@@ -298,6 +304,14 @@ export default function FormOperationAnexo7Detail({
       <div className="bg-white border rounded p-3">
         {RECOGIDA_CONFIG.map(renderRow)}
       </div>
+      <ConfirmModal
+        show={alertModal.show}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={() => setAlertModal({ show: false, title: "", message: "" })}
+        onCancel={() => setAlertModal({ show: false, title: "", message: "" })}
+        variant="warning"
+      />
     </AnexoFormLayout>
   );
 }

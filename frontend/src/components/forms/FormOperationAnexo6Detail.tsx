@@ -10,6 +10,7 @@ import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
 import { useAnexoForm } from "../commons/hooks/useAnexoForm";
 import { TablaExpandible } from "./TablaExpandible";
+import ConfirmModal from "../commons/ConfirmModal";
 
 type FormOperationAnexo6DetailProps = {
   operationId: number;
@@ -152,6 +153,11 @@ export default function FormOperationAnexo6Detail({
   const [materialesAuxiliares, setMaterialesAuxiliares] = useState<string[]>([""]);
   const [elementosAuxiliaresItems, setElementosAuxiliaresItems] =
     useState<ExpandableTableItem[]>([]);
+  const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
+    show: false,
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     if (!fallbackFechaOp) return;
@@ -224,13 +230,13 @@ export default function FormOperationAnexo6Detail({
       });
 
       const savedData = await saveAnexo6Data(operationId, formData);
-      alert("Anexo 6 guardado correctamente");
+      setAlertModal({ show: true, title: "Anexo 6", message: "Anexo 6 guardado correctamente." });
       await onSaved?.(savedData);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        alert(err.message || "Error al guardar el anexo.");
+        setAlertModal({ show: true, title: "Error", message: err.message || "Error al guardar el anexo." });
       } else {
-        alert("Error al guardar el anexo.");
+        setAlertModal({ show: true, title: "Error", message: "Error al guardar el anexo." });
       }
     } finally {
       setSaving(false);
@@ -385,6 +391,14 @@ export default function FormOperationAnexo6Detail({
         valorHeader="Resultado"
         maxItems={8}
         disabled={disabled || saving}
+      />
+      <ConfirmModal
+        show={alertModal.show}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={() => setAlertModal({ show: false, title: "", message: "" })}
+        onCancel={() => setAlertModal({ show: false, title: "", message: "" })}
+        variant="warning"
       />
 
     </AnexoFormLayout>
