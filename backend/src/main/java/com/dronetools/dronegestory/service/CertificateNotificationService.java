@@ -21,7 +21,7 @@ public class CertificateNotificationService {
     private JavaMailSender mailSender;
 
     // Se ejecuta todos los días a las 9:00 AM
-    @Scheduled(cron = "0 15 12 * * ?")
+    @Scheduled(cron = "0 20 12 * * ?")
     public void sendExpirationNotifications() {
         // Calculo de la fecha objetivo: hoy + 30 días
         LocalDate today = LocalDate.now();
