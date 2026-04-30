@@ -157,7 +157,6 @@ export default function MailCenter() {
     { label: "Destinatarios", key: "recipients", sortable: false },
   ];
 
-
   return (
     <div className="container py-4" style={{ maxWidth: "1000px", minHeight: "90vh" }}>
       {/* SELECTOR DE VISTA (TABS) CON DISEÑO MODERNO */}
@@ -176,7 +175,7 @@ export default function MailCenter() {
             onClick={() => setShowSegmentation("SENT_MAILS")}
             style={{ transition: "0.3s px-4" }}
           >
-            Enviar Correos
+            <span style={{ fontSize: "1.2rem" }}>🚀</span> Enviar Correos
           </button>
           <button
             type="button"
@@ -188,7 +187,7 @@ export default function MailCenter() {
             onClick={() => setShowSegmentation("HISTORY")}
             style={{ transition: "0.3s px-4" }}
           >
-            Historial
+            <span style={{ fontSize: "1.2rem" }}>📋</span> Historial
           </button>
         </div>
       </div>
@@ -238,14 +237,14 @@ export default function MailCenter() {
                           className={`btn btn-sm rounded-pill border-0 py-2 ${recipientMode === "USERS" ? "bg-success text-white shadow-sm" : "text-muted"}`}
                           onClick={() => setRecipientMode("USERS")}
                         >
-                          Usuarios Seleccionados
+                          👤 Usuarios Seleccionados
                         </button>
                         <button
                           type="button"
                           className={`btn btn-sm rounded-pill border-0 py-2 ${recipientMode === "ROLES" ? "bg-success text-white shadow-sm" : "text-muted"}`}
                           onClick={() => setRecipientMode("ROLES")}
                         >
-                          Filtrar por Roles
+                          🏷️ Filtrar por Roles
                         </button>
                       </div>
 
@@ -296,7 +295,7 @@ export default function MailCenter() {
           </section>
         ) : (
           <section className="card border-0 shadow-lg" style={{ borderRadius: "20px" }}>
-            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "linear-gradient(135deg, #49d48a 0%, #297e51 100%)" }}>
+            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#36a269" }}>
               <h2 className="h4 fw-bold mb-1">Registro de Actividad</h2>
               <p className="small mb-3 text-white-50">Auditoría completa de correos emitidos</p>
             </div>
