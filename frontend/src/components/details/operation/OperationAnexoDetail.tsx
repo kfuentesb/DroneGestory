@@ -567,6 +567,13 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }
 
   const handleTriggerSubmit = () => {
+    // Validacion fecha
+    if (tipoAnexo === 7) {
+      const isFechaOpValid = anexo7FormRef.current?.validateFechaOp() ?? true;
+      if (!isFechaOpValid) {
+        return;
+      }
+    }
     const form = document.getElementById('anexo-main-form') as HTMLFormElement;
     if (form) {
       setSaving(true);
