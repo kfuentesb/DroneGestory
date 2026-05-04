@@ -64,7 +64,7 @@ public class OperationService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public OperationDetailDTO createOperationDto(User creador, String conops) {
+    public OperationDetailDTO createOperationDto(User creador, String conops, String customCodigo) {
         int anioActual = LocalDate.now().getYear();
         List<Integer> correlativos = operationRepository.findTopCorrelativoByAnioForUpdate(anioActual, PageRequest.of(0, 1));
         int ultimoCorrelativo = correlativos.isEmpty() ? 0 : correlativos.getFirst();
@@ -74,7 +74,12 @@ public class OperationService {
         operation.setCreador(creador);
         operation.setAnioCorrelativo(anioActual);
         operation.setCorrelativoAnual(siguienteCorrelativo);
-        operation.setCodigo(formatearCodigo(anioActual, siguienteCorrelativo));
+        // Si se proporciona un código personalizado, usarlo; si no, generar el automático
+        if (customCodigo != null && !customCodigo.trim().isEmpty()) {
+            operation.setCodigo(customCodigo.trim());
+        } else {
+            operation.setCodigo(formatearCodigo(anioActual, siguienteCorrelativo));
+        }
         operation.setConops(conops);
 
         Operation saved = operationRepository.save(operation);

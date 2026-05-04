@@ -64,6 +64,7 @@ export default function OperationsTableView({
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateConfirm, setShowCreateConfirm] = useState(false);
   const [nextCodigo, setNextCodigo] = useState<string | null>(null);
+  const [operationCodeInput, setOperationCodeInput] = useState("");
   const [creatingOperation, setCreatingOperation] = useState(false);
   const [pendingDeleteOperationId, setPendingDeleteOperationId] = useState<number | null>(null);
   const [pendingCancelOperationId, setPendingCancelOperationId] = useState<number | null>(null);
@@ -118,6 +119,7 @@ export default function OperationsTableView({
         return;
       }
       setNextCodigo(codigo);
+      setOperationCodeInput(codigo);
       setShowCreateConfirm(true);
     } catch (err) {
       console.error("Error obteniendo cÃ³digo de operaciÃ³n:", err);
@@ -128,7 +130,8 @@ export default function OperationsTableView({
   const handleConfirmCreate = async () => {
     try {
       setCreatingOperation(true);
-      const created = await createOperation();
+      const operationCode = operationCodeInput.trim() || nextCodigo || "";
+      const created = await createOperation("", operationCode);
       if (!created) {
         alert("No se pudo crear la operaciÃ³n.");
         return;
@@ -136,6 +139,7 @@ export default function OperationsTableView({
       await loadOperations();
       setShowCreateConfirm(false);
       setNextCodigo(null);
+      setOperationCodeInput("");
     } catch (err) {
       console.error("Error creando operaciÃ³n:", err);
       alert("No se pudo crear la operaciÃ³n.");
@@ -239,8 +243,7 @@ export default function OperationsTableView({
               <>
                 <td>
                   <div className="d-flex align-items-center gap-2">
-                    <span>{operation.codigo}</span>
-                    {operation.asignadoAlUsuarioActual && (
+                    <span>{operation.codigo}</span>                    {operation.asignadoAlUsuarioActual && (
                       <span
                         className="badge"
                         style={{
@@ -336,12 +339,18 @@ export default function OperationsTableView({
       <ConfirmModal
         show={showCreateConfirm}
         title="Crear operación"
-        message={`Se va a crear una operación con el código asignado: ${nextCodigo ?? "-"}. ¿Está seguro?`}
+        message="Puedes confirmar el código sugerido o escribir uno propio para la operación."
+        inputValue={operationCodeInput}
+        inputLabel="Código de la operación"
+        inputPlaceholder="Escribe el código de la operación"
+        inputHelperText={`Código sugerido: ${nextCodigo ?? "-"}`}
+        onInputChange={setOperationCodeInput}
         onConfirm={() => void handleConfirmCreate()}
         onCancel={() => {
           if (!creatingOperation) {
             setShowCreateConfirm(false);
             setNextCodigo(null);
+            setOperationCodeInput("");
           }
         }}
         variant="primary"
