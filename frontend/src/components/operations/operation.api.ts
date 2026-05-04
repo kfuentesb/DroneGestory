@@ -213,10 +213,13 @@ export async function fetchNextOperationCodigo() {
   return payload.codigo;
 }
 
-export async function createOperation(conops = "") {
+export async function createOperation(conops = "", customCode = "") {
   const formData = new FormData();
   if (conops.trim()) {
     formData.append("conops", conops.trim());
+  }
+  if (customCode.trim()) {
+    formData.append("codigo", customCode.trim());
   }
 
   const response = await apiFetch(`${API_BASE_URL}/api/operations`, {

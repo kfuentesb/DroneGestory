@@ -11,9 +11,26 @@ interface ConfirmModalProps {
     onConfirm: () => void;
     onCancel: () => void;
     variant?: "primary" | "danger" | "warning";
+    inputValue?: string;
+    inputLabel?: string;
+    inputPlaceholder?: string;
+    inputHelperText?: string;
+    onInputChange?: (value: string) => void;
 }
 
-export default function ConfirmModal({ show, title, message, onConfirm, onCancel, variant = "primary" }: ConfirmModalProps) {
+export default function ConfirmModal({
+    show,
+    title,
+    message,
+    onConfirm,
+    onCancel,
+    variant = "primary",
+    inputValue,
+    inputLabel,
+    inputPlaceholder,
+    inputHelperText,
+    onInputChange,
+}: ConfirmModalProps) {
     if (!show) return null;
 
     // Mapeo de colores según la variante (usando clases de Bootstrap)
@@ -29,6 +46,20 @@ export default function ConfirmModal({ show, title, message, onConfirm, onCancel
             <div className="card p-4 shadow-lg" style={{ minWidth: "350px", borderTop: `5px solid var(--bs-${variant})` }}>
                 {title && <h5 className={`${titleClass} fw-bold`}>{title}</h5>}
                 <p className="mt-2">{message}</p>
+                {onInputChange && (
+                    <div className="mt-3">
+                        {inputLabel && <label className="form-label fw-semibold">{inputLabel}</label>}
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={inputValue ?? ""}
+                            onChange={(event) => onInputChange(event.target.value)}
+                            placeholder={inputPlaceholder}
+                            autoFocus
+                        />
+                        {inputHelperText && <div className="form-text mt-1">{inputHelperText}</div>}
+                    </div>
+                )}
                 <div className="d-flex justify-content-end gap-2 mt-3">
                     {/* Ocultamos cancelar si es solo un aviso de validación */}
                     {variant !== "warning" && (

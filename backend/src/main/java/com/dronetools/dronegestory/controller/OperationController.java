@@ -54,11 +54,12 @@ public class OperationController {
     @PreAuthorize("@operationSecurity.canCreateOperation(authentication)")
     public OperationDetailDTO create(
             @RequestParam(value = "conops", required = false, defaultValue = "") String conops,
+            @RequestParam(value = "codigo", required = false, defaultValue = "") String codigo,
             Principal principal
     ) {
         User user = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return operationService.createOperationDto(user, conops);
+        return operationService.createOperationDto(user, conops, codigo);
     }
 
     @PutMapping("/{operationId}")
