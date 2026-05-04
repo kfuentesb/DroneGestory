@@ -27,7 +27,7 @@ public class CertificateNotificationService {
     private AutomaticMailPreferenceRepository automaticMailPreferenceRepository;
 
     // Se ejecuta todos los días a las 9:00 AM
-    @Scheduled(cron = "0 0 9 * * ?", zone = "Europe/Madrid")
+    @Scheduled(cron = "0 5 10 * * ?", zone = "Europe/Madrid")
     public void sendExpirationNotifications() {
         // Calculo de la fecha objetivo: hoy + 30 días
         LocalDate today = LocalDate.now();
