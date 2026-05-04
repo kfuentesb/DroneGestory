@@ -25,21 +25,40 @@ type SentMail = {
   sentAt: string;
 };
 
+type AutomaticMailPreference = {
+  userId: number;
+  certificates: boolean;
+  operations: boolean;
+  maintenance: boolean;
+  events: boolean;
+};
+
 const ROLE_OPTIONS = ["MANAGER", "MAINTAINER", "PILOT"];
+const AUTOMATIC_MAIL_COLUMNS: Array<{
+  key: keyof Omit<AutomaticMailPreference, "userId">;
+  label: string;
+}> = [
+  { key: "certificates", label: "Certificados" },
+  { key: "operations", label: "Operaciones" },
+  { key: "maintenance", label: "Mantenimiento" },
+  { key: "events", label: "Eventos" },
+];
 const ITEMS_PER_PAGE = 8;
 
 export default function MailCenter() {
   const [users, setUsers] = useState<User[]>([]);
   const [sentMails, setSentMails] = useState<SentMail[]>([]);
+  const [automaticMailPreferences, setAutomaticMailPreferences] = useState<Record<number, AutomaticMailPreference>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [updatingAutomaticPreference, setUpdatingAutomaticPreference] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [header, setHeader] = useState("");
   const [text, setText] = useState("");
-  const [showSegmentation, setShowSegmentation] = useState<"SENT_MAILS" | "HISTORY">("SENT_MAILS");
+  const [showSegmentation, setShowSegmentation] = useState<"SENT_MAILS" | "HISTORY" | "AUTOMATIC_MAILS">("SENT_MAILS");
   const [recipientMode, setRecipientMode] = useState<"USERS" | "ROLES">("USERS");
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -55,15 +74,18 @@ export default function MailCenter() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [usersResponse, sentMailResponse] = await Promise.all([
+      const [usersResponse, sentMailResponse, automaticPreferencesResponse] = await Promise.all([
         apiFetch("/api/users"),
         apiFetch("/api/sent-mails"),
+        apiFetch("/api/automatic-mail-preferences"),
       ]);
 
-      if (!usersResponse || !sentMailResponse) return;
+      if (!usersResponse || !sentMailResponse || !automaticPreferencesResponse) return;
 
       setUsers(await usersResponse.json());
       setSentMails(await sentMailResponse.json());
+      const preferences: AutomaticMailPreference[] = await automaticPreferencesResponse.json();
+      setAutomaticMailPreferences(Object.fromEntries(preferences.map((preference) => [preference.userId, preference])));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar los datos.");
     } finally {
@@ -93,6 +115,55 @@ export default function MailCenter() {
     setSelectedRoles((current) =>
       current.includes(role) ? current.filter((item) => item !== role) : [...current, role]
     );
+  };
+
+  const getAutomaticPreference = (userId: number): AutomaticMailPreference => (
+    automaticMailPreferences[userId] ?? {
+      userId,
+      certificates: false,
+      operations: false,
+      maintenance: false,
+      events: false,
+    }
+  );
+
+  const toggleAutomaticPreference = async (
+    userId: number,
+    key: keyof Omit<AutomaticMailPreference, "userId">
+  ) => {
+    const currentPreference = getAutomaticPreference(userId);
+    const nextPreference = {
+      ...currentPreference,
+      [key]: !currentPreference[key],
+    };
+    const updateKey = `${userId}-${key}`;
+
+    setError(null);
+    setSuccess(null);
+    setUpdatingAutomaticPreference(updateKey);
+    setAutomaticMailPreferences((current) => ({ ...current, [userId]: nextPreference }));
+
+    try {
+      const response = await apiFetch(`/api/automatic-mail-preferences/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          certificates: nextPreference.certificates,
+          operations: nextPreference.operations,
+          maintenance: nextPreference.maintenance,
+          events: nextPreference.events,
+        }),
+      });
+
+      if (!response) return;
+      const savedPreference = await response.json();
+      setAutomaticMailPreferences((current) => ({ ...current, [userId]: savedPreference }));
+    } catch (err) {
+      setAutomaticMailPreferences((current) => ({ ...current, [userId]: currentPreference }));
+      setError(err instanceof Error ? err.message : "No se pudo actualizar la configuracion automatica.");
+    } finally {
+      setUpdatingAutomaticPreference(null);
+    }
   };
 
   const resetForm = () => {
@@ -165,7 +236,6 @@ export default function MailCenter() {
         <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3 text-center" style={{ letterSpacing: "1px" }}>
           Panel de Control de Mensajería
         </label>
-        <small>😞🤷‍♂️De momento no se puede enviar un mismo correo a una persona y a un rol a la vez, y pueden acceder no admins/managers</small>
         <br/>
         <div className="btn-group p-2 bg-white rounded-4 w-100 shadow-sm border" role="group" style={{ height: "60px" }}>
           <button
@@ -180,7 +250,7 @@ export default function MailCenter() {
               paddingLeft: "1.5rem",
               paddingRight: "1.5rem",
               background: showSegmentation === "SENT_MAILS" 
-                ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                ? "#059669" 
                 : "transparent" 
             }}
           >
@@ -198,18 +268,36 @@ export default function MailCenter() {
               paddingLeft: "1.5rem",
               paddingRight: "1.5rem",
               background: showSegmentation === "HISTORY" 
-                ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                ? "#059669"
                 : "transparent" 
             }}
           >
             Historial
           </button>
+          <button
+            type="button"
+            className={`btn btn-sm rounded-3 border-0 transition-all d-flex align-items-center justify-content-center gap-2 ${
+              showSegmentation === "AUTOMATIC_MAILS" 
+                ? "text-white shadow fw-bold"
+                : "text-muted hover-bg-light"
+            }`}
+            onClick={() => setShowSegmentation("AUTOMATIC_MAILS")}
+            style={{
+              paddingLeft: "1.5rem",
+              paddingRight: "1.5rem",
+              background: showSegmentation === "AUTOMATIC_MAILS" 
+                ? "#059669"
+                : "transparent" 
+            }}
+          >
+            Correos Automaticos
+          </button>
         </div>
       </div>
 
         {showSegmentation === "SENT_MAILS" ? (
-          <section className="card border-0 shadow-lg" style={{ borderRadius: "20px", overflow: "hidden" }}>
-            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }}>
+          <section className="card border-0 shadow-lg" style={{ borderRadius: "20px"}}>
+            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#059669" }}>
               <h2 className="h4 fw-bold mb-1">Nuevo Mensaje</h2>
               <p className="small mb-3 text-white-50">Crea comunicaciones impactantes para tu equipo</p>
             </div>
@@ -300,7 +388,7 @@ export default function MailCenter() {
                   </div>
 
                   <div className="col-12">
-                    <button type="submit" className="btn btn-success btn-lg w-100 fw-bold shadow hover-grow py-3" style={{ borderRadius: "15px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none" }} disabled={isSending}>
+                    <button type="submit" className="btn btn-success btn-lg w-100 fw-bold shadow hover-grow py-3" style={{ borderRadius: "15px", background: "#059669", border: "none" }} disabled={isSending}>
                       {isSending ? <span className="spinner-border spinner-border-sm" /> : "Confirmar y Enviar"}
                     </button>
                   </div>
@@ -308,9 +396,9 @@ export default function MailCenter() {
               </form>
             </div>
           </section>
-        ) : (
+        ) : showSegmentation === "HISTORY" ? (
           <section className="card border-0 shadow-lg" style={{ borderRadius: "20px" }}>
-            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }}>
+            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#059669" }}>
               <h2 className="h4 fw-bold mb-1">Registro de Actividad</h2>
               <p className="small mb-3 text-white-50">Auditoría completa de correos emitidos</p>
             </div>
@@ -343,6 +431,65 @@ export default function MailCenter() {
               </div>
               <div className="mt-4 d-flex justify-content-center">
                 <Pagination totalItems={sentMails.length} currentPage={currentPage} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage} />
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="card border-0 shadow-lg" style={{ borderRadius: "20px" }}>
+            <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#059669" }}>
+              <h2 className="h4 fw-bold mb-1">Correos Automaticos</h2>
+              <p className="small mb-3 text-white-50">Configura los temas que cada usuario recibira automaticamente</p>
+            </div>
+            <div className="card-body p-4">
+              {error && <div className="alert alert-danger border-0 shadow-sm py-2">{error}</div>}
+              {success && <div className="alert alert-success border-0 shadow-sm py-2">{success}</div>}
+
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      {AUTOMATIC_MAIL_COLUMNS.map((column) => (
+                        <th key={column.key} className="text-center">{column.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => {
+                      const preference = getAutomaticPreference(user.id);
+                      return (
+                        <tr key={user.id}>
+                          <td>
+                            <span className="fw-bold d-block">{user.firstName} {user.lastName}</span>
+                            <span className="small text-muted">{user.email}</span>
+                          </td>
+                          {AUTOMATIC_MAIL_COLUMNS.map((column) => {
+                            const checkboxKey = `${user.id}-${column.key}`;
+                            return (
+                              <td key={column.key} className="text-center">
+                                <input
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  checked={preference[column.key]}
+                                  disabled={updatingAutomaticPreference === checkboxKey}
+                                  onChange={() => toggleAutomaticPreference(user.id, column.key)}
+                                  aria-label={`${column.label} - ${user.username}`}
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                    {users.length === 0 && (
+                      <tr>
+                        <td className="text-center text-muted py-4" colSpan={AUTOMATIC_MAIL_COLUMNS.length + 1}>
+                          No hay usuarios disponibles.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </section>

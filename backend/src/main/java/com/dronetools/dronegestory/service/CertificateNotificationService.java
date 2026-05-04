@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.model.UserCertificate;
+import com.dronetools.dronegestory.repository.AutomaticMailPreferenceRepository;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CertificateNotificationService {
@@ -20,8 +23,11 @@ public class CertificateNotificationService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private AutomaticMailPreferenceRepository automaticMailPreferenceRepository;
+
     // Se ejecuta todos los días a las 9:00 AM
-    @Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(cron = "0 0 9 * * ?", zone = "Europe/Madrid")
     public void sendExpirationNotifications() {
         // Calculo de la fecha objetivo: hoy + 30 días
         LocalDate today = LocalDate.now();
@@ -34,9 +40,15 @@ public class CertificateNotificationService {
     private void checkAndSend(LocalDate targetDate, String timeframe) {
         List<UserCertificate> expiringCertificates = 
             certificateRepository.findByExpireDateWithUser(targetDate);
+        Set<Integer> automaticCertificateUserIds = automaticMailPreferenceRepository.findCertificateUsers()
+            .stream()
+            .map(user -> user.getId())
+            .collect(Collectors.toSet());
 
         for (UserCertificate cert : expiringCertificates) {
-            sendEmail(cert, timeframe);
+            if (cert.getUser() != null && automaticCertificateUserIds.contains(cert.getUser().getId())) {
+                sendEmail(cert, timeframe);
+            }
         }
     }
 

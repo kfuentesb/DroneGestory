@@ -4,7 +4,9 @@ import com.dronetools.dronegestory.dto.SentMailRequest;
 import com.dronetools.dronegestory.dto.SentMailResponse;
 import com.dronetools.dronegestory.model.SentMail;
 import com.dronetools.dronegestory.model.User;
+import com.dronetools.dronegestory.model.enums.AutomaticMailCategory;
 import com.dronetools.dronegestory.model.enums.UserType;
+import com.dronetools.dronegestory.repository.AutomaticMailPreferenceRepository;
 import com.dronetools.dronegestory.repository.SentMailRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -31,6 +33,7 @@ public class SentMailService {
 
     private final SentMailRepository sentMailRepository;
     private final UserRepository userRepository;
+    private final AutomaticMailPreferenceRepository automaticMailPreferenceRepository;
     private final JavaMailSender mailSender;
 
     @Transactional(readOnly = true)
@@ -45,7 +48,10 @@ public class SentMailService {
     public SentMailResponse sendAndStore(String senderUsername, SentMailRequest request) {
         List<User> selectedUsers = resolveSelectedUsers(request);
         List<User> roleUsers = resolveRoleUsers(request);
-        List<User> recipients = mergeRecipients(selectedUsers, roleUsers);
+        List<User> recipients = filterByAutomaticPreference(
+                mergeRecipients(selectedUsers, roleUsers),
+                request.automaticCategory()
+        );
         String mode = resolveStoredMode(selectedUsers, selectedRoles(request));
         if (recipients.isEmpty()) {
             throw new IllegalArgumentException("At least one recipient is required.");
@@ -81,6 +87,28 @@ public class SentMailService {
         message.setSubject(header.trim());
         message.setText(text.trim());
         mailSender.send(message);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> resolveAutomaticRecipients(AutomaticMailCategory category) {
+        return switch (category) {
+            case CERTIFICATES -> automaticMailPreferenceRepository.findCertificateUsers();
+            case OPERATIONS -> automaticMailPreferenceRepository.findOperationUsers();
+            case MAINTENANCE -> automaticMailPreferenceRepository.findMaintenanceUsers();
+            case EVENTS -> automaticMailPreferenceRepository.findEventUsers();
+        };
+    }
+
+    private List<User> filterByAutomaticPreference(List<User> recipients, AutomaticMailCategory category) {
+        if (category == null || recipients.isEmpty()) {
+            return recipients;
+        }
+        Set<Integer> allowedUserIds = resolveAutomaticRecipients(category).stream()
+                .map(User::getId)
+                .collect(java.util.stream.Collectors.toSet());
+        return recipients.stream()
+                .filter(user -> allowedUserIds.contains(user.getId()))
+                .toList();
     }
 
     private List<User> resolveSelectedUsers(SentMailRequest request) {
