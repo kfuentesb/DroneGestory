@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Repository
 public interface OperationRepository extends JpaRepository<Operation, Long> {
@@ -55,6 +56,19 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
         WHERE o.idOperacion = :id
     """)
     Optional<Operation> findByIdWithAssignedUsers(@Param("id") Long id);
+
+    @Query("""
+        SELECT DISTINCT o
+        FROM Operation o
+        LEFT JOIN FETCH o.assignedUsers
+        LEFT JOIN FETCH o.anexos4 a
+        WHERE a.fechaHoraPrevista >= :start
+          AND a.fechaHoraPrevista < :end
+    """)
+    List<Operation> findByAnexo4FechaHoraPrevistaBetweenWithAssignedUsers(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 
     // SOLO FETCH ANEXOS5
     @Query("""

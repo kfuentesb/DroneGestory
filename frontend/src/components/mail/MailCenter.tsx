@@ -33,6 +33,17 @@ type AutomaticMailPreference = {
   events: boolean;
 };
 
+type NotificationSettings = {
+  scheduleHour: number;
+  scheduleMinute: number;
+  certificateFirstDaysAhead: number;
+  certificateSecondDaysAhead: number;
+  operationDaysAhead: number;
+  maintenanceDaysAhead: number;
+  eventDaysAhead: number;
+  lastRunDate?: string | null;
+};
+
 const ROLE_OPTIONS = ["MANAGER", "MAINTAINER", "PILOT"];
 const AUTOMATIC_MAIL_COLUMNS: Array<{
   key: keyof Omit<AutomaticMailPreference, "userId">;
@@ -49,8 +60,19 @@ export default function MailCenter() {
   const [users, setUsers] = useState<User[]>([]);
   const [sentMails, setSentMails] = useState<SentMail[]>([]);
   const [automaticMailPreferences, setAutomaticMailPreferences] = useState<Record<number, AutomaticMailPreference>>({});
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+    scheduleHour: 9,
+    scheduleMinute: 0,
+    certificateFirstDaysAhead: 30,
+    certificateSecondDaysAhead: 7,
+    operationDaysAhead: 1,
+    maintenanceDaysAhead: 1,
+    eventDaysAhead: 1,
+    lastRunDate: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isSavingNotificationSettings, setIsSavingNotificationSettings] = useState(false);
   const [updatingAutomaticPreference, setUpdatingAutomaticPreference] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -74,18 +96,20 @@ export default function MailCenter() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [usersResponse, sentMailResponse, automaticPreferencesResponse] = await Promise.all([
+      const [usersResponse, sentMailResponse, automaticPreferencesResponse, notificationSettingsResponse] = await Promise.all([
         apiFetch("/api/users"),
         apiFetch("/api/sent-mails"),
         apiFetch("/api/automatic-mail-preferences"),
+        apiFetch("/api/automatic-mail-preferences/settings"),
       ]);
 
-      if (!usersResponse || !sentMailResponse || !automaticPreferencesResponse) return;
+      if (!usersResponse || !sentMailResponse || !automaticPreferencesResponse || !notificationSettingsResponse) return;
 
       setUsers(await usersResponse.json());
       setSentMails(await sentMailResponse.json());
       const preferences: AutomaticMailPreference[] = await automaticPreferencesResponse.json();
       setAutomaticMailPreferences(Object.fromEntries(preferences.map((preference) => [preference.userId, preference])));
+      setNotificationSettings(await notificationSettingsResponse.json());
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar los datos.");
     } finally {
@@ -160,9 +184,53 @@ export default function MailCenter() {
       setAutomaticMailPreferences((current) => ({ ...current, [userId]: savedPreference }));
     } catch (err) {
       setAutomaticMailPreferences((current) => ({ ...current, [userId]: currentPreference }));
-      setError(err instanceof Error ? err.message : "No se pudo actualizar la configuracion automatica.");
+      setError(err instanceof Error ? err.message : "No se pudo actualizar la configuración automática.");
     } finally {
       setUpdatingAutomaticPreference(null);
+    }
+  };
+
+  const updateNotificationSetting = (key: keyof NotificationSettings, value: number) => {
+    let validatedValue = value;
+
+    if (key === "scheduleHour") {
+      validatedValue = Math.max(0, Math.min(23, value));
+    } else if (key === "scheduleMinute") {
+      validatedValue = Math.max(0, Math.min(59, value));
+    } else {
+      validatedValue = Math.max(0, value);
+    }
+    setNotificationSettings((current) => ({ ...current, [key]: validatedValue }));
+  };
+
+  const saveNotificationSettings = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setIsSavingNotificationSettings(true);
+
+    try {
+      const response = await apiFetch("/api/automatic-mail-preferences/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scheduleHour: notificationSettings.scheduleHour,
+          scheduleMinute: notificationSettings.scheduleMinute,
+          certificateFirstDaysAhead: notificationSettings.certificateFirstDaysAhead,
+          certificateSecondDaysAhead: notificationSettings.certificateSecondDaysAhead,
+          operationDaysAhead: notificationSettings.operationDaysAhead,
+          maintenanceDaysAhead: notificationSettings.maintenanceDaysAhead,
+          eventDaysAhead: notificationSettings.eventDaysAhead,
+        }),
+      });
+
+      if (!response) return;
+      setNotificationSettings(await response.json());
+      setSuccess("Configuración de correos automáticos guardada.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la configuración.");
+    } finally {
+      setIsSavingNotificationSettings(false);
     }
   };
 
@@ -290,7 +358,7 @@ export default function MailCenter() {
                 : "transparent" 
             }}
           >
-            Correos Automaticos
+            Correos Automáticos
           </button>
         </div>
       </div>
@@ -437,12 +505,102 @@ export default function MailCenter() {
         ) : (
           <section className="card border-0 shadow-lg" style={{ borderRadius: "20px" }}>
             <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#059669" }}>
-              <h2 className="h4 fw-bold mb-1">Correos Automaticos</h2>
-              <p className="small mb-3 text-white-50">Configura los temas que cada usuario recibira automaticamente</p>
+              <h2 className="h4 fw-bold mb-1">Correos Automáticos</h2>
+              <p className="small mb-3 text-white-50">Configura los temas que cada usuario recibira automáticamente</p>
             </div>
             <div className="card-body p-4">
               {error && <div className="alert alert-danger border-0 shadow-sm py-2">{error}</div>}
               {success && <div className="alert alert-success border-0 shadow-sm py-2">{success}</div>}
+
+              <form onSubmit={saveNotificationSettings} className="mb-4 p-3 rounded-4 bg-light border">
+                <div className="row g-3 align-items-end">
+                  <div className="col-12 col-md-2">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Hora (0-23)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={23}
+                      value={notificationSettings.scheduleHour}
+                      onChange={(event) => updateNotificationSetting("scheduleHour", Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="col-12 col-md-2">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Minuto (0-59)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={59}
+                      value={notificationSettings.scheduleMinute}
+                      onChange={(e) => updateNotificationSetting("scheduleMinute", Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="col-6 col-md-4">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Días previos a expiración 1</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={3650}
+                      value={notificationSettings.certificateFirstDaysAhead}
+                      onChange={(event) => updateNotificationSetting("certificateFirstDaysAhead", Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="col-6 col-md-4">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Días previos a expiración 2</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={3650}
+                      value={notificationSettings.certificateSecondDaysAhead}
+                      onChange={(event) => updateNotificationSetting("certificateSecondDaysAhead", Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Días previos a Operaciones</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={3650}
+                      value={notificationSettings.operationDaysAhead}
+                      onChange={(event) => updateNotificationSetting("operationDaysAhead", Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Días previos a Mantenimiento</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={3650}
+                      value={notificationSettings.maintenanceDaysAhead}
+                      onChange={(event) => updateNotificationSetting("maintenanceDaysAhead", Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-bold text-muted text-uppercase">Días previos a Eventos</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      max={3650}
+                      value={notificationSettings.eventDaysAhead}
+                      onChange={(event) => updateNotificationSetting("eventDaysAhead", Number(event.target.value))}
+                    />
+                  </div>
+                  <div className="col-12 d-flex justify-content-between align-items-center">
+                    <span className="small text-muted">
+                      Último envio: {notificationSettings.lastRunDate ?? "-"}
+                    </span>
+                    <button type="submit" className="btn btn-success px-4" disabled={isSavingNotificationSettings}>
+                      {isSavingNotificationSettings ? <span className="spinner-border spinner-border-sm" /> : "Guardar configuración"}
+                    </button>
+                  </div>
+                </div>
+              </form>
 
               <div className="table-responsive">
                 <table className="table table-hover align-middle mb-0">

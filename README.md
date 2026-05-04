@@ -105,6 +105,7 @@ VISUAL<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
+-Un Manager actualmente puede añadir el rol de admin a cualquier usuario, debería solo poder hacerlo un admin<br>
 
 -DOCUMENTACIONES<br>
 -En ipad no se pueden ver las documentaciones<br>
