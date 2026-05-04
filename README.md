@@ -113,8 +113,6 @@ VISUAL<br>
 -MANTENIMIENTO<br>
 
 -OPERACIONES<br>
--Manda en anexo5 abajo
--Operacion cambiar el nombre del codigo manualmente
 
 -DOCUMENTACIONES<br>
 -En ipad no se pueden ver las documentaciones<br>
