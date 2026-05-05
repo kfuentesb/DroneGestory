@@ -24,6 +24,9 @@ public class DocumentVersion {
     @Column(name = "version_number", nullable = false)
     private Integer versionNumber;
 
+    @Column(name = "revision_number", nullable = false)
+    private Integer revisionNumber;
+
     @Column(nullable = false, length = 1024)
     private String fileUrl;
 
@@ -46,5 +49,18 @@ public class DocumentVersion {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DocumentVersion)) return false;
+        DocumentVersion that = (DocumentVersion) o;
+        return id != null && id.equals(that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

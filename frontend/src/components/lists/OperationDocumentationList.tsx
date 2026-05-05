@@ -6,11 +6,11 @@ import LoadingSpinner from "../commons/Loading";
 type DocumentVersion = {
     id: number;
     versionNumber: number;
+    revisionNumber: number;
     fileUrl: string;
     uploadNotes?: string | null;
     createdAt?: string | null;
 };
-
 type OperationDocumentation = {
     id: number;
     name: string;
@@ -23,12 +23,16 @@ type FormState = {
     name: string;
     notes: string;
     file: File | null;
+    versionNumber: number;
+    revisionNumber: number;
 };
 
 const emptyForm: FormState = {
     name: "",
     notes: "",
     file: null,
+    versionNumber: 1,
+    revisionNumber: 0
 };
 
 function fileName(path?: string | null) {
@@ -125,14 +129,23 @@ export default function OperationDocumentationList() {
 
     const openEditForm = (documentation: OperationDocumentation) => {
         setError(null);
+        
+        const versions = documentation.versions || [];
+        const latest = versions.length > 0
+            ? [...versions].sort((a, b) => 
+                b.versionNumber - a.versionNumber || b.revisionNumber - a.revisionNumber
+                )[0]
+            : { versionNumber: 1, revisionNumber: -1 };
+
         setForm({
             id: documentation.id,
             name: documentation.name,
             notes: "",
             file: null,
+            versionNumber: latest.versionNumber,
+            revisionNumber: latest.revisionNumber + 1 
         });
     };
-
     const closeForm = () => {
         if (saving) return;
         setForm(null);
@@ -147,10 +160,6 @@ export default function OperationDocumentationList() {
             setError("El nombre es obligatorio.");
             return;
         }
-        if (!form.id && !form.file) {
-            setError("El archivo es obligatorio al crear documentación.");
-            return;
-        }
 
         setSaving(true);
         setError(null);
@@ -158,9 +167,10 @@ export default function OperationDocumentationList() {
         try {
             const body = new FormData();
             body.append("name", form.name.trim());
-            if (form.notes.trim()) {
-                body.append("notes", form.notes.trim());
-            }
+            body.append("notes", form.notes.trim());
+            body.append("vNum", form.versionNumber.toString());
+            body.append("rNum", form.revisionNumber.toString());
+            
             if (form.file) {
                 body.append("file", form.file);
             }
@@ -176,8 +186,7 @@ export default function OperationDocumentationList() {
             setForm(null);
             await loadDocumentations();
         } catch (err) {
-            const message = err instanceof Error ? err.message : "Error desconocido";
-            setError(message);
+            setError(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setSaving(false);
         }
@@ -198,22 +207,34 @@ export default function OperationDocumentationList() {
     };
 
     const handleDeleteVersion = async (docId: number, versionId: number) => {
-        if (!window.confirm("¿Estás seguro de que deseas eliminar esta versión específica?")) return;
-
         try {
-            const response = await apiFetch(`/api/operation-documentation/${docId}/versions/${versionId}`, { method: "DELETE" });
-
-            if (response && response.ok) {
+            const response = await apiFetch(
+                `/api/operation-documentation/${docId}/version/${versionId}`,
+                { method: "DELETE" }
+            );
+            if (!response) {
+                alert("No se recibió respuesta del servidor");
+                return;
+            }
+            if (response.ok) {
                 const updatedDoc: OperationDocumentation = await response.json();
                 
                 setDocumentations((prev: OperationDocumentation[]) => 
                     prev.map(d => d.id === docId ? updatedDoc : d)
                 );
-            } else {
-                alert("Error borrando versión de documentación de operación");
+            }
+            else {
+                let errorMsg = "Error desconocido";
+                try {
+                    errorMsg = await response.text();
+                } catch (e) {
+                    console.error("No se pudo leer el cuerpo del error", e);
+                }
+                alert("Error del servidor: " + errorMsg);
             }
         } catch (err) {
-            console.error("Error eliminando versión:", err);
+            console.error("Error de red o ejecución:", err);
+            alert("Ocurrió un error al intentar conectar con el servidor.");
         }
     };
 
@@ -291,7 +312,7 @@ export default function OperationDocumentationList() {
                                                 </td>
                                                 <td>
                                                     <span className="badge rounded-pill bg-light text-dark border">
-                                                        {latest ? `v${latest.versionNumber}` : "v0.0"}
+                                                        {latest ? `v${latest.versionNumber}.${latest.revisionNumber}` : "v0.0"}
                                                     </span>
                                                 </td>
                                                 <td className="text-muted small">
@@ -351,7 +372,7 @@ export default function OperationDocumentationList() {
                                                                         <tbody>
                                                                             {documentation.versions.map((version) => (
                                                                                 <tr key={version.id} className="align-middle">
-                                                                                    <td className="ps-3 fw-bold text-success">v{version.versionNumber}</td>
+                                                                                    <td className="ps-3 fw-bold text-success">v{version.versionNumber}.{version.revisionNumber}</td>
                                                                                     <td 
                                                                                         className="text-primary fw-medium" 
                                                                                         onClick={() => void openDocumentationFile(version)}
@@ -365,7 +386,7 @@ export default function OperationDocumentationList() {
                                                                                     <td>
                                                                                         <button
                                                                                             className="btn btn-sm btn-outline-danger"
-                                                                                            onClick={() => void handleDeleteVersion(version.id, version.versionNumber)}
+                                                                                            onClick={() => void handleDeleteVersion(documentation.id, version.id)} 
                                                                                             title="Eliminar"
                                                                                         >
                                                                                             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
@@ -408,59 +429,72 @@ export default function OperationDocumentationList() {
                         <form className="modal-content" onSubmit={saveDocumentation}>
                             <div className="modal-header">
                                 <h5 className="modal-title">
-                                    {form.id ? "Modificar documentación" : "Añadir documentación"}
+                                    {form.id ? "Nueva versión / Editar" : "Añadir documentación"}
                                 </h5>
                                 <button type="button" className="btn-close" onClick={closeForm}></button>
                             </div>
                             <div className="modal-body">
-                                {error && (
-                                    <div className="alert alert-danger py-2" role="alert">
-                                        {error}
-                                    </div>
-                                )}
                                 <div className="mb-3">
-                                    <label className="form-label">Nombre</label>
+                                    <label className="form-label">Nombre del documento</label>
                                     <input
                                         className="form-control"
                                         value={form.name}
-                                        onChange={(event) => setForm({ ...form, name: event.target.value })}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value })}
                                         required
                                     />
                                 </div>
+
+                                {/* SELECTORES DE VERSIÓN Y REVISIÓN */}
+                                <div className="row mb-3">
+                                    <div className="col-6">
+                                        <label className="form-label">Versión</label>
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            min="0"
+                                            value={form.versionNumber}
+                                            onChange={(e) => setForm({ ...form, versionNumber: parseInt(e.target.value) || 0 })}
+                                        />
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="form-label">Revisión</label>
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            min="0"
+                                            value={form.revisionNumber}
+                                            onChange={(e) => setForm({ ...form, revisionNumber: parseInt(e.target.value) || 0 })}
+                                        />
+                                    </div>
+                                    <div className="col-12 mt-1">
+                                        <small className="text-muted">Se registrará como: <strong>v{form.versionNumber}.{form.revisionNumber}</strong></small>
+                                    </div>
+                                </div>
+
                                 <div className="mb-3">
-                                    <label className="form-label">
-                                        {form.id ? "Nuevo archivo para crear version" : "Archivo"}
-                                    </label>
+                                    <label className="form-label">Archivo</label>
                                     <input
                                         className="form-control"
                                         type="file"
-                                        onChange={(event) =>
-                                            setForm({ ...form, file: event.target.files?.[0] ?? null })
-                                        }
+                                        onChange={(e) => setForm({ ...form, file: e.target.files?.[0] ?? null })}
                                         required={!form.id}
                                     />
-                                    {form.id && (
-                                        <small className="text-muted">
-                                            Si seleccionas archivo se creara la siguiente version.
-                                        </small>
-                                    )}
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label">Notas de version</label>
+                                    <label className="form-label">Notas de cambios</label>
                                     <textarea
                                         className="form-control"
-                                        rows={3}
+                                        rows={2}
                                         value={form.notes}
-                                        onChange={(event) => setForm({ ...form, notes: event.target.value })}
+                                        onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                                        placeholder="¿Qué ha cambiado en esta versión?"
                                     />
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-outline-secondary" onClick={closeForm}>
-                                    Cancelar
-                                </button>
+                                <button type="button" className="btn btn-outline-secondary" onClick={closeForm}>Cancelar</button>
                                 <button type="submit" className="btn btn-primary" disabled={saving}>
-                                    {saving ? "Guardando..." : "Guardar"}
+                                    {saving ? "Guardando..." : "Guardar Versión"}
                                 </button>
                             </div>
                         </form>

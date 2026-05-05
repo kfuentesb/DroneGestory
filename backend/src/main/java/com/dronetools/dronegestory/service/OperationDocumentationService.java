@@ -42,29 +42,44 @@ public class OperationDocumentationService {
                 .map(documentation -> toDto(documentation, includeVersions));
     }
 
-    public OperationDocumentationDTO create(String name, String notes, MultipartFile file) {
+    public OperationDocumentationDTO create(String name, String notes, MultipartFile file, Integer version, Integer revision) {
         String cleanName = cleanName(name);
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("A file is required to create documentation.");
         }
 
         OperationDocumentation documentation = operationDocumentationRepository.save(new OperationDocumentation(cleanName));
-        addVersion(documentation, notes, file);
+        addVersion(documentation, notes, file, version, revision);
         return toDto(operationDocumentationRepository.save(documentation), true);
     }
 
-    public OperationDocumentationDTO update(Long id, String name, String notes, MultipartFile file) {
+    public OperationDocumentationDTO update(Long id, String name, String notes, Integer vNum, Integer rNum, MultipartFile file) {
         OperationDocumentation documentation = operationDocumentationRepository.findWithVersionsById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Operation documentation not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Not found: " + id));
 
         if (name != null && !name.isBlank()) {
             documentation.setName(cleanName(name));
         }
+        
         if (file != null && !file.isEmpty()) {
-            addVersion(documentation, notes, file);
+            addVersion(documentation, notes, file, vNum, rNum);
         }
 
         return toDto(operationDocumentationRepository.save(documentation), true);
+    }
+
+    private void addVersion(OperationDocumentation documentation, String notes, MultipartFile file, Integer vNum, Integer rNum) {
+        int finalV = (vNum != null) ? vNum : 
+            documentation.getVersions().stream().mapToInt(DocumentVersion::getVersionNumber).max().orElse(0) + 1;
+        
+        int finalR = (rNum != null) ? rNum : 0;
+
+        String storedPath = storeDocumentationFile(documentation.getId(), finalV, file);
+        
+        DocumentVersion newVersion = new DocumentVersion(documentation, finalV, storedPath, notes);
+        newVersion.setRevisionNumber(finalR);
+        
+        documentation.getVersions().add(newVersion);
     }
 
     public void delete(Long id) {
@@ -73,15 +88,6 @@ public class OperationDocumentationService {
 
         documentation.getVersions().forEach(version -> deleteStoredFile(version.getFileUrl()));
         operationDocumentationRepository.delete(documentation);
-    }
-
-    private void addVersion(OperationDocumentation documentation, String notes, MultipartFile file) {
-        int nextVersion = documentation.getVersions().stream()
-                .mapToInt(DocumentVersion::getVersionNumber)
-                .max()
-                .orElse(0) + 1;
-        String storedPath = storeDocumentationFile(documentation.getId(), nextVersion, file);
-        documentation.getVersions().add(new DocumentVersion(documentation, nextVersion, storedPath, notes));
     }
 
     private String storeDocumentationFile(Long documentationId, int versionNumber, MultipartFile file) {
@@ -166,17 +172,18 @@ public class OperationDocumentationService {
 
     public OperationDocumentationDTO deleteVersion(Long documentationId, Long versionId) {
         OperationDocumentation documentation = operationDocumentationRepository.findWithVersionsById(documentationId)
-                .orElseThrow(() -> new EntityNotFoundException("Documentation not found with id: " + documentationId));
+                .orElseThrow(() -> new EntityNotFoundException("Documentation not found"));
 
         DocumentVersion versionToDelete = documentation.getVersions().stream()
                 .filter(v -> v.getId().equals(versionId))
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Version not found with id: " + versionId));
+                .orElseThrow(() -> new EntityNotFoundException("Version not found"));
 
         if (documentation.getVersions().size() <= 1) {
-            throw new IllegalStateException("Cannot delete the only version. Delete the entire document instead.");
+            throw new IllegalStateException("Cannot delete the only version.");
         }
         deleteStoredFile(versionToDelete.getFileUrl());
+        versionToDelete.setDocumentation(null); 
         documentation.getVersions().remove(versionToDelete);
         return toDto(operationDocumentationRepository.save(documentation), true);
     }
@@ -185,6 +192,7 @@ public class OperationDocumentationService {
         return new DocumentVersionDTO(
                 version.getId(),
                 version.getVersionNumber(),
+                version.getRevisionNumber(),
                 version.getFileUrl(),
                 version.getUploadNotes(),
                 version.getCreatedAt()

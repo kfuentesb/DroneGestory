@@ -56,9 +56,11 @@ public class OperationDocumentationController {
     public ResponseEntity<OperationDocumentationDTO> create(
             @RequestParam("name") String name,
             @RequestParam(value = "notes", required = false) String notes,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "vNum", defaultValue = "1") Integer vNum,
+            @RequestParam(value = "rNum", defaultValue = "0") Integer rNum
     ) {
-        return ResponseEntity.ok(operationDocumentationService.create(name, notes, file));
+        return ResponseEntity.ok(operationDocumentationService.create(name, notes, file, vNum, rNum));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -67,9 +69,11 @@ public class OperationDocumentationController {
             @PathVariable Long id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "notes", required = false) String notes,
-            @RequestParam(value = "file", required = false) MultipartFile file
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "vNum", required = false) Integer vNum,
+            @RequestParam(value = "rNum", required = false) Integer rNum
     ) {
-        return ResponseEntity.ok(operationDocumentationService.update(id, name, notes, file));
+        return ResponseEntity.ok(operationDocumentationService.update(id, name, notes, vNum, rNum, file));
     }
 
     @DeleteMapping("/{id}")
@@ -115,10 +119,11 @@ public class OperationDocumentationController {
                 .body(resource);
     }
 
-    @DeleteMapping("/{documentationId}/versions/{versionId}")
+    @DeleteMapping("/{documentationId}/version/{versionId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<OperationDocumentationDTO> deleteVersion(
-            @PathVariable Long documentationId, 
-            @PathVariable Long versionId) {
+            @PathVariable("documentationId") Long documentationId, 
+            @PathVariable("versionId") Long versionId) {
         return ResponseEntity.ok(operationDocumentationService.deleteVersion(documentationId, versionId));
     }
 
