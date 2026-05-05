@@ -102,6 +102,9 @@ VISUAL<br>
 
 -GENERALES<br>
 -El correo envía valor interno del certificado en vez de un valor normal 'a1a3' -> 'A1A3'<br>
+-Que en el correos automáticos permita hacer check a toda una columna<br>
+-Añadir forma de pasar operaciones a pdf con un click y descargar<br>
+-Historial en correos tiene que mostrar la informacion (texto) del correo enviado<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
