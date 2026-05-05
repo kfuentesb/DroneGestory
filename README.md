@@ -117,6 +117,9 @@ VISUAL<br>
 -Arreglar la barra de busqueda<br>
 -El file manager tiene espacio vertical finito, y puede cortarse información importante. Buscar posibilidad de añadir un scroll lateral izquierdo o aumentar el espacio vertical<br>
 
+- Dia / mes / año <br>
+- Sistema de creacion de carpetas en operadora <br>
+
 MIGRACION
 
 server
