@@ -1,6 +1,7 @@
 import type { FieldConfig } from "../../details/FieldConfig";
 import Select from "react-select";
 import MonthYearInput from "../MonthYearInput";
+import ImageUploadField from "../ImageUpload";
 
 type FieldOption = string | { value: any; label: string };
 
@@ -15,9 +16,21 @@ type Props = {
     removeImage: boolean;
     setRemoveImage: (v: boolean) => void;
     clearableFieldKeys?: string[];
+    apiBaseUrl?: string;
+    imageEndpointPath?: string;
 };
 
-export default function DetailEdit({ values, setValues, fields, errors, removeImage, setRemoveImage, clearableFieldKeys = [] }: Props) {
+export default function DetailEdit({
+    values,
+    setValues,
+    fields,
+    errors,
+    removeImage,
+    setRemoveImage,
+    clearableFieldKeys = [],
+    apiBaseUrl,
+    imageEndpointPath,
+}: Props) {
     const normalize = (v: string) =>
         v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
@@ -105,71 +118,37 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
         return null;
     };
 
+    const resolvedApiBaseUrl = apiBaseUrl ?? "";
+    const resolvedImageEndpointPath = imageEndpointPath ?? "";
+
     return (
         <div className="row">
             {fields.map((field) => (
                 <div key={field.key} className={`${field.type === "textarea" ? "col-12" : "col-md-6"} col-12 mb-3`}>
-                    <label className="text-muted d-block text-start ps-3">
-                        {field.label}
-                    </label>
+                    {field.type !== "file" && (
+                        <label className="text-muted d-block text-start ps-3">
+                            {field.label}
+                        </label>
+                    )}
 
                     {field.type === "file" ? (
-                        <div
-                            className="d-flex align-items-center rounded"
-                            style={{
-                                backgroundColor: field.readOnly ? "#f3f4f6" : "#ffffff",
-                                border: "1px solid #D1D5DB",
-                                paddingLeft: "10px"
-                            }}
-                        >
-                            <span className="text-truncate" style={{ maxWidth: "150px" }}>
-                                {values[field.key] instanceof File 
-                                    ? values[field.key].name 
-                                    : (!removeImage && values.imagePath) 
-                                        ? values.imagePath 
-                                        : "No hay archivo"}
-                            </span>
-
-                            <input
-                                id={`file-${field.key}`}
-                                type="file"
-                                accept=".jpg,.jpeg,.png"
+                        <div>
+                            <ImageUploadField
+                                label={field.label}
+                                fieldName={field.key}
+                                apiBaseUrl={resolvedApiBaseUrl}
+                                imageEndpointPath={resolvedImageEndpointPath}
+                                savedFilename={removeImage ? null : values.imagePath}
+                                maxSizeMB={5}
+                                acceptedTypes={["image/jpeg", "image/jpg", "image/png"]}
                                 disabled={field.readOnly}
-                                style={{ display: "none" }}
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0] || null;
+                                externalError={errors[field.key]}
+                                helpText="JPG o PNG, max. 5 MB"
+                                onChange={(file) => {
                                     setValues({ ...values, [field.key]: file });
                                     if (file) setRemoveImage(false);
                                 }}
                             />
-
-                            <label
-                                htmlFor={!field.readOnly ? `file-${field.key}` : undefined}
-                                className={`btn ${field.readOnly ? 'btn-secondary' : 'btn-success'} ms-auto`}
-                                style={{ 
-                                    cursor: field.readOnly ? "not-allowed" : "pointer",
-                                    borderTopRightRadius: (values[field.key] || (!removeImage && values.imagePath)) ? "0" : "4px",
-                                    borderBottomRightRadius: (values[field.key] || (!removeImage && values.imagePath)) ? "0" : "4px"
-                                }}
-                            >
-                                Seleccionar
-                            </label>
-
-                            {!field.readOnly && (values[field.key] || (!removeImage && values.imagePath)) && (
-                                <button
-                                    type="button"
-                                    className="btn btn-danger"
-                                    style={{ borderTopLeftRadius: "0", borderBottomLeftRadius: "0" }}
-                                    onClick={() => {
-                                        setValues({ ...values, [field.key]: null });
-                                        setRemoveImage(true);
-                                        const input = document.getElementById(`file-${field.key}`) as HTMLInputElement;
-                                        if (input) input.value = "";
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            )}
                         </div>
                     ) : field.type === "select" ? (
                         <Select
@@ -216,13 +195,13 @@ export default function DetailEdit({ values, setValues, fields, errors, removeIm
                             options={(field.options as FieldOption[])?.map(opt => 
                                 isObjectOption(opt) ? opt : { value: opt, label: String(opt) }
                             ) || []}
-                            onChange={(selected) => {
+                            onChange={(selected: any) => {
                                 if (field.isMulti) {
                                     const selectedOptions = Array.isArray(selected) ? selected : [];
                                     setValues({ ...values, [field.key]: selectedOptions.map((option) => option.value) });
                                     return;
                                 }
-                                if (!selected) {
+                                if (!selected || Array.isArray(selected)) {
                                     const nextValues = { ...values, [field.key]: null };
                                     if (field.key === "powerSource") {
                                         nextValues.powerSourceType = null;

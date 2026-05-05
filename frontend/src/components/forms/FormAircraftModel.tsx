@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { styles } from "../../global-const/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
-import { apiFetch } from "../../api";
+import { apiFetch, API_BASE_URL } from "../../api";
 import {
   LIMITS,
   aircraftClasses,
@@ -19,6 +19,7 @@ import AircraftDocumentationSection, {
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftModelDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 import ComboBox from "../commons/ComboBox";
+import ImageUploadField from "../commons/ImageUpload";
 
 type AircraftDocumentationUploadRequest = {
   documentationType: string;
@@ -39,6 +40,7 @@ export default function FormAircraftModel() {
   const [model, setModel] = useState("");
   const [showDefaults, setShowDefaults] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState({ manufacturer: false, model: false });
@@ -102,23 +104,16 @@ export default function FormAircraftModel() {
     return Number.isNaN(parsed) ? undefined : parsed;
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      setSelectedFile(null);
-      return;
-    }
-    const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+  const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+  const validateImageFile = (file: File): string | null => {
     if (!allowedImageTypes.includes(file.type)) {
-      setError("Solo se permiten imagenes JPG o PNG.");
-      return;
+      return "Solo se permiten imagenes JPG o PNG.";
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("La imagen debe pesar menos de 5MB.");
-      return;
+      return "La imagen debe pesar menos de 5MB.";
     }
-    setError(null);
-    setSelectedFile(file);
+    return null;
   };
 
   const validateDocumentationFile = (file: File): string | null => {
@@ -500,35 +495,31 @@ export default function FormAircraftModel() {
 
                 <div className="row mb-3">
                   <div className="col-12 col-md">
-                    <label className="form-label d-block text-start ps-1">Imagen por defecto del modelo</label>
-                    <div
-                      className="d-flex align-items-center rounded"
-                      style={{ backgroundColor: "#F3F4F6", border: "1px solid #D1D5DB", paddingLeft: "10px" }}
-                    >
-                      <span className="text-truncate" style={{ maxWidth: "200px" }}>
-                        {selectedFile ? selectedFile.name : "No hay archivo"}
-                      </span>
-                      <input
-                        id="model-file-upload"
-                        type="file"
-                        accept=".jpg,.jpeg,.png"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                      />
-                      <label htmlFor="model-file-upload" className="btn btn-success ms-auto" style={{ cursor: "pointer" }}>
-                        Seleccionar archivo
-                      </label>
-                      {selectedFile && (
-                        <button
-                          type="button"
-                          className="btn btn-danger"
-                          onClick={() => setSelectedFile(null)}
-                          title="Eliminar archivo seleccionado"
-                        >
-                          X
-                        </button>
-                      )}
-                    </div>
+                    <ImageUploadField
+                      label="Imagen por defecto del modelo"
+                      helpText="JPG o PNG (max. 5 MB)"
+                      fieldName="imageFile"
+                      apiBaseUrl={API_BASE_URL}
+                      imageEndpointPath="/api/aircraft-models/images"
+                      maxSizeMB={5}
+                      acceptedTypes={allowedImageTypes}
+                      externalError={imageError}
+                      onChange={(file) => {
+                        if (!file) {
+                          setSelectedFile(null);
+                          setImageError(null);
+                          return;
+                        }
+                        const validationError = validateImageFile(file);
+                        if (validationError) {
+                          setSelectedFile(null);
+                          setImageError(validationError);
+                          return;
+                        }
+                        setImageError(null);
+                        setSelectedFile(file);
+                      }}
+                    />
                   </div>
                 </div>
               </>

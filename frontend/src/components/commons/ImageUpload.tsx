@@ -37,6 +37,18 @@ export type { ImageUploadState, ImageUploadHandlers } from "./hooks/useImageUplo
 const DEFAULT_MAX_HEIGHT = 220;
 const DEFAULT_ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
+const ensureTrailingSlash = (value: string) => (value.endsWith("/") ? value : `${value}/`);
+
+const resolveEndpointBase = (apiBaseUrl: string, imageEndpointPath: string) => {
+  if (!imageEndpointPath) return "";
+  if (imageEndpointPath.startsWith("http://") || imageEndpointPath.startsWith("https://")) {
+    return imageEndpointPath;
+  }
+  const base = apiBaseUrl.endsWith("/") ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+  const path = imageEndpointPath.startsWith("/") ? imageEndpointPath : `/${imageEndpointPath}`;
+  return `${base}${path}`;
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTE
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -97,14 +109,17 @@ export default function ImageUploadField({
 
   const normalizeImagePath = (filename: string) => {
     const clean = filename.trim().replace(/^\/+/, "");
+    const usesOperations = imageEndpointPath.includes("/api/operations/");
+    if (!usesOperations) return clean;
     return clean.startsWith("operations/")
       ? clean
       : `operations/${clean}`;
   };
 
   // URL de la imagen guardada en el servidor
-  const savedImageUrl = state.savedFilename
-    ? `${apiBaseUrl}${imageEndpointPath}${normalizeImagePath(state.savedFilename)}`
+  const endpointBase = resolveEndpointBase(apiBaseUrl, imageEndpointPath);
+  const savedImageUrl = state.savedFilename && endpointBase
+    ? `${ensureTrailingSlash(endpointBase)}${normalizeImagePath(state.savedFilename)}`
     : null;
 
   useEffect(() => {
