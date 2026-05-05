@@ -3,6 +3,8 @@ import { apiFetch } from "../../api";
 import Pagination from "../commons/props/Pagination";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import LoadingSpinner from "../commons/Loading";
+import activarIcon from "../../assets/commons/select_all_white.svg";
+import desactivarIcon from "../../assets/commons/remove_selection_white.svg";
 
 type User = {
   id: number;
@@ -84,6 +86,8 @@ export default function MailCenter() {
   const [recipientMode, setRecipientMode] = useState<"USERS" | "ROLES">("USERS");
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+
+
 
   useEffect(() => {
     void loadData();
@@ -296,6 +300,44 @@ export default function MailCenter() {
     { label: "Destino", key: "recipientMode", sortable: false },
     { label: "Destinatarios", key: "recipients", sortable: false },
   ];
+
+  // TOGGLE ALL PREFERENCES
+  const toggleAllPreferences = async (userId: number, value: boolean) => {
+    const currentPreference = getAutomaticPreference(userId);
+    const nextPreference = {
+      userId,
+      certificates: value,
+      operations: value,
+      maintenance: value,
+      events: value,
+    };
+    setError(null);
+    setSuccess(null);
+    setUpdatingAutomaticPreference(`${userId}-ALL`);
+    setAutomaticMailPreferences((current) => ({ ...current, [userId]: nextPreference }));
+
+    try {
+      const response = await apiFetch(`/api/automatic-mail-preferences/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          certificates: value,
+          operations: value,
+          maintenance: value,
+          events: value,
+        }),
+      });
+
+      if (!response) return;
+      const savedPreference = await response.json();
+      setAutomaticMailPreferences((current) => ({ ...current, [userId]: savedPreference }));
+    } catch (err) {
+      setAutomaticMailPreferences((current) => ({ ...current, [userId]: currentPreference }));
+      setError(err instanceof Error ? err.message : "No se pudo actualizar la configuración automática.");
+    } finally {
+      setUpdatingAutomaticPreference(null);
+    }
+  };
 
   return (
     <div className="container py-4" style={{ maxWidth: "1000px", minHeight: "90vh" }}>
@@ -610,11 +652,16 @@ export default function MailCenter() {
                       {AUTOMATIC_MAIL_COLUMNS.map((column) => (
                         <th key={column.key} className="text-center">{column.label}</th>
                       ))}
+                      <th style={{width: 120}}></th> {/* Botón toggle fila */}
                     </tr>
                   </thead>
                   <tbody>
                     {users.map((user) => {
                       const preference = getAutomaticPreference(user.id);
+                      const preferenceKeys = ["certificates", "operations", "maintenance", "events"] as const;
+                      const allActive = preferenceKeys.every((key) => preference[key]);
+                      const isUpdatingAll = updatingAutomaticPreference === `${user.id}-ALL`;
+                      
                       return (
                         <tr key={user.id}>
                           <td>
@@ -636,6 +683,22 @@ export default function MailCenter() {
                               </td>
                             );
                           })}
+                          {/*Botón toggle fila */}
+                          <td className="text-center">
+                            <button
+                            type="button"
+                            className={`btn btn-sm rounded-pill px-3 ${allActive ? "btn-danger" : "btn-success"}`}
+                            style={{minWidth: "90px"}}
+                            disabled={isUpdatingAll}
+                            onClick={() => toggleAllPreferences(user.id, !allActive)}
+                            >
+                              {isUpdatingAll ? (<span className="spinner-border spinner-border-sm" />) : allActive ? (
+                                <img src={desactivarIcon} alt="Desactivar todo" />
+                              ) : (
+                                <img src={activarIcon} alt="Activar todo" title="Activar todo" style = {{height: '24px'}}/>
+                              )}
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
