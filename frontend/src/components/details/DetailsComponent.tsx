@@ -20,6 +20,7 @@ import AircraftDocumentationSection, {
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags,getAircraftModelDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
 import { styles } from "../../global-const/styles";
+import { API_BASE_URL } from "../../api";
 import {
     getDocumentationFetchUrl,
     validateCertificateFile,
@@ -1599,6 +1600,8 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                                     removeImage={removeImage}
                                     setRemoveImage={setRemoveImage}
                                     clearableFieldKeys={props.clearableFieldKeys}
+                                    apiBaseUrl={API_BASE_URL}
+                                    imageEndpointPath={props.imageEndpoint ?? ""}
                                 />
                             )}
 

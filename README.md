@@ -101,14 +101,24 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
--El correo envía valor interno del certificado en vez de un valor normal 'a1a3' -> 'A1A3'<br>
--Que en el correos automáticos permita hacer check a toda una columna<br>
--Añadir forma de pasar operaciones a pdf con un click y descargar<br>
--Historial en correos tiene que mostrar la informacion (texto) del correo enviado<br>
+-Mirar blur el primero no va, el segundo si<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
--Un Manager actualmente puede añadir el rol de admin a cualquier usuario, debería solo poder hacerlo un admin<br>
+-Añadir preview imagen <br>
+
+-DRONES<br>
+-Añadir preview imagen <br>
+
+-HORAS DE VUELO<br>
+
+-MANTENIMIENTO<br>
+
+-OPERACIONES<br>
+
+-Historial<br>
+Hover del texto enviado
+
 
 -DOCUMENTACIONES<br>
 -En ipad no se pueden ver las documentaciones<br>
