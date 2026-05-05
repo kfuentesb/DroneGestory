@@ -47,15 +47,6 @@ type NotificationSettings = {
 };
 
 const ROLE_OPTIONS = ["MANAGER", "MAINTAINER", "PILOT"];
-const AUTOMATIC_MAIL_COLUMNS: Array<{
-  key: keyof Omit<AutomaticMailPreference, "userId">;
-  label: string;
-}> = [
-  { key: "certificates", label: "Certificados" },
-  { key: "operations", label: "Operaciones" },
-  { key: "maintenance", label: "Mantenimiento" },
-  { key: "events", label: "Eventos" },
-];
 const ITEMS_PER_PAGE = 8;
 
 export default function MailCenter() {
@@ -155,10 +146,20 @@ export default function MailCenter() {
     }
   );
 
+  const isMaintainer = (user: User): boolean => user.roles.includes("MAINTAINER");
+
   const toggleAutomaticPreference = async (
     userId: number,
     key: keyof Omit<AutomaticMailPreference, "userId">
   ) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
+    if (key === "maintenance" && !isMaintainer(user)) {
+      setError("Solo los usuarios de mantenimiento pueden recibir correos de mantenimiento.");
+      return;
+    }
+
     const currentPreference = getAutomaticPreference(userId);
     const nextPreference = {
       ...currentPreference,
@@ -301,14 +302,16 @@ export default function MailCenter() {
     { label: "Destinatarios", key: "recipients", sortable: false },
   ];
 
-  // TOGGLE ALL PREFERENCES
   const toggleAllPreferences = async (userId: number, value: boolean) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
     const currentPreference = getAutomaticPreference(userId);
-    const nextPreference = {
+    const nextPreference: AutomaticMailPreference = {
       userId,
       certificates: value,
       operations: value,
-      maintenance: value,
+      maintenance: isMaintainer(user) ? value : false,
       events: value,
     };
     setError(null);
@@ -323,7 +326,7 @@ export default function MailCenter() {
         body: JSON.stringify({
           certificates: value,
           operations: value,
-          maintenance: value,
+          maintenance: nextPreference.maintenance,
           events: value,
         }),
       });
@@ -341,7 +344,6 @@ export default function MailCenter() {
 
   return (
     <div className="container py-4" style={{ maxWidth: "1000px", minHeight: "90vh" }}>
-      {/* SELECTOR DE VISTA (TABS) CON DISEÑO MODERNO */}
       <div className="col-12 mb-5">
         <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3 text-center" style={{ letterSpacing: "1px" }}>
           Panel de Control de Mensajería
@@ -519,7 +521,6 @@ export default function MailCenter() {
                   rows={paginatedMails}
                   emptyText="No hay historial disponible."
                   renderRow={(mail) => (
-                    /* ELIMINAMOS EL <tr className="align-middle"> */
                     <>
                       <td className="small fw-bold text-muted">
                         {mail.sentAt ? new Date(mail.sentAt).toLocaleDateString() : "-"}
@@ -535,7 +536,6 @@ export default function MailCenter() {
                         {mail.recipients.length} personas alcanzadas
                       </td>
                     </>
-                    /* ELIMINAMOS EL </tr> */
                   )}
                 />
               </div>
@@ -649,17 +649,21 @@ export default function MailCenter() {
                   <thead>
                     <tr>
                       <th>Usuario</th>
-                      {AUTOMATIC_MAIL_COLUMNS.map((column) => (
-                        <th key={column.key} className="text-center">{column.label}</th>
-                      ))}
-                      <th style={{width: 120}}></th> {/* Botón toggle fila */}
+                      <th className="text-center">Certificados</th>
+                      <th className="text-center">Operaciones</th>
+                      <th className="text-center">Mantenimiento</th>
+                      <th className="text-center">Eventos</th>
+                      <th style={{width: 120}}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.map((user) => {
                       const preference = getAutomaticPreference(user.id);
-                      const preferenceKeys = ["certificates", "operations", "maintenance", "events"] as const;
-                      const allActive = preferenceKeys.every((key) => preference[key]);
+                      const userIsMaintainer = isMaintainer(user);
+                      const activeKeys = userIsMaintainer
+                        ? (["certificates", "operations", "maintenance", "events"] as const)
+                        : (["certificates", "operations", "events"] as const);
+                      const allActive = activeKeys.every((key) => preference[key]);
                       const isUpdatingAll = updatingAutomaticPreference === `${user.id}-ALL`;
                       
                       return (
@@ -668,22 +672,50 @@ export default function MailCenter() {
                             <span className="fw-bold d-block">{user.firstName} {user.lastName}</span>
                             <span className="small text-muted">{user.email}</span>
                           </td>
-                          {AUTOMATIC_MAIL_COLUMNS.map((column) => {
-                            const checkboxKey = `${user.id}-${column.key}`;
-                            return (
-                              <td key={column.key} className="text-center">
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  checked={preference[column.key]}
-                                  disabled={updatingAutomaticPreference === checkboxKey}
-                                  onChange={() => toggleAutomaticPreference(user.id, column.key)}
-                                  aria-label={`${column.label} - ${user.username}`}
-                                />
-                              </td>
-                            );
-                          })}
-                          {/*Botón toggle fila */}
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={preference.certificates}
+                              disabled={updatingAutomaticPreference === `${user.id}-certificates`}
+                              onChange={() => toggleAutomaticPreference(user.id, "certificates")}
+                              aria-label={`Certificados - ${user.username}`}
+                            />
+                          </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={preference.operations}
+                              disabled={updatingAutomaticPreference === `${user.id}-operations`}
+                              onChange={() => toggleAutomaticPreference(user.id, "operations")}
+                              aria-label={`Operaciones - ${user.username}`}
+                            />
+                          </td>
+                          <td className="text-center">
+                            {userIsMaintainer ? (
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={preference.maintenance}
+                                disabled={updatingAutomaticPreference === `${user.id}-maintenance`}
+                                onChange={() => toggleAutomaticPreference(user.id, "maintenance")}
+                                aria-label={`Mantenimiento - ${user.username}`}
+                              />
+                            ) : (
+                              <span className="text-muted">—</span>
+                            )}
+                          </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={preference.events}
+                              disabled={updatingAutomaticPreference === `${user.id}-events`}
+                              onChange={() => toggleAutomaticPreference(user.id, "events")}
+                              aria-label={`Eventos - ${user.username}`}
+                            />
+                          </td>
                           <td className="text-center">
                             <button
                             type="button"
@@ -704,7 +736,7 @@ export default function MailCenter() {
                     })}
                     {users.length === 0 && (
                       <tr>
-                        <td className="text-center text-muted py-4" colSpan={AUTOMATIC_MAIL_COLUMNS.length + 1}>
+                        <td className="text-center text-muted py-4" colSpan={6}>
                           No hay usuarios disponibles.
                         </td>
                       </tr>

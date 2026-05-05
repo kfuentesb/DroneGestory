@@ -118,7 +118,6 @@ VISUAL<br>
 -Historial<br>
 Hover del texto enviado
 
-
 -DOCUMENTACIONES<br>
 -En ipad no se pueden ver las documentaciones<br>
 -La sidebar no se muestra en safari<br>
