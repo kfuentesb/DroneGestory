@@ -201,19 +201,16 @@ export default function OperationDocumentationList() {
         if (!window.confirm("¿Estás seguro de que deseas eliminar esta versión específica?")) return;
 
         try {
-            const response = await fetch(`/api/operation-documentation/${docId}/versions/${versionId}`, {
-                method: 'DELETE',
-            });
+            const response = await apiFetch(`/api/operation-documentation/${docId}/versions/${versionId}`, { method: "DELETE" });
 
-            if (response.ok) {
+            if (response && response.ok) {
                 const updatedDoc: OperationDocumentation = await response.json();
                 
                 setDocumentations((prev: OperationDocumentation[]) => 
                     prev.map(d => d.id === docId ? updatedDoc : d)
                 );
             } else {
-                const error = await response.text();
-                alert(error);
+                alert("Error borrando versión de documentación de operación");
             }
         } catch (err) {
             console.error("Error eliminando versión:", err);

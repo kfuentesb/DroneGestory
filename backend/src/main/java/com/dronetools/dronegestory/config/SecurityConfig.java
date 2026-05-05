@@ -60,6 +60,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/operations/anexo4/images/**").authenticated()
 
+                        .requestMatchers(HttpMethod.DELETE, "/api/operation-documentation/**").hasAnyRole("ADMIN", "MANAGER")
+
                         // Permite que cualquier logueado vea su propia info básica
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/users/self/*").authenticated()
