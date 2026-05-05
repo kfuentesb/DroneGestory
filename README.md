@@ -105,10 +105,9 @@ VISUAL<br>
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
--Añadir preview imagen <br>
 
 -DRONES<br>
--Añadir preview imagen <br>
+
 
 -HORAS DE VUELO<br>
 
