@@ -1,16 +1,25 @@
 package com.dronetools.dronegestory.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "operation_documentation")
-@Getter 
-@Setter 
+@Getter
+@Setter
 @NoArgsConstructor
 public class OperationDocumentation {
 
@@ -18,10 +27,9 @@ public class OperationDocumentation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private String name;
 
-    // Relación con las versiones, ordenadas por el número de versión
     @OneToMany(mappedBy = "documentation", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("versionNumber DESC")
     private List<DocumentVersion> versions = new ArrayList<>();
@@ -30,10 +38,12 @@ public class OperationDocumentation {
         this.name = name;
     }
 
-    // Método de conveniencia para añadir versiones
     public void addVersion(String fileUrl, String notes) {
-        int nextVersion = versions.isEmpty() ? 1 : versions.get(0).getVersionNumber() + 1;
+        int nextVersion = versions.stream()
+                .mapToInt(DocumentVersion::getVersionNumber)
+                .max()
+                .orElse(0) + 1;
         DocumentVersion newVersion = new DocumentVersion(this, nextVersion, fileUrl, notes);
-        this.versions.add(0, newVersion); // Añadir al inicio por el orden DESC
+        this.versions.add(newVersion);
     }
 }

@@ -24,9 +24,10 @@ public class DocumentVersion {
     @Column(name = "version_number", nullable = false)
     private Integer versionNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1024)
     private String fileUrl;
 
+    @Column(length = 2048)
     private String uploadNotes;
 
     @Column(nullable = false)
@@ -38,5 +39,12 @@ public class DocumentVersion {
         this.fileUrl = fileUrl;
         this.uploadNotes = notes;
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    void setCreatedAtIfMissing() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }

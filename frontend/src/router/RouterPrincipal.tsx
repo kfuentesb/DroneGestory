@@ -30,6 +30,7 @@ import MaintenanceAircraftList from "../components/lists/MaintenanceAircraftList
 import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
 import Settings from "../components/main-elements-views/Settings";
 import MailCenter from "../components/mail/MailCenter";
+import OperationDocumentationList from "../components/lists/OperationDocumentationList";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -170,6 +171,7 @@ export default class RouterPrincipal extends React.Component {
         {/* Operations */}
         <Route path="/operations" element={<OperationList />} />
         {/* <Route path="/operations/details/mine" element={<MyOperationList />} /> */}
+        <Route path="/operations/docs" element={<OperationDocumentationList />} />
         <Route path="/operations/:id" element={<OperationDetail />} />
         <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
         <Route path="/operations/:id/anexo4/version/:versionId" element={<OperationAnexoDetail tipoAnexo={4} />} />
