@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -95,6 +96,12 @@ public class Aircraft {
 
     @Column(name = "flight_minutes", nullable = false, columnDefinition = "integer default 0")
     private Integer flightMinutes = 0;
+
+    @OneToMany(mappedBy = "aircraft", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Maintenance> maintenances;
+
+    @OneToMany(mappedBy = "aircraft", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FlightTime> flightTimes;
 
     @PrePersist
     public void ensureDefaults() {
