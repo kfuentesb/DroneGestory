@@ -185,7 +185,7 @@ export default class RouterPrincipal extends React.Component {
         <Route path="/operations/:id/anexo8/version/:versionId" element={<OperationAnexoDetail tipoAnexo={8} />} />
 
         <Route 
-          path="/docs" 
+          path="/file-manager" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <FileBrowserView />

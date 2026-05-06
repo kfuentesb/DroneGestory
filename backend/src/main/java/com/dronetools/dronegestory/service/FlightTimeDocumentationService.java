@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.model.FlightTime;
 import com.dronetools.dronegestory.model.FlightTimeDocumentation;
 import com.dronetools.dronegestory.repository.FlightTimeDocumentationRepository;
 import com.dronetools.dronegestory.repository.FlightTimeRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -181,11 +182,7 @@ public class FlightTimeDocumentationService {
         }
 
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Path file = uploadsDir.resolve(relativePath).normalize();
-            if (file.startsWith(uploadsDir)) {
-                Files.deleteIfExists(file);
-            }
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         } catch (IOException ex) {
             throw new RuntimeException("Error deleting flight time documentation", ex);
         }

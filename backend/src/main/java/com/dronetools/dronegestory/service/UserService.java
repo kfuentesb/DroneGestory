@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.enums.UserType;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -163,7 +164,7 @@ public class UserService {
             Files.createDirectories(profileDir);
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
-            savedUser.setImagePath(Paths.get("users", savedUser.getId().toString(), "profile", filename).toString().replace("\\", "/"));
+            savedUser.setImagePath(filename);
         }
 
         return userRepository.save(savedUser);
@@ -204,16 +205,14 @@ public class UserService {
                 certificateFile = multipartRequest.getFile(fileFieldKey);
             }
 
-            String storedCertificatePath = null;
+            String storedCertificateName = null;
             if (certificateFile != null && !certificateFile.isEmpty()) {
                 String originalName = certificateFile.getOriginalFilename();
                 String safeName = (originalName == null || originalName.isBlank())
                         ? "certificate"
                         : Paths.get(originalName).getFileName().toString();
 
-                String safeTypeDir = (certificateType == null || certificateType.isBlank())
-                        ? "unknown"
-                        : certificateType.replaceAll("[^a-zA-Z0-9_-]", "_");
+                String safeTypeDir = UploadPathUtils.safeSegment(certificateType);
 
                 Path certificateTypeDir = certificatesBaseDir.resolve(safeTypeDir);
                 Files.createDirectories(certificateTypeDir);
@@ -227,13 +226,11 @@ public class UserService {
                 Path target = certificateTypeDir.resolve(filename);
                 certificateFile.transferTo(target.toFile());
 
-                storedCertificatePath = Paths.get("users", savedUser.getId().toString(), "certificates", safeTypeDir, filename)
-                        .toString()
-                        .replace("\\", "/");
+                storedCertificateName = filename;
             }
 
             boolean emptyCertificate =
-                    (storedCertificatePath == null || storedCertificatePath.isBlank()) &&
+                    (storedCertificateName == null || storedCertificateName.isBlank()) &&
                     expireDate == null &&
                     dateIndefinite == null;
 
@@ -244,7 +241,7 @@ public class UserService {
             UserCertificate entity = new UserCertificate();
             entity.setUser(savedUser);
             entity.setCertificateType(certificateType);
-            entity.setCertificateName(storedCertificatePath);
+            entity.setCertificateName(storedCertificateName);
             entity.setExpireDate(expireDate);
             entity.setDateIndefinite(dateIndefinite);
 
@@ -366,15 +363,13 @@ public class UserService {
 
         if (removeImage) {
             if (oldImage != null && !oldImage.isBlank()) {
-                Path oldFile = uploadDir.resolve(oldImage).normalize();
-                Files.deleteIfExists(oldFile);
+                deleteUserProfileImage(user.getId(), oldImage);
             }
             user.setImagePath(null);
         } else if (imageFile != null && !imageFile.isEmpty()) {
             Files.createDirectories(profileDir);
             if (oldImage != null && !oldImage.isBlank()) {
-                Path oldFile = uploadDir.resolve(oldImage).normalize();
-                Files.deleteIfExists(oldFile);
+                deleteUserProfileImage(user.getId(), oldImage);
             }
             String originalName = imageFile.getOriginalFilename();
             String safeName = (originalName == null || originalName.isBlank()) ? "upload" : Paths.get(originalName).getFileName().toString();
@@ -384,7 +379,7 @@ public class UserService {
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
 
-            user.setImagePath(Paths.get("users", user.getId().toString(), "profile", filename).toString().replace("\\", "/"));
+            user.setImagePath(filename);
         }
 
         return userRepository.save(user);
@@ -434,16 +429,49 @@ public class UserService {
     // Eliminar un usuario por id
     @Transactional
     public void deleteById(Integer id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with id: " + id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        for (UserCertificate certificate : userCertificateRepository.findByUserId(id)) {
+            deleteUserCertificateFile(user.getId(), certificate.getCertificateType(), certificate.getCertificateName());
         }
+        deleteUserProfileImage(user.getId(), user.getImagePath());
         userCertificateRepository.deleteByUserId(id);
         userRepository.deleteById(id);
+    }
+
+    public String resolveUserImagePath(User user) {
+        if (user == null) {
+            return null;
+        }
+        return UploadPathUtils.userProfilePath(user.getId(), user.getImagePath());
     }
 
     private boolean isPrivileged(User user) {
         return user.getEffectiveRoles().contains(UserType.ADMIN)
                 || user.getEffectiveRoles().contains(UserType.MANAGER);
+    }
+
+    private void deleteUserProfileImage(Integer userId, String imagePath) {
+        String relativePath = UploadPathUtils.userProfilePath(userId, imagePath);
+        if (relativePath == null) {
+            return;
+        }
+        try {
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void deleteUserCertificateFile(Integer userId, String certificateType, String certificateName) {
+        String relativePath = UploadPathUtils.userCertificatePath(userId, certificateType, certificateName);
+        if (relativePath == null) {
+            return;
+        }
+        try {
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
+        } catch (IOException ignored) {
+        }
     }
 
 }

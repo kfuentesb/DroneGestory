@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.dto.OperationDocumentationDTO;
 import com.dronetools.dronegestory.model.DocumentVersion;
 import com.dronetools.dronegestory.model.OperationDocumentation;
 import com.dronetools.dronegestory.repository.OperationDocumentationRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,9 +75,9 @@ public class OperationDocumentationService {
         
         int finalR = (rNum != null) ? rNum : 0;
 
-        String storedPath = storeDocumentationFile(documentation.getId(), finalV, file);
+        String storedName = storeDocumentationFile(documentation.getId(), finalV, file);
         
-        DocumentVersion newVersion = new DocumentVersion(documentation, finalV, storedPath, notes);
+        DocumentVersion newVersion = new DocumentVersion(documentation, finalV, storedName, notes);
         newVersion.setRevisionNumber(finalR);
         
         documentation.getVersions().add(newVersion);
@@ -86,7 +87,7 @@ public class OperationDocumentationService {
         OperationDocumentation documentation = operationDocumentationRepository.findWithVersionsById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Operation documentation not found with id: " + id));
 
-        documentation.getVersions().forEach(version -> deleteStoredFile(version.getFileUrl()));
+        documentation.getVersions().forEach(version -> deleteStoredFile(documentation.getId(), version.getVersionNumber(), version.getFileUrl()));
         operationDocumentationRepository.delete(documentation);
     }
 
@@ -116,28 +117,18 @@ public class OperationDocumentationService {
             }
             file.transferTo(target.toFile());
 
-            return Paths.get(
-                    "operation-documentation",
-                    documentationId.toString(),
-                    "v" + versionNumber,
-                    filename
-            ).toString().replace("\\", "/");
+            return filename;
         } catch (IOException ex) {
             throw new RuntimeException("Error storing operation documentation", ex);
         }
     }
 
-    private void deleteStoredFile(String relativePath) {
-        if (relativePath == null || relativePath.isBlank()) return;
+    private void deleteStoredFile(Long documentationId, Integer versionNumber, String storedValue) {
+        String relativePath = UploadPathUtils.operationDocumentationPath(documentationId, versionNumber, storedValue);
+        if (relativePath == null) return;
 
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Path filePath = uploadsDir.resolve(relativePath).normalize();
-            
-            if (filePath.startsWith(uploadsDir)) {
-                Files.deleteIfExists(filePath);
-                Files.deleteIfExists(filePath.getParent());
-            }
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         } catch (IOException ex) {
         }
     }
@@ -182,7 +173,7 @@ public class OperationDocumentationService {
         if (documentation.getVersions().size() <= 1) {
             throw new IllegalStateException("Cannot delete the only version.");
         }
-        deleteStoredFile(versionToDelete.getFileUrl());
+        deleteStoredFile(documentationId, versionToDelete.getVersionNumber(), versionToDelete.getFileUrl());
         versionToDelete.setDocumentation(null); 
         documentation.getVersions().remove(versionToDelete);
         return toDto(operationDocumentationRepository.save(documentation), true);
@@ -193,7 +184,11 @@ public class OperationDocumentationService {
                 version.getId(),
                 version.getVersionNumber(),
                 version.getRevisionNumber(),
-                version.getFileUrl(),
+                UploadPathUtils.operationDocumentationPath(
+                        version.getDocumentation().getId(),
+                        version.getVersionNumber(),
+                        version.getFileUrl()
+                ),
                 version.getUploadNotes(),
                 version.getCreatedAt()
         );

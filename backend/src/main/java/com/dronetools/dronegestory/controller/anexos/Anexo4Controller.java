@@ -10,6 +10,7 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.anexos.Anexo4Service;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -197,6 +198,8 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
 
     private Anexo4ResponseDTO toResponse(Anexo4 anexo, Long operationId) {
         Anexo4ResponseDTO dto = Anexo4ResponseDTO.fromEntity(anexo);
+        dto.setImagenEspacioAereo(UploadPathUtils.operationAnexo4Path(operationId, anexo.getImagenEspacioAereo()));
+        dto.setImagenZonaVuelo(UploadPathUtils.operationAnexo4Path(operationId, anexo.getImagenZonaVuelo()));
         operationRepository.findByIdWithAssignedUsers(operationId).ifPresent(operation -> {
             dto.setConops(operation.getConops());
             dto.setSelectedPersonnelIds(operation.getAssignedUsers().stream()

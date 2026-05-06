@@ -4,6 +4,7 @@ import com.dronetools.dronegestory.dto.AircraftDocumentationUploadRequest;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.repository.AircraftRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -156,7 +157,7 @@ public class AircraftService {
         if (oldImage != null && !oldImage.isBlank()) {
             Path oldFile = uploadDir.resolve(oldImage).normalize();
             if (oldFile.startsWith(uploadDir)) {
-                Files.deleteIfExists(oldFile);
+                UploadPathUtils.deleteFileAndPruneEmptyParents(oldImage);
             }
         }
     }

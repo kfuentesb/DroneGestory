@@ -108,6 +108,7 @@ VISUAL<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
 
 -DRONES<br>
+-Cuando se actualiza una documentación de una aeronave, no se actualiza automáticamente, es necesario presionar restaurar, si o si<br>
 
 -HORAS DE VUELO<br>
 

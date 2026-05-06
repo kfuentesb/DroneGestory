@@ -85,7 +85,7 @@ public class UserController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<User> createUserWithFile(
+    public ResponseEntity<UserResponse> createUserWithFile(
             @ModelAttribute User user,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "certificates", required = false) String certificatesJson,
@@ -100,12 +100,12 @@ public class UserController {
         }
 
         User createdUser = userService.createWithFileAndCertificates(user, imageFile, certificates, multipartRequest);
-        return ResponseEntity.ok(createdUser);
+        return ResponseEntity.ok(toResponse(createdUser));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<User> updateUserWithFile(
+    public ResponseEntity<UserResponse> updateUserWithFile(
             @PathVariable Integer id,
             @ModelAttribute User user,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -116,12 +116,12 @@ public class UserController {
         boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
         User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
 
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(toResponse(updatedUser));
     }
 
     @PutMapping(value = "/self/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<User> updateOwnUserWithFile(
+    public ResponseEntity<UserResponse> updateOwnUserWithFile(
             @PathVariable Integer id,
             @ModelAttribute User user,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -136,7 +136,7 @@ public class UserController {
         boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
         User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
 
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(toResponse(updatedUser));
     }
 
     @DeleteMapping("/{id}")
@@ -225,7 +225,7 @@ public class UserController {
                 user.getUsername(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                user.getImagePath(),
+                userService.resolveUserImagePath(user),
                 user.getDocIdentidad(),
                 user.getFechaNac(),
                 user.isState()

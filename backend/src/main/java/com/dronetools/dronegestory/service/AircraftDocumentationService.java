@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.model.AircraftModelDocumentation;
 import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftModelDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,9 +74,11 @@ public class AircraftDocumentationService {
             MultipartFile file
     ) {
         return aircraftDocumentationRepository.findById(id).map(documentation -> {
+            String previousDocumentationType = resolveEffectiveType(documentation);
             if (documentation.getModelDocumentation() != null) {
                 boolean shouldKeepPointer = shouldKeepPointerLink(documentation, documentationType, expireDateRaw, dateIndefinite, file);
                 if (!shouldKeepPointer) {
+                    deleteStoredFile(documentation.getAircraft().getAircraftId(), previousDocumentationType, documentation.getDocumentationName());
                     documentation.setModelDocumentation(null);
                     documentation.setDocumentationName(null);
                     documentation.setExpireDate(null);
@@ -83,7 +87,7 @@ public class AircraftDocumentationService {
             }
 
             documentation.setDocumentationType(documentationType);
-            applyMetadataAndFile(documentation, documentationType, expireDateRaw, dateIndefinite, file);
+            applyMetadataAndFile(documentation, previousDocumentationType, documentationType, expireDateRaw, dateIndefinite, file);
             return toDto(aircraftDocumentationRepository.save(documentation));
         });
     }
@@ -102,7 +106,7 @@ public class AircraftDocumentationService {
         documentation.setAircraft(aircraft);
         documentation.setDocumentationType(documentationType);
         documentation.setModelDocumentation(null);
-        applyMetadataAndFile(documentation, documentationType, expireDateRaw, dateIndefinite, file);
+        applyMetadataAndFile(documentation, null, documentationType, expireDateRaw, dateIndefinite, file);
         return toDto(aircraftDocumentationRepository.save(documentation));
     }
 
@@ -170,13 +174,13 @@ public class AircraftDocumentationService {
                 documentationFile = multipartRequest.getFile(fileFieldKey);
             }
 
-            String storedDocumentationPath = null;
+            String storedDocumentationName = null;
             if (documentationFile != null && !documentationFile.isEmpty()) {
-                storedDocumentationPath = storeDocumentationFile(aircraft.getAircraftId(), documentationType, documentationFile);
+                storedDocumentationName = storeDocumentationFile(aircraft.getAircraftId(), documentationType, documentationFile);
             }
 
             boolean emptyDocumentation =
-                    (storedDocumentationPath == null || storedDocumentationPath.isBlank()) &&
+                    (storedDocumentationName == null || storedDocumentationName.isBlank()) &&
                             expireDate == null &&
                             dateIndefinite == null;
 
@@ -188,7 +192,7 @@ public class AircraftDocumentationService {
             entity.setAircraft(aircraft);
             entity.setDocumentationType(documentationType);
             entity.setModelDocumentation(null);
-            entity.setDocumentationName(storedDocumentationPath);
+            entity.setDocumentationName(storedDocumentationName);
             entity.setExpireDate(expireDate);
             entity.setDateIndefinite(dateIndefinite);
             aircraftDocumentationRepository.save(entity);
@@ -198,20 +202,21 @@ public class AircraftDocumentationService {
     public void deleteById(Long id) {
         AircraftDocumentation documentation = aircraftDocumentationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aircraft documentation not found with id: " + id));
-        deleteStoredFile(documentation.getDocumentationName());
+        deleteStoredFile(documentation.getAircraft().getAircraftId(), resolveEffectiveType(documentation), documentation.getDocumentationName());
         aircraftDocumentationRepository.delete(documentation);
     }
 
     public void deleteByAircraftId(Long aircraftId) {
         List<AircraftDocumentation> docs = aircraftDocumentationRepository.findByAircraft_AircraftId(aircraftId);
         for (AircraftDocumentation doc : docs) {
-            deleteStoredFile(doc.getDocumentationName());
+            deleteStoredFile(aircraftId, resolveEffectiveType(doc), doc.getDocumentationName());
         }
         aircraftDocumentationRepository.deleteByAircraft_AircraftId(aircraftId);
     }
 
     private void applyMetadataAndFile(
             AircraftDocumentation documentation,
+            String previousDocumentationType,
             String documentationType,
             String expireDateRaw,
             Boolean dateIndefinite,
@@ -227,19 +232,19 @@ public class AircraftDocumentationService {
         documentation.setExpireDate(indefinite ? null : expireDate);
 
         if (file != null && !file.isEmpty()) {
-            String oldPath = documentation.getDocumentationName();
-            String storedPath = storeDocumentationFile(documentation.getAircraft().getAircraftId(), documentationType, file);
-            documentation.setDocumentationName(storedPath);
-            deleteStoredFile(oldPath);
+            String oldName = documentation.getDocumentationName();
+            String storedName = storeDocumentationFile(documentation.getAircraft().getAircraftId(), documentationType, file);
+            documentation.setDocumentationName(storedName);
+            deleteStoredFile(documentation.getAircraft().getAircraftId(), previousDocumentationType, oldName);
+        } else if (!Objects.equals(previousDocumentationType, documentationType)) {
+            moveStoredFileToType(documentation, previousDocumentationType, documentationType);
         }
     }
 
     private String storeDocumentationFile(Long aircraftId, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            String safeTypeDir = (documentationType == null || documentationType.isBlank())
-                    ? "unknown"
-                    : documentationType.replaceAll("[^a-zA-Z0-9_-]", "_");
+            String safeTypeDir = safeTypeDir(documentationType);
 
             Path documentationTypeDir = uploadsDir.resolve(
                     Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir)
@@ -260,29 +265,50 @@ public class AircraftDocumentationService {
             Path target = documentationTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir, filename)
-                    .toString()
-                    .replace("\\", "/");
+            return filename;
         } catch (IOException ex) {
             throw new RuntimeException("Error storing documentation file", ex);
         }
     }
 
-    private void deleteStoredFile(String relativePath) {
-        if (relativePath == null || relativePath.isBlank()) {
-            return;
-        }
-
-        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-        Path fullPath = uploadsDir.resolve(relativePath).normalize();
-        if (!fullPath.startsWith(uploadsDir)) {
+    private void deleteStoredFile(Long aircraftId, String documentationType, String documentationName) {
+        String relativePath = resolveStoredDocumentationPath(aircraftId, documentationType, documentationName);
+        if (relativePath == null) {
             return;
         }
 
         try {
-            Files.deleteIfExists(fullPath);
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         } catch (IOException ex) {
             System.err.println("Warning: Failed to delete documentation file: " + relativePath);
+        }
+    }
+
+    private void moveStoredFileToType(AircraftDocumentation documentation, String oldType, String newType) {
+        String documentationName = documentation.getDocumentationName();
+        if (documentationName == null || documentationName.isBlank()
+                || documentationName.contains("/") || documentationName.contains("\\")) {
+            return;
+        }
+
+        String oldRelativePath = resolveStoredDocumentationPath(documentation.getAircraft().getAircraftId(), oldType, documentationName);
+        String newRelativePath = resolveStoredDocumentationPath(documentation.getAircraft().getAircraftId(), newType, documentationName);
+        if (oldRelativePath == null || newRelativePath == null || Objects.equals(oldRelativePath, newRelativePath)) {
+            return;
+        }
+
+        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path oldPath = uploadsDir.resolve(oldRelativePath).normalize();
+        Path newPath = uploadsDir.resolve(newRelativePath).normalize();
+        if (!oldPath.startsWith(uploadsDir) || !newPath.startsWith(uploadsDir) || !Files.exists(oldPath)) {
+            return;
+        }
+
+        try {
+            Files.createDirectories(newPath.getParent());
+            Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            throw new RuntimeException("Error moving documentation file", ex);
         }
     }
 
@@ -313,11 +339,20 @@ public class AircraftDocumentationService {
         if (documentation.getModelDocumentation() != null) {
             AircraftModelDocumentation modelDocumentation = documentation.getModelDocumentation();
             documentationType = firstNonBlank(documentationType, modelDocumentation.getDocumentationType());
-            documentationName = firstNonBlank(documentationName, modelDocumentation.getDocumentationName());
+            documentationName = firstNonBlank(
+                    resolveStoredDocumentationPath(documentation.getAircraft().getAircraftId(), documentationType, documentationName),
+                    resolveStoredModelDocumentationPath(modelDocumentation, modelDocumentation.getDocumentationName())
+            );
             expireDate = expireDate != null ? expireDate : modelDocumentation.getExpireDate();
             dateIndefinite = dateIndefinite != null ? dateIndefinite : modelDocumentation.getDateIndefinite();
             modelDocumentationId = modelDocumentation.getId();
             isModelDefault = true;
+        } else {
+            documentationName = resolveStoredDocumentationPath(
+                    documentation.getAircraft().getAircraftId(),
+                    documentationType,
+                    documentationName
+            );
         }
 
         return new AircraftDocumentationDTO(
@@ -416,6 +451,44 @@ public class AircraftDocumentationService {
         return fallback;
     }
 
+    private String resolveStoredDocumentationPath(Long aircraftId, String documentationType, String documentationName) {
+        if (documentationName == null || documentationName.isBlank()) {
+            return null;
+        }
+        String normalized = documentationName.replace("\\", "/");
+        if (normalized.contains("/")) {
+            return normalized;
+        }
+        return Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized)
+                .toString()
+                .replace("\\", "/");
+    }
+
+    private String resolveStoredModelDocumentationPath(AircraftModelDocumentation modelDocumentation, String documentationName) {
+        if (documentationName == null || documentationName.isBlank()) {
+            return null;
+        }
+        String normalized = documentationName.replace("\\", "/");
+        if (normalized.contains("/")) {
+            return normalized;
+        }
+        return Paths.get(
+                        "aircraft-model",
+                        modelDocumentation.getAircraftModel().getId().toString(),
+                        "documentation",
+                        safeTypeDir(modelDocumentation.getDocumentationType()),
+                        normalized
+                )
+                .toString()
+                .replace("\\", "/");
+    }
+
+    private String safeTypeDir(String documentationType) {
+        return (documentationType == null || documentationType.isBlank())
+                ? "unknown"
+                : documentationType.replaceAll("[^a-zA-Z0-9_-]", "_");
+    }
+
     public Optional<AircraftDocumentationDTO> restoreToDefault(Long aircraftDocumentationId) {
         return aircraftDocumentationRepository.findById(aircraftDocumentationId).flatMap(aircraftDoc -> {
             Aircraft aircraft = aircraftDoc.getAircraft();
@@ -431,6 +504,7 @@ public class AircraftDocumentationService {
 
             if (matchingModelDoc.isPresent()) {
                 AircraftModelDocumentation modelDoc = matchingModelDoc.get();
+                deleteStoredFile(aircraftDoc.getAircraft().getAircraftId(), documentationType, aircraftDoc.getDocumentationName());
                 // Restore pointer and inherit model values
                 aircraftDoc.setModelDocumentation(modelDoc);
                 aircraftDoc.setDocumentationType(modelDoc.getDocumentationType());
@@ -475,7 +549,7 @@ public class AircraftDocumentationService {
                     return created;
                 });
 
-        deleteStoredFile(aircraftDoc.getDocumentationName());
+        deleteStoredFile(aircraftDoc.getAircraft().getAircraftId(), documentationType, aircraftDoc.getDocumentationName());
         aircraftDoc.setModelDocumentation(modelDoc);
         aircraftDoc.setDocumentationType(modelDoc.getDocumentationType());
         aircraftDoc.setDocumentationName(null);

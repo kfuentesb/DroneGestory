@@ -244,9 +244,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenEspacioAereoFile.transferTo(target.toFile());
-            anexo4.setImagenEspacioAereo(
-                    Paths.get("operations", operationId.toString(), "anexo4", filename).toString().replace("\\", "/")
-            );
+            anexo4.setImagenEspacioAereo(filename);
         }
 
         // Imagen zona vuelo
@@ -261,9 +259,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenZonaVueloFile.transferTo(target.toFile());
-            anexo4.setImagenZonaVuelo(
-                    Paths.get("operations", operationId.toString(), "anexo4", filename).toString().replace("\\", "/")
-            );
+            anexo4.setImagenZonaVuelo(filename);
         }
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)

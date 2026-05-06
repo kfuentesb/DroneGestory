@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -16,8 +17,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -84,7 +87,7 @@ public class UserCertificateService {
 
         assertCanManageCertificate(certificate);
 
-        deleteStoredFile(certificate.getCertificateName());
+        deleteStoredFile(certificate.getUser().getId(), certificate.getCertificateType(), certificate.getCertificateName());
         userCertificateRepository.delete(certificate);
     }
 
@@ -99,7 +102,7 @@ public class UserCertificateService {
         UserCertificate certificate = new UserCertificate();
         certificate.setUser(user);
         certificate.setCertificateType(certificateType);
-        applyMetadataAndFile(certificate, certificateType, expireDateRaw, dateIndefinite, file);
+        applyMetadataAndFile(certificate, null, certificateType, expireDateRaw, dateIndefinite, file);
         return toDto(userCertificateRepository.save(certificate));
     }
 
@@ -112,8 +115,9 @@ public class UserCertificateService {
     ) {
         return userCertificateRepository.findById(id).map(certificate -> {
             assertCanManageCertificate(certificate);
+            String previousCertificateType = certificate.getCertificateType();
             certificate.setCertificateType(certificateType);
-            applyMetadataAndFile(certificate, certificateType, expireDateRaw, dateIndefinite, file);
+            applyMetadataAndFile(certificate, previousCertificateType, certificateType, expireDateRaw, dateIndefinite, file);
             return toDto(userCertificateRepository.save(certificate));
         });
     }
@@ -162,6 +166,7 @@ public class UserCertificateService {
 
     private void applyMetadataAndFile(
             UserCertificate certificate,
+            String previousCertificateType,
             String certificateType,
             String expireDateRaw,
             Boolean dateIndefinite,
@@ -177,20 +182,20 @@ public class UserCertificateService {
         certificate.setExpireDate(indefinite ? null : expireDate);
 
         if (file != null && !file.isEmpty()) {
-            String oldPath = certificate.getCertificateName();
-            String storedPath = storeCertificateFile(certificate.getUser().getId(), certificateType, file);
-            certificate.setCertificateName(storedPath);
-            if (oldPath != null && !oldPath.equals(storedPath)) {
-                deleteStoredFile(oldPath);
+            String oldName = certificate.getCertificateName();
+            String storedName = storeCertificateFile(certificate.getUser().getId(), certificateType, file);
+            certificate.setCertificateName(storedName);
+            if (oldName != null && !oldName.equals(storedName)) {
+                deleteStoredFile(certificate.getUser().getId(), previousCertificateType, oldName);
             }
+        } else if (!Objects.equals(previousCertificateType, certificateType)) {
+            moveStoredFileToType(certificate.getUser().getId(), previousCertificateType, certificateType, certificate.getCertificateName());
         }
     }
 
     private String storeCertificateFile(Integer userId, String certificateType, MultipartFile file) {
         try {
-            String safeTypeDir = (certificateType == null || certificateType.isBlank())
-                    ? "unknown"
-                    : certificateType.replaceAll("[^a-zA-Z0-9_-]", "_");
+            String safeTypeDir = UploadPathUtils.safeSegment(certificateType);
 
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
             Path certificateTypeDir = uploadsDir.resolve(Paths.get("users", userId.toString(), "certificates", safeTypeDir)).normalize();
@@ -207,27 +212,50 @@ public class UserCertificateService {
             Path target = certificateTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get("users", userId.toString(), "certificates", safeTypeDir, filename)
-                    .toString()
-                    .replace("\\", "/");
+            return filename;
         } catch (IOException ex) {
             throw new RuntimeException("Error storing certificate file", ex);
         }
     }
 
-    private void deleteStoredFile(String relativePath) {
-        if (relativePath == null || relativePath.isBlank()) {
+    private void deleteStoredFile(Integer userId, String certificateType, String certificateName) {
+        String relativePath = UploadPathUtils.userCertificatePath(userId, certificateType, certificateName);
+        if (relativePath == null) {
             return;
         }
 
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Path file = uploadsDir.resolve(relativePath).normalize();
-            if (file.startsWith(uploadsDir)) {
-                Files.deleteIfExists(file);
-            }
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         } catch (IOException ex) {
             throw new RuntimeException("Error deleting certificate file", ex);
+        }
+    }
+
+    private void moveStoredFileToType(Integer userId, String oldType, String newType, String certificateName) {
+        if (certificateName == null || certificateName.isBlank()
+                || certificateName.contains("/") || certificateName.contains("\\")) {
+            return;
+        }
+
+        String oldRelativePath = UploadPathUtils.userCertificatePath(userId, oldType, certificateName);
+        String newRelativePath = UploadPathUtils.userCertificatePath(userId, newType, certificateName);
+        if (oldRelativePath == null || newRelativePath == null || Objects.equals(oldRelativePath, newRelativePath)) {
+            return;
+        }
+
+        Path uploadsDir = UploadPathUtils.uploadsRoot();
+        Path oldPath = uploadsDir.resolve(oldRelativePath).normalize();
+        Path newPath = uploadsDir.resolve(newRelativePath).normalize();
+        if (!oldPath.startsWith(uploadsDir) || !newPath.startsWith(uploadsDir) || !Files.exists(oldPath)) {
+            return;
+        }
+
+        try {
+            Files.createDirectories(newPath.getParent());
+            Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+            UploadPathUtils.deleteFileAndPruneEmptyParents(oldRelativePath);
+        } catch (IOException ex) {
+            throw new RuntimeException("Error moving certificate file", ex);
         }
     }
 
@@ -236,7 +264,11 @@ public class UserCertificateService {
                 userCertificate.getId(),
                 userCertificate.getUser().getId(),
                 userCertificate.getCertificateType(),
-                userCertificate.getCertificateName(),
+                UploadPathUtils.userCertificatePath(
+                        userCertificate.getUser().getId(),
+                        userCertificate.getCertificateType(),
+                        userCertificate.getCertificateName()
+                ),
                 userCertificate.getExpireDate(),
                 userCertificate.getDateIndefinite()
         );

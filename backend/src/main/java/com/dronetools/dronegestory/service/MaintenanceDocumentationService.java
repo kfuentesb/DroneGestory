@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.model.Maintenance;
 import com.dronetools.dronegestory.model.MaintenanceDocumentation;
 import com.dronetools.dronegestory.repository.MaintenanceDocumentationRepository;
 import com.dronetools.dronegestory.repository.MaintenanceRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -193,11 +194,7 @@ public class MaintenanceDocumentationService {
         }
 
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Path file = uploadsDir.resolve(relativePath).normalize();
-            if (file.startsWith(uploadsDir)) {
-                Files.deleteIfExists(file);
-            }
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         } catch (IOException ex) {
             throw new RuntimeException("Error deleting maintenance documentation", ex);
         }

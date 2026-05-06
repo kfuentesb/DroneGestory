@@ -6,6 +6,7 @@ import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.AircraftModelRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -229,7 +230,7 @@ public class AircraftModelService {
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
         Path file = uploadDir.resolve(relativePath).normalize();
         if (file.startsWith(uploadDir)) {
-            Files.deleteIfExists(file);
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         }
     }
 

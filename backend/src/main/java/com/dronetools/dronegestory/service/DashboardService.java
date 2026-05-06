@@ -20,6 +20,7 @@ import com.dronetools.dronegestory.repository.MaintenanceRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserCertificateRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.dronetools.dronegestory.model.enums.UserType;
@@ -111,7 +112,11 @@ public class DashboardService {
                                 certificate.getUser().getFirstName(),
                                 certificate.getUser().getLastName(),
                                 certificate.getUser().getUsername(),
-                                certificate.getCertificateName(),
+                                UploadPathUtils.userCertificatePath(
+                                        certificate.getUser().getId(),
+                                        certificate.getCertificateType(),
+                                        certificate.getCertificateName()
+                                ),
                                 certificate.getCertificateType()
                         ))
                         .toList();

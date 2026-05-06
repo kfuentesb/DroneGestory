@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.model.enums.OperationStatus;
 import com.dronetools.dronegestory.model.enums.UserType;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -195,8 +196,8 @@ public class OperationService {
 
         if (op.getAnexos4() != null) {
             op.getAnexos4().forEach(a4 -> {
-                borrarArchivo(a4.getImagenEspacioAereo());
-                borrarArchivo(a4.getImagenZonaVuelo());
+                borrarArchivo(idOperacion, a4.getImagenEspacioAereo());
+                borrarArchivo(idOperacion, a4.getImagenZonaVuelo());
             });
         }
         borrarDirectorioUploadsOperacion(idOperacion);
@@ -233,14 +234,11 @@ public class OperationService {
             + ", anexos8Count=" + (operation.getAnexos8() == null ? 0 : operation.getAnexos8().size());
     }
 
-    private void borrarArchivo(String filePath) {
+    private void borrarArchivo(Long operationId, String filePath) {
         if (filePath == null) return;
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Path candidate = uploadsDir.resolve(filePath).normalize();
-            if (candidate.startsWith(uploadsDir)) {
-                Files.deleteIfExists(candidate);
-            }
+            String relativePath = UploadPathUtils.operationAnexo4Path(operationId, filePath);
+            UploadPathUtils.deleteFileAndPruneEmptyParents(relativePath);
         } catch (IOException ignored) {
         }
     }
