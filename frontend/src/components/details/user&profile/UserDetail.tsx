@@ -17,10 +17,10 @@ export default function UserDetail() {
             alert("No puedes borrarte a ti mismo / You cannot delete yourself");
             return;
         }
-        console.log(currentUserId, id)
-        // await apiFetch(`/api/users/${id}`, {
-        //     method: "DELETE"
-        // });
+        
+        await apiFetch(`/api/users/${id}`, {
+            method: "DELETE"
+        });
 
         navigate("/users");
     };

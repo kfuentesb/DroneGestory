@@ -134,9 +134,11 @@ MIGRACION
 server
 docker exec -i dronegestory-db psql -U admin -d aeronaves_db < backend/database/migrations/V2026_04_22_001__user_multi_roles.sql
 
-TRUNCATE TABLE app_user RESTART IDENTITY;
-TRUNCATE TABLE app_user_roles RESTART IDENTITY;
-TRUNCATE TABLE user_certificate RESTART IDENTITY;
-TRUNCATE TABLE pilots RESTART IDENTITY;
-TRUNCATE TABLE operation_assigned_users RESTART IDENTITY;
-TRUNCATE TABLE anexo5_signed_users RESTART IDENTITY;
+TRUNCATE TABLE 
+    app_user, 
+    app_user_roles, 
+    user_certificate, 
+    pilots, 
+    operation_assigned_users, 
+    anexo5_signed_users 
+RESTART IDENTITY CASCADE;
