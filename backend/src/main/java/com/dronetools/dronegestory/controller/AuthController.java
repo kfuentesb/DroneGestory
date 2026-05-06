@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.dronetools.dronegestory.model.User;
 
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(username, password);
 
             Authentication authentication = authenticationManager.authenticate(authRequest);
+            User userEntity = (User) authentication.getPrincipal();
+            Integer userId = userEntity.getId();
             String token = jwtService.generateToken(
                     (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal()
             );
@@ -42,7 +45,7 @@ public class AuthController {
                     .map(GrantedAuthority::getAuthority)
                     .toList();
 
-            return ResponseEntity.ok(new AuthResponse(true, username, token, roles));
+            return ResponseEntity.ok(new AuthResponse(true, userId, username, token, roles));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of(
                     "ok", false,

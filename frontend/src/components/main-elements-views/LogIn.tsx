@@ -25,14 +25,15 @@ function LogIn() {
 
       if (res) {
         const data = await res.json();
+        
         const cleanRoles = Array.isArray(data.roles) && data.roles.length > 0
           ? data.roles.map((rawRole: string) => rawRole.replace("ROLE_", ""))
           : ["PILOT"];
 
-        login(data.username, cleanRoles);
+        login(data.id, data.username, cleanRoles); 
         setToken(data.token);
         navigate("/home");
-      }
+    }
     } catch (err: any) {
       setError(err.message);
     } finally {

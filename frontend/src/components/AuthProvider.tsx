@@ -2,11 +2,12 @@ import React, { createContext, useState } from "react";
 import { apiFetch } from "../api";
 
 interface AuthContextType {
+  id: string | null;
   username: string | null;
   token: string | null;
   role: string | null;
   roles: string[];
-  login: (name: string, roles: string[]) => void;
+  login: (idValue: string, name: string, roles: string[]) => void;
   hasRole: (role: string) => boolean;
   setToken: (token: string | null) => void;
   logout: () => Promise<void>;
@@ -14,6 +15,7 @@ interface AuthContextType {
 
 // Crea el contexto
 export const AuthContext = createContext<AuthContextType>({
+  id: null,
   username: null,
   token: null,
   role: null,
@@ -26,6 +28,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 // Provider para envolver la App
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [id, setId] = useState<string | null>(localStorage.getItem("userId"));
   const [username, setUsername] = useState<string | null>(localStorage.getItem("username"));
   const [token, setTokenState] = useState<string | null>(localStorage.getItem("token"));
   const [roles, setRoles] = useState<string[]>(() => {
@@ -42,10 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const role = roles[0] || null;
 
-  const login = (name: string, userRoles: string[]) => {
+  const login = (idValue: string, name: string, userRoles: string[]) => {
+    localStorage.setItem("userId", idValue);
     localStorage.setItem("username", name);
     localStorage.setItem("roles", JSON.stringify(userRoles));
     localStorage.setItem("role", userRoles[0] || "");
+    setId(idValue);
     setUsername(name);
     setRoles(userRoles);
   };
@@ -67,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       // Manejar error
     } finally {
+      localStorage.removeItem("userId");
       localStorage.removeItem("username");
       localStorage.removeItem("token");
       localStorage.removeItem("role");
@@ -79,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
 
   return (
-    <AuthContext.Provider value={{ username, token, role, roles, login, hasRole, setToken, logout }}>
+    <AuthContext.Provider value={{ id, username, token, role, roles, login, hasRole, setToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

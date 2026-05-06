@@ -104,7 +104,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> updateUserWithFile(
             @PathVariable Integer id,
             @ModelAttribute User user,
@@ -112,6 +112,9 @@ public class UserController {
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
+        if (!userService.canCurrentUserModifyUser(id)) {
+            throw new AccessDeniedException("You do not have permission to modify this user.");
+        }
         boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
         boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
         User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
@@ -128,15 +131,7 @@ public class UserController {
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             HttpServletRequest request
     ) throws IOException {
-        if (!userService.canCurrentUserModifyUser(id)) {
-            throw new AccessDeniedException("You do not have permission to modify this user.");
-        }
-
-        boolean phoneNumberPresent = request.getParameterMap().containsKey("phoneNumber");
-        boolean fechaNacPresent = request.getParameterMap().containsKey("fechaNac");
-        User updatedUser = userService.updateWithFile(id, user, imageFile, phoneNumberPresent, fechaNacPresent, removeImage);
-
-        return ResponseEntity.ok(toResponse(updatedUser));
+        return updateUserWithFile(id, user, imageFile, removeImage, request);
     }
 
     @DeleteMapping("/{id}")

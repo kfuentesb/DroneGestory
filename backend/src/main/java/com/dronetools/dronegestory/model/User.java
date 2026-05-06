@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "app_user")
@@ -70,6 +71,9 @@ public class User implements UserDetails{
     @Column(name = "fecha_nac")
     @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
     private LocalDate fechaNac;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AutomaticMailPreference> mailPreferences;
 
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 //    private java.util.List<Operation> operations;

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import DetailsComponent from "../DetailsComponent";
+import {API_BASE_URL} from "../../../api";
 import { apiFetch } from "../../../api";
 import { userFields } from "./UserFields";
 import { useAuth } from "../../commons/hooks/useAuth";
@@ -7,13 +8,19 @@ import { useAuth } from "../../commons/hooks/useAuth";
 export default function UserDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { hasRole } = useAuth();
+    const { hasRole, id: currentUserId } = useAuth();
     const canManageUsers = hasRole("ADMIN") || hasRole("MANAGER");
+    const isSelf = currentUserId && String(currentUserId) === String(id);
 
     const handleDelete = async () => {
-        await apiFetch(`/api/users/${id}`, {
-            method: "DELETE"
-        });
+        if (currentUserId && String(currentUserId) === String(id)) {
+            alert("No puedes borrarte a ti mismo / You cannot delete yourself");
+            return;
+        }
+        console.log(currentUserId, id)
+        // await apiFetch(`/api/users/${id}`, {
+        //     method: "DELETE"
+        // });
 
         navigate("/users");
     };
@@ -145,12 +152,12 @@ export default function UserDetail() {
 
             <DetailsComponent
                 id={id}
-                endpoint={`/api/users`}
-                imageEndpoint={`/api/users/images`}
+                endpoint={`${API_BASE_URL}/api/users`} 
+                imageEndpoint={`${API_BASE_URL}/api/users/images`}
                 entityType="user"
                 fields={userFields}
                 allowEdit={canManageUsers}
-                allowDelete={canManageUsers}
+                allowDelete={canManageUsers && !isSelf}
                 onDelete={canManageUsers ? handleDelete : undefined}
                 validateForm={validateForm}
                 certificateSectionType="user"

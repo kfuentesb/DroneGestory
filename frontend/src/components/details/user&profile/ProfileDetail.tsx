@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DetailsComponent from "../DetailsComponent";
-import { apiFetch } from "../../../api";
+import { API_BASE_URL, apiFetch } from "../../../api";
 import { userFields } from "./UserFields";
 import { useAuth } from "../../commons/hooks/useAuth";
 import Forbidden from "../../main-elements-views/Forbidden";
@@ -69,8 +69,8 @@ export default function ProfileDetail() {
         <DetailsComponent
             id={meData.id.toString()}
             initialData={meData}
-            endpoint={`/api/users/self`}
-            imageEndpoint={`/api/users/images`}
+            endpoint={`${API_BASE_URL}/api/users`}
+            imageEndpoint={`${API_BASE_URL}/api/users/images`}
             entityType="user"
             fields={processedFields}
             allowEdit={true}
