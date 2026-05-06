@@ -81,7 +81,6 @@ export default function MailCenter() {
   const [expandedMailId, setExpandedMailId] = useState<number | null>(null);
 
 
-
   useEffect(() => {
     void loadData();
   }, []);
@@ -562,6 +561,7 @@ export default function MailCenter() {
               </div>
             </div>
           </section>
+          
         ) : (
           <section className="card border-0 shadow-lg" style={{ borderRadius: "20px" }}>
             <div className="card-header border-0 pt-4 px-4 text-white" style={{ background: "#059669" }}>
