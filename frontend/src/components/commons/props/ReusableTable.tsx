@@ -11,8 +11,15 @@ type ReusableTableProps<T> = {
   headers: TableHeader[];
   rows: T[];
   renderRow: (row: T) => React.ReactNode;
+  renderExpandedRow?: (row: T) => React.ReactNode;
+  isRowExpanded?: (row: T) => boolean;
+  expandedRowColSpan?: number;
+  expandedRowClassName?: (row: T) => string;
+  expandedRowStyle?: (row: T) => React.CSSProperties;
   emptyText?: string;
   onRowClick?: (row: T) => void;
+  onRowMouseEnter?: (row: T) => void;
+  onRowMouseLeave?: (row: T) => void;
   rowStyle?: (row: T) => React.CSSProperties;
   rowClassName?: (row: T) => string;
 };
@@ -21,8 +28,15 @@ export function ReusableTable<T>({
   headers,
   rows,
   renderRow,
+  renderExpandedRow,
+  isRowExpanded,
+  expandedRowColSpan,
+  expandedRowClassName,
+  expandedRowStyle,
   emptyText = "Sin datos.",
   onRowClick,
+  onRowMouseEnter,
+  onRowMouseLeave,
   rowStyle,
   rowClassName
 }: ReusableTableProps<T>) {
@@ -100,16 +114,32 @@ export function ReusableTable<T>({
             </tr>
           ) : (
             sortedRows.map((row, idx) => {
+              const rowKey = (row as any).id ?? idx;
               const customStyle = rowStyle ? rowStyle(row) : undefined;
               const customClass = rowClassName ? rowClassName(row) : undefined;
+              const expandedClass = expandedRowClassName ? expandedRowClassName(row) : undefined;
+              const expandedStyle = expandedRowStyle ? expandedRowStyle(row) : undefined;
+              const isExpanded = isRowExpanded ? isRowExpanded(row) : false;
+
               return (
-                <tr key={(row as any).id ?? idx}
-                  className={customClass}
-                  style={{ cursor: onRowClick ? "pointer" : "default", ...customStyle }}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                >
-                  {renderRow(row)}
-                </tr>
+                <React.Fragment key={rowKey}>
+                  <tr
+                    className={customClass}
+                    style={{ cursor: onRowClick ? "pointer" : "default", ...customStyle }}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    onMouseEnter={onRowMouseEnter ? () => onRowMouseEnter(row) : undefined}
+                    onMouseLeave={onRowMouseLeave ? () => onRowMouseLeave(row) : undefined}
+                  >
+                    {renderRow(row)}
+                  </tr>
+                  {renderExpandedRow && isExpanded && (
+                    <tr className={expandedClass} style={expandedStyle}>
+                      <td colSpan={expandedRowColSpan ?? headers.length}>
+                        {renderExpandedRow(row)}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })
           )}
