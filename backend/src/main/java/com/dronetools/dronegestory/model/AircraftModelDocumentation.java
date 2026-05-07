@@ -24,9 +24,13 @@ public class AircraftModelDocumentation extends BaseDocumentation {
     @JoinColumn(name = "aircraft_model_id", nullable = false)
     private AircraftModel aircraftModel;
 
+    @Transient
     public String getFolderPath() {
         if (aircraftModel == null) return null;
-        String safeModelName = aircraftModel.getModel().replaceAll(" ", "_");
+        String safeModelName = aircraftModel.getModel() != null 
+            ? aircraftModel.getModel().replaceAll(" ", "_") 
+            : "unknown";
+            
         return "aircraft-model/" + aircraftModel.getId() + "-" + safeModelName + "/documentation";
     }
 

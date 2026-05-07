@@ -322,9 +322,9 @@ export default function DetailsComponent(props: DetailsComponentProps) {
 
         const loadModelDefaults = async () => {
             try {
-                const safeModelName = data.model.replaceAll(" ", "_");
-            
-                const folderName = `${data.aircraftModelId}-${safeModelName}`;
+                const safeManufacturer = data.manufacturer.replaceAll(" ", "_");
+                const safeModel = data.model.replaceAll(" ", "_");
+                const folderName = `${safeManufacturer}-${safeModel}`;
 
                 const res = await fetch(`/api/aircraft-models/${folderName}/documentation`, {
                     headers: { Authorization: `Bearer ${token}` },
