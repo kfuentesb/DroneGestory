@@ -78,6 +78,7 @@ export default function MailCenter() {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
+  const [expandedMailId, setExpandedMailId] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -515,11 +516,27 @@ export default function MailCenter() {
               <p className="small mb-3 text-white-50">Auditoría completa de correos emitidos</p>
             </div>
             <div className="card-body p-4">
-              <div className="table-responsive">
+              <div className="table-responsive position-relative">
                 <ReusableTable
                   headers={headers}
                   rows={paginatedMails}
                   emptyText="No hay historial disponible."
+                  onRowClick={(mail) =>
+                    setExpandedMailId((current) => (current === mail.id ? null : mail.id))
+                  }
+                  isRowExpanded={(mail) => expandedMailId === mail.id}
+                  expandedRowColSpan={headers.length}
+                  renderExpandedRow={(mail) => (
+                    <div
+                      className="rounded-3 p-3"
+                      style={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0" }}
+                    >
+                      <div className="fw-bold text-dark mb-2">Cuerpo</div>
+                      <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                        {mail.text}
+                      </div>
+                    </div>
+                  )}
                   renderRow={(mail) => (
                     <>
                       <td className="small fw-bold text-muted">
