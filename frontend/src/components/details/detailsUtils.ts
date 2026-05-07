@@ -158,10 +158,24 @@ export const validateCertificateFile = (file: File): string | null => {
     return null;
 };
 
-export const getDocumentationFetchUrl = (context: "aircraft" | "model", id: string): string =>
-    context === "model"
-        ? `/api/aircraft-models/${id}/documentation`
-        : `/api/aircraft-documentation/aircraft/${id}`;
+// export const getDocumentationFetchUrl = (context: "aircraft" | "model", id: string): string =>
+//     context === "model"
+//         ? `/api/aircraft-models/${id}/documentation`
+//         : `/api/aircraft-documentation/aircraft/${id}`;
+
+export const getDocumentationFetchUrl = (
+    context: "aircraft" | "model", 
+    id: string, 
+    modelName?: string
+): string => {
+    if (context === "model") {
+        const folderName = modelName 
+            ? `${id}-${modelName.replaceAll(" ", "_")}` 
+            : id;
+        return `/api/aircraft-models/${folderName}/documentation`;
+    }
+    return `/api/aircraft-documentation/aircraft/${id}`;
+};
 
 export const typeColors: Record<string, { backgroundColor: string; color: string }> = {
     ADMIN: { backgroundColor: "#FEE2E2", color: "#991B1B" },

@@ -89,4 +89,18 @@ public class AircraftModelDocumentationController {
         }
         return null;
     }
+
+    @GetMapping("/{folderName}/documentation")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<AircraftModelDocumentationDTO>> getDocumentation(@PathVariable String folderName) {
+        try {
+            String idPart = folderName.split("-")[0];
+            Long aircraftModelId = Long.parseLong(idPart);
+            List<AircraftModelDocumentationDTO> docs = aircraftModelDocumentationService.findDtoByModelId(aircraftModelId);
+            
+            return ResponseEntity.ok(docs);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

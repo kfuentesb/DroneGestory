@@ -315,20 +315,18 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     }, [props.id, ui.isAircraft, ui.isModel, token]);
 
     useEffect(() => {
-        if (!ui.isAircraft) {
-            setAircraftModelDefaults([]);
-            return;
-        }
-
-        const aircraftModelId = data?.aircraftModelId;
-        if (!aircraftModelId) {
+        if (!ui.isAircraft || !data?.aircraftModelId || !data?.model) {
             setAircraftModelDefaults([]);
             return;
         }
 
         const loadModelDefaults = async () => {
             try {
-                const res = await fetch(`/api/aircraft-models/${aircraftModelId}/documentation`, {
+                const safeModelName = data.model.replaceAll(" ", "_");
+            
+                const folderName = `${data.aircraftModelId}-${safeModelName}`;
+
+                const res = await fetch(`/api/aircraft-models/${folderName}/documentation`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
