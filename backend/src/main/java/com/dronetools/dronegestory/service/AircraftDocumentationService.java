@@ -176,7 +176,7 @@ public class AircraftDocumentationService {
 
             String storedDocumentationName = null;
             if (documentationFile != null && !documentationFile.isEmpty()) {
-                storedDocumentationName = storeDocumentationFile(aircraft.getAircraftId(), documentationType, documentationFile);
+                storedDocumentationName = storeDocumentationFile(aircraft, documentationType, documentationFile);
             }
 
             boolean emptyDocumentation =
@@ -233,7 +233,7 @@ public class AircraftDocumentationService {
 
         if (file != null && !file.isEmpty()) {
             String oldName = documentation.getDocumentationName();
-            String storedName = storeDocumentationFile(documentation.getAircraft().getAircraftId(), documentationType, file);
+            String storedName = storeDocumentationFile(documentation.getAircraft(), documentationType, file);
             documentation.setDocumentationName(storedName);
             deleteStoredFile(documentation.getAircraft().getAircraftId(), previousDocumentationType, oldName);
         } else if (!Objects.equals(previousDocumentationType, documentationType)) {
@@ -241,13 +241,13 @@ public class AircraftDocumentationService {
         }
     }
 
-    private String storeDocumentationFile(Long aircraftId, String documentationType, MultipartFile file) {
+    private String storeDocumentationFile(Aircraft aircraft, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
             String safeTypeDir = safeTypeDir(documentationType);
 
             Path documentationTypeDir = uploadsDir.resolve(
-                    Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir)
+                    Paths.get("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir)
             ).normalize();
             Files.createDirectories(documentationTypeDir);
 
@@ -261,11 +261,13 @@ public class AircraftDocumentationService {
             String extension = dotIndex > 0 ? safeName.substring(dotIndex) : "";
             String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_-]", "_");
 
-            String filename = aircraftId + "-" + safeTypeDir + "-" + sanitizedBaseName + extension;
+            String filename = aircraft.getAircraftId() + "-" + safeTypeDir + "-" + sanitizedBaseName + extension;
             Path target = documentationTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return filename;
+            return Paths.get("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir, filename)
+                    .toString()
+                    .replace("\\", "/");
         } catch (IOException ex) {
             throw new RuntimeException("Error storing documentation file", ex);
         }
@@ -459,6 +461,17 @@ public class AircraftDocumentationService {
         if (normalized.contains("/")) {
             return normalized;
         }
+        String newRelativePath = aircraftRepository.findById(aircraftId)
+                .map(aircraft -> Paths.get("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir(documentationType), normalized)
+                        .toString()
+                        .replace("\\", "/"))
+                .orElseGet(() -> Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized)
+                        .toString()
+                        .replace("\\", "/"));
+        Path newPath = UploadPathUtils.uploadsRoot().resolve(newRelativePath).normalize();
+        if (Files.exists(newPath)) {
+            return newRelativePath;
+        }
         return Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized)
                 .toString()
                 .replace("\\", "/");
@@ -487,6 +500,10 @@ public class AircraftDocumentationService {
         return (documentationType == null || documentationType.isBlank())
                 ? "unknown"
                 : documentationType.replaceAll("[^a-zA-Z0-9_-]", "_");
+    }
+
+    private String aircraftFolder(Aircraft aircraft) {
+        return UploadPathUtils.entityFolder(aircraft.getAircraftId(), aircraft.getSerialNumber());
     }
 
     public Optional<AircraftDocumentationDTO> restoreToDefault(Long aircraftDocumentationId) {

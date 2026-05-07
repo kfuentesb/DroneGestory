@@ -17,6 +17,22 @@ public final class UploadPathUtils {
                 : value.replaceAll("[^a-zA-Z0-9_-]", "_");
     }
 
+    public static String entityFolder(Number id, String label) {
+        String safeLabel = safeSegment(label);
+        if (id == null) {
+            return safeLabel;
+        }
+        return id + "-" + safeLabel;
+    }
+
+    public static String aircraftModelFolder(String manufacturer, String model) {
+        return safeSegment(firstNonBlank(manufacturer, "manufacturer") + "-" + firstNonBlank(model, "model"));
+    }
+
+    public static String operationFolder(String codigo) {
+        return safeSegment(codigo);
+    }
+
     public static String aircraftDocumentationPath(Long aircraftId, String documentationType, String storedValue) {
         return resolveRelativePath(
                 storedValue,
@@ -89,6 +105,10 @@ public final class UploadPathUtils {
         }
 
         return parentPath.resolve(normalized).toString().replace("\\", "/");
+    }
+
+    private static String firstNonBlank(String primary, String fallback) {
+        return primary == null || primary.isBlank() ? fallback : primary;
     }
 
     private static void pruneEmptyParents(Path start, Path uploadsDir) throws IOException {

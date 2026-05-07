@@ -63,7 +63,7 @@ public class AircraftModelDocumentationService {
             LocalDate parsedExpireDate = parseExpireDate(expireDate);
             String storedDocumentationName = null;
             if (file != null && !file.isEmpty()) {
-                storedDocumentationName = storeDocumentationFile(aircraftModel.getId(), documentationType, file);
+                storedDocumentationName = storeDocumentationFile(aircraftModel, documentationType, file);
             }
 
             boolean emptyDocumentation = (storedDocumentationName == null || storedDocumentationName.isBlank())
@@ -115,7 +115,7 @@ public class AircraftModelDocumentationService {
                     if (file != null && !file.isEmpty()) {
                         deleteStoredFile(existing.getAircraftModel().getId(), previousDocumentationType, existing.getDocumentationName());
                         String storedDocumentationName = storeDocumentationFile(
-                                existing.getAircraftModel().getId(),
+                                existing.getAircraftModel(),
                                 existing.getDocumentationType(),
                                 file
                         );
@@ -200,7 +200,7 @@ public class AircraftModelDocumentationService {
 
             String storedDocumentationName = null;
             if (documentationFile != null && !documentationFile.isEmpty()) {
-                storedDocumentationName = storeDocumentationFile(aircraftModel.getId(), documentationType, documentationFile);
+                storedDocumentationName = storeDocumentationFile(aircraftModel, documentationType, documentationFile);
             }
 
             boolean emptyDocumentation =
@@ -230,13 +230,13 @@ public class AircraftModelDocumentationService {
         aircraftModelDocumentationRepository.deleteByAircraftModel_Id(modelId);
     }
 
-    private String storeDocumentationFile(Long modelId, String documentationType, MultipartFile file) {
+    private String storeDocumentationFile(AircraftModel aircraftModel, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
             String safeTypeDir = safeTypeDir(documentationType);
 
             Path documentationTypeDir = uploadsDir.resolve(
-                    Paths.get("aircraft-model", modelId.toString(), "documentation", safeTypeDir)
+                    Paths.get("aircraft-model", aircraftModelFolder(aircraftModel), "documentation", safeTypeDir)
             ).normalize();
             Files.createDirectories(documentationTypeDir);
 
@@ -250,11 +250,13 @@ public class AircraftModelDocumentationService {
             String extension = dotIndex > 0 ? safeName.substring(dotIndex) : "";
             String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_-]", "_");
 
-            String filename = modelId + "-" + safeTypeDir + "-" + sanitizedBaseName + extension;
+            String filename = aircraftModel.getId() + "-" + safeTypeDir + "-" + sanitizedBaseName + extension;
             Path target = documentationTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return filename;
+            return Paths.get("aircraft-model", aircraftModelFolder(aircraftModel), "documentation", safeTypeDir, filename)
+                    .toString()
+                    .replace("\\", "/");
         } catch (IOException ex) {
             throw new RuntimeException("Error storing model documentation file", ex);
         }
@@ -340,6 +342,17 @@ public class AircraftModelDocumentationService {
         if (normalized.contains("/")) {
             return normalized;
         }
+        String newRelativePath = aircraftModelRepository.findById(modelId)
+                .map(model -> Paths.get("aircraft-model", aircraftModelFolder(model), "documentation", safeTypeDir(documentationType), normalized)
+                        .toString()
+                        .replace("\\", "/"))
+                .orElseGet(() -> Paths.get("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized)
+                        .toString()
+                        .replace("\\", "/"));
+        Path newPath = UploadPathUtils.uploadsRoot().resolve(newRelativePath).normalize();
+        if (Files.exists(newPath)) {
+            return newRelativePath;
+        }
         return Paths.get("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized)
                 .toString()
                 .replace("\\", "/");
@@ -349,5 +362,9 @@ public class AircraftModelDocumentationService {
         return (documentationType == null || documentationType.isBlank())
                 ? "unknown"
                 : documentationType.replaceAll("[^a-zA-Z0-9_-]", "_");
+    }
+
+    private String aircraftModelFolder(AircraftModel model) {
+        return UploadPathUtils.aircraftModelFolder(model.getManufacturer(), model.getModel());
     }
 }

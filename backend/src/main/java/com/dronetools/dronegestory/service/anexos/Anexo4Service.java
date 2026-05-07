@@ -7,6 +7,7 @@ import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.service.AnexoServiceBase;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -217,6 +218,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
             MultipartFile imagenEspacioAereoFile,
             MultipartFile imagenZonaVueloFile
     ) throws IOException {
+        Operation operationForPath = operationRepository.findById(operationId)
+                .orElseThrow(() -> new RuntimeException("Operacion no encontrada " + operationId));
         if (conops != null) {
             Operation operation = operationRepository.findById(operationId)
                     .orElseThrow(() -> new RuntimeException("Operación no encontrada " + operationId));
@@ -229,7 +232,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         validateImageFile(imagenZonaVueloFile);
 
         // Prepare upload directory
-        Path anexoDir = Paths.get("uploads", "operations", operationId.toString(), "anexo4").toAbsolutePath().normalize();
+        Path anexoDir = Paths.get("uploads", "operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4").toAbsolutePath().normalize();
         Files.createDirectories(anexoDir);
 
         // Imagen espacio aéreo
@@ -244,7 +247,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenEspacioAereoFile.transferTo(target.toFile());
-            anexo4.setImagenEspacioAereo(filename);
+            anexo4.setImagenEspacioAereo(Paths.get("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename)
+                    .toString().replace("\\", "/"));
         }
 
         // Imagen zona vuelo
@@ -259,7 +263,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenZonaVueloFile.transferTo(target.toFile());
-            anexo4.setImagenZonaVuelo(filename);
+            anexo4.setImagenZonaVuelo(Paths.get("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename)
+                    .toString().replace("\\", "/"));
         }
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)

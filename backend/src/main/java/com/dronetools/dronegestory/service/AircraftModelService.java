@@ -202,14 +202,14 @@ public class AircraftModelService {
 
     private void handleImageUpload(AircraftModel model, MultipartFile imageFile) throws IOException {
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-        Path profileDir = uploadDir.resolve(Paths.get("aircraft-model", model.getId().toString(), "profile")).normalize();
+        Path profileDir = uploadDir.resolve(Paths.get("aircraft-model", aircraftModelFolder(model), "profile")).normalize();
         Files.createDirectories(profileDir);
 
         String filename = buildProfileFilename(model.getId(), imageFile.getOriginalFilename());
         Path target = profileDir.resolve(filename);
         imageFile.transferTo(target.toFile());
 
-        model.setImagePath(Paths.get("aircraft-model", model.getId().toString(), "profile", filename)
+        model.setImagePath(Paths.get("aircraft-model", aircraftModelFolder(model), "profile", filename)
                 .toString().replace("\\", "/"));
     }
 
@@ -239,5 +239,9 @@ public class AircraftModelService {
         int dot = safeName.lastIndexOf('.');
         String extension = dot >= 0 ? safeName.substring(dot) : "";
         return "aircraft_model_" + modelId + "_profile" + extension;
+    }
+
+    private String aircraftModelFolder(AircraftModel model) {
+        return UploadPathUtils.aircraftModelFolder(model.getManufacturer(), model.getModel());
     }
 }

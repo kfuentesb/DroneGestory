@@ -34,8 +34,8 @@ import java.util.regex.Matcher;
 @Service
 public class UserService {
     private static final Pattern PASSWORD_POLICY = Pattern.compile("^(?=.*\\d).{8,}$");
-    private static final Pattern USER_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:/.*)?$");
-    private static final Pattern USER_PROFILE_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)/profile(?:/.*)?$");
+    private static final Pattern USER_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:-[^/]+)?(?:/.*)?$");
+    private static final Pattern USER_PROFILE_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:-[^/]+)?/profile(?:/.*)?$");
 
     private final UserRepository userRepository;
     private final UserCertificateRepository userCertificateRepository;
@@ -152,7 +152,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        Path userBaseDir = Paths.get("uploads", "users", savedUser.getId().toString()).toAbsolutePath().normalize();
+        Path userBaseDir = Paths.get("uploads", "users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername())).toAbsolutePath().normalize();
         Path profileDir = userBaseDir.resolve("profile");
 
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -164,7 +164,8 @@ public class UserService {
             Files.createDirectories(profileDir);
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
-            savedUser.setImagePath(filename);
+            savedUser.setImagePath(Paths.get("users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()), "profile", filename)
+                    .toString().replace("\\", "/"));
         }
 
         return userRepository.save(savedUser);
@@ -179,7 +180,7 @@ public class UserService {
     ) throws IOException {
         User savedUser = createWithFile(user, imageFile);
 
-        Path certificatesBaseDir = Paths.get("uploads", "users", savedUser.getId().toString(), "certificates")
+        Path certificatesBaseDir = Paths.get("uploads", "users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()), "certificates")
                 .toAbsolutePath()
                 .normalize();
 
@@ -226,7 +227,15 @@ public class UserService {
                 Path target = certificateTypeDir.resolve(filename);
                 certificateFile.transferTo(target.toFile());
 
-                storedCertificateName = filename;
+                storedCertificateName = Paths.get(
+                                "users",
+                                UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()),
+                                "certificates",
+                                safeTypeDir,
+                                filename
+                        )
+                        .toString()
+                        .replace("\\", "/");
             }
 
             boolean emptyCertificate =
@@ -358,7 +367,7 @@ public class UserService {
 
         // --- GESTIÓN DE IMAGEN (Tu lógica actual se mantiene igual) ---
         Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-        Path profileDir = uploadDir.resolve(Paths.get("users", user.getId().toString(), "profile")).normalize();
+        Path profileDir = uploadDir.resolve(Paths.get("users", UploadPathUtils.entityFolder(user.getId(), user.getUsername()), "profile")).normalize();
         String oldImage = user.getImagePath();
 
         if (removeImage) {
@@ -379,7 +388,8 @@ public class UserService {
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
 
-            user.setImagePath(filename);
+            user.setImagePath(Paths.get("users", UploadPathUtils.entityFolder(user.getId(), user.getUsername()), "profile", filename)
+                    .toString().replace("\\", "/"));
         }
 
         return userRepository.save(user);

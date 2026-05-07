@@ -198,7 +198,13 @@ public class UserCertificateService {
             String safeTypeDir = UploadPathUtils.safeSegment(certificateType);
 
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            Path certificateTypeDir = uploadsDir.resolve(Paths.get("users", userId.toString(), "certificates", safeTypeDir)).normalize();
+            User user = resolveUser(userId);
+            Path certificateTypeDir = uploadsDir.resolve(Paths.get(
+                    "users",
+                    UploadPathUtils.entityFolder(user.getId(), user.getUsername()),
+                    "certificates",
+                    safeTypeDir
+            )).normalize();
             Files.createDirectories(certificateTypeDir);
 
             String originalName = file.getOriginalFilename();
@@ -212,7 +218,15 @@ public class UserCertificateService {
             Path target = certificateTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return filename;
+            return Paths.get(
+                            "users",
+                            UploadPathUtils.entityFolder(user.getId(), user.getUsername()),
+                            "certificates",
+                            safeTypeDir,
+                            filename
+                    )
+                    .toString()
+                    .replace("\\", "/");
         } catch (IOException ex) {
             throw new RuntimeException("Error storing certificate file", ex);
         }

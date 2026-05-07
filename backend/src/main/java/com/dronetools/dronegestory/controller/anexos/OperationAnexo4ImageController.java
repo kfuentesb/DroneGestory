@@ -43,8 +43,8 @@ public class OperationAnexo4ImageController {
             return ResponseEntity.badRequest().build();
         }
 
-        // Restrict to only Anexo4 paths (operations/{id}/anexo4/{file})
-        if (!filename.matches("operations/\\d+/anexo4/[^/]+")) {
+        // Restrict to only Anexo4 paths (operations/{id-or-code}/anexo4/{file})
+        if (!filename.matches("operations/[a-zA-Z0-9_-]+/anexo4/[^/]+")) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -87,7 +87,7 @@ public class OperationAnexo4ImageController {
         if (filename.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        if (!filename.matches("operations/\\d+/anexo4/[^/]+")) {
+        if (!filename.matches("operations/[a-zA-Z0-9_-]+/anexo4/[^/]+")) {
             return ResponseEntity.badRequest().build();
         }
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
@@ -119,7 +119,7 @@ public class OperationAnexo4ImageController {
         if (filename.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        if (!filename.matches("operations/\\d+/anexo4/[^/]+")) {
+        if (!filename.matches("operations/[a-zA-Z0-9_-]+/anexo4/[^/]+")) {
             return ResponseEntity.badRequest().build();
         }
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
