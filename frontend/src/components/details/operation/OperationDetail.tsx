@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
@@ -17,6 +18,7 @@ import {
 } from "../../operations/operation.utils";
 import { styles } from "../../../global-const/styles";
 import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
+import { OperationDetailPdf } from "../../pdf/OperationDetailPdf";
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -131,6 +133,22 @@ export default function OperationDetail() {
       { label: "Todos los anexos firmados", value: operation.todosAnexosFirmados ? "Sí" : "No" },
       { label: "Actualización", value: formatDateTime(operation.fechaActualizacion) },
     ];
+  }, [operation]);
+
+  const generatedAt = useMemo(
+    () => new Date().toLocaleString("es-ES"),
+    [operation?.idOperacion]
+  );
+
+  const pdfDocument = useMemo(() => {
+    if (!operation) return null;
+    return <OperationDetailPdf operation={operation} generatedAt={generatedAt} />;
+  }, [operation, generatedAt]);
+
+  const pdfFileName = useMemo(() => {
+    if (!operation) return "operacion.pdf";
+    const safeCode = operation.codigo ? operation.codigo.replace(/\s+/g, "_") : "operacion";
+    return `Operacion_${safeCode}_detalle.pdf`;
   }, [operation]);
 
   const handleComplete = async () => {
@@ -261,6 +279,24 @@ export default function OperationDetail() {
 
           {/* Action Buttons */}
           <div className="d-flex gap-2">
+            {pdfDocument && (
+              <PDFDownloadLink
+                document={pdfDocument}
+                fileName={pdfFileName}
+                className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
+                style={{
+                  backgroundColor: "#111827",
+                  color: "#FFFFFF",
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                  transform: isSticky ? 'scale(0.9)' : 'scale(1)'
+                }}
+              >
+                {({ loading }) => (
+                  <span>{loading ? "Generando..." : "Descargar PDF"}</span>
+                )}
+              </PDFDownloadLink>
+            )}
             {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
               <ButtonProp
                 className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
