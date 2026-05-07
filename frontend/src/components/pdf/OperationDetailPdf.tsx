@@ -49,7 +49,7 @@ export function OperationDetailPdf({ operation, generatedAt }: OperationDetailPd
           ];
 
           return (
-            <View key={anexo.tipoAnexo} style={pdfStyles.box}>
+            <View key={anexo.tipoAnexo} style={pdfStyles.box} wrap={false}>
               <Text style={{ fontWeight: "bold", marginBottom: 4 }}>{`Anexo ${anexo.tipoAnexo}`}</Text>
               <View style={pdfStyles.fieldRow}>
                 <Text style={pdfStyles.label}>Versión actual</Text>
