@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@svar-ui/react-filemanager": "^2.5.0",
     "chonky": "^2.3.2",
     "react": "^19.2.4",
