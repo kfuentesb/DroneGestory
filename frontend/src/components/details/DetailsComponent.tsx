@@ -315,18 +315,20 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     }, [props.id, ui.isAircraft, ui.isModel, token]);
 
     useEffect(() => {
-        if (!ui.isAircraft || !data?.aircraftModelId || !data?.model) {
+        if (!ui.isAircraft) {
+            setAircraftModelDefaults([]);
+            return;
+        }
+
+        const aircraftModelId = data?.aircraftModelId;
+        if (!aircraftModelId) {
             setAircraftModelDefaults([]);
             return;
         }
 
         const loadModelDefaults = async () => {
             try {
-                const safeManufacturer = data.manufacturer.replaceAll(" ", "_");
-                const safeModel = data.model.replaceAll(" ", "_");
-                const folderName = `${safeManufacturer}-${safeModel}`;
-
-                const res = await fetch(`/api/aircraft-models/${folderName}/documentation`, {
+                const res = await fetch(`/api/aircraft-models/${aircraftModelId}/documentation`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -999,8 +1001,9 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             const existing = existingByType.get(field.key);
             const shouldRestore = Boolean(aircraftDocumentationRestoreDefaults[field.fileKey]);
 
-            // CASO A: Restaurar default del modelo
             if (shouldRestore) {
+                desiredTypes.add(field.key);
+                
                 const url = existing
                     ? `/api/aircraft-documentation/${existing.id}/restore-default`
                     : `/api/aircraft-documentation/aircraft/${props.id}/restore-default?documentationType=${encodeURIComponent(field.key)}`;
@@ -1011,7 +1014,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                         headers: { Authorization: `Bearer ${token}` },
                     }).then(res => { if (!res.ok) throw new Error(`Error restaurando ${field.label}`); })
                 );
-                continue;
+                continue; // Saltamos al siguiente campo para no ejecutar el Caso C
             }
 
             // CASO B: Es un default del modelo y no hemos subido archivo nuevo -> No hacer nada
