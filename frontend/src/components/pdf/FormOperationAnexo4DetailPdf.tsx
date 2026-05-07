@@ -205,6 +205,15 @@ export function FormOperationAnexo4DetailPdf({
 }: FormOperationAnexo4DetailPdfProps) {
   const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
   const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
+  const selectedPersonnel = Array.isArray(formValues.selectedPersonnel)
+    ? formValues.selectedPersonnel
+        .map((person: any) => ({
+          id: Number(person?.id),
+          fullName: typeof person?.fullName === "string" ? person.fullName : "",
+          roles: Array.isArray(person?.roles) ? person.roles : [],
+        }))
+        .filter((person: { id: number; fullName: string }) => Number.isFinite(person.id) || person.fullName)
+    : [];
 
   const imagenEspacioAereoUrl = imageUrlFromFilename(formValues.imagenEspacioAereo);
   const imagenZonaVueloUrl = imageUrlFromFilename(formValues.imagenZonaVuelo);
@@ -218,7 +227,7 @@ export function FormOperationAnexo4DetailPdf({
           <Text style={styles.title}>
             APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
           </Text>
-          <Text>Operación ID: {operationId}{operationTitle ? ` — ${operationTitle}` : ""}</Text>
+          <Text>{operationTitle ? ` — ${operationTitle}` : ""}</Text>
         </View>
 
         {/* SECCIÓN 1 */}
@@ -242,21 +251,28 @@ export function FormOperationAnexo4DetailPdf({
         <View style={styles.fieldRow}>
           <Text style={styles.label}>Personal seleccionado</Text>
           <View style={styles.list}>
-            {selectedPersonnelIds.length === 0 ? (
-              <Text style={styles.listItem}>—</Text>
-            ) : (
-              selectedPersonnelIds.map((id) => {
-                const user = personnelOptions.find((u) => u.id === id);
-                const display = user
-                  ? `${user.firstName} ${user.lastName} (${(user.roles ?? []).join(", ")})`
-                  : `#${id}`;
-                return (
-                  <Text key={id} style={styles.listItem}>
-                    • {display}
+            {selectedPersonnel.length > 0
+              ? selectedPersonnel.map((person: { id: number; fullName: string; roles: string[] }) => (
+                  <Text key={person.id || person.fullName} style={styles.listItem}>
+                    • {person.fullName || "—"}
+                    {person.roles.length > 0 ? ` (${person.roles.join(", ")})` : ""}
                   </Text>
-                );
-              })
-            )}
+                ))
+              : selectedPersonnelIds.length === 0
+                ? (
+                  <Text style={styles.listItem}>—</Text>
+                )
+                : selectedPersonnelIds.map((id) => {
+                    const user = personnelOptions.find((u) => u.id === id);
+                    const display = user
+                      ? `${user.firstName} ${user.lastName} (${(user.roles ?? []).join(", ")})`
+                      : `#${id}`;
+                    return (
+                      <Text key={id} style={styles.listItem}>
+                        • {display}
+                      </Text>
+                    );
+                  })}
           </View>
         </View>
 

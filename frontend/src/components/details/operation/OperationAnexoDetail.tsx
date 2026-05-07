@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
@@ -51,6 +52,11 @@ import FormOperationAnexo6Detail from "../../forms/FormOperationAnexo6Detail";
 import FormOperationAnexo7Detail from "../../forms/FormOperationAnexo7Detail";
 import type { FormOperationAnexo7DetailRef } from "../../forms/FormOperationAnexo7Detail";
 import FormOperationAnexo8Detail from "../../forms/FormOperationAnexo8Detail";
+import { FormOperationAnexo4DetailPdf } from "../../pdf/FormOperationAnexo4DetailPdf";
+import { FormOperationAnexo5DetailPdf } from "../../pdf/FormOperationAnexo5DetailPdf";
+import { FormOperationAnexo6DetailPdf } from "../../pdf/FormOperationAnexo6DetailPdf";
+import { FormOperationAnexo7DetailPdf } from "../../pdf/FormOperationAnexo7DetailPdf";
+import { FormOperationAnexo8DetailPdf } from "../../pdf/FormOperationAnexo8DetailPdf";
 import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
 import { normalizeDateTimeLocal } from "../../commons/hooks/useAnexoForm";
 
@@ -149,6 +155,95 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
     return anexo.versiones.find((version) => version.id === selectedVersionId) ?? null;
   }, [anexo, selectedVersionId]);
+
+  const selectedAircraftLabel = useMemo(() => {
+    if (!selectedAircraftId) return "";
+    const match = anexoAircraftOptions.find((aircraft) => aircraft.id === selectedAircraftId);
+    return match ? getAircraftDisplayName(match) : `Aeronave ${selectedAircraftId}`;
+  }, [selectedAircraftId, anexoAircraftOptions]);
+
+  const derivedPersonnelOptions = useMemo(() => {
+    if (tipoAnexo !== 4 || !anexoData || !Array.isArray((anexoData as Anexo4Data).selectedPersonnel)) {
+      return [] as Array<{ id: number; firstName: string; lastName: string; roles: string[] }>;
+    }
+    return (anexoData as Anexo4Data).selectedPersonnel!.map((person) => ({
+      id: person.id,
+      firstName: person.fullName,
+      lastName: "",
+      roles: person.roles ?? [],
+    }));
+  }, [anexoData, tipoAnexo]);
+
+  const generatedAt = useMemo(
+    () => new Date().toLocaleString("es-ES"),
+    [operation?.idOperacion, tipoAnexo, selectedVersionId, selectedAircraftId, anexoData?.id]
+  );
+
+  const pdfDocument = useMemo(() => {
+    if (!operation) return null;
+    const formValues = anexoData ?? {};
+    switch (tipoAnexo) {
+      case 4:
+        return (
+          <FormOperationAnexo4DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={formValues as Record<string, any>}
+            aircraftOptions={[]}
+            personnelOptions={derivedPersonnelOptions}
+            generatedAt={generatedAt}
+          />
+        );
+      case 5:
+        return (
+          <FormOperationAnexo5DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={formValues as Record<string, any>}
+            generatedAt={generatedAt}
+          />
+        );
+      case 6:
+        return (
+          <FormOperationAnexo6DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={formValues as Record<string, any>}
+            aircraftLabel={selectedAircraftLabel}
+            generatedAt={generatedAt}
+          />
+        );
+      case 7:
+        return (
+          <FormOperationAnexo7DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={formValues as Record<string, any>}
+            aircraftLabel={selectedAircraftLabel}
+            generatedAt={generatedAt}
+          />
+        );
+      case 8:
+        return (
+          <FormOperationAnexo8DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={formValues as Record<string, any>}
+            generatedAt={generatedAt}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [operation, anexoData, tipoAnexo, derivedPersonnelOptions, selectedAircraftLabel, generatedAt]);
+
+  const pdfFileName = useMemo(() => {
+    if (!operation) return `anexo-${tipoAnexo}.pdf`;
+    const safeCode = operation.codigo ? operation.codigo.replace(/\s+/g, "_") : "operacion";
+    const versionSuffix = selectedVersion ? `_v${selectedVersion.numeroVersion}` : "";
+    const aircraftSuffix = selectedAircraftId ? `_aircraft_${selectedAircraftId}` : "";
+    return `Operacion_${safeCode}_Anexo${tipoAnexo}${versionSuffix}${aircraftSuffix}.pdf`;
+  }, [operation, tipoAnexo, selectedVersion, selectedAircraftId]);
 
   const isViewingHistoricalVersion = selectedVersion !== null;
   const requiresAircraftSelection = tipoAnexo === 6 || tipoAnexo === 7;
@@ -640,6 +735,21 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           </div>
 
           <div className="d-flex gap-2">
+            {pdfDocument && (
+              <PDFDownloadLink
+                document={pdfDocument}
+                fileName={pdfFileName}
+                className="btn btn-sm px-2 px-md-3 d-inline-flex align-items-center justify-content-center gap-2"
+                style={{
+                  backgroundColor: "#111827",
+                  color: "#FFFFFF",
+                  fontWeight: "600",
+                  textDecoration: "none",
+                }}
+              >
+                {({ loading }) => <span>{loading ? "Generando..." : "Descargar PDF"}</span>}
+              </PDFDownloadLink>
+            )}
             <ButtonProp
               className="btn btn-sm px-2 px-md-3 d-inline-flex align-items-center justify-content-center gap-2"
               style={
