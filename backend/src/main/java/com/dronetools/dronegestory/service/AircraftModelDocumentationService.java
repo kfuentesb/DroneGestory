@@ -353,6 +353,21 @@ public class AircraftModelDocumentationService {
         if (Files.exists(newPath)) {
             return newRelativePath;
         }
+        String legacyNamedRelativePath = aircraftModelRepository.findById(modelId)
+                .map(model -> Paths.get(
+                                "aircraft-model",
+                                UploadPathUtils.legacyAircraftModelFolder(model.getManufacturer(), model.getModel()),
+                                "documentation",
+                                safeTypeDir(documentationType),
+                                normalized
+                        )
+                        .toString()
+                        .replace("\\", "/"))
+                .orElse(null);
+        if (legacyNamedRelativePath != null
+                && Files.exists(UploadPathUtils.uploadsRoot().resolve(legacyNamedRelativePath).normalize())) {
+            return legacyNamedRelativePath;
+        }
         return Paths.get("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized)
                 .toString()
                 .replace("\\", "/");

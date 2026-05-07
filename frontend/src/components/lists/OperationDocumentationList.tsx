@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState, type FormEvent } f
 import { apiFetch } from "../../api";
 import { useAuth } from "../commons/hooks/useAuth";
 import LoadingSpinner from "../commons/Loading";
+import Pagination from "../commons/props/Pagination";
 
 type DocumentVersion = {
     id: number;
@@ -89,6 +90,15 @@ export default function OperationDocumentationList() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<number | null>(null);
+
+    // const filteredOperationDocumentation = useSearchFilter(aircrafts, search, (a) => [
+    //     a.manufacturer ?? "",
+    //     a.model ?? "",
+    //     a.serialNumber ?? "",
+    //     a.aircraftClass,
+    //     a.config,
+    //     a.fechaFab ?? "",
+    // ]);
 
     const loadDocumentations = useCallback(async () => {
         setLoading(true);
@@ -421,6 +431,12 @@ export default function OperationDocumentationList() {
                         </div>
                     )}
                 </div>
+                {/* <Pagination
+                    totalItems={filteredOperationDocumentation.length}
+                    currentPage={currentPage}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    onPageChange={setCurrentPage}
+                /> */}
             </div>
 
             {form && canManage && (

@@ -26,7 +26,15 @@ public final class UploadPathUtils {
     }
 
     public static String aircraftModelFolder(String manufacturer, String model) {
+        return safeSegment(firstNonBlank(model, "model") + "-" + firstNonBlank(manufacturer, "manufacturer"));
+    }
+
+    public static String legacyAircraftModelFolder(String manufacturer, String model) {
         return safeSegment(firstNonBlank(manufacturer, "manufacturer") + "-" + firstNonBlank(model, "model"));
+    }
+
+    public static String aircraftFolder(String serialNumber, String model) {
+        return safeSegment(firstNonBlank(serialNumber, "nserie") + "-" + firstNonBlank(model, "model"));
     }
 
     public static String operationFolder(String codigo) {

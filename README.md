@@ -101,14 +101,14 @@ VISUAL<br>
 -Conseguir recursos como el fondo de la página oficial (https://dronetools.es/), se difumina y es asi como de mapa de altura de terrenos <br>
 
 -GENERALES<br>
--Añadir paginacion al historial de correos y a documentacion de operaciones<br>
-
 
 -USUARIO<br>
 -Un usuario cualquiera puede manipular certificados de otros manipulando los fetchs. Añadir extra seguridad<br>
+-Borrado de numero de teléfono no funciona<br>
 
 -DRONES<br>
 -Cuando se actualiza una documentación de una aeronave, no se actualiza automáticamente, es necesario presionar restaurar, si o si<br>
+-Quitar del registro de configuración el duplciado de híbrido<br>
 
 -HORAS DE VUELO<br>
 
@@ -133,6 +133,11 @@ MIGRACION
 
 server
 docker exec -i dronegestory-db psql -U admin -d aeronaves_db < backend/database/migrations/V2026_04_22_001__user_multi_roles.sql
+docker exec -i dronegestory-db psql -U admin -d aeronaves_db < backend/database/migrations/V2026_05_07_001__aircraft_upload_paths_model_first.sql
+
+Rutas de uploads de aeronaves y modelos:
+- Modelos de aeronave: `uploads/aircraft-model/{model-manufacturer}/...`
+- Aeronaves: `uploads/aircraft/{nserie-model}/...`
 
 TRUNCATE TABLE 
     app_user, 

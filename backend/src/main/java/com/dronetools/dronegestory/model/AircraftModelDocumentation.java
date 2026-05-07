@@ -27,11 +27,12 @@ public class AircraftModelDocumentation extends BaseDocumentation {
     @Transient
     public String getFolderPath() {
         if (aircraftModel == null) return null;
-        String safeModelName = aircraftModel.getModel() != null 
-            ? aircraftModel.getModel().replaceAll(" ", "_") 
-            : "unknown";
-            
-        return "aircraft-model/" + aircraftModel.getId() + "-" + safeModelName + "/documentation";
+        return "aircraft-model/"
+                + com.dronetools.dronegestory.util.UploadPathUtils.aircraftModelFolder(
+                        aircraftModel.getManufacturer(),
+                        aircraftModel.getModel()
+                )
+                + "/documentation";
     }
 
 }

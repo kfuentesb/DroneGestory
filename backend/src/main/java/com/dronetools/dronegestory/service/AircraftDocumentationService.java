@@ -472,6 +472,21 @@ public class AircraftDocumentationService {
         if (Files.exists(newPath)) {
             return newRelativePath;
         }
+        Optional<Aircraft> aircraft = aircraftRepository.findById(aircraftId);
+        if (aircraft.isPresent()) {
+            String legacyNamedRelativePath = Paths.get(
+                            "aircraft",
+                            UploadPathUtils.entityFolder(aircraftId, aircraft.get().getSerialNumber()),
+                            "documentation",
+                            safeTypeDir(documentationType),
+                            normalized
+                    )
+                    .toString()
+                    .replace("\\", "/");
+            if (Files.exists(UploadPathUtils.uploadsRoot().resolve(legacyNamedRelativePath).normalize())) {
+                return legacyNamedRelativePath;
+            }
+        }
         return Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized)
                 .toString()
                 .replace("\\", "/");
@@ -484,6 +499,33 @@ public class AircraftDocumentationService {
         String normalized = documentationName.replace("\\", "/");
         if (normalized.contains("/")) {
             return normalized;
+        }
+        String newRelativePath = Paths.get(
+                        "aircraft-model",
+                        aircraftModelFolder(modelDocumentation.getAircraftModel()),
+                        "documentation",
+                        safeTypeDir(modelDocumentation.getDocumentationType()),
+                        normalized
+                )
+                .toString()
+                .replace("\\", "/");
+        if (Files.exists(UploadPathUtils.uploadsRoot().resolve(newRelativePath).normalize())) {
+            return newRelativePath;
+        }
+        String legacyNamedRelativePath = Paths.get(
+                        "aircraft-model",
+                        UploadPathUtils.legacyAircraftModelFolder(
+                                modelDocumentation.getAircraftModel().getManufacturer(),
+                                modelDocumentation.getAircraftModel().getModel()
+                        ),
+                        "documentation",
+                        safeTypeDir(modelDocumentation.getDocumentationType()),
+                        normalized
+                )
+                .toString()
+                .replace("\\", "/");
+        if (Files.exists(UploadPathUtils.uploadsRoot().resolve(legacyNamedRelativePath).normalize())) {
+            return legacyNamedRelativePath;
         }
         return Paths.get(
                         "aircraft-model",
@@ -503,7 +545,12 @@ public class AircraftDocumentationService {
     }
 
     private String aircraftFolder(Aircraft aircraft) {
-        return UploadPathUtils.entityFolder(aircraft.getAircraftId(), aircraft.getSerialNumber());
+        String modelName = aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel();
+        return UploadPathUtils.aircraftFolder(aircraft.getSerialNumber(), modelName);
+    }
+
+    private String aircraftModelFolder(com.dronetools.dronegestory.model.AircraftModel model) {
+        return UploadPathUtils.aircraftModelFolder(model.getManufacturer(), model.getModel());
     }
 
     public Optional<AircraftDocumentationDTO> restoreToDefault(Long aircraftDocumentationId) {

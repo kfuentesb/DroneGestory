@@ -246,11 +246,23 @@ public class FileActionService {
     }
 
     private String aircraftDocumentationPath(AircraftDocumentation documentation) {
-        return UploadPathUtils.aircraftDocumentationPath(
-                documentation.getAircraft().getAircraftId(),
-                documentation.getDocumentationType(),
-                documentation.getDocumentationName()
-        );
+        String storedValue = documentation.getDocumentationName();
+        if (storedValue == null || storedValue.isBlank()) {
+            return null;
+        }
+        String normalized = clean(storedValue);
+        if (normalized.contains("/")) {
+            return normalized;
+        }
+        return Paths.get(
+                        "aircraft",
+                        aircraftFolder(documentation.getAircraft()),
+                        "documentation",
+                        UploadPathUtils.safeSegment(documentation.getDocumentationType()),
+                        normalized
+                )
+                .toString()
+                .replace("\\", "/");
     }
 
     private String aircraftModelProfilePath(AircraftModel model) {
@@ -258,11 +270,23 @@ public class FileActionService {
     }
 
     private String aircraftModelDocumentationPath(AircraftModelDocumentation documentation) {
-        return UploadPathUtils.aircraftModelDocumentationPath(
-                documentation.getAircraftModel().getId(),
-                documentation.getDocumentationType(),
-                documentation.getDocumentationName()
-        );
+        String storedValue = documentation.getDocumentationName();
+        if (storedValue == null || storedValue.isBlank()) {
+            return null;
+        }
+        String normalized = clean(storedValue);
+        if (normalized.contains("/")) {
+            return normalized;
+        }
+        return Paths.get(
+                        "aircraft-model",
+                        aircraftModelFolder(documentation.getAircraftModel()),
+                        "documentation",
+                        UploadPathUtils.safeSegment(documentation.getDocumentationType()),
+                        normalized
+                )
+                .toString()
+                .replace("\\", "/");
     }
 
     private String operationAnexo4Path(Anexo4 anexo4, String storedValue) {
@@ -285,7 +309,8 @@ public class FileActionService {
     }
 
     private String aircraftFolder(Aircraft aircraft) {
-        return UploadPathUtils.entityFolder(aircraft.getAircraftId(), aircraft.getSerialNumber());
+        String modelName = aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel();
+        return UploadPathUtils.aircraftFolder(aircraft.getSerialNumber(), modelName);
     }
 
     private String aircraftModelFolder(AircraftModel model) {

@@ -170,7 +170,8 @@ public class AircraftService {
     }
 
     private String aircraftFolder(Aircraft aircraft) {
-        return UploadPathUtils.entityFolder(aircraft.getAircraftId(), aircraft.getSerialNumber());
+        String modelName = aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel();
+        return UploadPathUtils.aircraftFolder(aircraft.getSerialNumber(), modelName);
     }
 
     @Transactional
