@@ -55,7 +55,7 @@ export function FormOperationAnexo7DetailPdf({
         <View key={item.key} style={pdfStyles.tr}>
           <Text style={pdfStyles.td}>{`${item.num}. ${item.title}`}</Text>
           <Text style={pdfStyles.td}>{boolLabel(formValues[item.key])}</Text>
-          <Text style={pdfStyles.tdLast}>{textValue(formValues[item.obsKey])}</Text>
+          <Text style={pdfStyles.tdLastObservaciones}>{textValue(formValues[item.obsKey])}</Text>
         </View>
       ))}
     </View>

@@ -47,7 +47,8 @@ export const pdfStyles = StyleSheet.create({
   thLast: { flex: 1, padding: 6, fontWeight: "bold" },
   tr: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#DDD" },
   td: { flex: 1, padding: 6, borderRightWidth: 1, borderRightColor: "#DDD" },
-  tdLast: { flex: 1, padding: 6, wordBreak: "break-word", fontSize: 8},
+  tdLast: { flex: 1, padding: 6, wordBreak: "break-word"},
+  tdLastObservaciones: { flex: 1, padding: 6, wordBreak: "break-word", fontSize: 9},
 
   // Estilos tabla 4 columnas (Anexo 7)
   table4Col: { 

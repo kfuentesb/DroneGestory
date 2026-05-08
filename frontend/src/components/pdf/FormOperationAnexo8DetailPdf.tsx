@@ -96,20 +96,22 @@ export function FormOperationAnexo8DetailPdf({
       <Page size="A4" style={pdfStyles.page} wrap>
         <View style={pdfStyles.header}>
           <Text style={pdfStyles.title}>APÉNDICE 8 - LISTA VERIFICACIÓN POSVUELO OPERACIONAL</Text>
-          <Text>
-            Operación ID: {operationId}
-            {operationTitle ? ` — ${operationTitle}` : ""}
+          <Text style={{marginTop: 12}}>
+            {operationTitle ? `${operationTitle}` : ""}
           </Text>
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>CONOPS</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.nombreConops ?? formValues.conops)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Fecha operación</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.fechaOp)}</Text>
+        <View style={pdfStyles.summaryGrid}>
+          {[
+            { label: "CONOPS", value: textValue(formValues.nombreConops ?? formValues.conops) },
+            { label: "Fecha operación", value: textValue(formValues.fechaOp) }
+          ].map((item) => (
+            <View key={item.label} style={pdfStyles.summaryCell}>
+              <Text style={pdfStyles.summaryLabel}>{item.label}</Text>
+              <Text style={pdfStyles.summaryValue}>{item.value}</Text>
+            </View>
+          ))}
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 1: Condiciones y limitaciones de zonas geográficas de UAS</Text>
