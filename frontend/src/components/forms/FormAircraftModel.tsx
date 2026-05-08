@@ -46,10 +46,24 @@ export default function FormAircraftModel() {
   const [touched, setTouched] = useState({ manufacturer: false, model: false });
 
   const backgroundBorderInputsSelect = {
-    control: (provided: any) => ({
+    control: (provided: any, state: any) => ({
       ...provided,
-      backgroundColor: "#F3F4F6",
+      backgroundColor: state.isDisabled ? "#E5E7EB" : "#F3F4F6", 
       borderColor: "#D1D5DB",
+      cursor: state.isDisabled ? "not-allowed" : "default",
+      opacity: 1, 
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: state.isDisabled ? "#D1D5DB" : "#9CA3AF",
+      }
+    }),
+    placeholder: (provided: any, state: any) => ({
+      ...provided,
+      color: state.isDisabled ? "#9CA3AF" : "#6B7280",
+    }),
+    singleValue: (provided: any, state: any) => ({
+      ...provided,
+      color: state.isDisabled ? "#6B7280" : "inherit",
     }),
   };
 
@@ -251,7 +265,7 @@ export default function FormAircraftModel() {
 
   return (
     <div className="container py-4">
-      <div className="card shadow-sm position-relative" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
+      <div className="card shadow-sm position-relative" style={{ border: "1px solid #E5E7EB", borderRadius: "8px", backgroundColor: "#ffffff"}}>
         <button 
           className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0 ms-3" 
           onClick={() => navigate(returnTo)}
@@ -264,7 +278,7 @@ export default function FormAircraftModel() {
             <span className="ms-2 fw-medium text-muted" style={{ fontSize: '0.9rem' }}/>
         </button>
 
-        <div className="card-body pt-5">
+        <div className="card-body pt-5" style={{backgroundColor: "#ffffff"}}>
           <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
             Registrar modelo
           </h2>
@@ -424,7 +438,6 @@ export default function FormAircraftModel() {
                 </div>
 
                 <div className="row mb-3">
-                  <div className="row mb-3">
                     <div className="col-12 col-md mb-3 mb-md-0">
                       <label className="form-label d-block text-start ps-1">Fuente de potencia</label>
                       <Select
@@ -452,7 +465,6 @@ export default function FormAircraftModel() {
                         isDisabled={defaultValues.powerSourceDefault?.value !== "NON_ELECTRIC"}
                       />
                     </div>
-                  </div>
                 </div>
 
                 <div className="row mb-3">
