@@ -137,8 +137,7 @@ export function FormOperationAnexo6DetailPdf({
         <View style={pdfStyles.header}>
           <Text style={pdfStyles.title}>APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</Text>
           <Text>
-            Operación ID: {operationId}
-            {operationTitle ? ` — ${operationTitle}` : ""}
+            {operationTitle ? ` ${operationTitle}` : ""}
           </Text>
         </View>
 
