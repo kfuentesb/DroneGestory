@@ -174,11 +174,13 @@ export default function UserCertificatesSection({
                                 isIndefinite={activeChecks.indefiniteA2}
                                 onToggleIndefinite={() => onToggleCheck("indefiniteA2")}
                             />
-                        </div>
+                        </div>
+
+
                         <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                             <div className="d-flex align-items-center mb-3">
                                 <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                    Categoria especifica escenarios estandar
+                                    Categoria específica escenarios estandar
                                 </h6>
                                 <InfoBadge text={infoText} />
                             </div>
@@ -203,7 +205,7 @@ export default function UserCertificatesSection({
                         <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                             <div className="d-flex align-items-center mb-3">
                                 <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                    Categoria especifica bajo autorizacion
+                                    Categoria específica bajo autorizacion
                                 </h6>
                                 <InfoBadge text={"info"} />
                             </div>
@@ -244,7 +246,7 @@ export default function UserCertificatesSection({
                             <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                                 <div className="d-flex align-items-center mb-3">
                                     <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                        Formaciones especifica Concepto de Operaciones (ConOps)
+                                        Formaciones específica Concepto de Operaciones (ConOps)
                                     </h6>
                                 </div>
 
@@ -254,7 +256,7 @@ export default function UserCertificatesSection({
                                         value={currentSelection}
                                         onChange={(e) => onCurrentSelectionChange(e.target.value)}
                                     >
-                                        <option value="">Seleccionar formacion especifica...</option>
+                                        <option value="">Seleccionar formacion específica...</option>
                                         {conopsCategories
                                             .filter((cat) => !selectedCategories.includes(cat.id))
                                             .map((cat) => (
@@ -264,7 +266,7 @@ export default function UserCertificatesSection({
                                             ))}
                                     </select>
                                     <button type="button" className="btn btn-success" onClick={onAddCategory} disabled={!currentSelection}>
-                                        Anadir
+                                        Añadir
                                     </button>
                                 </div>
 
@@ -438,7 +440,7 @@ export function UserCertificatesSummarySection({ items }: { items: CertificateSu
                         {item.dateIndefinite ? (
                         <span className="badge bg-info text-dark fw-normal">Indefinida</span>
                         ) : (
-                        <span className="text-secondary">{item.expireDate || "No especificada"}</span>
+                        <span className="text-secondary">{item.expireDate || "No específicada"}</span>
                         )}
                     </td>
                     </tr>

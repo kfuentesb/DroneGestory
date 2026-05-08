@@ -42,7 +42,7 @@ export default function ProfileDetail() {
 
     useEffect(() => {
 
-        if (!token) return;// esto me resolvio el bug de cerrar sesion siendo piloto en una vista con fetch
+        if (!token) return;// esto me resolvio el bug de cerrar sesión siendo piloto en una vista con fetch
 
     apiFetch(`/api/users/me`)
             .then(res => {

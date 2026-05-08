@@ -108,8 +108,6 @@ VISUAL<br>
 -Borrado de numero de teléfono no funciona<br>
 
 -DRONES<br>
--Cuando se actualiza una documentación de una aeronave, no se actualiza automáticamente, es necesario presionar restaurar, si o si<br>
--Quitar del registro de configuración el duplciado de híbrido<br>
 
 -HORAS DE VUELO<br>
 

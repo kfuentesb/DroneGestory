@@ -140,7 +140,7 @@ export default function UserDetail() {
                                             <li><button className="dropdown-item py-2">Desactivar cuenta</button></li>
                                             <li><button className="dropdown-item py-2">Enviar recordatorio</button></li>
                                             <li><hr className="dropdown-divider" /></li>
-                                            <li><button className="dropdown-item py-2 text-danger font-weight-bold">Forzar cierre sesion</button></li>
+                                            <li><button className="dropdown-item py-2 text-danger font-weight-bold">Forzar cierre sesión</button></li>
                                         </ul>
                                     </div>
                                 </div>

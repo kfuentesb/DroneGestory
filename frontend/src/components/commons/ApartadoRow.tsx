@@ -29,14 +29,14 @@ export type SectionItem = {
 
 /** Default boolean options used by most Anexo forms */
 export const BOOL_OPTIONS_DEFAULT = [
-  { value: "", label: "Sin especificar" },
+  { value: "", label: "Sin específicar" },
   { value: "true", label: "Sí" },
   { value: "false", label: "No" },
 ];
 
 /** Utility to create customizable boolean option labels */
 export function getBoolOptions({
-  unspecified = "Sin especificar",
+  unspecified = "Sin específicar",
   yes = "Sí",
   no = "No",
 }: {

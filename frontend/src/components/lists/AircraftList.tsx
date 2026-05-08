@@ -93,11 +93,11 @@ export default function AircraftList() {
     { label: "Nº Serie", key: "serialNumber", sortable: true },
     { label: "Clase", key: "aircraftClass", sortable: true },
     { label: "MTOM", key: "mtom", sortable: true },
-    { label: "Dimension", key: "wingspan", sortable: true },
+    { label: "Dimensión", key: "wingspan", sortable: true },
     { label: "Velocidad", key: "maxSpeed", sortable: true },
-    { label: "Configuracion", key: "config", sortable: true },
+    { label: "Configuración", key: "config", sortable: true },
     { label: "Energia impacto", key: "impactEnergy", sortable: true },
-    { label: "Fecha fabricacion", key: "fechaFab", sortable: true },
+    { label: "Fecha fabricación", key: "fechaFab", sortable: true },
     { label: "Camara", key: "hasCamera", sortable: true },
   ];
 

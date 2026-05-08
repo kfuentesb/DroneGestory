@@ -13,7 +13,6 @@ export const configs = [
     { value: "Avion", label: "Avión" },
     { value: "Multirrotor", label: "Multirrotor" },
     { value: "Helicoptero", label: "Helicóptero" },
-    { value: "Hibrido", label: "Híbrido" },
     { value: "Ligero", label: "Ligero" },
     { value: "Otro", label: "Otro" }
 ];

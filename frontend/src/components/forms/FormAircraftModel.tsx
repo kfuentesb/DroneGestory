@@ -335,7 +335,7 @@ export default function FormAircraftModel() {
                     />
                   </div>
                   <div className="col-12 col-md">
-                    <label className="form-label d-block text-start ps-1">Dimension por defecto (m)</label>
+                    <label className="form-label d-block text-start ps-1">Dimensión por defecto (m)</label>
                     <input
                       type="number"
                       className="form-control"
@@ -363,11 +363,11 @@ export default function FormAircraftModel() {
                     />
                   </div>
                   <div className="col-12 col-md mb-3 mb-md-0">
-                    <label className="form-label d-block text-start ps-1">Configuracion</label>
+                    <label className="form-label d-block text-start ps-1">Configuración</label>
                     <Select
                       options={configs}
                       styles={backgroundBorderInputsSelect}
-                      placeholder="Seleccione configuracion"
+                      placeholder="Seleccione configuración"
                       value={defaultValues.configDefault}
                       onChange={(value) => setDefaultValues((prev) => ({ ...prev, configDefault: value }))}
                       isClearable
@@ -400,7 +400,7 @@ export default function FormAircraftModel() {
                     />
                   </div>
                   <div className="col-12 col-md mb-3 mb-md-0">
-                    <label className="form-label d-block text-start ps-1">Construccion privada por defecto</label>
+                    <label className="form-label d-block text-start ps-1">Construcción privada por defecto</label>
                     <Select
                       options={yesNoOptions}
                       styles={backgroundBorderInputsSelect}
@@ -411,7 +411,7 @@ export default function FormAircraftModel() {
                     />
                   </div>
                   <div className="col-12 col-md">
-                    <label className="form-label d-block text-start ps-1">Paracaidas por defecto</label>
+                    <label className="form-label d-block text-start ps-1">Paracaídas por defecto</label>
                     <Select
                       options={yesNoOptions}
                       styles={backgroundBorderInputsSelect}

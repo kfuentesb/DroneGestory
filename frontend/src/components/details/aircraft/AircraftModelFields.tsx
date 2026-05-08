@@ -35,7 +35,7 @@ export const aircraftModelFields: FieldConfig[] = [
   },
   {
     key: "wingspanDefault",
-    label: "Dimension (valor por defecto, m)",
+    label: "Dimensión (valor por defecto, m)",
     type: "number",
     validate: (val: any) => {
       if (val === null || val === undefined || String(val).trim() === "") return true;
@@ -56,7 +56,7 @@ export const aircraftModelFields: FieldConfig[] = [
     error: `Maximo permitido: ${LIMITS.MAX_SPEED} km/h`,
   },
   {
-    label: "Configuracion (valor por defecto)",
+    label: "Configuración (valor por defecto)",
     key: "configDefault",
     type: "select",
     options: configs.map((opt) => opt.value),
@@ -80,29 +80,29 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No especificado";
+      return "No específicado";
     },
   },
   {
-    label: "Construccion privada (valor por defecto)",
+    label: "Construcción privada (valor por defecto)",
     key: "privatelyBuiltDefault",
     type: "select",
     options: ["Si", "No"],
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No especificado";
+      return "No específicado";
     },
   },
   {
-    label: "Paracaidas (valor por defecto)",
+    label: "Paracaídas (valor por defecto)",
     key: "hasParachuteDefault",
     type: "select",
     options: ["Si", "No"],
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No especificado";
+      return "No específicado";
     },
   },
   // {
@@ -113,7 +113,7 @@ export const aircraftModelFields: FieldConfig[] = [
   //   format: (v: any) => {
   //     if (v === true) return "Si";
   //     if (v === false) return "No";
-  //     return "No especificado";
+  //     return "No específicado";
   //   },
   // },
   {
@@ -124,7 +124,7 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No especificado";
+      return "No específicado";
     },
   },
   {
@@ -135,7 +135,7 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === "HYBRID_VTOL") return "Híbrido/VTOL";
       if (v === "NON_HYBRID") return "No Híbrido";
-      return v ? String(v) : "No especificado";
+      return v ? String(v) : "No específicado";
     },
   },
   {
@@ -147,7 +147,7 @@ export const aircraftModelFields: FieldConfig[] = [
       if (v === "HYDROGEN") return "Hidrógeno";
       if (v === "GASOLINE") return "Gasolina";
       if (v === "OTHERS") return "Otros";
-      return v ? String(v) : "No especificado";
+      return v ? String(v) : "No específicado";
     },
   },
   {
@@ -156,7 +156,7 @@ export const aircraftModelFields: FieldConfig[] = [
     type: "select",
     options: ["Si", "No", "Opcional"],
     format: (v: any) => {
-      if (v === null || v === undefined || v === "") return "No especificado";
+      if (v === null || v === undefined || v === "") return "No específicado";
       const val = String(v).toUpperCase();
       if (val === "YES" || val === "SI" || val === "SÍ") return "Si";
       if (val === "NO") return "No";

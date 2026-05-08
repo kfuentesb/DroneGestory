@@ -103,7 +103,7 @@ function LogIn() {
                 fontWeight: "500",
               }}
             >
-              {loading ? "Cargando..." : "Iniciar sesion"}
+              {loading ? "Cargando..." : "Iniciar sesión"}
             </button>
           </form>
         </div>
