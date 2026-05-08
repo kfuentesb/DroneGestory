@@ -136,24 +136,23 @@ export function FormOperationAnexo6DetailPdf({
       <Page size="A4" style={pdfStyles.page} wrap>
         <View style={pdfStyles.header}>
           <Text style={pdfStyles.title}>APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</Text>
-          <Text>
-            Operación ID: {operationId}
-            {operationTitle ? ` — ${operationTitle}` : ""}
+          <Text style={{marginTop: 12}}>
+            {operationTitle ? ` ${operationTitle}` : ""}
           </Text>
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>CONOPS</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.nombreConops ?? formValues.conops)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Fecha operación</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.fechaOp)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Aeronave</Text>
-          <Text style={pdfStyles.value}>{textValue(aircraftLabel ?? formValues.aircraftId)}</Text>
+        <View style={pdfStyles.summaryGrid}>
+          {[
+            { label: "CONOPS", value: textValue(formValues.nombreConops ?? formValues.conops) },
+            { label: "Fecha operación", value: textValue(formValues.fechaOp) },
+            { label: "Aeronave", value: textValue(aircraftLabel ?? formValues.aircraftId) }
+          ].map((item) => (
+            <View key={item.label} style={pdfStyles.summaryCell}>
+              <Text style={pdfStyles.summaryLabel}>{item.label}</Text>
+              <Text style={pdfStyles.summaryValue}>{item.value}</Text>
+            </View>
+          ))}
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 1: Material auxiliar necesario durante la operación</Text>
@@ -212,7 +211,7 @@ export function FormOperationAnexo6DetailPdf({
               <Text style={pdfStyles.thLast}>Resultado</Text>
             </View>
             {elementosItems.map((row, idx) => (
-              <View style={pdfStyles.tr} key={`${idx}-${row.descripcion}`}>
+              <View style={pdfStyles.tr} key={`${idx}-${row.descripcion}`} wrap={false}>
                 <Text style={pdfStyles.td}>{textValue(row.descripcion)}</Text>
                 <Text style={pdfStyles.tdLast}>{textValue(row.valor, "N/A")}</Text>
               </View>

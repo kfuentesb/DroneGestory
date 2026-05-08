@@ -9,7 +9,6 @@ import {
 } from "@react-pdf/renderer";
 import { API_BASE_URL } from "../../api";
 
-// Copia mínima de tipos (para no acoplarte a imports internos si no quieres)
 export type ExpandableTableItem = { descripcion: string; valor: string };
 export type SelectableUserOption = {
   id: number;
@@ -128,6 +127,36 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+
+  summaryGrid: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginBottom: 8,
+  },
+  summaryCell: {
+    flexBasis: "45%",
+    minWidth: 170,
+    maxWidth: "48%",
+    marginBottom: 4,
+    padding: 8,
+    borderRadius: 5,
+    border: "1px solid #ECECEC"
+  },
+  summaryLabel: {
+    fontSize: 8.5,
+    color: "#777",
+    marginBottom: 2,
+    fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  summaryValue: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#1a1a1a"
+  },
 });
 
 const normalizeAircraftIds = (value: unknown): number[] => {
@@ -171,7 +200,6 @@ const boolLabel = (value: unknown) => {
   if (value === "" || value === null || value === undefined) return "N/A";
   if (value === true || value === "true") return "Sí";
   if (value === false || value === "false") return "No";
-  // por si guardas "N/A", "SI", "NO" en algunos campos
   if (typeof value === "string" && value.trim()) return value;
   return "N/A";
 };
@@ -227,7 +255,7 @@ export function FormOperationAnexo4DetailPdf({
           <Text style={styles.title}>
             APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
           </Text>
-          <Text>{operationTitle ? ` — ${operationTitle}` : ""}</Text>
+          <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
         </View>
 
         {/* SECCIÓN 1 */}
@@ -306,15 +334,16 @@ export function FormOperationAnexo4DetailPdf({
 
         {/* SECCIÓN 2 */}
         <Text style={styles.subtitle}>SECCIÓN 2: Evaluación del escenario de operaciones</Text>
-
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>Dirección</Text>
-          <Text style={styles.value}>{formValues.direccion || "—"}</Text>
-        </View>
-
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>Coordenadas</Text>
-          <Text style={styles.value}>{formValues.coords || "—"}</Text>
+        <View style={styles.summaryGrid}>
+          {[
+            { label: "Dirección", value: formValues.direccion || "—" },
+            { label: "Coordenadas", value: formValues.coords || "—" }
+          ].map((item) => (
+            <View key={item.label} style={styles.summaryCell}>
+              <Text style={styles.summaryLabel}>{item.label}</Text>
+              <Text style={styles.summaryValue}>{item.value}</Text>
+            </View>
+          ))}
         </View>
 
         {/* SECCIÓN 3 */}

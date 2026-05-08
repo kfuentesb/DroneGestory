@@ -145,20 +145,22 @@ export function FormOperationAnexo5DetailPdf({
       <Page size="A4" style={pdfStyles.page} wrap>
         <View style={pdfStyles.header}>
           <Text style={pdfStyles.title}>APÉNDICE 5 - LISTA VERIFICACIÓN PREVUELO OPERACIONAL</Text>
-          <Text>
-            Operación ID: {operationId}
-            {operationTitle ? ` — ${operationTitle}` : ""}
+          <Text style={{marginTop: 12}}>
+            {operationTitle ? `${operationTitle}` : ""}
           </Text>
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>CONOPS</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.nombreConops ?? formValues.conops)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Fecha operación</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.fechaOp)}</Text>
+        <View style={pdfStyles.summaryGrid}>
+          {[
+            { label: "CONOPS", value: textValue(formValues.nombreConops ?? formValues.conops) },
+            { label: "Fecha operación", value: textValue(formValues.fechaOp) }
+          ].map((item) => (
+            <View key={item.label} style={pdfStyles.summaryCell}>
+              <Text style={pdfStyles.summaryLabel}>{item.label}</Text>
+              <Text style={pdfStyles.summaryValue}>{item.value}</Text>
+            </View>
+          ))}
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 1: Lugar de la operación</Text>
@@ -170,8 +172,10 @@ export function FormOperationAnexo5DetailPdf({
         <Text style={pdfStyles.subtitle}>SECCIÓN 3: Personal</Text>
         {renderSection(SECCIONES_CONFIG.seccion3)}
 
-        <Text style={pdfStyles.subtitle}>SECCIÓN 4: Procedimientos de comunicación</Text>
-        {renderSection(SECCIONES_CONFIG.seccion4)}
+        <View wrap={false}>
+          <Text style={pdfStyles.subtitle}>SECCIÓN 4: Procedimientos de comunicación</Text>
+          {renderSection(SECCIONES_CONFIG.seccion4)}
+        </View> 
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 5: Requisitos adicionales</Text>
         {renderSection(SECCIONES_CONFIG.seccion5)}

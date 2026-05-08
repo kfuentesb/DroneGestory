@@ -28,6 +28,7 @@ const RECOGIDA_CONFIG: CheckItem[] = [
   { num: "2.5", title: "Otros (generadores, herramientas, manga, viento, etc)", key: "otrosRecogidaCorrecto", obsKey: "otrosRecogidaObservaciones" },
 ];
 
+
 export type FormOperationAnexo7DetailPdfProps = {
   operationId: number;
   operationTitle?: string;
@@ -54,7 +55,7 @@ export function FormOperationAnexo7DetailPdf({
         <View key={item.key} style={pdfStyles.tr}>
           <Text style={pdfStyles.td}>{`${item.num}. ${item.title}`}</Text>
           <Text style={pdfStyles.td}>{boolLabel(formValues[item.key])}</Text>
-          <Text style={pdfStyles.tdLast}>{textValue(formValues[item.obsKey])}</Text>
+          <Text style={pdfStyles.tdLastObservaciones}>{textValue(formValues[item.obsKey])}</Text>
         </View>
       ))}
     </View>
@@ -65,39 +66,34 @@ export function FormOperationAnexo7DetailPdf({
       <Page size="A4" style={pdfStyles.page} wrap>
         <View style={pdfStyles.header}>
           <Text style={pdfStyles.title}>APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</Text>
-          <Text>
-            Operación ID: {operationId}
-            {operationTitle ? ` — ${operationTitle}` : ""}
+          <Text style={{marginTop: 12}}>
+            {operationTitle ? `${operationTitle}` : ""}
           </Text>
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>CONOPS</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.nombreConops ?? formValues.conops)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Fecha operación</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.fechaOp)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Aeronave</Text>
-          <Text style={pdfStyles.value}>{textValue(aircraftLabel ?? formValues.aircraftId)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Tiempo de vuelo (minutos)</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.tiempoVueloMinutos)}</Text>
-        </View>
-        <View style={pdfStyles.fieldRow}>
-          <Text style={pdfStyles.label}>Ciclos de aterrizaje</Text>
-          <Text style={pdfStyles.value}>{textValue(formValues.ciclosAterrizaje)}</Text>
+        <View style={pdfStyles.summaryGrid}>
+          {[
+            { label: "CONOPS", value: textValue(formValues.nombreConops ?? formValues.conops) },
+            { label: "Fecha operación", value: textValue(formValues.fechaOp) },
+            { label: "Tiempo de vuelo (minutos)", value: textValue(formValues.tiempoVueloMinutos) },
+            { label: "Ciclos de aterrizaje", value: textValue(formValues.ciclosAterrizaje) },
+                        { label: "Aeronave", value: textValue(aircraftLabel ?? formValues.aircraftId) }
+          ].map((item) => (
+            <View key={item.label} style={pdfStyles.summaryCell}>
+              <Text style={pdfStyles.summaryLabel}>{item.label}</Text>
+              <Text style={pdfStyles.summaryValue}>{item.value}</Text>
+            </View>
+          ))}
         </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 1: Verificaciones UAS</Text>
         {renderCheckTable(VERIFICACION_CONFIG)}
 
-        <Text style={pdfStyles.subtitle}>SECCIÓN 2: Recogida y almacenamiento</Text>
-        {renderCheckTable(RECOGIDA_CONFIG)}
+        <View wrap={false}>
+          <Text style={pdfStyles.subtitle}>SECCIÓN 2: Recogida y almacenamiento</Text>
+          {renderCheckTable(RECOGIDA_CONFIG)}
+        </View>
 
         <View style={pdfStyles.footer} fixed>
           <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
