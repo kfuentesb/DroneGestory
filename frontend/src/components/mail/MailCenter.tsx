@@ -5,6 +5,7 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import LoadingSpinner from "../commons/Loading";
 import activarIcon from "../../assets/commons/select_all_white.svg";
 import desactivarIcon from "../../assets/commons/remove_selection_white.svg";
+import GifMail from "../../assets/gifs/sending-mail.gif";
 
 type User = {
   id: number;
@@ -346,9 +347,48 @@ export default function MailCenter() {
   return (
     <div className="container py-4" style={{ maxWidth: "1000px", minHeight: "90vh" }}>
       <div className="col-12 mb-5">
-        <label className="form-label small fw-bold text-uppercase text-muted d-block mb-3 text-center" style={{ letterSpacing: "1px" }}>
-          Panel de Control de Mensajería
-        </label>
+        <div className="col-12 mb-5">
+          <div className="d-flex align-items-center justify-content-center gap-4">
+            
+            {/* GIF Izquierdo */}
+            <div 
+              className="rounded-4 overflow-hidden shadow-sm border p-1 bg-white d-none d-md-block" 
+              style={{ width: "fit-content" }}
+            >
+              <img 
+                src={GifMail} 
+                alt="GifMail Left"
+                style={{ height: "60px", width: "auto", display: "block", transform: "scaleX(-1)"}} 
+              />
+            </div>
+
+            {/* Texto Central */}
+            <label 
+              className="form-label small fw-bold text-uppercase m-0"
+              style={{ 
+                letterSpacing: "2px", 
+                opacity: 0.7,
+                whiteSpace: "nowrap",
+                color: "#059669"
+              }}
+            >
+              Panel de Control de Mensajería
+            </label>
+
+            {/* GIF Derecho */}
+            <div 
+              className="rounded-4 overflow-hidden shadow-sm border p-1 bg-white d-none d-md-block" 
+              style={{ width: "fit-content" }}
+            >
+              <img 
+                src={GifMail} 
+                alt="GifMail Right"
+                style={{ height: "60px", width: "auto", display: "block"}} 
+              />
+            </div>
+            
+          </div>
+        </div>
         <br/>
         <div className="btn-group p-2 bg-white rounded-4 w-100 shadow-sm border" role="group" style={{ height: "60px" }}>
           <button

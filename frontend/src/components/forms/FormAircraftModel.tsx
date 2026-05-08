@@ -556,9 +556,15 @@ export default function FormAircraftModel() {
             {error && <p className="text-danger mb-3">{error}</p>}
 
             <div className="d-flex gap-2">
-              <button type="submit" className="btn btn-success" disabled={loading}>
-                {loading ? "Guardando..." : "Registrar modelo"}
+              <button 
+                type="submit" 
+                className="btn btn-success d-flex align-items-center justify-content-center gap-2" 
+                disabled={loading}
+                style={{ minWidth: "160px", transition: "all 0.3s ease" }}
+              >
+                  Registrar modelo
               </button>
+
               <button
                 type="button"
                 className="btn btn-secondary"

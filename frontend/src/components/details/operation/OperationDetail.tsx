@@ -9,6 +9,7 @@ import cancelIcon from '../../../assets/commons/cancel_white.svg';
 import { cancelOperation, completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
 import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
+import LoadingSpinner from "../../commons/Loading";
 import {
   formatDateTime,
   getAnexoColorStyle,
@@ -192,7 +193,7 @@ export default function OperationDetail() {
   };
 
   if (loading) {
-    return <div className="container py-4 text-center">Cargando operación...</div>;
+    return <LoadingSpinner message="Cargando operación..." />;
   }
 
   if (error || !operation) {

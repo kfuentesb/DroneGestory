@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
 import { useAuth } from "../../commons/hooks/useAuth";
+import LoadingSpinner from "../../commons/Loading";
 import {
   fetchAnexo4Data,
   fetchAnexo4VersionData,
@@ -647,7 +648,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   }, []);
 
   if (loading) {
-    return <div className="container py-4 text-center">Cargando anexo...</div>;
+    return <LoadingSpinner message="Cargando anexo..." />;
   }
 
   if (error || !operation || !anexo) {

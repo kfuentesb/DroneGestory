@@ -511,7 +511,7 @@ function FormUser() {
     };
 
     return (
-        <div className="container-fluid py-4" style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
+        <div className="container-fluid py-4" style={{minHeight: "100vh" }}>
             <div className="container" style={{ maxWidth: "1000px" }}>
                 <h2 className="text-center mb-4 fw-normal" style={{ color: "#1E1E1E" }}>
                     Formulario Registro Usuario
