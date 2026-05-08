@@ -47,7 +47,62 @@ export const pdfStyles = StyleSheet.create({
   thLast: { flex: 1, padding: 6, fontWeight: "bold" },
   tr: { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#DDD" },
   td: { flex: 1, padding: 6, borderRightWidth: 1, borderRightColor: "#DDD" },
-  tdLast: { flex: 1, padding: 6, wordBreak: "break-word", fontSize: 8 },
+  tdLast: { flex: 1, padding: 6, wordBreak: "break-word", fontSize: 8},
+
+  // Estilos tabla 4 columnas (Anexo 7)
+  table4Col: { 
+    borderWidth: 1, 
+    borderColor: "#DDD", 
+    borderRadius: 4, 
+    overflow: "hidden" 
+  },
+  table4ColHeader: { 
+    flexDirection: "row", 
+    backgroundColor: "#F3F3F3" 
+  },
+  th4Col: { 
+    padding: 6, 
+    fontWeight: "bold", 
+    borderRightWidth: 1, 
+    borderRightColor: "#DDD" 
+  },
+  th4ColLast: { 
+    padding: 6, 
+    fontWeight: "bold" 
+  },
+  tr4Col: { 
+    flexDirection: "row", 
+    borderTopWidth: 1, 
+    borderTopColor: "#DDD",
+    alignItems: "flex-start"
+  },
+  td4ColNum: { 
+    width: 36, 
+    padding: 6, 
+    borderRightWidth: 1, 
+    borderRightColor: "#DDD",
+    fontSize: 9
+  },
+  td4ColTitle: { 
+    flex: 2, 
+    padding: 6, 
+    borderRightWidth: 1, 
+    borderRightColor: "#DDD",
+    fontSize: 9.5
+  },
+  td4ColCheck: { 
+    width: 60, 
+    padding: 6, 
+    borderRightWidth: 1, 
+    borderRightColor: "#DDD",
+    fontSize: 9.5,
+    textAlign: "center"
+  },
+  td4ColLast: { 
+    flex: 2, 
+    padding: 6,
+    fontSize: 9
+  },
 
   footer: {
     position: "absolute",
@@ -58,40 +113,40 @@ export const pdfStyles = StyleSheet.create({
     color: "#666",
     flexDirection: "row",
     justifyContent: "space-between",
-    },
+  },
 
-    summaryGrid: {
+  summaryGrid: {
     display: "flex",
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
     marginBottom: 8,
-    },
+  },
 
-    summaryCell: {
-    flexBasis: "45%",   // Aproximadamente 2 columnas
-    minWidth: 170,      // Ajusta según tu ancho de página
+  summaryCell: {
+    flexBasis: "45%",
+    minWidth: 170,
     maxWidth: "48%",
     marginBottom: 4,
     padding: 8,
     borderRadius: 5,
     border: "1px solid #ECECEC"
-    },
+  },
 
-    summaryLabel: {
+  summaryLabel: {
     fontSize: 8.5,
     color: "#777",
     marginBottom: 2,
     fontWeight: 500,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    },
+  },
 
-    summaryValue: {
+  summaryValue: {
     fontSize: 11,
     fontWeight: "bold",
     color: "#1a1a1a"
-    },
+  },  
 });
 
 export const textValue = (value: unknown, fallback = "—") => {

@@ -28,6 +28,7 @@ const RECOGIDA_CONFIG: CheckItem[] = [
   { num: "2.5", title: "Otros (generadores, herramientas, manga, viento, etc)", key: "otrosRecogidaCorrecto", obsKey: "otrosRecogidaObservaciones" },
 ];
 
+
 export type FormOperationAnexo7DetailPdfProps = {
   operationId: number;
   operationTitle?: string;
