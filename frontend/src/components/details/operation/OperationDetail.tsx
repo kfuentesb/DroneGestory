@@ -6,6 +6,7 @@ import ButtonProp from "../../commons/props/ButtonProp";
 import { useAuth } from "../../commons/hooks/useAuth";
 import checkIcon from '../../../assets/commons/check_white.svg';
 import cancelIcon from '../../../assets/commons/cancel_white.svg';
+import downloadIcon from '../../../assets/commons/download.svg';
 import { cancelOperation, completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
 import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
@@ -294,7 +295,10 @@ export default function OperationDetail() {
                 }}
               >
                 {({ loading }) => (
-                  <span>{loading ? "Generando..." : "Descargar PDF"}</span>
+                  <>
+                    <img src={downloadIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
+                    <span className="d-none d-md-inline">{loading ? "Generando..." : "Descargar PDF"}</span>
+                  </>
                 )}
               </PDFDownloadLink>
             )}

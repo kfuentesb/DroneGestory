@@ -66,6 +66,7 @@ import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
 import refreshIcon from '../../../assets/commons/renew.svg';
 import saveIcon from '../../../assets/commons/file_save.svg';
 import signIcon from '../../../assets/commons/sign_operation.svg';
+import downloadIcon from '../../../assets/commons/download.svg';
 
 type OperationAnexoDetailProps = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
@@ -748,7 +749,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   textDecoration: "none",
                 }}
               >
-                {({ loading }) => <span>{loading ? "Generando..." : "Descargar PDF"}</span>}
+                {({ loading }) => (
+                  <>
+                    <img src={downloadIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
+                    <span className="d-none d-md-inline">{loading ? "Generando..." : "Descargar PDF"}</span>
+                  </>
+                )}
               </PDFDownloadLink>
             )}
             <ButtonProp
