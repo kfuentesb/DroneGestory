@@ -28,19 +28,6 @@ export default function Footer() {
                             <a href="https://www.youtube.com/user/oinomedemonio" target="_blank" rel="noreferrer" className="opacity-75 hover-opacity-100 transition">
                                 <img alt="Youtube" src={YoutubeIcon} style={{ width: "24px", height: "24px" }}/>
                             </a>
-                            <a href="https://www.youtube.com/user/oinomedemonio" target="_blank" rel="noreferrer" className="opacity-75 hover-opacity-100 transition">
-                                <img alt="Youtube" src={YoutubeIcon} style={{ width: "24px", height: "24px" }}/>
-                            </a>
-                            <a href="https://www.youtube.com/user/oinomedemonio" target="_blank" rel="noreferrer" className="opacity-75 hover-opacity-100 transition">
-                                <img alt="Youtube" src={YoutubeIcon} style={{ width: "24px", height: "24px" }}/>
-                            </a>
-                            <a href="https://www.youtube.com/user/oinomedemonio" target="_blank" rel="noreferrer" className="opacity-75 hover-opacity-100 transition">
-                                <img alt="Youtube" src={YoutubeIcon} style={{ width: "24px", height: "24px" }}/>
-                            </a>
-                            <a href="https://www.youtube.com/user/oinomedemonio" target="_blank" rel="noreferrer" className="opacity-75 hover-opacity-100 transition">
-                                <img alt="Youtube" src={YoutubeIcon} style={{ width: "24px", height: "24px" }}/>
-                            </a>
-                            añadir más redes sociales en el futuro
                         </div>
                     </div>
 
