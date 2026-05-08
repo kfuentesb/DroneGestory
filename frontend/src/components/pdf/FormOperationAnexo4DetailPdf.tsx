@@ -227,7 +227,7 @@ export function FormOperationAnexo4DetailPdf({
           <Text style={styles.title}>
             APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
           </Text>
-          <Text>{operationTitle ? ` — ${operationTitle}` : ""}</Text>
+          <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
         </View>
 
         {/* SECCIÓN 1 */}
