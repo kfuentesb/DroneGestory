@@ -139,7 +139,15 @@ export default function FileBrowserView() {
     };
 
     return (
-        <div className="container py-4">
+        <div className="container py-4"
+            style={{ 
+                display: "flex", 
+                flexDirection: "column", 
+                height: "100%", 
+                width: "100%", 
+                overflow: "hidden",
+                padding: "20px" 
+            }}>
             <div className="d-flex justify-content-end align-items-center gap-2 mb-3">
                 <label className={`btn btn-sm ${selectedFileId ? "btn-primary" : "btn-secondary disabled"} mb-0`}>
                     Replace selected file
@@ -152,7 +160,8 @@ export default function FileBrowserView() {
                 </label>
             </div>
             <Material fonts={true}>
-                <div>
+                {/* height: "calc(100vh - 200px)" */}
+                <div style={{ height: "700px", width: "100%" }}>
                     <Filemanager
                         key={filemanagerKey}
                         init={init}
