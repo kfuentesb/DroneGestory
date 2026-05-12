@@ -206,14 +206,36 @@ const boolLabel = (value: unknown) => {
   return "N/A";
 };
 
-const imageUrlFromFilename = (filename: unknown) => {
-  if (!filename || typeof filename !== "string" || !filename.trim()) return null;
+type PdfImageSource = string | { uri: string; headers?: Record<string, string> };
 
-  // Si ya viene como URL absoluta
-  if (/^https?:\/\//i.test(filename)) return filename;
+const getAuthHeaders = () => {
+  if (typeof localStorage === "undefined") return undefined;
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+};
 
-  // Si viene como filename del backend
-  return `${API_BASE_URL}/api/operations/anexo4/images/${filename}`;
+const imageSourceFromFilename = (filename: unknown): PdfImageSource | null => {
+  if (!filename || typeof filename !== "string") return null;
+  const trimmed = filename.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith("blob:") || trimmed.startsWith("data:")) {
+    return trimmed;
+  }
+
+  const headers = getAuthHeaders();
+  const withHeaders = (uri: string): PdfImageSource => (headers ? { uri, headers } : uri);
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return withHeaders(trimmed);
+  }
+
+  if (trimmed.startsWith("/api/")) {
+    return withHeaders(`${API_BASE_URL}${trimmed}`);
+  }
+
+  const normalized = trimmed.replace(/^\/+/, "");
+  return withHeaders(`${API_BASE_URL}/api/operations/anexo4/images/${normalized}`);
 };
 
 export type FormOperationAnexo4DetailPdfProps = {
@@ -245,8 +267,8 @@ export function FormOperationAnexo4DetailPdf({
         .filter((person: { id: number; fullName: string }) => Number.isFinite(person.id) || person.fullName)
     : [];
 
-  const imagenEspacioAereoUrl = imageUrlFromFilename(formValues.imagenEspacioAereo);
-  const imagenZonaVueloUrl = imageUrlFromFilename(formValues.imagenZonaVuelo);
+  const imagenEspacioAereoUrl = imageSourceFromFilename(formValues.imagenEspacioAereo);
+  const imagenZonaVueloUrl = imageSourceFromFilename(formValues.imagenZonaVuelo);
 
   const otrasItems = normalizeExpandableItems(formValues.otrasLimitacionesItems).slice(0, 8);
 

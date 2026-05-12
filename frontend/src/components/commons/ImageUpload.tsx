@@ -6,7 +6,7 @@ import {
   type ImageUploadState,
   type ImageUploadHandlers,
 } from "./hooks/useImageUpload";
-import { apiFetch } from "../../api";
+import { apiFetchRaw } from "../../api";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIPOS
@@ -132,8 +132,8 @@ export default function ImageUploadField({
         return;
       }
       try {
-        const response = await apiFetch(savedImageUrl);
-        if (!response) {
+        const response = await apiFetchRaw(savedImageUrl);
+        if (!response.ok) {
           setServerImageBlobUrl(null);
           return;
         }
