@@ -63,3 +63,13 @@ export async function apiFetch(url: string, options?: RequestInit) {
 
     return res;
 }
+
+export async function apiFetchRaw(url: string, options?: RequestInit) {
+    const token = localStorage.getItem("token");
+    const headers = new Headers(options?.headers || {});
+    if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    return fetch(resolveUrl(url), { ...options, headers });
+}
