@@ -103,11 +103,12 @@ const styles = StyleSheet.create({
   image: {
     marginTop: 6,
     marginBottom: 8,
-    width: "100%",
-    maxHeight: 260,
+    width: "70%",
+    maxHeight: 180,
     objectFit: "contain",
     borderWidth: 1,
     borderColor: "#EEE",
+    alignSelf: "center",
   },
 
   table: { borderWidth: 1, borderColor: "#DDD", borderRadius: 4, overflow: "hidden" },
