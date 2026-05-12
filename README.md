@@ -116,7 +116,7 @@ VISUAL<br>
 -OPERACIONES<br>
 
 -Historial<br>
-Hover del texto enviado
+
 
 -DOCUMENTACIONES<br>
 -En ipad no se pueden ver las documentaciones<br>
