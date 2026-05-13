@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { boolLabel, pdfStyles, textValue } from "./pdfUtils";
+import { boolLabel, buildVersionLabel, pdfStyles, textValue } from "./pdfUtils";
 
 type SectionItem = {
   num: string;
@@ -95,6 +95,7 @@ export type FormOperationAnexo6DetailPdfProps = {
   operationTitle?: string;
   formValues: Record<string, any>;
   aircraftLabel?: string;
+  numeroVersion?: number | string;
   generatedAt?: string;
 };
 
@@ -103,6 +104,7 @@ export function Anexo6Pages({
   operationTitle,
   formValues,
   aircraftLabel,
+  numeroVersion,
   generatedAt,
 }: FormOperationAnexo6DetailPdfProps) {
   const materialesAuxiliares = Array.isArray(formValues.materialesAuxiliares)
@@ -110,6 +112,7 @@ export function Anexo6Pages({
     : [];
 
   const elementosItems = normalizeItems(formValues.elementosAuxiliaresItems).slice(0, 8);
+  const versionLabel = buildVersionLabel(numeroVersion);
 
   const renderSection = (items: SectionItem[]) => (
     <View style={pdfStyles.box}>
@@ -135,8 +138,8 @@ export function Anexo6Pages({
     <Page size="A4" style={pdfStyles.page} wrap>
       <View style={pdfStyles.header}>
         <Text style={pdfStyles.title}>APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</Text>
-        <Text style={{marginTop: 12}}>
-          {operationTitle ? ` ${operationTitle}` : ""}
+        <Text style={{ marginTop: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
         </Text>
       </View>
 
@@ -220,7 +223,7 @@ export function Anexo6Pages({
 
       <View style={pdfStyles.footer} fixed>
         <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-        <Text>Apéndice 6</Text>
+        <Text>Apéndice 6{versionLabel}</Text>
       </View>
     </Page>
   );

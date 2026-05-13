@@ -179,3 +179,25 @@ export const boolLabel = (value: unknown, labels?: BoolLabels) => {
 
   return emptyLabel;
 };
+
+export const buildVersionLabel = (numeroVersion?: number | string) => {
+  if (numeroVersion === null || numeroVersion === undefined || numeroVersion === "") {
+    return " (Sin versión)";
+  }
+
+  if (typeof numeroVersion === "number") {
+    return numeroVersion > 0 ? ` (V${numeroVersion})` : " (Sin versión)";
+  }
+
+  const normalized = numeroVersion.trim();
+  if (!normalized || /^0+$/.test(normalized)) {
+    return " (Sin versión)";
+  }
+
+  const normalizedLower = normalized.toLowerCase();
+  if (normalizedLower === "draft" || normalizedLower === "borrador") {
+    return " (Borrador)";
+  }
+
+  return ` (V${normalized})`;
+};

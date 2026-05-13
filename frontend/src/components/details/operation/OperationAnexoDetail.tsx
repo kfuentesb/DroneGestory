@@ -120,6 +120,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
   const [anexoAircraftOptions, setAnexoAircraftOptions] = useState<AircraftOption[]>([]);
+  const [pdfAircraftOptions, setPdfAircraftOptions] = useState<AircraftOption[]>([]);
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
   const [aircraftsInVersion, setAircraftsInVersion] = useState<Anexo6Data[] | Anexo7Data[]>([]);
   const [autoSaving, setAutoSaving] = useState(false);
@@ -175,10 +176,35 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     }));
   }, [anexoData, tipoAnexo]);
 
+  useEffect(() => {
+    if (tipoAnexo !== 4) {
+      setPdfAircraftOptions([]);
+      return;
+    }
+
+    const loadPdfAircraftOptions = async () => {
+      try {
+        const options = await fetchAircraftOptions();
+        const selectedIds = new Set((anexoData as Anexo4Data | null)?.aircraftIds ?? []);
+        const filtered = selectedIds.size
+          ? options.filter((aircraft) => selectedIds.has(aircraft.id))
+          : options;
+        setPdfAircraftOptions(filtered);
+      } catch (err) {
+        console.error("Error cargando aeronaves para PDF de Anexo 4:", err);
+        setPdfAircraftOptions([]);
+      }
+    };
+
+    void loadPdfAircraftOptions();
+  }, [tipoAnexo, anexoData]);
+
   const generatedAt = useMemo(
     () => new Date().toLocaleString("es-ES"),
     [operation?.idOperacion, tipoAnexo, selectedVersionId, selectedAircraftId, anexoData?.id]
   );
+
+  const numeroVersion = selectedVersion?.numeroVersion ?? anexoData?.numeroVersion;
 
   const pdfDocument = useMemo(() => {
     if (!operation) return null;
@@ -190,8 +216,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             operationId={operation.idOperacion}
             operationTitle={operation.codigo}
             formValues={formValues as Record<string, any>}
-            aircraftOptions={[]}
+            aircraftOptions={pdfAircraftOptions}
             personnelOptions={derivedPersonnelOptions}
+            numeroVersion={numeroVersion}
             generatedAt={generatedAt}
           />
         );
@@ -201,6 +228,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             operationId={operation.idOperacion}
             operationTitle={operation.codigo}
             formValues={formValues as Record<string, any>}
+            numeroVersion={numeroVersion}
             generatedAt={generatedAt}
           />
         );
@@ -211,6 +239,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             operationTitle={operation.codigo}
             formValues={formValues as Record<string, any>}
             aircraftLabel={selectedAircraftLabel}
+            numeroVersion={numeroVersion}
             generatedAt={generatedAt}
           />
         );
@@ -221,6 +250,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             operationTitle={operation.codigo}
             formValues={formValues as Record<string, any>}
             aircraftLabel={selectedAircraftLabel}
+            numeroVersion={numeroVersion}
             generatedAt={generatedAt}
           />
         );
@@ -230,13 +260,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             operationId={operation.idOperacion}
             operationTitle={operation.codigo}
             formValues={formValues as Record<string, any>}
+            numeroVersion={numeroVersion}
             generatedAt={generatedAt}
           />
         );
       default:
         return null;
     }
-  }, [operation, anexoData, tipoAnexo, derivedPersonnelOptions, selectedAircraftLabel, generatedAt]);
+  }, [operation, anexoData, tipoAnexo, derivedPersonnelOptions, pdfAircraftOptions, selectedAircraftLabel, numeroVersion, generatedAt]);
 
   const pdfFileName = useMemo(() => {
     if (!operation) return `anexo-${tipoAnexo}.pdf`;

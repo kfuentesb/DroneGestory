@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { boolLabel, pdfStyles, textValue } from "./pdfUtils";
+import { boolLabel, buildVersionLabel, pdfStyles, textValue } from "./pdfUtils";
 
 type SectionItem = {
   num: string;
@@ -107,6 +107,7 @@ export type FormOperationAnexo5DetailPdfProps = {
   operationTitle?: string;
   formValues: Record<string, any>;
   generatedAt?: string;
+  numeroVersion?: number | string;
 };
 
 export function Anexo5Pages({
@@ -114,8 +115,10 @@ export function Anexo5Pages({
   operationTitle,
   formValues,
   generatedAt,
+  numeroVersion
 }: FormOperationAnexo5DetailPdfProps) {
   const assignedPersonnel = Array.isArray(formValues.assignedPersonnel) ? formValues.assignedPersonnel : [];
+  const versionLabel = buildVersionLabel(numeroVersion);  
 
   const renderSection = (items: SectionItem[]) => (
     <View style={pdfStyles.box}>
@@ -127,7 +130,7 @@ export function Anexo5Pages({
               <Text style={pdfStyles.apartadoNum}>{item.num}</Text>
             </View>
             <View style={pdfStyles.apartadoRight}>
-              <Text style={[pdfStyles.apartadoTitle, item.bold ? { fontWeight: "bold" } : null]}>
+              <Text style={[pdfStyles.apartadoTitle, item.bold ? { fontWeight: "bold" } : {}]}>
                 {item.title}
                 {value ? (
                   <Text style={pdfStyles.apartadoValue}> [{value}]</Text>
@@ -145,7 +148,7 @@ export function Anexo5Pages({
       <View style={pdfStyles.header}>
         <Text style={pdfStyles.title}>APÉNDICE 5 - LISTA VERIFICACIÓN PREVUELO OPERACIONAL</Text>
         <Text style={{marginTop: 12}}>
-          {operationTitle ? `${operationTitle}` : ""}
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
         </Text>
       </View>
 
@@ -207,7 +210,7 @@ export function Anexo5Pages({
 
       <View style={pdfStyles.footer} fixed>
         <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-        <Text>Apéndice 5</Text>
+        <Text>Apéndice 5{versionLabel}</Text>
       </View>
     </Page>
   );

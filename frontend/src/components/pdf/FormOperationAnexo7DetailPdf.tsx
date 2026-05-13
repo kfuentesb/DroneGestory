@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { boolLabel, pdfStyles, textValue } from "./pdfUtils";
+import { boolLabel, buildVersionLabel, pdfStyles, textValue } from "./pdfUtils";
 
 type CheckItem = { num: string; title: string; key: string; obsKey: string };
 
@@ -34,6 +34,7 @@ export type FormOperationAnexo7DetailPdfProps = {
   operationTitle?: string;
   formValues: Record<string, any>;
   aircraftLabel?: string;
+  numeroVersion?: number | string;
   generatedAt?: string;
 };
 
@@ -42,8 +43,10 @@ export function Anexo7Pages({
   operationTitle,
   formValues,
   aircraftLabel,
+  numeroVersion,
   generatedAt,
 }: FormOperationAnexo7DetailPdfProps) {
+  const versionLabel = buildVersionLabel(numeroVersion);
   const renderCheckTable = (items: CheckItem[]) => (
     <View style={pdfStyles.table}>
       <View style={pdfStyles.tableHeader}>
@@ -65,8 +68,8 @@ export function Anexo7Pages({
     <Page size="A4" style={pdfStyles.page} wrap>
       <View style={pdfStyles.header}>
         <Text style={pdfStyles.title}>APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</Text>
-        <Text style={{marginTop: 12}}>
-          {operationTitle ? `${operationTitle}` : ""}
+        <Text style={{ marginTop: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
         </Text>
       </View>
 
@@ -96,7 +99,7 @@ export function Anexo7Pages({
 
       <View style={pdfStyles.footer} fixed>
         <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-        <Text>Apéndice 7</Text>
+        <Text>Apéndice 7{versionLabel}</Text>
       </View>
     </Page>
   );

@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { boolLabel, pdfStyles, textValue } from "./pdfUtils";
+import { boolLabel, buildVersionLabel, pdfStyles, textValue } from "./pdfUtils";
 
 type SectionItem = {
   num: string;
@@ -57,6 +57,7 @@ export type FormOperationAnexo8DetailPdfProps = {
   operationId: number;
   operationTitle?: string;
   formValues: Record<string, any>;
+  numeroVersion?: number | string;
   generatedAt?: string;
 };
 
@@ -64,9 +65,11 @@ export function Anexo8Pages({
   operationId,
   operationTitle,
   formValues,
+  numeroVersion,
   generatedAt,
 }: FormOperationAnexo8DetailPdfProps) {
   const otrasItems = normalizeItems(formValues.otrasLimitacionesItems).slice(0, 8);
+  const versionLabel = buildVersionLabel(numeroVersion);
 
   const renderSection = (items: SectionItem[]) => (
     <View style={pdfStyles.box}>
@@ -95,8 +98,8 @@ export function Anexo8Pages({
     <Page size="A4" style={pdfStyles.page} wrap>
       <View style={pdfStyles.header}>
         <Text style={pdfStyles.title}>APÉNDICE 8 - LISTA VERIFICACIÓN POSVUELO OPERACIONAL</Text>
-        <Text style={{marginTop: 12}}>
-          {operationTitle ? `${operationTitle}` : ""}
+        <Text style={{ marginTop: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
         </Text>
       </View>
 
@@ -139,7 +142,7 @@ export function Anexo8Pages({
 
       <View style={pdfStyles.footer} fixed>
         <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-        <Text>Apéndice 8</Text>
+        <Text>Apéndice 8{versionLabel}</Text>
       </View>
     </Page>
   );

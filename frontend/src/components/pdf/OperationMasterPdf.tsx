@@ -24,6 +24,7 @@ export function OperationMasterPdf({ data }: OperationMasterPdfProps) {
           key={`a4-${entry.label}-${entry.versionId ?? "draft"}`}
           operationId={operation.idOperacion}
           operationTitle={operation.codigo}
+          numeroVersion={entry.numeroVersion}
           formValues={entry.data}
           aircraftOptions={aircraftOptions}
           personnelOptions={personnelOptions}
@@ -36,6 +37,7 @@ export function OperationMasterPdf({ data }: OperationMasterPdfProps) {
           key={`a5-${entry.label}-${entry.versionId ?? "draft"}`}
           operationId={operation.idOperacion}
           operationTitle={operation.codigo}
+          numeroVersion={entry.numeroVersion}
           formValues={entry.data}
           generatedAt={generatedAt}
         />
@@ -46,6 +48,7 @@ export function OperationMasterPdf({ data }: OperationMasterPdfProps) {
           key={`a6-${entry.label}-${entry.versionId ?? "draft"}-${entry.aircraftId ?? "na"}`}
           operationId={operation.idOperacion}
           operationTitle={operation.codigo}
+          numeroVersion={entry.numeroVersion}
           formValues={entry.data}
           aircraftLabel={entry.aircraftLabel}
           generatedAt={generatedAt}
@@ -57,6 +60,7 @@ export function OperationMasterPdf({ data }: OperationMasterPdfProps) {
           key={`a7-${entry.label}-${entry.versionId ?? "draft"}-${entry.aircraftId ?? "na"}`}
           operationId={operation.idOperacion}
           operationTitle={operation.codigo}
+          numeroVersion={entry.numeroVersion}
           formValues={entry.data}
           aircraftLabel={entry.aircraftLabel}
           generatedAt={generatedAt}
@@ -68,6 +72,7 @@ export function OperationMasterPdf({ data }: OperationMasterPdfProps) {
           key={`a8-${entry.label}-${entry.versionId ?? "draft"}`}
           operationId={operation.idOperacion}
           operationTitle={operation.codigo}
+          numeroVersion={entry.numeroVersion}
           formValues={entry.data}
           generatedAt={generatedAt}
         />
