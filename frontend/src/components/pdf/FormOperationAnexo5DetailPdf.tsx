@@ -124,18 +124,27 @@ export function Anexo5Pages({
     <View style={pdfStyles.box}>
       {items.map((item) => {
         const value = item.key ? boolLabel(formValues[item.key]) : null;
+        
         return (
           <View key={item.key ?? `${item.num}-${item.title}`} style={pdfStyles.apartadoRow}>
+            {/* Columna Izquierda: Número de apartado con sangría dinámica */}
             <View style={[pdfStyles.apartadoLeft, { marginLeft: item.level ? 10 * item.level : 0 }]}>
               <Text style={pdfStyles.apartadoNum}>{item.num}</Text>
             </View>
-            <View style={pdfStyles.apartadoRight}>
+
+            {/* Contenedor de Contenido: Título (izq) y Valor (der) */}
+            <View style={pdfStyles.apartadoContent}>
+              {/* Título: Usa flex: 1 para ocupar el espacio y permitir saltos de línea */}
               <Text style={[pdfStyles.apartadoTitle, item.bold ? { fontWeight: "bold" } : {}]}>
                 {item.title}
-                {value ? (
-                  <Text style={pdfStyles.apartadoValue}> [{value}]</Text>
-                ) : null}
               </Text>
+              
+              {/* Valor: Solo se muestra si existe una 'key', alineado a la derecha y en negrita */}
+              {item.key ? (
+                <Text style={pdfStyles.apartadoValue}>
+                  {value}
+                </Text>
+              ) : null}
             </View>
           </View>
         );
