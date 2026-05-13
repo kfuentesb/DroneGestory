@@ -20,6 +20,14 @@ Sistema integral de gestión de aeronaves (drones), operadores y documentación 
 
 Para que el sistema funcione correctamente, es necesario crear un archivo **`.env`** dentro de la carpeta `backend/`. Este archivo gestiona las credenciales sensibles que no deben subirse al repositorio.
 
+### Plantilla del archivo `.env`
+
+```properties
+# --- Configuración de Red ---
+SERVER_IP=YOUR_SERVER_IP
+VITE_API_BASE_URL=http://${SERVER_IP}:8080
+```
+
 ### Plantilla del archivo `backend/.env`
 
 ```properties
@@ -37,10 +45,6 @@ JWT_EXPIRATION_MS=86400000
 # Requiere "Contraseña de Aplicación" de Google
 EMAIL_USER=tu-correo@gmail.com
 EMAIL_PASSWORD=tu_clave_de_16_letras_sin_espacios
-
-# --- Configuración de Red ---
-VITE_API_BASE_URL=http://localhost:8080
-
 ```
 
 ---
