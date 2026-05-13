@@ -117,6 +117,7 @@ npm run dev
 
 ## Estructura de carpetas
 
+```
 .
 ├── backend/
 │   ├── database/migrations (Para migrar o hacer cambios a la base de datos)
@@ -186,6 +187,7 @@ npm run dev
 ├── .gitignore
 ├── .env (SERVER_IP / VITE_API_BASE_URL)
 └── compose.yaml (Docker del servidor: backend, frontend, postgresql)
+```
 
 ---
 
