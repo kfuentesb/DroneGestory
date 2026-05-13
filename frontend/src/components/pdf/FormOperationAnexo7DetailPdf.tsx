@@ -37,7 +37,7 @@ export type FormOperationAnexo7DetailPdfProps = {
   generatedAt?: string;
 };
 
-export function FormOperationAnexo7DetailPdf({
+export function Anexo7Pages({
   operationId,
   operationTitle,
   formValues,
@@ -62,14 +62,13 @@ export function FormOperationAnexo7DetailPdf({
   );
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page} wrap>
-        <View style={pdfStyles.header}>
-          <Text style={pdfStyles.title}>APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</Text>
-          <Text style={{marginTop: 12}}>
-            {operationTitle ? `${operationTitle}` : ""}
-          </Text>
-        </View>
+    <Page size="A4" style={pdfStyles.page} wrap>
+      <View style={pdfStyles.header}>
+        <Text style={pdfStyles.title}>APÉNDICE 7 - LISTA VERIFICACIÓN POSVUELO UAS</Text>
+        <Text style={{marginTop: 12}}>
+          {operationTitle ? `${operationTitle}` : ""}
+        </Text>
+      </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
         <View style={pdfStyles.summaryGrid}>
@@ -95,11 +94,18 @@ export function FormOperationAnexo7DetailPdf({
           {renderCheckTable(RECOGIDA_CONFIG)}
         </View>
 
-        <View style={pdfStyles.footer} fixed>
-          <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-          <Text>Apéndice 7</Text>
-        </View>
-      </Page>
+      <View style={pdfStyles.footer} fixed>
+        <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
+        <Text>Apéndice 7</Text>
+      </View>
+    </Page>
+  );
+}
+
+export function FormOperationAnexo7DetailPdf(props: FormOperationAnexo7DetailPdfProps) {
+  return (
+    <Document>
+      <Anexo7Pages {...props} />
     </Document>
   );
 }

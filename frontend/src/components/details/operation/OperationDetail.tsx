@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { pdf } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
@@ -7,7 +7,22 @@ import { useAuth } from "../../commons/hooks/useAuth";
 import checkIcon from '../../../assets/commons/check_white.svg';
 import cancelIcon from '../../../assets/commons/cancel_white.svg';
 import downloadIcon from '../../../assets/commons/download.svg';
-import { cancelOperation, completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
+import {
+  cancelOperation,
+  completeOperation,
+  fetchAircraftOptions,
+  fetchOperationDetail,
+  fetchAnexo4Data,
+  fetchAnexo4VersionData,
+  fetchAnexo5Data,
+  fetchAnexo5VersionData,
+  fetchAnexo6Data,
+  fetchAnexo6VersionData,
+  fetchAnexo7Data,
+  fetchAnexo7VersionData,
+  fetchAnexo8Data,
+  fetchAnexo8VersionData,
+} from "../../operations/operation.api";
 import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
 import {
@@ -20,6 +35,11 @@ import {
 import { styles } from "../../../global-const/styles";
 import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
 import { OperationDetailPdf } from "../../pdf/OperationDetailPdf";
+import { FormOperationAnexo4DetailPdf } from "../../pdf/FormOperationAnexo4DetailPdf";
+import { FormOperationAnexo5DetailPdf } from "../../pdf/FormOperationAnexo5DetailPdf";
+import { FormOperationAnexo6DetailPdf } from "../../pdf/FormOperationAnexo6DetailPdf";
+import { FormOperationAnexo7DetailPdf } from "../../pdf/FormOperationAnexo7DetailPdf";
+import { FormOperationAnexo8DetailPdf } from "../../pdf/FormOperationAnexo8DetailPdf";
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -61,6 +81,10 @@ export default function OperationDetail() {
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const canCancelByRole = hasRole("ADMIN") || hasRole("MANAGER");
+
+  const [isPdfMenuOpen, setIsPdfMenuOpen] = useState(false);
+  const [isPdfDownloading, setIsPdfDownloading] = useState(false);
+  const pdfMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [isSticky, setIsSticky] = useState(false);
 
@@ -136,21 +160,337 @@ export default function OperationDetail() {
     ];
   }, [operation]);
 
-  const generatedAt = useMemo(
-    () => new Date().toLocaleString("es-ES"),
-    [operation?.idOperacion]
-  );
-
-  const pdfDocument = useMemo(() => {
-    if (!operation) return null;
-    return <OperationDetailPdf operation={operation} generatedAt={generatedAt} />;
-  }, [operation, generatedAt]);
-
-  const pdfFileName = useMemo(() => {
-    if (!operation) return "operacion.pdf";
-    const safeCode = operation.codigo ? operation.codigo.replace(/\s+/g, "_") : "operacion";
-    return `Operacion_${safeCode}_detalle.pdf`;
+  const safeCode = useMemo(() => {
+    if (!operation) return "operacion";
+    return operation.codigo ? operation.codigo.replace(/\s+/g, "_") : "operacion";
   }, [operation]);
+
+  useEffect(() => {
+    if (!isPdfMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!pdfMenuRef.current) return;
+      if (!pdfMenuRef.current.contains(event.target as Node)) {
+        setIsPdfMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isPdfMenuOpen]);
+
+  const downloadPdfBlob = async (pdfDocument: JSX.Element, fileName: string) => {
+    const blob = await pdf(pdfDocument).toBlob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  };
+
+  const buildOperationFileName = () => `Operacion_${safeCode}_detalle.pdf`;
+
+  const buildAnexoFileName = (tipoAnexo: number, versionLabel: string, aircraftId?: number | null) => {
+    const versionSuffix = versionLabel ? `_${versionLabel}` : "";
+    const aircraftSuffix = aircraftId ? `_aircraft_${aircraftId}` : "";
+    return `Operacion_${safeCode}_Anexo${tipoAnexo}${versionSuffix}${aircraftSuffix}.pdf`;
+  };
+
+  const getLatestVersion = <T extends { numeroVersion: number }>(versions: T[]) =>
+    versions.reduce((max, current) => (current.numeroVersion > max.numeroVersion ? current : max), versions[0]);
+
+  const normalizeAircraftIds = (value: unknown): number[] => {
+    if (!Array.isArray(value)) return [];
+    return value.map((item) => Number(item)).filter((item) => Number.isFinite(item));
+  };
+
+  const derivePersonnelOptions = (selectedPersonnel?: Array<{ id: number; fullName: string; roles: string[] }>) => {
+    if (!Array.isArray(selectedPersonnel)) return [] as Array<{ id: number; firstName: string; lastName: string; roles: string[] }>;
+    return selectedPersonnel.map((person) => ({
+      id: person.id,
+      firstName: person.fullName,
+      lastName: "",
+      roles: person.roles ?? [],
+    }));
+  };
+
+  const handleDownloadPdfs = async (mode: "all" | "latest" | "detail") => {
+    if (!operation) return;
+    setIsPdfDownloading(true);
+    setIsPdfMenuOpen(false);
+
+    const generatedAtLabel = new Date().toLocaleString("es-ES");
+    try {
+      await downloadPdfBlob(
+        <OperationDetailPdf operation={operation} generatedAt={generatedAtLabel} />,
+        buildOperationFileName(),
+      );
+
+      if (mode === "detail") return;
+
+      const anexo4Info = operation.anexos.find((anexo) => anexo.tipoAnexo === 4);
+      const anexo5Info = operation.anexos.find((anexo) => anexo.tipoAnexo === 5);
+      const anexo6Info = operation.anexos.find((anexo) => anexo.tipoAnexo === 6);
+      const anexo7Info = operation.anexos.find((anexo) => anexo.tipoAnexo === 7);
+      const anexo8Info = operation.anexos.find((anexo) => anexo.tipoAnexo === 8);
+
+      const anexo4Versions = anexo4Info?.versiones ?? [];
+      const anexo5Versions = anexo5Info?.versiones ?? [];
+      const anexo6Versions = anexo6Info?.versiones ?? [];
+      const anexo7Versions = anexo7Info?.versiones ?? [];
+      const anexo8Versions = anexo8Info?.versiones ?? [];
+
+      const anexo4VersionIds = new Set(anexo4Versions.map((version) => version.id));
+      const anexo5VersionIds = new Set(anexo5Versions.map((version) => version.id));
+      const anexo6VersionIds = new Set(anexo6Versions.map((version) => version.id));
+      const anexo7VersionIds = new Set(anexo7Versions.map((version) => version.id));
+      const anexo8VersionIds = new Set(anexo8Versions.map((version) => version.id));
+
+      const anexo4Data = await fetchAnexo4Data(operation.idOperacion);
+      const anexo4PersonnelOptions = derivePersonnelOptions(anexo4Data?.selectedPersonnel);
+      const anexo4AircraftIds = normalizeAircraftIds(anexo4Data?.aircraftIds);
+
+      if (mode === "all") {
+        for (const version of [...anexo4Versions].sort((a, b) => a.numeroVersion - b.numeroVersion)) {
+          const data = await fetchAnexo4VersionData(operation.idOperacion, version.id);
+          if (!data) continue;
+          await downloadPdfBlob(
+            <FormOperationAnexo4DetailPdf
+              operationId={operation.idOperacion}
+              operationTitle={operation.codigo}
+              formValues={data as Record<string, any>}
+              aircraftOptions={aircraftOptions}
+              personnelOptions={anexo4PersonnelOptions}
+              generatedAt={generatedAtLabel}
+            />,
+            buildAnexoFileName(4, `v${version.numeroVersion}`),
+          );
+        }
+
+        if (anexo4Data && (!anexo4Data.id || !anexo4VersionIds.has(anexo4Data.id))) {
+          await downloadPdfBlob(
+            <FormOperationAnexo4DetailPdf
+              operationId={operation.idOperacion}
+              operationTitle={operation.codigo}
+              formValues={anexo4Data as Record<string, any>}
+              aircraftOptions={aircraftOptions}
+              personnelOptions={anexo4PersonnelOptions}
+              generatedAt={generatedAtLabel}
+            />,
+            buildAnexoFileName(4, "borrador"),
+          );
+        }
+      }
+
+      if (mode === "latest") {
+        if (anexo4Versions.length > 0) {
+          const latest = getLatestVersion(anexo4Versions);
+          const data = await fetchAnexo4VersionData(operation.idOperacion, latest.id);
+          if (data) {
+            await downloadPdfBlob(
+              <FormOperationAnexo4DetailPdf
+                operationId={operation.idOperacion}
+                operationTitle={operation.codigo}
+                formValues={data as Record<string, any>}
+                aircraftOptions={aircraftOptions}
+                personnelOptions={anexo4PersonnelOptions}
+                generatedAt={generatedAtLabel}
+              />,
+              buildAnexoFileName(4, `v${latest.numeroVersion}`),
+            );
+          }
+        } else if (anexo4Data) {
+          await downloadPdfBlob(
+            <FormOperationAnexo4DetailPdf
+              operationId={operation.idOperacion}
+              operationTitle={operation.codigo}
+              formValues={anexo4Data as Record<string, any>}
+              aircraftOptions={aircraftOptions}
+              personnelOptions={anexo4PersonnelOptions}
+              generatedAt={generatedAtLabel}
+            />,
+            buildAnexoFileName(4, "borrador"),
+          );
+        }
+      }
+
+      const handleAnexoSimple = async (
+        tipoAnexo: 5 | 8,
+        versions: typeof anexo5Versions,
+        versionIds: Set<number>,
+        fetchCurrent: () => Promise<any>,
+        fetchVersion: (versionId: number) => Promise<any>,
+        render: (data: Record<string, any>) => JSX.Element,
+      ) => {
+        if (mode === "all") {
+          for (const version of [...versions].sort((a, b) => a.numeroVersion - b.numeroVersion)) {
+            const data = await fetchVersion(version.id);
+            if (!data) continue;
+            await downloadPdfBlob(render(data), buildAnexoFileName(tipoAnexo, `v${version.numeroVersion}`));
+          }
+
+          const currentData = await fetchCurrent();
+          if (currentData && (!currentData.id || !versionIds.has(currentData.id))) {
+            await downloadPdfBlob(render(currentData), buildAnexoFileName(tipoAnexo, "borrador"));
+          }
+        }
+
+        if (mode === "latest") {
+          if (versions.length > 0) {
+            const latest = getLatestVersion(versions);
+            const data = await fetchVersion(latest.id);
+            if (data) {
+              await downloadPdfBlob(render(data), buildAnexoFileName(tipoAnexo, `v${latest.numeroVersion}`));
+            }
+          } else {
+            const currentData = await fetchCurrent();
+            if (currentData) {
+              await downloadPdfBlob(render(currentData), buildAnexoFileName(tipoAnexo, "borrador"));
+            }
+          }
+        }
+      };
+
+      await handleAnexoSimple(
+        5,
+        anexo5Versions,
+        anexo5VersionIds,
+        () => fetchAnexo5Data(operation.idOperacion),
+        (versionId) => fetchAnexo5VersionData(operation.idOperacion, versionId),
+        (data) => (
+          <FormOperationAnexo5DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={data}
+            generatedAt={generatedAtLabel}
+          />
+        ),
+      );
+
+      await handleAnexoSimple(
+        8,
+        anexo8Versions,
+        anexo8VersionIds,
+        () => fetchAnexo8Data(operation.idOperacion),
+        (versionId) => fetchAnexo8VersionData(operation.idOperacion, versionId),
+        (data) => (
+          <FormOperationAnexo8DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={data}
+            generatedAt={generatedAtLabel}
+          />
+        ),
+      );
+
+      const downloadAnexoPerAircraft = async (
+        tipoAnexo: 6 | 7,
+        versions: typeof anexo6Versions,
+        versionIds: Set<number>,
+        fetchCurrent: (aircraftId: number) => Promise<any>,
+        fetchVersion: (versionId: number) => Promise<any>,
+        render: (data: Record<string, any>, aircraftId: number | null) => JSX.Element,
+      ) => {
+        const aircraftIdsFromVersions = Array.from(
+          new Set(versions.map((version) => version.aircraftId).filter((id): id is number => id != null))
+        );
+        const aircraftIds = Array.from(new Set([...aircraftIdsFromVersions, ...anexo4AircraftIds]));
+
+        if (mode === "all") {
+          for (const version of [...versions].sort((a, b) => a.numeroVersion - b.numeroVersion)) {
+            const data = await fetchVersion(version.id);
+            if (!data) continue;
+            await downloadPdfBlob(
+              render(data, version.aircraftId ?? null),
+              buildAnexoFileName(tipoAnexo, `v${version.numeroVersion}`, version.aircraftId ?? undefined),
+            );
+          }
+
+          for (const aircraftId of aircraftIds) {
+            const data = await fetchCurrent(aircraftId);
+            if (!data || (data.id && versionIds.has(data.id))) continue;
+            await downloadPdfBlob(
+              render(data, aircraftId),
+              buildAnexoFileName(tipoAnexo, "borrador", aircraftId),
+            );
+          }
+        }
+
+        if (mode === "latest") {
+          if (aircraftIds.length === 0 && versions.length > 0) {
+            const latest = getLatestVersion(versions);
+            const data = await fetchVersion(latest.id);
+            if (data) {
+              await downloadPdfBlob(
+                render(data, latest.aircraftId ?? null),
+                buildAnexoFileName(tipoAnexo, `v${latest.numeroVersion}`, latest.aircraftId ?? undefined),
+              );
+            }
+            return;
+          }
+          for (const aircraftId of aircraftIds) {
+            const versionsForAircraft = versions.filter((version) => version.aircraftId === aircraftId);
+            if (versionsForAircraft.length > 0) {
+              const latest = getLatestVersion(versionsForAircraft);
+              const data = await fetchVersion(latest.id);
+              if (!data) continue;
+              await downloadPdfBlob(
+                render(data, aircraftId),
+                buildAnexoFileName(tipoAnexo, `v${latest.numeroVersion}`, aircraftId),
+              );
+            } else {
+              const data = await fetchCurrent(aircraftId);
+              if (!data) continue;
+              await downloadPdfBlob(
+                render(data, aircraftId),
+                buildAnexoFileName(tipoAnexo, "borrador", aircraftId),
+              );
+            }
+          }
+        }
+      };
+
+      await downloadAnexoPerAircraft(
+        6,
+        anexo6Versions,
+        anexo6VersionIds,
+        (aircraftId) => fetchAnexo6Data(operation.idOperacion, aircraftId),
+        (versionId) => fetchAnexo6VersionData(operation.idOperacion, versionId),
+        (data, aircraftId) => (
+          <FormOperationAnexo6DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={data}
+            aircraftLabel={aircraftId ? aircraftLabelById.get(aircraftId) ?? `Aeronave ${aircraftId}` : ""}
+            generatedAt={generatedAtLabel}
+          />
+        ),
+      );
+
+      await downloadAnexoPerAircraft(
+        7,
+        anexo7Versions,
+        anexo7VersionIds,
+        (aircraftId) => fetchAnexo7Data(operation.idOperacion, aircraftId),
+        (versionId) => fetchAnexo7VersionData(operation.idOperacion, versionId),
+        (data, aircraftId) => (
+          <FormOperationAnexo7DetailPdf
+            operationId={operation.idOperacion}
+            operationTitle={operation.codigo}
+            formValues={data}
+            aircraftLabel={aircraftId ? aircraftLabelById.get(aircraftId) ?? `Aeronave ${aircraftId}` : ""}
+            generatedAt={generatedAtLabel}
+          />
+        ),
+      );
+    } catch (err) {
+      console.error("Error descargando PDFs:", err);
+      alert("No se pudieron generar los PDFs.");
+    } finally {
+      setIsPdfDownloading(false);
+    }
+  };
 
   const handleComplete = async () => {
     if (!operation) {
@@ -280,10 +620,9 @@ export default function OperationDetail() {
 
           {/* Action Buttons */}
           <div className="d-flex gap-2">
-            {pdfDocument && (
-              <PDFDownloadLink
-                document={pdfDocument}
-                fileName={pdfFileName}
+            <div className="position-relative" ref={pdfMenuRef}>
+              <button
+                type="button"
                 className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{
                   backgroundColor: "#111827",
@@ -292,15 +631,54 @@ export default function OperationDetail() {
                   textDecoration: "none",
                   transform: isSticky ? 'scale(0.9)' : 'scale(1)'
                 }}
+                onClick={() => setIsPdfMenuOpen((prev) => !prev)}
+                disabled={isPdfDownloading}
+                aria-haspopup="menu"
+                aria-expanded={isPdfMenuOpen}
               >
-                {({ loading }) => (
-                  <>
-                    <img src={downloadIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
-                    <span className="d-none d-md-inline">{loading ? "Generando..." : "Descargar PDF"}</span>
-                  </>
-                )}
-              </PDFDownloadLink>
-            )}
+                <img src={downloadIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
+                <span className="d-none d-md-inline">
+                  {isPdfDownloading ? "Generando..." : "Descargar PDFs"}
+                </span>
+              </button>
+
+              {isPdfMenuOpen && !isPdfDownloading && (
+                <div
+                  role="menu"
+                  className="dropdown-menu show p-2"
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    marginTop: 8,
+                    minWidth: 300,
+                    borderRadius: 8,
+                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => void handleDownloadPdfs("all")}
+                  >
+                    Descargar todos los PDFs
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => void handleDownloadPdfs("latest")}
+                  >
+                    Descargar operacion + última version de anexos
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => void handleDownloadPdfs("detail")}
+                  >
+                    Descargar solo operacion
+                  </button>
+                </div>
+              )}
+            </div>
             {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
               <ButtonProp
                 className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"

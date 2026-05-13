@@ -248,7 +248,7 @@ export type FormOperationAnexo4DetailPdfProps = {
   generatedAt?: string; // opcional para pie (YYYY-MM-DD etc.)
 };
 
-export function FormOperationAnexo4DetailPdf({
+export function Anexo4Pages({
   operationId,
   operationTitle,
   formValues,
@@ -274,14 +274,13 @@ export function FormOperationAnexo4DetailPdf({
   const otrasItems = normalizeExpandableItems(formValues.otrasLimitacionesItems).slice(0, 8);
 
   return (
-    <Document>
-      <Page size="A4" style={styles.page} wrap>
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
-          </Text>
-          <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
-        </View>
+    <Page size="A4" style={styles.page} wrap>
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
+        </Text>
+        <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
+      </View>
 
         {/* SECCIÓN 1: Información sobre las operaciones */}
         <Text style={styles.subtitle}>SECCIÓN 1: Información sobre las operaciones</Text>
@@ -463,11 +462,18 @@ export function FormOperationAnexo4DetailPdf({
         )}
 
         {/* Footer */}
-        <View style={styles.footer} fixed>
-          <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-          <Text>Apéndice 4</Text>
-        </View>
-      </Page>
+      <View style={styles.footer} fixed>
+        <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
+        <Text>Apéndice 4</Text>
+      </View>
+    </Page>
+  );
+}
+
+export function FormOperationAnexo4DetailPdf(props: FormOperationAnexo4DetailPdfProps) {
+  return (
+    <Document>
+      <Anexo4Pages {...props} />
     </Document>
   );
 }
