@@ -4,6 +4,7 @@
 
 Sistema integral de gestión de aeronaves (drones), operadores y documentación técnica.
 
+Mira aquí [Project Screenshots](screenshots.md) para ver capturas de la aplicación.
 ---
 
 ## Requisitos Previos
