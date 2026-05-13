@@ -21,9 +21,11 @@ Estas capturas muestran el estado global de la flota y el acceso rápido a los m
 | *Panel principal con métricas en tiempo real* | *Visualización de caducidad de certificados, día de mantenimiento, día de operación de vuelo, etc* |
 <details>
 <summary><b>Ver más capturas de dashboard</b></summary>
+
 | Vista día en detalle |
 | :---: |
-| ![Lista de Drones](./docs/captura20.png) |
+| ![Calendario detalle](./docs/captura20.png) |
+
 </details>
 ---
 
@@ -32,14 +34,16 @@ Registro, edición y visualización de usuarios y sus roles.
 
 | Usuarios | Perfil usuario |
 | :---: | :---: |
-| ![Lista de Drones](./docs/captura5.png) | ![Detalle](./docs/captura3.png) |
+| ![Lista de Usuarios](./docs/captura5.png) | ![Detalle](./docs/captura3.png) |
 | *Listado de usuarios* | *Perfil de usuario en detalle* |
 <details>
 <summary><b>Ver más capturas de Usuarios</b></summary>
+
 | Registro usuario (admin) |
 | :---: |
-| ![Lista de Drones](./docs/captura4.png) |
+| ![Lista de Usuarios](./docs/captura4.png) |
 | *Formulario de registro de usuarios* |
+
 </details>
 ---
 
@@ -48,14 +52,14 @@ Registro, edición y visualización de drones individuales y modelos de fabrican
 
 | Registro de Nuevo Drone | Registro de nuevo Modelo |
 | :---: | :---: |
-| ![Formulario](./docs/captura8.png) | ![Validación](./docs/captura7.png) |
+| ![Formulario](./docs/captura8.png) | ![SeleccionRegistro](./docs/captura7.png) |
 
 <details>
 <summary><b>Ver más capturas de Aeronaves</b></summary>
 
 | Vista registrar aeronave / modelo | Añadir documentación |
 | :---: | :---: |
-| ![Modelos](./docs/captura6.png) | ![Documentación](./docs/captura9.png)
+| ![Registro](./docs/captura6.png) | ![Documentación](./docs/captura9.png)|
 
 </details>
 
@@ -66,17 +70,8 @@ Control de ciclos de vida, reparaciones y libros de vuelo.
 
 | Registro de Mantenimiento | Historial de Vuelos |
 | :---: | :---: |
-| ![Mantenimiento](./docs/captura10.png) | ![Logs](./docs/captura11.png) |
+| ![Mantenimiento](./docs/captura10.png) | ![HorasDeVuelo](./docs/captura11.png) |
 | *Control de avisos preventivos* | *Registro detallado por piloto y aeronave* |
-
----
-
-## Documentación y Seguridad
-Gestión de certificados, seguros y perfiles de usuario.
-
-| Archivos y Certificados | Seguridad JWT |
-| :---: | :---: |
-| ![Docs](./docs/captura15.png) | ![Auth](./docs/captura16.png) |
 
 ---
 
@@ -85,14 +80,14 @@ Registro, versionado y firmado de Operaciones acorde con los requisitos de AESA 
 
 | Operación | Anexo6 |
 | :---: | :---: |
-| ![Docs](./docs/captura12.png) | ![Auth](./docs/captura13.png) |
+| ![OpGeneral](./docs/captura12.png) | ![Anexo6](./docs/captura13.png) |
 | *Vista registro operación haciendo scroll para abajo* | *Vista breve de anexo 6* |
 <details>
 <summary><b>Ver más capturas de operaciones</b></summary>
 
 | Vista documentación de operación |
 | :---: |
-| ![Modelos](./docs/captura14.png) |
+| ![Documentacion Operaciones](./docs/captura14.png) |
 
 </details>
 
@@ -115,18 +110,6 @@ Vista opciones de administrador en el servidor
 
 </details>
 
----
-
-### Resto de capturas (Archivo)
-<details>
-<summary>Ver galería completa (17-20)</summary>
-
-![Captura 17](./docs/captura17.png)
-![Captura 18](./docs/captura18.png)
-![Captura 19](./docs/captura19.png)
-![Captura 20](./docs/captura20.png)
-
-</details>
 
 ---
 [⬅️ Volver al README principal](../README.md)
