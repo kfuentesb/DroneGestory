@@ -10,6 +10,8 @@ server:
         max-part-header-size: 2048
 
 spring:
+    config:
+        import: "optional:file:.env[.properties]"
     servlet:
         multipart:
             enabled: true

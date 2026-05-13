@@ -16,27 +16,36 @@ Sistema integral de gestión de aeronaves (drones), operadores y documentación 
 
 ---
 
-## Configuración del Entorno (.env)
+## Configuración del Entorno (`.env`)
 
-Crea un archivo `.env` en la raíz del proyecto con la siguiente estructura:
+Para que el sistema funcione correctamente, es necesario crear un archivo **`.env`** dentro de la carpeta `backend/`. Este archivo gestiona las credenciales sensibles que no deben subirse al repositorio.
 
-```bash
-# Configuración de Base de Datos
+### Plantilla del archivo `backend/.env`
+
+```properties
+# --- Base de Datos ---
 DB_USER=admin
 DB_PASSWORD=admin123
 DB_NAME=aeronaves_db
 
-# Configuración de Red
-SERVER_IP=YOUR_SERVER_IP
-VITE_API_BASE_URL=http://${SERVER_IP}:8080
+# --- Seguridad JWT ---
+# Genera una cadena aleatoria de al menos 32 caracteres
+JWT_SECRET=tu_clave_secreta_super_larga_y_segura_123456
+JWT_EXPIRATION_MS=86400000
+
+# --- Configuración de Email (Gmail) ---
+# Requiere "Contraseña de Aplicación" de Google
+EMAIL_USER=tu-correo@gmail.com
+EMAIL_PASSWORD=tu_clave_de_16_letras_sin_espacios
+
+# --- Configuración de Red ---
+VITE_API_BASE_URL=http://localhost:8080
 
 ```
 
 ---
 
 ## Despliegue en Servidor (Producción)
-
-Para montar el proyecto desde cero en un servidor utilizando contenedores Docker.
 
 ### 1. Clonar el repositorio
 
@@ -46,42 +55,27 @@ cd dronegestory
 
 ```
 
-### 2. Construir y levantar contenedores
+### 2. Preparar credenciales
 
-Se recomienda limpiar imágenes previas para evitar conflictos de caché:
+Copia el archivo `.env` configurado anteriormente dentro de `backend/`. Asegúrate de que `JWT_SECRET` sea una clave robusta para producción.
+
+### 3. Construir y levantar contenedores
 
 ```bash
 # Limpieza (Opcional)
 docker system prune -f
 
 # Construcción y arranque
-docker compose build backend
-docker compose build frontend
+docker compose build
 docker compose up -d
 
 ```
 
-### 3. Inicialización de Datos
-
-Para cargar datos experimentales y migraciones iniciales:
+### 4. Inicialización de Datos
 
 ```bash
 # Cargar esquema e inserciones iniciales
 docker exec -i dronegestory-db psql -U admin -d aeronaves_db < ./backend/init.sql
-
-# Ejemplo de ejecución de migraciones manuales
-docker exec -i dronegestory-db psql -U admin -d aeronaves_db < backend/database/migrations/V2026_04_22_001__user_multi_roles.sql
-
-```
-
-### 4. Utilidades de Servidor
-
-```bash
-# Ver logs del backend
-docker logs -f dronegestory-backend
-
-# Entrar a la consola de PostgreSQL
-docker exec -it dronegestory-db psql -U admin -d aeronaves_db
 
 ```
 
@@ -89,55 +83,37 @@ docker exec -it dronegestory-db psql -U admin -d aeronaves_db
 
 ## Configuración Local (Desarrollo)
 
-Para trabajar en local usando Docker solo para la base de datos y corriendo Spring Boot y React de forma nativa.
+### 1. Base de Datos
 
-### 1. Preparación del Entorno (Windows/Scoop)
-
-Si no tienes Java o Maven, puedes usar Scoop:
-
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-scoop bucket add java
-scoop install java/openjdk maven
-
-```
-
-### 2. Base de Datos Local
-
-Levanta el contenedor de la base de datos:
+Levanta solo el contenedor de PostgreSQL:
 
 ```bash
 cd backend
-docker compose up -d
+docker compose up -d db
 
 ```
 
-### 3. Iniciar Backend (Spring Boot)
+### 2. Iniciar Backend (Spring Boot)
 
-Ejecuta el perfil local para que las tablas se creen automáticamente:
+Asegúrate de tener el `.env` en la raíz de la carpeta `backend`. El perfil `local` usará el archivo `.env` mediante la importación configurada en `application-local.yaml`.
 
 ```bash
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 
 ```
 
-### 4. Iniciar Frontend (Vite + React)
-
-En una nueva terminal:
+### 3. Iniciar Frontend (Vite + React)
 
 ```bash
 cd frontend
 npm install
-npm run dev -- --host
+npm run dev
 
 ```
 
 ---
 
 ## Estructura de Almacenamiento (Uploads)
-
-El sistema organiza los archivos subidos siguiendo este esquema de rutas:
 
 | Tipo | Ruta de almacenamiento |
 | --- | --- |
@@ -147,46 +123,20 @@ El sistema organiza los archivos subidos siguiendo este esquema de rutas:
 
 ---
 
-## Herramientas Adicionales
+## Seguridad y JWT
 
-### Generador de Hashes (Security)
-
-Si necesitas generar contraseñas compatibles con BCrypt de Spring Security, usa el script de Python incluido:
-
-```bash
-pip install bcrypt
-python tools/hash_gen.py
-
-```
+* **JWT Secret**: Es fundamental que en producción esta variable esté configurada en el `.env`. Si no se detecta, el sistema usará un valor por defecto que **no es seguro**.
+* **Email**: El sistema utiliza Gmail SMTP. Asegúrate de tener activa la "Verificación en 2 pasos" y generar una "App Password" específica.
 
 ---
 
-## Roadmap / Pendientes
-
-### Visual
-
-* Cambiar tipografía a una más profesional.
-* Implementar fondo difuminado tipo "mapa de altura" inspirado en [DroneTools](https://dronetools.es/).
-
-### Seguridad
-
-* **Importante**: Reforzar seguridad en Fetchs para evitar que usuarios manipulen certificados ajenos mediante ID.
-
-### Funcionalidades
-
-* Corregir barra de búsqueda en sección documentaciones.
-* Localización de fechas: Formato `DD/MM/YYYY`.
-
----
 ## Tecnologías Principales
 
-* **Backend**: Java, Spring Boot, Spring Security, Maven.
-* **Frontend**: React, TypeScript, Vite, React Router, React Hook Form.
+* **Backend**: Java 21, Spring Boot 4.x, Spring Security (JWT), Maven.
+* **Frontend**: React, TypeScript, Vite.
 * **Base de Datos**: PostgreSQL.
 * **DevOps**: Docker, Docker Compose.
-* **UI Components**: SVAR UI (File Manager), Pro Sidebar.
 
 ---
-
 
 © 2026 DroneGestory Team
