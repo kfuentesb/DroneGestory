@@ -1,4 +1,4 @@
-# 📸 Galería de Capturas - DroneGestory
+# Galería de Capturas - DroneGestory
 
 En esta sección se detalla visualmente el funcionamiento de la plataforma, desde el panel de control hasta la gestión de documentación técnica.
 
@@ -112,4 +112,4 @@ Vista opciones de administrador en el servidor
 
 
 ---
-[⬅️ Volver al README principal](../README.md)
+[⬅️ Volver al README principal](./README.md)
