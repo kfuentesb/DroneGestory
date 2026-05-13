@@ -359,9 +359,9 @@ export function FormOperationAnexo4DetailPdf({
                 const aircraft = aircraftOptions.find((a) => String(a.id) === String(id));
                 console.log("Resultado del hallazgo:", aircraft);
                 return (
-                  // <Text key={id} style={styles.listItem}>
-                  //   • {aircraft ? getAircraftDisplayName(aircraft) : `#${id}`}
-                  // </Text>
+                  <Text key={id} style={styles.listItem}>
+                    {/* • {aircraft ? getAircraftDisplayName(aircraft) : `#${id}`} */}
+                  </Text>
                 );
               })
             )}
