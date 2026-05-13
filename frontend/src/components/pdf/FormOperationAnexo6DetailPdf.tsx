@@ -117,15 +117,28 @@ export function Anexo6Pages({
   const renderSection = (items: SectionItem[]) => (
     <View style={pdfStyles.box}>
       {items.map((item) => {
-        const value = item.key ? boolLabel(formValues[item.key], { trueLabel: "Correcto", falseLabel: "Incorrecto" }) : "N/A";
+        // En este anexo, boolLabel usa etiquetas personalizadas (Correcto/Incorrecto)
+        const value = item.key 
+          ? boolLabel(formValues[item.key], { trueLabel: "Correcto", falseLabel: "Incorrecto" }) 
+          : "N/A";
+        
         return (
           <View key={item.key ?? `${item.num}-${item.title}`} style={pdfStyles.apartadoRow}>
-            <View style={pdfStyles.apartadoLeft}>
+            {/* Columna Izquierda: Número de apartado */}
+            <View style={[pdfStyles.apartadoLeft, { marginLeft: item.level ? 10 * item.level : 0 }]}>
               <Text style={pdfStyles.apartadoNum}>{item.num}</Text>
             </View>
-            <View style={pdfStyles.apartadoRight}>
+
+            {/* Contenedor de Contenido: Título (izq) y Valor (der) */}
+            <View style={pdfStyles.apartadoContent}>
+              {/* Título: Ocupa el espacio disponible y permite saltos de línea */}
               <Text style={pdfStyles.apartadoTitle}>
-                {item.title} <Text style={pdfStyles.apartadoValue}>[{value}]</Text>
+                {item.title}
+              </Text>
+              
+              {/* Valor: Alineado a la derecha en negrita y sin corchetes */}
+              <Text style={pdfStyles.apartadoValue}>
+                {value}
               </Text>
             </View>
           </View>
