@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { pdf } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmModal from "../../commons/ConfirmModal";
 import ButtonProp from "../../commons/props/ButtonProp";
@@ -7,7 +7,12 @@ import { useAuth } from "../../commons/hooks/useAuth";
 import checkIcon from '../../../assets/commons/check_white.svg';
 import cancelIcon from '../../../assets/commons/cancel_white.svg';
 import downloadIcon from '../../../assets/commons/download.svg';
-import { cancelOperation, completeOperation, fetchAircraftOptions, fetchOperationDetail } from "../../operations/operation.api";
+import {
+  cancelOperation,
+  completeOperation,
+  fetchAircraftOptions,
+  fetchOperationDetail,
+} from "../../operations/operation.api";
 import type { AircraftOption } from "../../operations/operation.api";
 import type { OperationDetailDTO } from "../../operations/operation.types";
 import LoadingSpinner from "../../commons/Loading";
@@ -21,6 +26,8 @@ import {
 import { styles } from "../../../global-const/styles";
 import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
 import { OperationDetailPdf } from "../../pdf/OperationDetailPdf";
+import { OperationMasterPdf } from "../../pdf/OperationMasterPdf";
+import { buildVersionData } from "../../pdf/buildVersionData";
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -62,6 +69,10 @@ export default function OperationDetail() {
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const canCancelByRole = hasRole("ADMIN") || hasRole("MANAGER");
+
+  const [isPdfMenuOpen, setIsPdfMenuOpen] = useState(false);
+  const [isPdfDownloading, setIsPdfDownloading] = useState(false);
+  const pdfMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [isSticky, setIsSticky] = useState(false);
 
@@ -137,21 +148,75 @@ export default function OperationDetail() {
     ];
   }, [operation]);
 
-  const generatedAt = useMemo(
-    () => new Date().toLocaleString("es-ES"),
-    [operation?.idOperacion]
-  );
-
-  const pdfDocument = useMemo(() => {
-    if (!operation) return null;
-    return <OperationDetailPdf operation={operation} generatedAt={generatedAt} />;
-  }, [operation, generatedAt]);
-
-  const pdfFileName = useMemo(() => {
-    if (!operation) return "operacion.pdf";
-    const safeCode = operation.codigo ? operation.codigo.replace(/\s+/g, "_") : "operacion";
-    return `Operacion_${safeCode}_detalle.pdf`;
+  const safeCode = useMemo(() => {
+    if (!operation) return "operacion";
+    return operation.codigo ? operation.codigo.replace(/\s+/g, "_") : "operacion";
   }, [operation]);
+
+  useEffect(() => {
+    if (!isPdfMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!pdfMenuRef.current) return;
+      if (!pdfMenuRef.current.contains(event.target as Node)) {
+        setIsPdfMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isPdfMenuOpen]);
+
+  const downloadPdfBlob = async (pdfDocument: JSX.Element, fileName: string) => {
+    const blob = await pdf(pdfDocument).toBlob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  };
+
+  const buildOperationFileName = () => `Operacion_${safeCode}_detalle.pdf`;
+
+  const buildMasterFileName = (mode: "full" | "latest") => {
+    const suffix = mode === "full" ? "completo" : "ultimas_versiones";
+    return `Operacion_${safeCode}_${suffix}.pdf`;
+  };
+
+  const handleDownloadPdfs = async (mode: "full" | "latest" | "detail") => {
+    if (!operation) return;
+    setIsPdfDownloading(true);
+    setIsPdfMenuOpen(false);
+
+    const generatedAtLabel = new Date().toLocaleString("es-ES");
+    try {
+      if (mode === "detail") {
+        await downloadPdfBlob(
+          <OperationDetailPdf operation={operation} generatedAt={generatedAtLabel} />,
+          buildOperationFileName(),
+        );
+        return;
+      }
+
+      const masterData = await buildVersionData({
+        operation,
+        aircraftOptions,
+        mode,
+        generatedAt: generatedAtLabel,
+      });
+
+      await downloadPdfBlob(
+        <OperationMasterPdf data={masterData} />,
+        buildMasterFileName(mode),
+      );
+    } catch (err) {
+      console.error("Error descargando PDFs:", err);
+      alert("No se pudieron generar los PDFs.");
+    } finally {
+      setIsPdfDownloading(false);
+    }
+  };
 
   const handleComplete = async () => {
     if (!operation) {
@@ -281,10 +346,9 @@ export default function OperationDetail() {
 
           {/* Action Buttons */}
           <div className="d-flex gap-2">
-            {pdfDocument && (
-              <PDFDownloadLink
-                document={pdfDocument}
-                fileName={pdfFileName}
+            <div className="position-relative" ref={pdfMenuRef}>
+              <button
+                type="button"
                 className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{
                   backgroundColor: "#111827",
@@ -293,15 +357,54 @@ export default function OperationDetail() {
                   textDecoration: "none",
                   transform: isSticky ? 'scale(0.9)' : 'scale(1)'
                 }}
+                onClick={() => setIsPdfMenuOpen((prev) => !prev)}
+                disabled={isPdfDownloading}
+                aria-haspopup="menu"
+                aria-expanded={isPdfMenuOpen}
               >
-                {({ loading }) => (
-                  <>
-                    <img src={downloadIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
-                    <span className="d-none d-md-inline">{loading ? "Generando..." : "Descargar PDF"}</span>
-                  </>
-                )}
-              </PDFDownloadLink>
-            )}
+                <img src={downloadIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
+                <span className="d-none d-md-inline">
+                  {isPdfDownloading ? "Generando..." : "Descargar PDFs"}
+                </span>
+              </button>
+
+              {isPdfMenuOpen && !isPdfDownloading && (
+                <div
+                  role="menu"
+                  className="dropdown-menu show p-2"
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    marginTop: 8,
+                    minWidth: 300,
+                    borderRadius: 8,
+                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => void handleDownloadPdfs("full")}
+                  >
+                    Descargar PDF completo (todas las versiones)
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => void handleDownloadPdfs("latest")}
+                  >
+                    Descargar PDF completo (última version)
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => void handleDownloadPdfs("detail")}
+                  >
+                    Descargar solo detalle de operación
+                  </button>
+                </div>
+              )}
+            </div>
             {operation.estadoOperacion !== "CANCELADA" && canCancelByRole && (
               <ButtonProp
                 className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"

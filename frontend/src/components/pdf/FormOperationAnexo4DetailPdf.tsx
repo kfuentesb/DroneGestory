@@ -8,6 +8,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import { API_BASE_URL } from "../../api";
+import { buildVersionLabel } from "./pdfUtils";
 
 export type ExpandableTableItem = { descripcion: string; valor: string };
 export type SelectableUserOption = {
@@ -246,15 +247,17 @@ export type FormOperationAnexo4DetailPdfProps = {
   aircraftOptions?: AircraftOption[];
   personnelOptions?: SelectableUserOption[];
   generatedAt?: string; // opcional para pie (YYYY-MM-DD etc.)
+  numeroVersion?: number | string;
 };
 
-export function FormOperationAnexo4DetailPdf({
+export function Anexo4Pages({
   operationId,
   operationTitle,
   formValues,
   aircraftOptions = [],
   personnelOptions = [],
   generatedAt,
+  numeroVersion,
 }: FormOperationAnexo4DetailPdfProps) {
   const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
   const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
@@ -273,15 +276,18 @@ export function FormOperationAnexo4DetailPdf({
 
   const otrasItems = normalizeExpandableItems(formValues.otrasLimitacionesItems).slice(0, 8);
 
+  const versionLabel = buildVersionLabel(numeroVersion);
+
   return (
-    <Document>
-      <Page size="A4" style={styles.page} wrap>
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
-          </Text>
-          <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
-        </View>
+    <Page size="A4" style={styles.page} wrap>
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
+        </Text>
+        <Text style={{ marginTop: 10, fontSize: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
+        </Text>
+      </View>
 
         {/* SECCIÓN 1: Información sobre las operaciones */}
         <Text style={styles.subtitle}>SECCIÓN 1: Información sobre las operaciones</Text>
@@ -360,7 +366,7 @@ export function FormOperationAnexo4DetailPdf({
                 console.log("Resultado del hallazgo:", aircraft);
                 return (
                   <Text key={id} style={styles.listItem}>
-                    {/* • {aircraft ? getAircraftDisplayName(aircraft) : `#${id}`} */}
+                    • {aircraft ? getAircraftDisplayName(aircraft, id) : `#${id}`}
                   </Text>
                 );
               })
@@ -463,11 +469,18 @@ export function FormOperationAnexo4DetailPdf({
         )}
 
         {/* Footer */}
-        <View style={styles.footer} fixed>
-          <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-          <Text>Apéndice 4</Text>
-        </View>
-      </Page>
+      <View style={styles.footer} fixed>
+        <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
+        <Text>Apéndice 4{versionLabel}</Text>
+      </View>
+    </Page>
+  );
+}
+
+export function FormOperationAnexo4DetailPdf(props: FormOperationAnexo4DetailPdfProps) {
+  return (
+    <Document>
+      <Anexo4Pages {...props} />
     </Document>
   );
 }
