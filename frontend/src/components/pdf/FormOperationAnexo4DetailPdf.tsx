@@ -8,6 +8,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import { API_BASE_URL } from "../../api";
+import { buildVersionLabel } from "./pdfUtils";
 
 export type ExpandableTableItem = { descripcion: string; valor: string };
 export type SelectableUserOption = {
@@ -85,12 +86,40 @@ const styles = StyleSheet.create({
   list: { marginTop: 2, marginLeft: 10 },
   listItem: { marginBottom: 2 },
 
-  apartadoRow: { flexDirection: "row", marginBottom: 4 },
-  apartadoLeft: { width: 46 },
-  apartadoRight: { flex: 1 },
+  // apartadoRow: { flexDirection: "row", marginBottom: 4 },
+  // apartadoLeft: { width: 46 },
+  // apartadoRight: { flex: 1 },
   apartadoNum: { fontWeight: "bold" },
-  apartadoTitle: { fontSize: 10.2 },
-  apartadoValue: { fontWeight: "bold" },
+  // apartadoTitle: { fontSize: 10.2 },
+  // apartadoValue: { fontWeight: "bold" },
+  apartadoRow: { 
+    flexDirection: "row", 
+    marginBottom: 4,
+    alignItems: "flex-start", // Alinea al tope si el texto tiene varias líneas
+    borderBottomWidth: 0.5,   // Opcional: una línea sutil para guiar la vista
+    borderBottomColor: "#EEE",
+    paddingBottom: 2,
+  },
+  apartadoLeft: { 
+    width: 35, // Ajustado ligeramente para el número
+  },
+  apartadoContent: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  apartadoTitle: { 
+    fontSize: 10.2, 
+    flex: 1,          // Hace que el título ocupe el espacio disponible
+    marginRight: 15,  // Margen de seguridad entre texto y respuesta
+  },
+  apartadoValue: { 
+    fontWeight: "bold",
+    fontSize: 10.5,
+    textAlign: "right",
+    minWidth: 30,     // Espacio mínimo para el valor
+  },
 
   box: {
     borderWidth: 1,
@@ -246,15 +275,17 @@ export type FormOperationAnexo4DetailPdfProps = {
   aircraftOptions?: AircraftOption[];
   personnelOptions?: SelectableUserOption[];
   generatedAt?: string; // opcional para pie (YYYY-MM-DD etc.)
+  numeroVersion?: number | string;
 };
 
-export function FormOperationAnexo4DetailPdf({
+export function Anexo4Pages({
   operationId,
   operationTitle,
   formValues,
   aircraftOptions = [],
   personnelOptions = [],
   generatedAt,
+  numeroVersion,
 }: FormOperationAnexo4DetailPdfProps) {
   const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
   const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
@@ -273,15 +304,18 @@ export function FormOperationAnexo4DetailPdf({
 
   const otrasItems = normalizeExpandableItems(formValues.otrasLimitacionesItems).slice(0, 8);
 
+  const versionLabel = buildVersionLabel(numeroVersion);
+
   return (
-    <Document>
-      <Page size="A4" style={styles.page} wrap>
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
-          </Text>
-          <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
-        </View>
+    <Page size="A4" style={styles.page} wrap>
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          APÉNDICE 4 - LISTA DE VERIFICACIÓN PLANIFICACIÓN OPERACIONAL
+        </Text>
+        <Text style={{ marginTop: 10, fontSize: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
+        </Text>
+      </View>
 
         {/* SECCIÓN 1: Información sobre las operaciones */}
         <Text style={styles.subtitle}>SECCIÓN 1: Información sobre las operaciones</Text>
@@ -360,7 +394,7 @@ export function FormOperationAnexo4DetailPdf({
                 console.log("Resultado del hallazgo:", aircraft);
                 return (
                   <Text key={id} style={styles.listItem}>
-                    {/* • {aircraft ? getAircraftDisplayName(aircraft) : `#${id}`} */}
+                    • {aircraft ? getAircraftDisplayName(aircraft, id) : `#${id}`}
                   </Text>
                 );
               })
@@ -390,21 +424,22 @@ export function FormOperationAnexo4DetailPdf({
           <Text>Sin imagen adjunta.</Text>
         )}
 
-        {/* SECCIÓN 4 */}
+        {/* SECCIÓN 4: Zonas geográficas de UAS */}
         <Text style={styles.subtitle}>SECCIÓN 4: Zonas geográficas de UAS</Text>
         <View style={styles.box}>
           {SECCIONES_CONFIG.seccion4.map((item) => {
             const value = item.key ? boolLabel(formValues[item.key]) : "N/A";
             return (
               <View key={item.key ?? `${item.num}-${item.title}`} style={styles.apartadoRow}>
-                <View style={[styles.apartadoLeft, { marginLeft: item.level ? 10 : 0 }]}>
+                {/* Número de apartado */}
+                <View style={[styles.apartadoLeft, { marginLeft: item.level ? 12 : 0 }]}>
                   <Text style={styles.apartadoNum}>{item.num}</Text>
                 </View>
-                <View style={styles.apartadoRight}>
-                  <Text style={styles.apartadoTitle}>
-                    {item.title} {"  "}
-                    <Text style={styles.apartadoValue}>[{value}]</Text>
-                  </Text>
+
+                {/* Contenedor Flex para Título (izq) y Valor (der) */}
+                <View style={styles.apartadoContent}>
+                  <Text style={styles.apartadoTitle}>{item.title}</Text>
+                  <Text style={styles.apartadoValue}>{value}</Text>
                 </View>
               </View>
             );
@@ -420,19 +455,28 @@ export function FormOperationAnexo4DetailPdf({
         )}
 
         {/* SECCIÓN 6 */}
+        {/* SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo */}
         <Text style={styles.subtitle}>SECCIÓN 6: Requisitos y limitaciones en la zona de vuelo</Text>
         <View style={styles.box}>
           {SECCIONES_CONFIG.seccion6.map((item) => {
             const value = item.key ? boolLabel(formValues[item.key]) : "N/A";
             return (
               <View key={item.key ?? `${item.num}-${item.title}`} style={styles.apartadoRow}>
-                <View style={[styles.apartadoLeft, { marginLeft: item.level ? 10 : 0 }]}>
+                {/* Número de apartado con sangría según nivel */}
+                <View style={[styles.apartadoLeft, { marginLeft: item.level ? 12 : 0 }]}>
                   <Text style={styles.apartadoNum}>{item.num}</Text>
                 </View>
-                <View style={styles.apartadoRight}>
+
+                {/* Contenedor Flex: El título crece (flex: 1) y empuja el valor al final */}
+                <View style={styles.apartadoContent}>
+                  {/* Título de la instrucción (soporta salto de línea) */}
                   <Text style={styles.apartadoTitle}>
-                    {item.title} {"  "}
-                    <Text style={styles.apartadoValue}>[{value}]</Text>
+                    {item.title}
+                  </Text>
+                  
+                  {/* Valor de respuesta en negrita a la derecha */}
+                  <Text style={styles.apartadoValue}>
+                    {value}
                   </Text>
                 </View>
               </View>
@@ -463,11 +507,18 @@ export function FormOperationAnexo4DetailPdf({
         )}
 
         {/* Footer */}
-        <View style={styles.footer} fixed>
-          <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-          <Text>Apéndice 4</Text>
-        </View>
-      </Page>
+      <View style={styles.footer} fixed>
+        <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
+        <Text>Apéndice 4{versionLabel}</Text>
+      </View>
+    </Page>
+  );
+}
+
+export function FormOperationAnexo4DetailPdf(props: FormOperationAnexo4DetailPdfProps) {
+  return (
+    <Document>
+      <Anexo4Pages {...props} />
     </Document>
   );
 }

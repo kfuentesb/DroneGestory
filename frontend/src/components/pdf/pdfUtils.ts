@@ -26,12 +26,35 @@ export const pdfStyles = StyleSheet.create({
   list: { marginTop: 2, marginLeft: 10 },
   listItem: { marginBottom: 2 },
 
-  apartadoRow: { flexDirection: "row", marginBottom: 4 },
-  apartadoLeft: { width: 46 },
-  apartadoRight: { flex: 1 },
   apartadoNum: { fontWeight: "bold" },
-  apartadoTitle: { fontSize: 10.2 },
-  apartadoValue: { fontWeight: "bold" },
+  apartadoRow: { 
+    flexDirection: "row", 
+    marginBottom: 4,
+    alignItems: "flex-start", // Alinea al tope si el texto tiene varias líneas
+    borderBottomWidth: 0.5,   // Opcional: una línea sutil para guiar la vista
+    borderBottomColor: "#EEE",
+    paddingBottom: 2,
+  },
+  apartadoLeft: { 
+    width: 35, // Ajustado ligeramente para el número
+  },
+  apartadoContent: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  apartadoTitle: { 
+    fontSize: 10.2, 
+    flex: 1,          // Hace que el título ocupe el espacio disponible
+    marginRight: 15,  // Margen de seguridad entre texto y respuesta
+  },
+  apartadoValue: { 
+    fontWeight: "bold",
+    fontSize: 10.5,
+    textAlign: "right",
+    minWidth: 30,     // Espacio mínimo para el valor
+  },
 
   box: {
     borderWidth: 1,
@@ -178,4 +201,26 @@ export const boolLabel = (value: unknown, labels?: BoolLabels) => {
   }
 
   return emptyLabel;
+};
+
+export const buildVersionLabel = (numeroVersion?: number | string) => {
+  if (numeroVersion === null || numeroVersion === undefined || numeroVersion === "") {
+    return " (Sin versión)";
+  }
+
+  if (typeof numeroVersion === "number") {
+    return numeroVersion > 0 ? ` (V${numeroVersion})` : " (Sin versión)";
+  }
+
+  const normalized = numeroVersion.trim();
+  if (!normalized || /^0+$/.test(normalized)) {
+    return " (Sin versión)";
+  }
+
+  const normalizedLower = normalized.toLowerCase();
+  if (normalizedLower === "draft" || normalizedLower === "borrador") {
+    return " (Borrador)";
+  }
+
+  return ` (V${normalized})`;
 };

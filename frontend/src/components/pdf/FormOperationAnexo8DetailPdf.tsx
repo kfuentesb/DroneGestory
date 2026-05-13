@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { boolLabel, pdfStyles, textValue } from "./pdfUtils";
+import { boolLabel, buildVersionLabel, pdfStyles, textValue } from "./pdfUtils";
 
 type SectionItem = {
   num: string;
@@ -57,33 +57,45 @@ export type FormOperationAnexo8DetailPdfProps = {
   operationId: number;
   operationTitle?: string;
   formValues: Record<string, any>;
+  numeroVersion?: number | string;
   generatedAt?: string;
 };
 
-export function FormOperationAnexo8DetailPdf({
+export function Anexo8Pages({
   operationId,
   operationTitle,
   formValues,
+  numeroVersion,
   generatedAt,
 }: FormOperationAnexo8DetailPdfProps) {
   const otrasItems = normalizeItems(formValues.otrasLimitacionesItems).slice(0, 8);
+  const versionLabel = buildVersionLabel(numeroVersion);
 
   const renderSection = (items: SectionItem[]) => (
     <View style={pdfStyles.box}>
       {items.map((item) => {
         const value = item.key ? boolLabel(formValues[item.key]) : null;
+        
         return (
           <View key={item.key ?? `${item.num}-${item.title}`} style={pdfStyles.apartadoRow}>
+            {/* Columna Izquierda: Número de apartado con sangría dinámica */}
             <View style={[pdfStyles.apartadoLeft, { marginLeft: item.level ? 10 * item.level : 0 }]}>
               <Text style={pdfStyles.apartadoNum}>{item.num}</Text>
             </View>
-            <View style={pdfStyles.apartadoRight}>
-              <Text style={[pdfStyles.apartadoTitle, item.bold ? { fontWeight: "bold" } : null]}>
+
+            {/* Contenedor de Contenido: Título (izq) y Valor (der) */}
+            <View style={pdfStyles.apartadoContent}>
+              {/* Título: Usa flex: 1 para ocupar el espacio y permitir saltos de línea */}
+              <Text style={[pdfStyles.apartadoTitle, item.bold ? { fontWeight: "bold" } : {}]}>
                 {item.title}
-                {value ? (
-                  <Text style={pdfStyles.apartadoValue}> [{value}]</Text>
-                ) : null}
               </Text>
+              
+              {/* Valor: Solo se muestra si existe una 'key', alineado a la derecha y en negrita */}
+              {item.key ? (
+                <Text style={pdfStyles.apartadoValue}>
+                  {value}
+                </Text>
+              ) : null}
             </View>
           </View>
         );
@@ -92,14 +104,13 @@ export function FormOperationAnexo8DetailPdf({
   );
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page} wrap>
-        <View style={pdfStyles.header}>
-          <Text style={pdfStyles.title}>APÉNDICE 8 - LISTA VERIFICACIÓN POSVUELO OPERACIONAL</Text>
-          <Text style={{marginTop: 12}}>
-            {operationTitle ? `${operationTitle}` : ""}
-          </Text>
-        </View>
+    <Page size="A4" style={pdfStyles.page} wrap>
+      <View style={pdfStyles.header}>
+        <Text style={pdfStyles.title}>APÉNDICE 8 - LISTA VERIFICACIÓN POSVUELO OPERACIONAL</Text>
+        <Text style={{ marginTop: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
+        </Text>
+      </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
         <View style={pdfStyles.summaryGrid}>
@@ -138,11 +149,18 @@ export function FormOperationAnexo8DetailPdf({
           </View>
         )}
 
-        <View style={pdfStyles.footer} fixed>
-          <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-          <Text>Apéndice 8</Text>
-        </View>
-      </Page>
+      <View style={pdfStyles.footer} fixed>
+        <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
+        <Text>Apéndice 8{versionLabel}</Text>
+      </View>
+    </Page>
+  );
+}
+
+export function FormOperationAnexo8DetailPdf(props: FormOperationAnexo8DetailPdfProps) {
+  return (
+    <Document>
+      <Anexo8Pages {...props} />
     </Document>
   );
 }

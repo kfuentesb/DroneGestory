@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { boolLabel, pdfStyles, textValue } from "./pdfUtils";
+import { boolLabel, buildVersionLabel, pdfStyles, textValue } from "./pdfUtils";
 
 type SectionItem = {
   num: string;
@@ -95,14 +95,16 @@ export type FormOperationAnexo6DetailPdfProps = {
   operationTitle?: string;
   formValues: Record<string, any>;
   aircraftLabel?: string;
+  numeroVersion?: number | string;
   generatedAt?: string;
 };
 
-export function FormOperationAnexo6DetailPdf({
+export function Anexo6Pages({
   operationId,
   operationTitle,
   formValues,
   aircraftLabel,
+  numeroVersion,
   generatedAt,
 }: FormOperationAnexo6DetailPdfProps) {
   const materialesAuxiliares = Array.isArray(formValues.materialesAuxiliares)
@@ -110,19 +112,33 @@ export function FormOperationAnexo6DetailPdf({
     : [];
 
   const elementosItems = normalizeItems(formValues.elementosAuxiliaresItems).slice(0, 8);
+  const versionLabel = buildVersionLabel(numeroVersion);
 
   const renderSection = (items: SectionItem[]) => (
     <View style={pdfStyles.box}>
       {items.map((item) => {
-        const value = item.key ? boolLabel(formValues[item.key], { trueLabel: "Correcto", falseLabel: "Incorrecto" }) : "N/A";
+        // En este anexo, boolLabel usa etiquetas personalizadas (Correcto/Incorrecto)
+        const value = item.key 
+          ? boolLabel(formValues[item.key], { trueLabel: "Correcto", falseLabel: "Incorrecto" }) 
+          : "N/A";
+        
         return (
           <View key={item.key ?? `${item.num}-${item.title}`} style={pdfStyles.apartadoRow}>
-            <View style={pdfStyles.apartadoLeft}>
+            {/* Columna Izquierda: Número de apartado */}
+            <View style={[pdfStyles.apartadoLeft, { marginLeft: item.level ? 10 * item.level : 0 }]}>
               <Text style={pdfStyles.apartadoNum}>{item.num}</Text>
             </View>
-            <View style={pdfStyles.apartadoRight}>
+
+            {/* Contenedor de Contenido: Título (izq) y Valor (der) */}
+            <View style={pdfStyles.apartadoContent}>
+              {/* Título: Ocupa el espacio disponible y permite saltos de línea */}
               <Text style={pdfStyles.apartadoTitle}>
-                {item.title} <Text style={pdfStyles.apartadoValue}>[{value}]</Text>
+                {item.title}
+              </Text>
+              
+              {/* Valor: Alineado a la derecha en negrita y sin corchetes */}
+              <Text style={pdfStyles.apartadoValue}>
+                {value}
               </Text>
             </View>
           </View>
@@ -132,14 +148,13 @@ export function FormOperationAnexo6DetailPdf({
   );
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page} wrap>
-        <View style={pdfStyles.header}>
-          <Text style={pdfStyles.title}>APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</Text>
-          <Text style={{marginTop: 12}}>
-            {operationTitle ? ` ${operationTitle}` : ""}
-          </Text>
-        </View>
+    <Page size="A4" style={pdfStyles.page} wrap>
+      <View style={pdfStyles.header}>
+        <Text style={pdfStyles.title}>APÉNDICE 6 - LISTA VERIFICACIÓN PREVUELO UAS</Text>
+        <Text style={{ marginTop: 12 }}>
+          {operationTitle ? `${operationTitle}${versionLabel}` : ""}
+        </Text>
+      </View>
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 0: Información general</Text>
         <View style={pdfStyles.summaryGrid}>
@@ -219,11 +234,18 @@ export function FormOperationAnexo6DetailPdf({
           </View>
         )}
 
-        <View style={pdfStyles.footer} fixed>
-          <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
-          <Text>Apéndice 6</Text>
-        </View>
-      </Page>
+      <View style={pdfStyles.footer} fixed>
+        <Text>Generado{generatedAt ? `: ${generatedAt}` : ""}</Text>
+        <Text>Apéndice 6{versionLabel}</Text>
+      </View>
+    </Page>
+  );
+}
+
+export function FormOperationAnexo6DetailPdf(props: FormOperationAnexo6DetailPdfProps) {
+  return (
+    <Document>
+      <Anexo6Pages {...props} />
     </Document>
   );
 }
