@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Select from "react-select";
 import { useLocation, useNavigate } from "react-router-dom";
-import { styles } from "../../global-const/styles";
+import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
 import { apiFetch, API_BASE_URL } from "../../api";

@@ -6,7 +6,7 @@ import { apiFetch } from "../../api";
 import LoadingSpinner from "../commons/Loading";
 import FormAircraft from "./FormAircraft";
 
-import { styles } from "../../global-const/styles";
+import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
 type Mode = "new" | "existing";

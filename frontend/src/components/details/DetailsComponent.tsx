@@ -19,7 +19,7 @@ import AircraftDocumentationSection, {
     type AdditionalDoc,
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags,getAircraftModelDocumentationFlags, toBooleanLike } from "../certificates/aircraftDocumentationUtils";
-import { styles } from "../../global-const/styles";
+import { styles } from "../../styles/styles";
 import { API_BASE_URL } from "../../api";
 import {
     getDocumentationFetchUrl,

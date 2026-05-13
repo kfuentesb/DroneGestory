@@ -8,7 +8,7 @@ import SearchBar from "../commons/props/SearchBar";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 
-import { styles } from "../../global-const/styles";
+import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
 type AircraftModel = {

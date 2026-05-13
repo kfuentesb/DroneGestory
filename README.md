@@ -44,7 +44,7 @@ JWT_EXPIRATION_MS=86400000
 # --- Configuración de Email (Gmail) ---
 # Requiere "Contraseña de Aplicación" de Google
 EMAIL_USER=tu-correo@gmail.com
-EMAIL_PASSWORD=tu_clave_de_16_letras_sin_espacios
+EMAIL_PASSWORD=tu-clave
 ```
 
 ---
@@ -61,7 +61,7 @@ cd dronegestory
 
 ### 2. Preparar credenciales
 
-Copia el archivo `.env` configurado anteriormente dentro de `backend/`. Asegúrate de que `JWT_SECRET` sea una clave robusta para producción.
+Copia los archivos `.env` e introduzca en raíz y en `backend/`. Asegúrate de que `JWT_SECRET` sea una clave robusta para producción.
 
 ### 3. Construir y levantar contenedores
 
@@ -115,6 +115,78 @@ npm run dev
 
 ```
 
+## Estructura de carpetas
+
+.
+├── backend/
+│   ├── database/migrations (Para migrar o hacer cambios a la base de datos)
+│   ├── src/main/
+│   │    ├── java/com/dronetools/dronegrestory/
+│   │    │   ├── common/
+│   │    │   ├── config/ (SecurityConfig declara el rango de visión en base al rol del usuario)
+│   │    │   ├── controller/
+│   │    │   ├── dto/
+│   │    │   ├── exception/
+│   │    │   ├── model/
+│   │    │   ├── repository/
+│   │    │   ├── security/
+│   │    │   ├── service/
+│   │    │   ├── util/
+│   │    │   └── DroneGestoryApplication.java
+│   │    └── resources/ (.yaml para local y servidor )
+│   ├── docker-compose.yml ( postgresql database para desarrollo )
+│   ├── Dockerfile ( docker para montar el backend en despliegue )
+│   ├── init.sql ( Insert para crear primer usuario admin )
+│   ├── pom.xml
+│   ├── string-to-hash.py (Script para generar contraseñas hasheadas )
+│   └── .env/ ( properties / Seguridad JWT / Configuración de Email (Gmail) )
+│
+├── frontend/
+│   ├── public/ ( imágenes )
+│   ├── src/
+│   │    ├── assets/
+│   │    ├── components/
+│   │    │    ├── certificates/
+│   │    │    ├── commons/ ( Componentes reutilizados en diferentes partes del proyecto)
+│   │    │    │    ├── hooks/
+│   │    │    │    ├── MultiStepForm/
+│   │    │    │    ├── props/
+│   │    │    │    └── * 
+│   │    │    ├── dashboard/
+│   │    │    ├── details/ ( Vista detallada del elemento )
+│   │    │    │    ├── aircraft/
+│   │    │    │    ├── operation/
+│   │    │    │    ├── user&profile/
+│   │    │    │    └── DetailsComponent.tsx ( Vista reutilizada para ver los detalles)
+│   │    │    ├── docs/
+│   │    │    ├── forms/
+│   │    │    ├── layout/ ( Distribución principal del proyecto: sidebar, botón hamburguesa)
+│   │    │    ├── lists/
+│   │    │    ├── mail/
+│   │    │    ├── main-elements-views/ ( Elementos principales: footer, 403, 404, home, login, navbar, sidebar, etc)
+│   │    │    ├── operations/
+│   │    │    ├── pdf/
+│   │    │    └── AuthPorvider.tsx
+│   │    ├── global-const/
+│   │    ├── router/
+│   │    │    ├── ProtectedRoute.tsx
+│   │    │    └── RouterPrincipal.tsx
+│   │    ├── styles/
+│   │    ├── api.ts
+│   │    ├── App.css
+│   │    ├── App.tsx
+│   │    ├── index.css
+│   │    └── main.tsx
+│   ├── nginx.conf
+│   ├── vite.config.ts
+│   ├── Dockerfile ( docker para montar frontend en despliegue )
+│   └── index.html
+│
+├── .gitattributes
+├── .gitignore
+├── .env (SERVER_IP / VITE_API_BASE_URL)
+└── compose.yaml (Docker del servidor: backend, frontend, postgresql)
+
 ---
 
 ## Estructura de Almacenamiento (Uploads)
@@ -124,6 +196,7 @@ npm run dev
 | **Usuarios** | `uploads/users/{id-username}/...` |
 | **Modelos** | `uploads/aircraft-model/{model-manufacturer}/...` |
 | **Aeronaves** | `uploads/aircraft/{nserie-model}/...` |
+| **Documentación Operaciones** | `uplodas/operation-documentation/{file-name}`|
 
 ---
 
