@@ -103,11 +103,12 @@ const styles = StyleSheet.create({
   image: {
     marginTop: 6,
     marginBottom: 8,
-    width: "100%",
-    maxHeight: 260,
+    width: "70%",
+    maxHeight: 180,
     objectFit: "contain",
     borderWidth: 1,
     borderColor: "#EEE",
+    alignSelf: "center",
   },
 
   table: { borderWidth: 1, borderColor: "#DDD", borderRadius: 4, overflow: "hidden" },
@@ -191,8 +192,10 @@ const normalizeExpandableItems = (value: unknown): ExpandableTableItem[] => {
     .filter((x): x is ExpandableTableItem => x !== null);
 };
 
-const getAircraftDisplayName = (aircraft: AircraftOption) => {
-  const base = (aircraft.model ?? "").trim();
+const getAircraftDisplayName = (aircraft: AircraftOption | undefined, fallbackId: any) => {
+  if (!aircraft) return `Aeronave #${fallbackId}`;
+  
+  const base = (aircraft.model ?? "").trim() || "Aeronave";
   return aircraft.serialNumber ? `${base} (${aircraft.serialNumber})` : base;
 };
 
@@ -204,14 +207,36 @@ const boolLabel = (value: unknown) => {
   return "N/A";
 };
 
-const imageUrlFromFilename = (filename: unknown) => {
-  if (!filename || typeof filename !== "string" || !filename.trim()) return null;
+type PdfImageSource = string | { uri: string; headers?: Record<string, string> };
 
-  // Si ya viene como URL absoluta
-  if (/^https?:\/\//i.test(filename)) return filename;
+const getAuthHeaders = () => {
+  if (typeof localStorage === "undefined") return undefined;
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+};
 
-  // Si viene como filename del backend
-  return `${API_BASE_URL}/api/operations/anexo4/images/${filename}`;
+const imageSourceFromFilename = (filename: unknown): PdfImageSource | null => {
+  if (!filename || typeof filename !== "string") return null;
+  const trimmed = filename.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith("blob:") || trimmed.startsWith("data:")) {
+    return trimmed;
+  }
+
+  const headers = getAuthHeaders();
+  const withHeaders = (uri: string): PdfImageSource => (headers ? { uri, headers } : uri);
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return withHeaders(trimmed);
+  }
+
+  if (trimmed.startsWith("/api/")) {
+    return withHeaders(`${API_BASE_URL}${trimmed}`);
+  }
+
+  const normalized = trimmed.replace(/^\/+/, "");
+  return withHeaders(`${API_BASE_URL}/api/operations/anexo4/images/${normalized}`);
 };
 
 export type FormOperationAnexo4DetailPdfProps = {
@@ -243,8 +268,8 @@ export function FormOperationAnexo4DetailPdf({
         .filter((person: { id: number; fullName: string }) => Number.isFinite(person.id) || person.fullName)
     : [];
 
-  const imagenEspacioAereoUrl = imageUrlFromFilename(formValues.imagenEspacioAereo);
-  const imagenZonaVueloUrl = imageUrlFromFilename(formValues.imagenZonaVuelo);
+  const imagenEspacioAereoUrl = imageSourceFromFilename(formValues.imagenEspacioAereo);
+  const imagenZonaVueloUrl = imageSourceFromFilename(formValues.imagenZonaVuelo);
 
   const otrasItems = normalizeExpandableItems(formValues.otrasLimitacionesItems).slice(0, 8);
 
@@ -258,22 +283,39 @@ export function FormOperationAnexo4DetailPdf({
           <Text style={{marginTop: 10, fontSize: 12}}>{operationTitle ? `${operationTitle}` : ""}</Text>
         </View>
 
-        {/* SECCIÓN 1 */}
+        {/* SECCIÓN 1: Información sobre las operaciones */}
         <Text style={styles.subtitle}>SECCIÓN 1: Información sobre las operaciones</Text>
 
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>CONOPS</Text>
-          <Text style={styles.value}>{formValues.conops || "—"}</Text>
-        </View>
+        <View style={styles.summaryGrid}>
+          {/* CONOPS */}
+          <View style={styles.summaryCell}>
+            <Text style={styles.summaryLabel}>CONOPS</Text>
+            <Text style={styles.summaryValue}>{formValues.conops || "—"}</Text>
+          </View>
 
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>Descripción de objetivos</Text>
-          <Text style={styles.value}>{formValues.descripcion || "—"}</Text>
-        </View>
+          {/* Fechas y Horas */}
+          <View style={styles.summaryCell}>
+            <Text style={styles.summaryLabel}>Fechas y horas previstas</Text>
+            <Text style={styles.summaryValue}>{formValues.fechaHoraPrevista || "—"}</Text>
+          </View>
 
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>Personal necesario</Text>
-          <Text style={styles.value}>{formValues.personal || "—"}</Text>
+          {/* Descripción (Ocupa una celda, pero si es muy larga podrías considerar un ancho del 100%) */}
+          <View style={styles.summaryCell}>
+            <Text style={styles.summaryLabel}>Descripción de objetivos</Text>
+            <Text style={styles.summaryValue}>{formValues.descripcion || "—"}</Text>
+          </View>
+
+          {/* Personal Necesario */}
+          <View style={styles.summaryCell}>
+            <Text style={styles.summaryLabel}>Personal necesario</Text>
+            <Text style={styles.summaryValue}>{formValues.personal || "—"}</Text>
+          </View>
+
+          {/* Medios Materiales */}
+          <View style={styles.summaryCell}>
+            <Text style={styles.summaryLabel}>Medios materiales</Text>
+            <Text style={styles.summaryValue}>{formValues.mediosMateriales || "—"}</Text>
+          </View>
         </View>
 
         <View style={styles.fieldRow}>
@@ -304,6 +346,7 @@ export function FormOperationAnexo4DetailPdf({
           </View>
         </View>
 
+        {/* Aeronaves seleccionadas */}
         <View style={styles.fieldRow}>
           <Text style={styles.label}>Aeronaves seleccionadas</Text>
           <View style={styles.list}>
@@ -311,25 +354,18 @@ export function FormOperationAnexo4DetailPdf({
               <Text style={styles.listItem}>—</Text>
             ) : (
               aircraftIds.map((id) => {
-                const aircraft = aircraftOptions.find((a) => a.id === id);
+                console.log("Buscando ID:", id, "Tipo:", typeof id);
+                console.log("Opciones disponibles:", aircraftOptions);
+                const aircraft = aircraftOptions.find((a) => String(a.id) === String(id));
+                console.log("Resultado del hallazgo:", aircraft);
                 return (
-                  <Text key={id} style={styles.listItem}>
-                    • {aircraft ? getAircraftDisplayName(aircraft) : `#${id}`}
-                  </Text>
+                  // <Text key={id} style={styles.listItem}>
+                  //   • {aircraft ? getAircraftDisplayName(aircraft) : `#${id}`}
+                  // </Text>
                 );
               })
             )}
           </View>
-        </View>
-
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>Fechas y horas previstas</Text>
-          <Text style={styles.value}>{formValues.fechaHoraPrevista || "—"}</Text>
-        </View>
-
-        <View style={styles.fieldRow}>
-          <Text style={styles.label}>Medios materiales</Text>
-          <Text style={styles.value}>{formValues.mediosMateriales || "—"}</Text>
         </View>
 
         {/* SECCIÓN 2 */}

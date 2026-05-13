@@ -6,7 +6,7 @@ import {
   type ImageUploadState,
   type ImageUploadHandlers,
 } from "./hooks/useImageUpload";
-import { apiFetch } from "../../api";
+import { apiFetchRaw } from "../../api";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIPOS
@@ -91,6 +91,8 @@ export default function ImageUploadField({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [serverImageBlobUrl, setServerImageBlobUrl] = useState<string | null>(null);
+  const [serverImageLoading, setServerImageLoading] = useState(false);
+  const [serverImageError, setServerImageError] = useState(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -129,12 +131,19 @@ export default function ImageUploadField({
     const loadServerImage = async () => {
       if (!savedImageUrl || state.previewUrl) {
         setServerImageBlobUrl(null);
+        setServerImageLoading(false);
+        setServerImageError(false);
         return;
       }
+      setServerImageLoading(true);
+      setServerImageError(false);
       try {
-        const response = await apiFetch(savedImageUrl);
-        if (!response) {
+        const response = await apiFetchRaw(savedImageUrl);
+        if (!response.ok) {
           setServerImageBlobUrl(null);
+          if (!cancelled) {
+            setServerImageError(true);
+          }
           return;
         }
         const blob = await response.blob();
@@ -145,6 +154,11 @@ export default function ImageUploadField({
       } catch {
         if (!cancelled) {
           setServerImageBlobUrl(null);
+          setServerImageError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setServerImageLoading(false);
         }
       }
     };
@@ -243,12 +257,18 @@ export default function ImageUploadField({
               </button>
             )}
           </div>
-          <img
-            src={serverImageBlobUrl ?? savedImageUrl}
-            alt={`${label} guardada`}
-            className="img-fluid rounded border"
-            style={{ maxHeight: "220px", objectFit: "contain" }}
-          />
+          {serverImageBlobUrl ? (
+            <img
+              src={serverImageBlobUrl}
+              alt={`${label} guardada`}
+              className="img-fluid rounded border"
+              style={{ maxHeight: "220px", objectFit: "contain" }}
+            />
+          ) : serverImageLoading ? (
+            <div className="text-muted small">Cargando imagen...</div>
+          ) : serverImageError ? (
+            <div className="text-muted small">No se pudo cargar la imagen.</div>
+          ) : null}
         </div>
       )}
 
