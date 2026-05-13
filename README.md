@@ -165,18 +165,17 @@ python tools/hash_gen.py
 
 ### Visual
 
-* [ ] Cambiar tipografía a una más profesional.
-* [ ] Implementar fondo difuminado tipo "mapa de altura" inspirado en [DroneTools](https://dronetools.es/).
+* Cambiar tipografía a una más profesional.
+* Implementar fondo difuminado tipo "mapa de altura" inspirado en [DroneTools](https://dronetools.es/).
 
 ### Seguridad
 
-* [ ] **Importante**: Reforzar seguridad en Fetchs para evitar que usuarios manipulen certificados ajenos mediante ID.
+* **Importante**: Reforzar seguridad en Fetchs para evitar que usuarios manipulen certificados ajenos mediante ID.
 
 ### Funcionalidades
 
-* [ ] Corregir barra de búsqueda en sección documentaciones.
-* [ ] Localización de fechas: Formato `DD/MM/YYYY`.
-* [ ] Sistema de carpetas dinámico para operadoras.
+* Corregir barra de búsqueda en sección documentaciones.
+* Localización de fechas: Formato `DD/MM/YYYY`.
 
 ---
 ## Tecnologías Principales
