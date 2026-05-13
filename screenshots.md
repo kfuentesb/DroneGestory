@@ -14,24 +14,34 @@ Estas capturas muestran el estado global de la flota y el acceso rápido a los m
 
 ---
 
+## Gestión de Usuarios
+Registro, edición y visualización de usuarios y sus roles.
+
+| Usuarios | Perfil usuario |
+| :---: | :---: |
+| ![Lista de Drones](./docs/captura5.png) | ![Detalle](./docs/captura3.png) |
+| *Listado de usuarios* | *Perfil de usuario en detalle* |
+
+| Registro usuario (admin) |
+| :---: | :---: |
+| ![Lista de Drones](./docs/captura4.png) |
+| *Formulario de registro de usuarios* |
+
+---
+
 ## Gestión de Aeronaves
 Registro, edición y visualización de drones individuales y modelos de fabricante.
 
-| Inventario de Drones | Ficha Técnica |
+| Registro de Nuevo Drone | Registro de nuevo Modelo |
 | :---: | :---: |
-| ![Lista de Drones](./docs/captura3.png) | ![Detalle](./docs/captura4.png) |
-| *Listado con filtrado por fabricante* | *Especificaciones técnicas y estado de MTOM* |
+| ![Formulario](./docs/captura8.png) | ![Validación](./docs/captura7.png) |
 
 <details>
-<summary><b>Ver más capturas de Aeronaves (5-10)</b></summary>
+<summary><b>Ver más capturas de Aeronaves</b></summary>
 
-| Registro de Nuevo Drone | Validación de SN |
+| Vista registrar aeronave / modelo | Añadir documentación |
 | :---: | :---: |
-| ![Formulario](./docs/captura5.png) | ![Validación](./docs/captura6.png) |
-
-| Modelos de Fabricante | Edición de Imágenes |
-| :---: | :---: |
-| ![Modelos](./docs/captura7.png) | ![Crop](./docs/captura8.png) |
+| ![Modelos](./docs/captura6.png) | ![Documentación](./docs/captura9.png)
 
 </details>
 
