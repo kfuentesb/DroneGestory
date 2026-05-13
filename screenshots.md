@@ -1,3 +1,5 @@
+[⬅️ Volver al README principal](./README.md)
+
 # Galería de Capturas - DroneGestory
 
 En esta sección se detalla visualmente el funcionamiento de la plataforma, desde el panel de control hasta la gestión de documentación técnica.
@@ -71,7 +73,7 @@ Control de ciclos de vida, reparaciones y libros de vuelo.
 | Registro de Mantenimiento | Historial de Vuelos |
 | :---: | :---: |
 | ![Mantenimiento](./docs/captura10.png) | ![HorasDeVuelo](./docs/captura11.png) |
-| *Control de avisos preventivos* | *Registro detallado por piloto y aeronave* |
+| *Registro y vista de mantenimientos* | *Registro de horas de vuelo controladas* |
 
 ---
 
