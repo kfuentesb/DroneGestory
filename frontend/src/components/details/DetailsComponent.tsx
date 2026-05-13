@@ -600,7 +600,6 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     const handleAircraftDocumentationCheckChange = (key: string, isModelContext: boolean = false) => {
         const targetSetter = isModelContext ? setModelDocState : setAircraftDocState;
         
-        // Toggle de valor booleano dentro del objeto agrupado
         targetSetter(prev => ({
             ...prev,
             checks: {
@@ -629,13 +628,10 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         const targetSetter = isModelContext ? setModelDocState : setAircraftDocState;
 
         targetSetter(prev => {
-            // Clonamos el estado previo
             const nextState = { ...prev };
             
-            // Actualizamos el archivo en la sección 'files'
             nextState.files = { ...prev.files, [key]: file };
 
-            // Si hay archivo, buscamos su config para activar el checkbox automáticamente
             const fieldConfig = aircraftDocumentationFields.find((field) => field.fileKey === key);
             if (fieldConfig && file) {
                 nextState.checks = { 

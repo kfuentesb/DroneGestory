@@ -336,9 +336,9 @@ public class UserService {
             user.setFechaNac(null);
         }
 
-        if (updatedUser.getPhoneNumber() != null) {
-            user.setPhoneNumber(updatedUser.getPhoneNumber());
-        } else if (phoneNumberPresent) {
+        if (phoneNumberPresent) {
+            user.setPhoneNumber(null);
+        }else{
             user.setPhoneNumber(null);
         }
 

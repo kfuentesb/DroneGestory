@@ -36,18 +36,19 @@ export const userFields: FieldConfig[] = [
         label: "Teléfono",
         key: "phoneNumber",
         type: "text",
-        validate: (v: string | null | undefined) => {
-            // Si no hay valor o está vacío, es válido (opcional)
-            if (!v || v.toString().trim() === "") return true; 
-            const str = v.toString().trim();
-            // Si hay algo, debe ser exactamente 9 números
-            return /^[0-9]{9}$/.test(str); 
+        validate: (v: any) => {
+            if (!v || v.toString().trim() === "") return true;
+            // Solo números, máximo 9 (porque un Integer tiene límites de tamaño)
+            const digits = v.toString().replace(/\D/g, "");
+            return digits.length === 9;
         },
-        error: "Debe tener 9 números o estar vacío",
         format: (v: any) => {
-            const str = v?.toString().trim() || "";
-            if (str.length !== 9) return str;
-            return `+34 ${str.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}`;
+            if (!v) return "";
+            const digits = v.toString().replace(/\D/g, "");
+            if (digits.length === 9) {
+                return `+34 ${digits.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4")}`;
+            }
+            return digits;
         }
     },
     {
