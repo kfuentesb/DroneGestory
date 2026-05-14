@@ -2,7 +2,7 @@ import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
-  page: {
+  page: { 
     padding: 40,
     fontFamily: "Helvetica",
     backgroundColor: "#FFFFFF",
@@ -87,6 +87,16 @@ const styles = StyleSheet.create({
   },
 });
 
+function formatDateDMY(value: any) {
+  if (!value) return "N/A";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "N/A";
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
 export const MaintenanceHistoryPdf = ({ aircraft, maintenanceRecords }: any) => (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -104,7 +114,7 @@ export const MaintenanceHistoryPdf = ({ aircraft, maintenanceRecords }: any) => 
           wrap={false} // HACE QUE EL BLOQUE SEA IRROMPIBLE
         >
           <View style={styles.headerBar}>
-            <Text style={styles.headerText}>Registro de Mantenimiento - {record.maintenanceDate}</Text>
+            <Text style={styles.headerText}>Registro de Mantenimiento - {formatDateDMY(record.maintenanceDate)}</Text>
           </View>
 
           <View style={styles.contentBox}>
@@ -122,11 +132,11 @@ export const MaintenanceHistoryPdf = ({ aircraft, maintenanceRecords }: any) => 
             <View style={styles.row}>
               <View style={styles.col6}>
                 <Text style={styles.label}>Fecha Realización</Text>
-                <Text style={styles.value}>{record.maintenanceDate || "—"}</Text>
+                <Text style={styles.value}>{formatDateDMY(record.maintenanceDate) || "—"}</Text>
               </View>
               <View style={styles.col6}>
                 <Text style={styles.label}>Próxima Revisión</Text>
-                <Text style={styles.value}>{record.nextMaintenanceDate || "—"}</Text>
+                <Text style={styles.value}>{formatDateDMY(record.nextMaintenanceDate) || "—"}</Text>
               </View>
             </View>
 
