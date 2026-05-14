@@ -97,6 +97,22 @@ function formatDateDMY(value: any) {
   return `${day}-${month}-${year}`;
 }
 
+function getDateSortValue(value: any) {
+  if (!value) return null;
+  const date = new Date(value);
+  const time = date.getTime();
+  return Number.isNaN(time) ? null : time;
+}
+
+function sortByMaintenanceDateAsc(a: any, b: any) {
+  const timeA = getDateSortValue(a?.maintenanceDate);
+  const timeB = getDateSortValue(b?.maintenanceDate);
+  if (timeA == null && timeB == null) return 0;
+  if (timeA == null) return 1;
+  if (timeB == null) return -1;
+  return timeA - timeB;
+}
+
 export const MaintenanceHistoryPdf = ({ aircraft, maintenanceRecords }: any) => (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -107,7 +123,7 @@ export const MaintenanceHistoryPdf = ({ aircraft, maintenanceRecords }: any) => 
       </Text>
 
       {/* Lista de Mantenimientos */}
-      {maintenanceRecords.map((record: any, index: number) => (
+      {[...maintenanceRecords].sort(sortByMaintenanceDateAsc).map((record: any, index: number) => (
         <View 
           key={record.id || index} 
           style={styles.maintenanceBlock} 

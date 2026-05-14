@@ -98,6 +98,22 @@ const formatMinutes = (minutes: number | null | undefined) => {
   return `${hours}h ${remainder.toString().padStart(2, "0")}m`;
 };
 
+const getDateSortValue = (value: string | Date | null | undefined) => {
+  if (!value) return null;
+  const date = typeof value === "string" ? new Date(value) : value;
+  const time = date.getTime();
+  return Number.isNaN(time) ? null : time;
+};
+
+const sortByFlightDateAsc = (a: any, b: any) => {
+  const timeA = getDateSortValue(a?.flightDate);
+  const timeB = getDateSortValue(b?.flightDate);
+  if (timeA == null && timeB == null) return 0;
+  if (timeA == null) return 1;
+  if (timeB == null) return -1;
+  return timeA - timeB;
+};
+
 export const FlightTimeHistoryPdf = ({ aircraft, flightTimes }: any) => (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -106,7 +122,7 @@ export const FlightTimeHistoryPdf = ({ aircraft, flightTimes }: any) => (
         {aircraft.manufacturer} {aircraft.model} | S/N: {aircraft.serialNumber}
       </Text>
 
-      {flightTimes.map((record: any, index: number) => (
+      {[...flightTimes].sort(sortByFlightDateAsc).map((record: any, index: number) => (
         <View
           key={record.id || index}
           style={styles.flightBlock}
