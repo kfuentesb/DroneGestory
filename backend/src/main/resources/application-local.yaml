@@ -10,6 +10,8 @@ server:
         max-part-header-size: 2048
 
 spring:
+    config:
+        import: "optional:file:.env[.properties]"
     servlet:
         multipart:
             enabled: true
@@ -60,8 +62,8 @@ spring:
     mail:
         host: smtp.gmail.com
         port: 587
-        username: dronegestoryemailsender1@gmail.com
-        password: lqovzebszmdnpjwq
+        username: ${EMAIL_USER}
+        password: ${EMAIL_PASSWORD}
         properties:
             mail:
                 smtp:

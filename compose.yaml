@@ -41,9 +41,6 @@ services:
     container_name: dronegestory-db
     restart: always
     environment:
-      # POSTGRES_USER: admin
-      # POSTGRES_PASSWORD: admin123
-      # POSTGRES_DB: aeronaves_db
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}

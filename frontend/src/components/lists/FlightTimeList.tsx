@@ -9,7 +9,7 @@ import ButtonProp from "../commons/props/ButtonProp";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useAuth } from "../commons/hooks/useAuth";
-import { styles } from "../../global-const/styles";
+import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
 type FlightTimeDocumentation = {

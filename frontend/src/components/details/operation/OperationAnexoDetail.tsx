@@ -61,7 +61,7 @@ import { FormOperationAnexo8DetailPdf } from "../../pdf/FormOperationAnexo8Detai
 import StepProgressBar from "../../commons/MultiStepForm/StepProgressBar";
 import { normalizeDateTimeLocal } from "../../commons/hooks/useAnexoForm";
 
-import { styles } from "../../../global-const/styles";
+import { styles } from "../../../styles/styles";
 import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
 import refreshIcon from '../../../assets/commons/renew.svg';
 import saveIcon from '../../../assets/commons/file_save.svg';

@@ -7,7 +7,7 @@ import ButtonProp from "../commons/props/ButtonProp";
 import Pagination from "../commons/props/Pagination";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import SearchBar from "../commons/props/SearchBar";
-import { styles } from "../../global-const/styles";
+import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
 type MaintenanceDocumentation = {
