@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.MaintenanceDocumentationDTO;
+import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.Maintenance;
 import com.dronetools.dronegestory.model.MaintenanceDocumentation;
 import com.dronetools.dronegestory.repository.MaintenanceDocumentationRepository;
@@ -151,13 +152,28 @@ public class MaintenanceDocumentationService {
     private String storeDocumentationFile(Maintenance maintenance, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            String safeTypeDir = documentationType.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            Aircraft aircraft = maintenance.getAircraft();
+            String serialNumber = aircraft.getSerialNumber() != null ? aircraft.getSerialNumber() : "UNKNOWN";
+            String modelName = (aircraft.getAircraftModel() != null && aircraft.getAircraftModel().getModel() != null) 
+                    ? aircraft.getAircraftModel().getModel() 
+                    : "UNKNOWN";
+            
+            String aircraftFolder = (serialNumber + "-" + modelName).replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            String maintenanceDate = "UNKNOWN_DATE";
+            if (maintenance.getMaintenanceDate() != null) {
+                maintenanceDate = maintenance.getMaintenanceDate().toString();
+            }
+
+            String maintenanceFolder = (maintenance.getMaintenanceId().toString() + "-" + maintenanceDate)
+                    .replaceAll("[^a-zA-Z0-9_-]", "_");
+
             Path targetDir = uploadsDir.resolve(Paths.get(
                     "aircraft",
-                    maintenance.getAircraft().getAircraftId().toString(),
+                    aircraftFolder,
                     "maintenance",
-                    maintenance.getMaintenanceId().toString(),
-                    safeTypeDir
+                    maintenanceFolder
             )).normalize();
             Files.createDirectories(targetDir);
 
@@ -169,25 +185,25 @@ public class MaintenanceDocumentationService {
             int dot = safeName.lastIndexOf('.');
             String baseName = dot >= 0 ? safeName.substring(0, dot) : safeName;
             String extension = dot >= 0 ? safeName.substring(dot) : "";
+            
+            String safeTypePrefix = documentationType.replaceAll("[^a-zA-Z0-9_-]", "_").toLowerCase();
             String filename = "maintenance_" + maintenance.getMaintenanceId() + "_" +
-                    baseName.replaceAll("[^a-zA-Z0-9_-]", "_") + extension;
+                    safeTypePrefix + "_" + baseName.replaceAll("[^a-zA-Z0-9_-]", "_") + extension;
 
             Path target = targetDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
             return Paths.get(
                     "aircraft",
-                    maintenance.getAircraft().getAircraftId().toString(),
+                    aircraftFolder,
                     "maintenance",
-                    maintenance.getMaintenanceId().toString(),
-                    safeTypeDir,
+                    maintenanceFolder,
                     filename
-            ).toString().replace("\\", "/");
+                ).toString().replace("\\", "/");
         } catch (IOException ex) {
             throw new RuntimeException("Error storing maintenance documentation", ex);
         }
     }
-
     private void deleteStoredFile(String relativePath) {
         if (relativePath == null || relativePath.isBlank()) {
             return;

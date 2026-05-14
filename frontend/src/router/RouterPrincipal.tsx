@@ -121,21 +121,21 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Summary list of aircraft flight hours. */}
         <Route 
-          path="/flight-times" 
+          path="/flight-hours" 
           element={
               <AircraftFlightTimeList />
           } 
         />
 
         <Route 
-          path="/flight-times/:aircraftId" 
+          path="/flight-hours/:aircraftId" 
           element={
               <FlightTimeList />
           } 
         />
 
         <Route 
-          path="/flight-times/:aircraftId/register" 
+          path="/flight-hours/:aircraftId/register" 
           element={
               <FormFlightTime />
           } 

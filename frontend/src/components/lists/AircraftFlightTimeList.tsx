@@ -39,7 +39,7 @@ export default function AircraftFlightTimeList() {
       try {
         const [aircraftResult, flightTimeResult] = await Promise.allSettled([
           apiFetch("/api/aircraft"),
-          apiFetch("/api/flight-times")
+          apiFetch("/api/flight-hours")
         ]);
 
         const aircraftRes =
@@ -152,7 +152,7 @@ export default function AircraftFlightTimeList() {
                 <td>{formatTotalHours(a.totalMinutes)}</td>
               </>
             )}
-            onRowClick={(a) => navigate(`/flight-times/${a.id}`)}
+            onRowClick={(a) => navigate(`/flight-hours/${a.id}`)}
             emptyText="No hay horas de vuelvo de aeronaves registradas."
           />
 

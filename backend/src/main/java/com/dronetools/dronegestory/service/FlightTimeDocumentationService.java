@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.FlightTimeDocumentationDTO;
+import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.FlightTime;
 import com.dronetools.dronegestory.model.FlightTimeDocumentation;
 import com.dronetools.dronegestory.repository.FlightTimeDocumentationRepository;
@@ -139,13 +140,28 @@ public class FlightTimeDocumentationService {
     private String storeDocumentationFile(FlightTime flightTime, String documentationType, MultipartFile file) {
         try {
             Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
-            String safeTypeDir = documentationType.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            Aircraft aircraft = flightTime.getAircraft();
+            String serialNumber = aircraft.getSerialNumber() != null ? aircraft.getSerialNumber() : "UNKNOWN";
+            String modelName = (aircraft.getAircraftModel() != null && aircraft.getAircraftModel().getModel() != null)
+                    ? aircraft.getAircraftModel().getModel()
+                    : "UNKNOWN";
+
+            String aircraftFolder = (serialNumber + "-" + modelName).replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            String flightDate = "UNKNOWN_DATE";
+            if (flightTime.getFlightDate() != null) {
+                flightDate = flightTime.getFlightDate().toString(); 
+            }
+
+            String flightTimeFolder = (flightTime.getFlightTimeId().toString() + "-" + flightDate)
+                    .replaceAll("[^a-zA-Z0-9_-]", "_");
+
             Path targetDir = uploadsDir.resolve(Paths.get(
                     "aircraft",
-                    flightTime.getAircraft().getAircraftId().toString(),
-                    "flight-times",
-                    flightTime.getFlightTimeId().toString(),
-                    safeTypeDir
+                    aircraftFolder,
+                    "flight-hours",
+                    flightTimeFolder
             )).normalize();
             Files.createDirectories(targetDir);
 
@@ -157,18 +173,19 @@ public class FlightTimeDocumentationService {
             int dot = safeName.lastIndexOf('.');
             String baseName = dot >= 0 ? safeName.substring(0, dot) : safeName;
             String extension = dot >= 0 ? safeName.substring(dot) : "";
+            
+            String safeTypePrefix = documentationType.replaceAll("[^a-zA-Z0-9_-]", "_").toLowerCase();
             String filename = "flight_time_" + flightTime.getFlightTimeId() + "_" +
-                    baseName.replaceAll("[^a-zA-Z0-9_-]", "_") + extension;
+                    safeTypePrefix + "_" + baseName.replaceAll("[^a-zA-Z0-9_-]", "_") + extension;
 
             Path target = targetDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
             return Paths.get(
                     "aircraft",
-                    flightTime.getAircraft().getAircraftId().toString(),
-                    "flight-times",
-                    flightTime.getFlightTimeId().toString(),
-                    safeTypeDir,
+                    aircraftFolder,
+                    "flight-hours",
+                    flightTimeFolder,
                     filename
             ).toString().replace("\\", "/");
         } catch (IOException ex) {

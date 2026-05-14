@@ -132,7 +132,7 @@ export default function FlightTimeList() {
     const fetchFlights = useCallback(async () => {
         setIsLoading(true);
         try {
-            const endpoint = aircraftId ? `/api/flight-times/aircraft/${aircraftId}` : "/api/flight-times";
+            const endpoint = aircraftId ? `/api/flight-hours/aircraft/${aircraftId}` : "/api/flight-hours";
             const response = await apiFetch(endpoint);
             const data = response ? await response.json() : [];
             const parsedData = Array.isArray(data) ? data : [];
@@ -153,7 +153,7 @@ export default function FlightTimeList() {
         e.stopPropagation();
         if (window.confirm("¿Estás seguro de que deseas eliminar este registro de vuelo?")) {
             try {
-                const response = await apiFetch(`/api/flight-times/${id}`, { method: "DELETE" });
+                const response = await apiFetch(`/api/flight-hours/${id}`, { method: "DELETE" });
                 if (response?.ok) {
                     fetchFlights();
                 }
@@ -180,7 +180,7 @@ export default function FlightTimeList() {
 
         setUpdateLoading(true);
         try {
-            const response = await apiFetch(`/api/flight-times/${editingFlight.id}`, {
+            const response = await apiFetch(`/api/flight-hours/${editingFlight.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -290,7 +290,7 @@ export default function FlightTimeList() {
                 <div className="card-body">
                     <button 
                         className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                        onClick={() => navigate("/flight-times")}
+                        onClick={() => navigate("/flight-hours")}
                         style={styles.backBtn}
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
@@ -338,7 +338,7 @@ export default function FlightTimeList() {
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        <ButtonProp onClick={() => navigate(`/flight-times/${aircraftId}/register`)}>
+                        <ButtonProp onClick={() => navigate(`/flight-hours/${aircraftId}/register`)}>
                             + Añadir horas
                         </ButtonProp>
                     </div>

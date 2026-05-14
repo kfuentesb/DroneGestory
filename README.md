@@ -79,7 +79,9 @@ docker compose up -d
 ### 4. Inicialización de Datos
 
 ```bash
-# Cargar esquema e inserciones iniciales
+# Ejecutar postgresql
+docker exec -i dronegestory-db psql -U admin -d aeronaves_db
+# Cargar esquema e inserciones iniciales (solo usuario admin)
 docker exec -i dronegestory-db psql -U admin -d aeronaves_db < ./backend/init.sql
 
 ```
@@ -103,6 +105,7 @@ docker compose up -d db
 Asegúrate de tener el `.env` en la raíz de la carpeta `backend`. El perfil `local` usará el archivo `.env` mediante la importación configurada en `application-local.yaml`.
 
 ```bash
+cd backend
 mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 
 ```
@@ -114,6 +117,17 @@ cd frontend
 npm install
 npm run dev
 
+```
+
+### 4. Inificar PostgreSQL
+
+```bash
+# Ejecutar postgresql
+docker exec -it aeronaves_db psql -U admin -d aeronaves_db
+# Cargar esquema e inserciones iniciales (solo usuario admin)
+cmd
+docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
+exit
 ```
 
 ## Estructura de carpetas
@@ -199,6 +213,7 @@ npm run dev
 | **Usuarios** | `uploads/users/{id-username}/...` |
 | **Modelos** | `uploads/aircraft-model/{model-manufacturer}/...` |
 | **Aeronaves** | `uploads/aircraft/{nserie-model}/...` |
+| **Operaciones** | `uploads/operations/{codigo}/...` |
 | **Documentación Operaciones** | `uplodas/operation-documentation/{file-name}`|
 
 ---
@@ -207,7 +222,7 @@ npm run dev
 
 * **JWT Secret**: Es fundamental que en producción esta variable esté configurada en el `.env`. Si no se detecta, el sistema usará un valor por defecto que **no es seguro**.
 * **Email**: El sistema utiliza Gmail SMTP. Asegúrate de tener activa la "Verificación en 2 pasos" y generar una "App Password" específica.
-
+* **Password hasher**: En backend/string-to-hash.py hay un script para hashear texto, por si hace falta generar usuarios de forma manual.
 ---
 
 ## Tecnologías Principales

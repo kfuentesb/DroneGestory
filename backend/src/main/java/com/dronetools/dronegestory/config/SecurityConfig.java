@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/user-certificates/**").authenticated()
                         .requestMatchers("/api/aircraft-documentation/**").authenticated()
                         .requestMatchers("/api/maintenance/**").hasAnyRole("ADMIN", "MAINTAINER")
-                        .requestMatchers("/api/flight-times/**").authenticated()
+                        .requestMatchers("/api/flight-hours/**").authenticated()
                         .requestMatchers("/api/flight-time-documentation/**").authenticated()
                         .requestMatchers("/api/sent-mails/**").hasAnyRole("ADMIN", "MANAGER")
 
