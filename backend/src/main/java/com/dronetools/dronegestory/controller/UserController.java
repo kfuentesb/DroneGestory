@@ -4,6 +4,7 @@ import com.dronetools.dronegestory.dto.UserCertificateUploadRequest;
 import com.dronetools.dronegestory.dto.UserNameResponse;
 import com.dronetools.dronegestory.dto.UserPasswordUpdateRequest;
 import com.dronetools.dronegestory.dto.UserResponse;
+import com.dronetools.dronegestory.dto.UserSummaryResponse;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.service.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,8 +44,11 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public List<UserResponse> getAll() {
-        return userService.findAll().stream().map(this::toResponse).toList();
+    public List<?> getAll() {
+        if (userService.isCurrentUserPrivileged()) {
+            return userService.findAll().stream().map(this::toResponse).toList();
+        }
+        return userService.findAll().stream().map(this::toSummaryResponse).toList();
     }
 
     @GetMapping("/{id}")
@@ -224,6 +228,18 @@ public class UserController {
                 user.getDocIdentidad(),
                 user.getFechaNac(),
                 user.isState()
+        );
+    }
+
+    private UserSummaryResponse toSummaryResponse(User user) {
+        return new UserSummaryResponse(
+                user.getId(),
+                user.getEffectiveRoles().stream().toList(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhoneNumber()
         );
     }
 }

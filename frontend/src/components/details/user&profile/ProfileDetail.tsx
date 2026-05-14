@@ -69,7 +69,7 @@ export default function ProfileDetail() {
         <DetailsComponent
             id={meData.id.toString()}
             initialData={meData}
-            endpoint={`${API_BASE_URL}/api/users`}
+            endpoint={`${API_BASE_URL}/api/users/self`}
             imageEndpoint={`${API_BASE_URL}/api/users/images`}
             entityType="user"
             fields={processedFields}

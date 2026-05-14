@@ -71,13 +71,13 @@ public class SecurityConfig {
                         // Acceso al personal
                         .requestMatchers("/api/users/names").authenticated()
 
-                        // RESTRICCIÓN CLAVE: Solo ADMIN o MANAGER pueden consultar a otros usuarios por ID
-                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").hasAnyRole("ADMIN", "MANAGER")
+                        // El controlador valida si el usuario autenticado puede ver/modificar ese perfil.
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("ADMIN", "MANAGER")
 
-                        // El listado general también debería ser solo para privilegiados
+                        // El listado general expone solo un resumen para usuarios no privilegiados.
                         .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/aircraft/**").authenticated()

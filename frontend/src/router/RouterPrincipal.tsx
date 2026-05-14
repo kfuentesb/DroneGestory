@@ -93,7 +93,14 @@ export default class RouterPrincipal extends React.Component {
           }
         />
 
-        <Route path="/profile/:id" element={<ProfileDetail />} />
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute>
+              <ProfileDetail />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Aircrafts */}
         <Route path="/aircrafts" element={<AircraftList />} />

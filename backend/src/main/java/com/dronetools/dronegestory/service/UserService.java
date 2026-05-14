@@ -97,8 +97,8 @@ public class UserService {
         if (targetUserId == null) {
             return false;
         }
-        getAuthenticatedUser();
-        return true;
+        User currentUser = getAuthenticatedUser();
+        return isPrivileged(currentUser) || targetUserId.equals(currentUser.getId());
     }
 
     public boolean canCurrentUserModifyUser(Integer targetUserId) {
@@ -460,6 +460,10 @@ public class UserService {
     private boolean isPrivileged(User user) {
         return user.getEffectiveRoles().contains(UserType.ADMIN)
                 || user.getEffectiveRoles().contains(UserType.MANAGER);
+    }
+
+    public boolean isCurrentUserPrivileged() {
+        return isPrivileged(getAuthenticatedUser());
     }
 
     private void deleteUserProfileImage(Integer userId, String imagePath) {
