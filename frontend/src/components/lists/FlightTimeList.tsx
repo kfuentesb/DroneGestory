@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { pdf } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { apiFetch } from "../../api";
@@ -11,6 +12,8 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import { useAuth } from "../commons/hooks/useAuth";
 import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
+import downloadIcon from '../../assets/commons/download.svg';
+import { FlightTimeHistoryPdf } from "../pdf/FlightTimeHistoryPdf";
 
 type FlightTimeDocumentation = {
     id: number;
@@ -62,6 +65,31 @@ const toInputDateValue = (value: string | Date) => {
         return "";
     }
     return value.toISOString().split("T")[0];
+};
+
+const encodeDocumentPath = (path: string) => path.split("/").map(encodeURIComponent).join("/");
+
+const getFileNameFromPath = (path: string) => {
+    const parts = path.split("/").filter(Boolean);
+    return parts[parts.length - 1] || "documento";
+};
+
+const sanitizeFileName = (value: string) => value.replace(/[\\/:*?"<>|]+/g, "_");
+
+const buildSafeFileToken = (value?: string | null) => {
+    if (!value) return "aeronave";
+    return value.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_-]/g, "");
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = sanitizeFileName(fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
 };
 
 const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation) => {
@@ -126,6 +154,7 @@ export default function FlightTimeList() {
     const [updateLoading, setUpdateLoading] = useState(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
     const [updateSuccess, setUpdateSuccess] = useState(false);
+    const [isPdfDownloading, setIsPdfDownloading] = useState(false);
 
     const ITEMS_PER_PAGE = 10;
 
@@ -255,6 +284,112 @@ export default function FlightTimeList() {
         f.aircraftSerialNumber ?? "",
     ]);
 
+    const flightsForReport = filteredFlights;
+
+    const getAircraftForReport = (recordsList: FlightTimeDetail[]) => {
+        if (aircraftId) {
+            const first = recordsList[0];
+            return {
+                manufacturer: first?.aircraftManufacturer ?? "Aeronave",
+                model: first?.aircraftModel ?? "",
+                serialNumber: first?.aircraftSerialNumber ?? aircraftId,
+            };
+        }
+        return {
+            manufacturer: "Todas las",
+            model: "aeronaves",
+            serialNumber: "",
+        };
+    };
+
+    const buildReportToken = (recordsList: FlightTimeDetail[]) => {
+        if (aircraftId) {
+            return buildSafeFileToken(recordsList[0]?.aircraftSerialNumber ?? aircraftId);
+        }
+        return "general";
+    };
+
+    const downloadPdfBlob = async (pdfDocument: JSX.Element, fileName: string) => {
+        const blob = await pdf(pdfDocument).toBlob();
+        downloadBlob(blob, fileName);
+    };
+
+    const downloadFlightTimeAttachments = async (recordsList: FlightTimeDetail[], fileToken: string) => {
+        const attachments = recordsList
+            .map((record) => {
+                const doc = record.documentation;
+                if (!doc) return null;
+                const path = doc.filePath || doc.documentationName;
+                if (!path) return null;
+                const name = sanitizeFileName(doc.documentationName || getFileNameFromPath(path));
+                return { path, name };
+            })
+            .filter((item): item is { path: string; name: string } => Boolean(item));
+
+        if (attachments.length === 0) {
+            return;
+        }
+
+        if (attachments.length === 1) {
+            const response = await apiFetch(`/api/flight-time-documentation/files/${encodeDocumentPath(attachments[0].path)}`);
+            if (!response) throw new Error("Sin respuesta del servidor");
+            const blob = await response.blob();
+            downloadBlob(blob, attachments[0].name);
+            return;
+        }
+
+        const zip = new JSZip();
+        const nameCount = new Map<string, number>();
+
+        const results = await Promise.allSettled(
+            attachments.map(async (attachment) => {
+                const response = await apiFetch(`/api/flight-time-documentation/files/${encodeDocumentPath(attachment.path)}`);
+                if (!response) throw new Error("Sin respuesta del servidor");
+                const blob = await response.blob();
+                return { name: attachment.name, blob };
+            })
+        );
+
+        results.forEach((result) => {
+            if (result.status !== "fulfilled") return;
+            const baseName = result.value.name || "documento";
+            const current = nameCount.get(baseName) ?? 0;
+            nameCount.set(baseName, current + 1);
+            const extIndex = baseName.lastIndexOf(".");
+            const hasExt = extIndex > 0;
+            const base = hasExt ? baseName.slice(0, extIndex) : baseName;
+            const ext = hasExt ? baseName.slice(extIndex) : "";
+            const uniqueName = current === 0 ? baseName : `${base}_${current + 1}${ext}`;
+            zip.file(uniqueName, result.value.blob);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        downloadBlob(zipBlob, `Documentos_HorasVuelo_${fileToken}.zip`);
+    };
+
+    const handleDownloadHistory = async () => {
+        if (isPdfDownloading) return;
+        if (flightsForReport.length === 0) {
+            alert("No hay registros de horas de vuelo para descargar.");
+            return;
+        }
+        setIsPdfDownloading(true);
+        try {
+            const aircraft = getAircraftForReport(flightsForReport);
+            const fileToken = buildReportToken(flightsForReport);
+            await downloadPdfBlob(
+                <FlightTimeHistoryPdf aircraft={aircraft} flightTimes={flightsForReport} />,
+                `Historial_HorasVuelo_${fileToken}.pdf`
+            );
+            await downloadFlightTimeAttachments(flightsForReport, fileToken);
+        } catch (err) {
+            console.error("Error descargando historial de horas de vuelo", err);
+            alert("No se pudo descargar el historial de horas de vuelo.");
+        } finally {
+            setIsPdfDownloading(false);
+        }
+    };
+
     const paginatedFlights = filteredFlights.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -338,9 +473,29 @@ export default function FlightTimeList() {
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        <ButtonProp onClick={() => navigate(`/flight-times/${aircraftId}/register`)}>
-                            + Añadir horas
-                        </ButtonProp>
+                        <div className="d-flex gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
+                                style={{ backgroundColor: "#111827", color: "#FFFFFF", fontWeight: "bold" }}
+                                onClick={() => void handleDownloadHistory()}
+                                disabled={isPdfDownloading}
+                            >
+                                <img
+                                    src={downloadIcon}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="d-inline d-md-none"
+                                    style={{ width: 16, height: 16 }}
+                                />
+                                <span className="d-none d-md-inline">
+                                    {isPdfDownloading ? "Generando..." : "Descargar historial"}
+                                </span>
+                            </button>
+                            <ButtonProp onClick={() => navigate(`/flight-times/${aircraftId}/register`)}>
+                                + Añadir horas
+                            </ButtonProp>
+                        </div>
                     </div>
 
                     <ReusableTable
