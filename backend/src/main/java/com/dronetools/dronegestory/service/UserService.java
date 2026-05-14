@@ -34,8 +34,8 @@ import java.util.regex.Matcher;
 @Service
 public class UserService {
     private static final Pattern PASSWORD_POLICY = Pattern.compile("^(?=.*\\d).{8,}$");
-    private static final Pattern USER_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:-[^/]+)?(?:/.*)?$");
-    private static final Pattern USER_PROFILE_UPLOAD_PATH_PATTERN = Pattern.compile("^users/(\\d+)(?:-[^/]+)?/profile(?:/.*)?$");
+    private static final Pattern USER_UPLOAD_PATH_PATTERN = Pattern.compile("^(?:database-relationed/)?users/(\\d+)(?:-[^/]+)?(?:/.*)?$");
+    private static final Pattern USER_PROFILE_UPLOAD_PATH_PATTERN = Pattern.compile("^(?:database-relationed/)?users/(\\d+)(?:-[^/]+)?/profile(?:/.*)?$");
 
     private final UserRepository userRepository;
     private final UserCertificateRepository userCertificateRepository;
@@ -152,7 +152,9 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        Path userBaseDir = Paths.get("uploads", "users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername())).toAbsolutePath().normalize();
+        Path userBaseDir = UploadPathUtils.databaseManagedRoot()
+                .resolve(Paths.get("users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername())))
+                .normalize();
         Path profileDir = userBaseDir.resolve("profile");
 
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -164,8 +166,7 @@ public class UserService {
             Files.createDirectories(profileDir);
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
-            savedUser.setImagePath(Paths.get("users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()), "profile", filename)
-                    .toString().replace("\\", "/"));
+            savedUser.setImagePath(UploadPathUtils.databaseRelativePathString("users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()), "profile", filename));
         }
 
         return userRepository.save(savedUser);
@@ -180,8 +181,8 @@ public class UserService {
     ) throws IOException {
         User savedUser = createWithFile(user, imageFile);
 
-        Path certificatesBaseDir = Paths.get("uploads", "users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()), "certificates")
-                .toAbsolutePath()
+        Path certificatesBaseDir = UploadPathUtils.databaseManagedRoot()
+                .resolve(Paths.get("users", UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()), "certificates"))
                 .normalize();
 
         for (UserCertificateUploadRequest certificateRequest : certificates) {
@@ -227,7 +228,7 @@ public class UserService {
                 Path target = certificateTypeDir.resolve(filename);
                 certificateFile.transferTo(target.toFile());
 
-                storedCertificateName = Paths.get(
+                storedCertificateName = UploadPathUtils.databaseRelativePath(
                                 "users",
                                 UploadPathUtils.entityFolder(savedUser.getId(), savedUser.getUsername()),
                                 "certificates",
@@ -366,7 +367,7 @@ public class UserService {
         }
 
         // --- GESTIÓN DE IMAGEN (Tu lógica actual se mantiene igual) ---
-        Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path uploadDir = UploadPathUtils.databaseManagedRoot();
         Path profileDir = uploadDir.resolve(Paths.get("users", UploadPathUtils.entityFolder(user.getId(), user.getUsername()), "profile")).normalize();
         String oldImage = user.getImagePath();
 
@@ -388,8 +389,7 @@ public class UserService {
             Path target = profileDir.resolve(filename);
             imageFile.transferTo(target.toFile());
 
-            user.setImagePath(Paths.get("users", UploadPathUtils.entityFolder(user.getId(), user.getUsername()), "profile", filename)
-                    .toString().replace("\\", "/"));
+            user.setImagePath(UploadPathUtils.databaseRelativePathString("users", UploadPathUtils.entityFolder(user.getId(), user.getUsername()), "profile", filename));
         }
 
         return userRepository.save(user);

@@ -197,7 +197,7 @@ public class UserCertificateService {
         try {
             String safeTypeDir = UploadPathUtils.safeSegment(certificateType);
 
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadsDir = UploadPathUtils.databaseManagedRoot();
             User user = resolveUser(userId);
             Path certificateTypeDir = uploadsDir.resolve(Paths.get(
                     "users",
@@ -218,7 +218,7 @@ public class UserCertificateService {
             Path target = certificateTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get(
+            return UploadPathUtils.databaseRelativePath(
                             "users",
                             UploadPathUtils.entityFolder(user.getId(), user.getUsername()),
                             "certificates",
@@ -258,7 +258,7 @@ public class UserCertificateService {
         }
 
         Path uploadsDir = UploadPathUtils.uploadsRoot();
-        Path oldPath = uploadsDir.resolve(oldRelativePath).normalize();
+        Path oldPath = UploadPathUtils.resolveExistingUploadPath(oldRelativePath);
         Path newPath = uploadsDir.resolve(newRelativePath).normalize();
         if (!oldPath.startsWith(uploadsDir) || !newPath.startsWith(uploadsDir) || !Files.exists(oldPath)) {
             return;

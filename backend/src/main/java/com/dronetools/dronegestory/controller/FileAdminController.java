@@ -55,4 +55,52 @@ public class FileAdminController {
                     .body(Map.of("ok", false, "error", e.getMessage()));
         }
     }
+
+    @PostMapping("/folder")
+    public ResponseEntity<?> createFolder(@RequestBody Map<String, String> payload) {
+        String parent = payload.getOrDefault("parent", "/");
+        String name = payload.get("name");
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Folder name is required"));
+        }
+
+        try {
+            String newPath = fileActionService.createFolder(parent, name);
+            return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("ok", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadFile(
+            @RequestParam(value = "parent", required = false) String parent,
+            @RequestParam("file") MultipartFile file
+    ) {
+        try {
+            String newPath = fileActionService.uploadManualFile(parent, file);
+            return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("ok", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/rename")
+    public ResponseEntity<?> rename(@RequestBody Map<String, String> payload) {
+        String path = payload.get("path");
+        String name = payload.get("name");
+        if (path == null || path.isBlank() || name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Path and name are required"));
+        }
+
+        try {
+            String newPath = fileActionService.renameManualPath(path, name);
+            return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("ok", false, "error", e.getMessage()));
+        }
+    }
 }

@@ -244,8 +244,8 @@ public class OperationService {
     }
 
     private void borrarDirectorioUploadsOperacion(Long idOperacion) {
-        Path operationDir = Paths.get("uploads", "operations", String.valueOf(idOperacion))
-                .toAbsolutePath()
+        Path operationDir = UploadPathUtils.databaseManagedRoot()
+                .resolve(Paths.get("operations", String.valueOf(idOperacion)))
                 .normalize();
         if (!Files.exists(operationDir)) {
             return;

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useRef, type ChangeEvent } from "reac
 import { Filemanager, Material, Willow } from "@svar-ui/react-filemanager";
 import type { IApi, IEntity } from "@svar-ui/filemanager-store";
 import "@svar-ui/react-filemanager/all.css";
+import ConfirmModal from "../commons/ConfirmModal";
 import { API_BASE_URL } from "../../api";
 
 export default function FileBrowserView() {
@@ -10,8 +11,23 @@ export default function FileBrowserView() {
     const [searchSelectedPath, setSearchSelectedPath] = useState("");
     const [filemanagerKey, setFilemanagerKey] = useState(0);
     const [isSearchMode, setIsSearchMode] = useState(false);
+
+    const [modalConfig, setModalConfig] = useState<{
+        show: boolean;
+        title?: string;
+        message: string;
+        variant: "primary" | "danger" | "warning";
+        onConfirm: () => void;
+    }>({
+        show: false,
+        message: "",
+        variant: "primary",
+        onConfirm: () => {},
+    });
+
     const isSearchModeRef = useRef(false);
     const searchWasJustClearedRef = useRef(false);
+    const apiRef = useRef<IApi | null>(null);
 
     useEffect(() => {
         isSearchModeRef.current = isSearchMode;
@@ -94,6 +110,55 @@ export default function FileBrowserView() {
         }
     }, []);
 
+    const isDatabaseManagedPath = (id?: string | null) => {
+        if (!id) return false;
+        const clean = String(id).replace(/^\/+/, "");
+        return clean === "database-relationed" || clean.startsWith("database-relationed/");
+    };
+
+    const createManualFolder = useCallback(async (parent: string, name: string) => {
+        const res = await fetch(`${API_BASE_URL}/api/admin/files/folder`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ parent, name }),
+        });
+        const body = await res.json();
+        if (!res.ok || !body.ok) {
+            throw new Error(body.error || "Failed to create folder");
+        }
+    }, []);
+
+    const uploadManualFile = useCallback(async (parent: string, file: File) => {
+        const token = localStorage.getItem("token");
+        const formData = new FormData();
+        formData.append("parent", parent);
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE_URL}/api/admin/files/upload`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData,
+        });
+        const body = await res.json();
+        if (!res.ok || !body.ok) {
+            throw new Error(body.error || "Failed to upload file");
+        }
+    }, []);
+
+    const renameManualPath = useCallback(async (path: string, name: string) => {
+        const res = await fetch(`${API_BASE_URL}/api/admin/files/rename`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ path, name }),
+        });
+        const body = await res.json();
+        if (!res.ok || !body.ok) {
+            throw new Error(body.error || "Failed to rename");
+        }
+    }, []);
+
+    const closeModal = () => setModalConfig(prev => ({ ...prev, show: false }));
+
     const init = useCallback((api: IApi) => {
         const wasSearchClick = () => isSearchModeRef.current || searchWasJustClearedRef.current;
 
@@ -137,28 +202,81 @@ export default function FileBrowserView() {
             searchWasJustClearedRef.current = false;
         });
 
-        api.intercept("delete-files", async ({ ids }) => {
+        api.intercept("delete-files", ({ ids }) => {
             const fileIds = (ids ?? []).map(String);
             if (!fileIds.length) return false;
 
-            const confirmed = window.confirm(
-                `Estas seguro de eliminar ${fileIds.length} archivo(s)? Esta accion actualizara la base de datos y eliminara el archivo fisico.`
-            );
-            if (!confirmed) return false;
+            const involvesDatabase = fileIds.some(id => isDatabaseManagedPath(id));
+            
+            setModalConfig({
+                show: true,
+                title: "Confirmar eliminación",
+                variant: "danger",
+                message: involvesDatabase 
+                    ? `¿Estás seguro de eliminar ${fileIds.length} archivo(s)? Esta acción actualizará la base de datos y eliminará el archivo físico.`
+                    : `¿Estás seguro de eliminar ${fileIds.length} archivo(s)? Esta acción eliminará el archivo físico.`,
+                onConfirm: async () => {
+                    closeModal();
+                    try {
+                        for (const fileId of fileIds) {
+                            await deleteFileAndSync(fileId);
+                        }
+                        setFilemanagerKey(k => k + 1);
+                        await loadRoot();
+                        setSelectedFileId("");
+                    } catch (err: any) {
+                        setModalConfig({
+                            show: true,
+                            title: "Error",
+                            message: err.message,
+                            variant: "warning",
+                            onConfirm: closeModal
+                        });
+                    }
+                }
+            });
+
+            return false;
+        });
+
+        api.intercept("create-file", async ({ file, parent }) => {
+            const parentPath = String(parent || "/");
+            if (isDatabaseManagedPath(parentPath)) {
+                alert("This folder is managed by the database. Use the related app screen to add files there.");
+                return false;
+            }
 
             try {
-                for (const fileId of fileIds) {
-                    await deleteFileAndSync(fileId);
+                if (file?.type === "folder") {
+                    await createManualFolder(parentPath, file.name);
+                } else {
+                    const uploadFile = file?.file || new File([""], file?.name || "new-file");
+                    await uploadManualFile(parentPath, uploadFile);
                 }
-                setSelectedFileId("");
-                setSearchSelectedPath("");
+                setFilemanagerKey((current) => current + 1);
+                await loadRoot();
                 return true;
             } catch (err: any) {
                 alert(`Error: ${err.message}`);
                 return false;
             }
         });
-    }, [openFileInTab, deleteFileAndSync]);
+
+        api.intercept("rename-file", ({ id }) => {
+            if (isDatabaseManagedPath(String(id))) {
+                setModalConfig({
+                    show: true,
+                    title: "Acción restringida",
+                    message: "Esta carpeta es gestionada por la base de datos. Renómbrela desde la pantalla correspondiente.",
+                    variant: "warning",
+                    onConfirm: closeModal
+                });
+                return false;
+            }
+            return true;
+        });
+
+    }, [openFileInTab, deleteFileAndSync, createManualFolder, uploadManualFile, renameManualPath, loadRoot]);
 
     const onReplaceSelected = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -204,7 +322,7 @@ export default function FileBrowserView() {
                     </label>
                 </div>
             </div>
-            {/* <Material fonts={true}> */}
+            
             <Willow fonts={true}>
                 <div style={{ height: "700px", width: "100%" }}>
                     <Filemanager
@@ -215,7 +333,15 @@ export default function FileBrowserView() {
                     />
                 </div>
             </Willow>
-            {/* </Material> */}
+
+            <ConfirmModal
+                show={modalConfig.show}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                variant={modalConfig.variant}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={closeModal}
+            />
         </div>
     );
 }

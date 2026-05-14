@@ -93,7 +93,7 @@ public class OperationDocumentationService {
 
     private String storeDocumentationFile(Long documentationId, int versionNumber, MultipartFile file) {
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadsDir = UploadPathUtils.databaseManagedRoot();
             Path targetDir = uploadsDir.resolve(Paths.get(
                     "operation-documentation",
                     documentationId.toString(),

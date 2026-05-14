@@ -113,7 +113,7 @@ export default function ImageUploadField({
     const clean = filename.trim().replace(/^\/+/, "");
     const usesOperations = imageEndpointPath.includes("/api/operations/");
     if (!usesOperations) return clean;
-    return clean.startsWith("operations/")
+    return clean.startsWith("operations/") || clean.startsWith("database-relationed/operations/")
       ? clean
       : `operations/${clean}`;
   };

@@ -502,7 +502,9 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         if (!documentation.documentationName) return;
 
         const encodedPath = documentation.documentationName.split("/").map(encodeURIComponent).join("/");
-        const isModel = documentation.documentationName.startsWith("aircraft-model/");
+        const cleanPath = documentation.documentationName.replace(/^\/+/, "");
+        const isModel = cleanPath.startsWith("aircraft-model/")
+            || cleanPath.startsWith("database-relationed/aircraft-model/");
         
         const url = isModel 
             ? `/api/aircraft-models/images/${encodedPath}` 

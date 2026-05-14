@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.model.enums.AircraftClass;
 import com.dronetools.dronegestory.model.enums.AircraftConfig;
 import com.dronetools.dronegestory.model.enums.SelectionStatus;
 import com.dronetools.dronegestory.model.enums.AircraftPowersSource;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -65,7 +66,7 @@ public class AircraftResponseDTO {
         dto.setConfig(aircraft.getConfig());
         dto.setImpactEnergy(aircraft.getImpactEnergy());
         dto.setHasCamera(aircraft.getHasCamera());
-        dto.setImagePath(aircraft.getImagePath());
+        dto.setImagePath(UploadPathUtils.toDatabaseRelativePath(aircraft.getImagePath()));
         dto.setPrivatelyBuilt(aircraft.getPrivatelyBuilt());
         dto.setHasParachute(aircraft.getHasParachute());
         dto.setHasEnsurance(aircraft.getHasEnsurance());

@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.dto.AircraftModelDocumentationDTO;
 import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.service.AircraftModelService;
 import com.dronetools.dronegestory.service.AircraftModelDocumentationService;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -160,7 +161,7 @@ public class AircraftModelController {
                 model.getId(),
                 model.getManufacturer(),
                 model.getModel(),
-                model.getImagePath(),
+                UploadPathUtils.toDatabaseRelativePath(model.getImagePath()),
                 model.getAircraftClassDefault(),
                 model.getMtomDefault(),
                 model.getWingspanDefault(),

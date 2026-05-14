@@ -243,7 +243,7 @@ public class AircraftDocumentationService {
 
     private String storeDocumentationFile(Aircraft aircraft, String documentationType, MultipartFile file) {
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadsDir = UploadPathUtils.databaseManagedRoot();
             String safeTypeDir = safeTypeDir(documentationType);
 
             Path documentationTypeDir = uploadsDir.resolve(
@@ -265,9 +265,7 @@ public class AircraftDocumentationService {
             Path target = documentationTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir, filename)
-                    .toString()
-                    .replace("\\", "/");
+            return UploadPathUtils.databaseRelativePathString("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir, filename);
         } catch (IOException ex) {
             throw new RuntimeException("Error storing documentation file", ex);
         }
@@ -299,7 +297,7 @@ public class AircraftDocumentationService {
             return;
         }
 
-        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path uploadsDir = UploadPathUtils.uploadsRoot();
         Path oldPath = uploadsDir.resolve(oldRelativePath).normalize();
         Path newPath = uploadsDir.resolve(newRelativePath).normalize();
         if (!oldPath.startsWith(uploadsDir) || !newPath.startsWith(uploadsDir) || !Files.exists(oldPath)) {
@@ -459,22 +457,18 @@ public class AircraftDocumentationService {
         }
         String normalized = documentationName.replace("\\", "/");
         if (normalized.contains("/")) {
-            return normalized;
+            return UploadPathUtils.toDatabaseRelativePath(normalized);
         }
         String newRelativePath = aircraftRepository.findById(aircraftId)
-                .map(aircraft -> Paths.get("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir(documentationType), normalized)
-                        .toString()
-                        .replace("\\", "/"))
-                .orElseGet(() -> Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized)
-                        .toString()
-                        .replace("\\", "/"));
+                .map(aircraft -> UploadPathUtils.databaseRelativePathString("aircraft", aircraftFolder(aircraft), "documentation", safeTypeDir(documentationType), normalized))
+                .orElseGet(() -> UploadPathUtils.databaseRelativePathString("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized));
         Path newPath = UploadPathUtils.uploadsRoot().resolve(newRelativePath).normalize();
         if (Files.exists(newPath)) {
             return newRelativePath;
         }
         Optional<Aircraft> aircraft = aircraftRepository.findById(aircraftId);
         if (aircraft.isPresent()) {
-            String legacyNamedRelativePath = Paths.get(
+            String legacyNamedRelativePath = UploadPathUtils.databaseRelativePath(
                             "aircraft",
                             UploadPathUtils.entityFolder(aircraftId, aircraft.get().getSerialNumber()),
                             "documentation",
@@ -487,9 +481,7 @@ public class AircraftDocumentationService {
                 return legacyNamedRelativePath;
             }
         }
-        return Paths.get("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized)
-                .toString()
-                .replace("\\", "/");
+        return UploadPathUtils.databaseRelativePathString("aircraft", aircraftId.toString(), "documentation", safeTypeDir(documentationType), normalized);
     }
 
     private String resolveStoredModelDocumentationPath(AircraftModelDocumentation modelDocumentation, String documentationName) {
@@ -498,9 +490,9 @@ public class AircraftDocumentationService {
         }
         String normalized = documentationName.replace("\\", "/");
         if (normalized.contains("/")) {
-            return normalized;
+            return UploadPathUtils.toDatabaseRelativePath(normalized);
         }
-        String newRelativePath = Paths.get(
+        String newRelativePath = UploadPathUtils.databaseRelativePath(
                         "aircraft-model",
                         aircraftModelFolder(modelDocumentation.getAircraftModel()),
                         "documentation",
@@ -512,7 +504,7 @@ public class AircraftDocumentationService {
         if (Files.exists(UploadPathUtils.uploadsRoot().resolve(newRelativePath).normalize())) {
             return newRelativePath;
         }
-        String legacyNamedRelativePath = Paths.get(
+        String legacyNamedRelativePath = UploadPathUtils.databaseRelativePath(
                         "aircraft-model",
                         UploadPathUtils.legacyAircraftModelFolder(
                                 modelDocumentation.getAircraftModel().getManufacturer(),
@@ -527,7 +519,7 @@ public class AircraftDocumentationService {
         if (Files.exists(UploadPathUtils.uploadsRoot().resolve(legacyNamedRelativePath).normalize())) {
             return legacyNamedRelativePath;
         }
-        return Paths.get(
+        return UploadPathUtils.databaseRelativePath(
                         "aircraft-model",
                         modelDocumentation.getAircraftModel().getId().toString(),
                         "documentation",

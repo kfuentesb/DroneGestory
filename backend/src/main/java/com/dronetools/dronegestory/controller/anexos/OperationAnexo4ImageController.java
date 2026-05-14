@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 public class OperationAnexo4ImageController {
 
     private static final String IMAGE_URL_MARKER = "/api/operations/anexo4/images/";
+    private static final String ANEXO4_IMAGE_PATH_PATTERN = "(?:database-relationed/)?operations/[a-zA-Z0-9_-]+/anexo4/[^/]+";
 
     @GetMapping("/images/**")
     @PreAuthorize("isAuthenticated()")
@@ -44,7 +45,7 @@ public class OperationAnexo4ImageController {
         }
 
         // Restrict to only Anexo4 paths (operations/{id-or-code}/anexo4/{file})
-        if (!filename.matches("operations/[a-zA-Z0-9_-]+/anexo4/[^/]+")) {
+        if (!filename.matches(ANEXO4_IMAGE_PATH_PATTERN)) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -87,7 +88,7 @@ public class OperationAnexo4ImageController {
         if (filename.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        if (!filename.matches("operations/[a-zA-Z0-9_-]+/anexo4/[^/]+")) {
+        if (!filename.matches(ANEXO4_IMAGE_PATH_PATTERN)) {
             return ResponseEntity.badRequest().build();
         }
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
@@ -119,7 +120,7 @@ public class OperationAnexo4ImageController {
         if (filename.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        if (!filename.matches("operations/[a-zA-Z0-9_-]+/anexo4/[^/]+")) {
+        if (!filename.matches(ANEXO4_IMAGE_PATH_PATTERN)) {
             return ResponseEntity.badRequest().build();
         }
         Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();

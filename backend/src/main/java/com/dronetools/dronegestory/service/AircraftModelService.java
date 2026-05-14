@@ -201,7 +201,7 @@ public class AircraftModelService {
     }
 
     private void handleImageUpload(AircraftModel model, MultipartFile imageFile) throws IOException {
-        Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path uploadDir = UploadPathUtils.databaseManagedRoot();
         Path profileDir = uploadDir.resolve(Paths.get("aircraft-model", aircraftModelFolder(model), "profile")).normalize();
         Files.createDirectories(profileDir);
 
@@ -209,8 +209,7 @@ public class AircraftModelService {
         Path target = profileDir.resolve(filename);
         imageFile.transferTo(target.toFile());
 
-        model.setImagePath(Paths.get("aircraft-model", aircraftModelFolder(model), "profile", filename)
-                .toString().replace("\\", "/"));
+        model.setImagePath(UploadPathUtils.databaseRelativePathString("aircraft-model", aircraftModelFolder(model), "profile", filename));
     }
 
     private void handleImageLogic(AircraftModel model, MultipartFile imageFile, boolean removeImage) throws IOException {

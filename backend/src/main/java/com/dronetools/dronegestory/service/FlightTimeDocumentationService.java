@@ -139,7 +139,7 @@ public class FlightTimeDocumentationService {
 
     private String storeDocumentationFile(FlightTime flightTime, String documentationType, MultipartFile file) {
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadsDir = UploadPathUtils.databaseManagedRoot();
 
             Aircraft aircraft = flightTime.getAircraft();
             String serialNumber = aircraft.getSerialNumber() != null ? aircraft.getSerialNumber() : "UNKNOWN";
@@ -181,13 +181,13 @@ public class FlightTimeDocumentationService {
             Path target = targetDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get(
+            return UploadPathUtils.databaseRelativePathString(
                     "aircraft",
                     aircraftFolder,
                     "flight-hours",
                     flightTimeFolder,
                     filename
-            ).toString().replace("\\", "/");
+            );
         } catch (IOException ex) {
             throw new RuntimeException("Error storing flight time documentation", ex);
         }

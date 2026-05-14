@@ -232,7 +232,7 @@ public class AircraftModelDocumentationService {
 
     private String storeDocumentationFile(AircraftModel aircraftModel, String documentationType, MultipartFile file) {
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadsDir = UploadPathUtils.databaseManagedRoot();
             String safeTypeDir = safeTypeDir(documentationType);
 
             Path documentationTypeDir = uploadsDir.resolve(
@@ -254,9 +254,7 @@ public class AircraftModelDocumentationService {
             Path target = documentationTypeDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get("aircraft-model", aircraftModelFolder(aircraftModel), "documentation", safeTypeDir, filename)
-                    .toString()
-                    .replace("\\", "/");
+            return UploadPathUtils.databaseRelativePathString("aircraft-model", aircraftModelFolder(aircraftModel), "documentation", safeTypeDir, filename);
         } catch (IOException ex) {
             throw new RuntimeException("Error storing model documentation file", ex);
         }
@@ -288,7 +286,7 @@ public class AircraftModelDocumentationService {
             return;
         }
 
-        Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path uploadsDir = UploadPathUtils.uploadsRoot();
         Path oldPath = uploadsDir.resolve(oldRelativePath).normalize();
         Path newPath = uploadsDir.resolve(newRelativePath).normalize();
         if (!oldPath.startsWith(uploadsDir) || !newPath.startsWith(uploadsDir) || !Files.exists(oldPath)) {
@@ -340,21 +338,17 @@ public class AircraftModelDocumentationService {
         }
         String normalized = documentationName.replace("\\", "/");
         if (normalized.contains("/")) {
-            return normalized;
+            return UploadPathUtils.toDatabaseRelativePath(normalized);
         }
         String newRelativePath = aircraftModelRepository.findById(modelId)
-                .map(model -> Paths.get("aircraft-model", aircraftModelFolder(model), "documentation", safeTypeDir(documentationType), normalized)
-                        .toString()
-                        .replace("\\", "/"))
-                .orElseGet(() -> Paths.get("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized)
-                        .toString()
-                        .replace("\\", "/"));
+                .map(model -> UploadPathUtils.databaseRelativePathString("aircraft-model", aircraftModelFolder(model), "documentation", safeTypeDir(documentationType), normalized))
+                .orElseGet(() -> UploadPathUtils.databaseRelativePathString("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized));
         Path newPath = UploadPathUtils.uploadsRoot().resolve(newRelativePath).normalize();
         if (Files.exists(newPath)) {
             return newRelativePath;
         }
         String legacyNamedRelativePath = aircraftModelRepository.findById(modelId)
-                .map(model -> Paths.get(
+                .map(model -> UploadPathUtils.databaseRelativePath(
                                 "aircraft-model",
                                 UploadPathUtils.legacyAircraftModelFolder(model.getManufacturer(), model.getModel()),
                                 "documentation",
@@ -368,9 +362,7 @@ public class AircraftModelDocumentationService {
                 && Files.exists(UploadPathUtils.uploadsRoot().resolve(legacyNamedRelativePath).normalize())) {
             return legacyNamedRelativePath;
         }
-        return Paths.get("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized)
-                .toString()
-                .replace("\\", "/");
+        return UploadPathUtils.databaseRelativePathString("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized);
     }
 
     private String safeTypeDir(String documentationType) {

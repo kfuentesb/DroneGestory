@@ -151,7 +151,7 @@ public class MaintenanceDocumentationService {
 
     private String storeDocumentationFile(Maintenance maintenance, String documentationType, MultipartFile file) {
         try {
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadsDir = UploadPathUtils.databaseManagedRoot();
 
             Aircraft aircraft = maintenance.getAircraft();
             String serialNumber = aircraft.getSerialNumber() != null ? aircraft.getSerialNumber() : "UNKNOWN";
@@ -193,13 +193,13 @@ public class MaintenanceDocumentationService {
             Path target = targetDir.resolve(filename).normalize();
             file.transferTo(target.toFile());
 
-            return Paths.get(
+            return UploadPathUtils.databaseRelativePathString(
                     "aircraft",
                     aircraftFolder,
                     "maintenance",
                     maintenanceFolder,
                     filename
-                ).toString().replace("\\", "/");
+                );
         } catch (IOException ex) {
             throw new RuntimeException("Error storing maintenance documentation", ex);
         }

@@ -232,7 +232,9 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         validateImageFile(imagenZonaVueloFile);
 
         // Prepare upload directory
-        Path anexoDir = Paths.get("uploads", "operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4").toAbsolutePath().normalize();
+        Path anexoDir = UploadPathUtils.databaseManagedRoot()
+                .resolve(Paths.get("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4"))
+                .normalize();
         Files.createDirectories(anexoDir);
 
         // Imagen espacio aéreo
@@ -247,8 +249,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenEspacioAereoFile.transferTo(target.toFile());
-            anexo4.setImagenEspacioAereo(Paths.get("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename)
-                    .toString().replace("\\", "/"));
+            anexo4.setImagenEspacioAereo(UploadPathUtils.databaseRelativePathString("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename));
         }
 
         // Imagen zona vuelo
@@ -263,8 +264,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenZonaVueloFile.transferTo(target.toFile());
-            anexo4.setImagenZonaVuelo(Paths.get("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename)
-                    .toString().replace("\\", "/"));
+            anexo4.setImagenZonaVuelo(UploadPathUtils.databaseRelativePathString("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename));
         }
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)

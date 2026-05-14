@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.dronetools.dronegestory.util.UploadPathUtils;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -32,8 +33,13 @@ public class FileBrowserController {
     ) {
         Path uploadsRoot = uploadsRoot();
         if (!Files.exists(uploadsRoot) || !Files.isDirectory(uploadsRoot)) {
-            return List.of();
+            try {
+                Files.createDirectories(uploadsRoot);
+            } catch (IOException ex) {
+                throw new RuntimeException("Error creating uploads folder", ex);
+            }
         }
+        ensureDatabaseRelatedFolders();
 
         List<FileBrowserItem> items = new ArrayList<>();
         try (Stream<Path> stream = Files.walk(uploadsRoot)) {
@@ -117,6 +123,18 @@ public class FileBrowserController {
 
     private Path uploadsRoot() {
         return Paths.get("uploads").toAbsolutePath().normalize();
+    }
+
+    private void ensureDatabaseRelatedFolders() {
+        try {
+            Files.createDirectories(UploadPathUtils.databaseManagedRoot().resolve("aircraft"));
+            Files.createDirectories(UploadPathUtils.databaseManagedRoot().resolve("aircraft-model"));
+            Files.createDirectories(UploadPathUtils.databaseManagedRoot().resolve("operations"));
+            Files.createDirectories(UploadPathUtils.databaseManagedRoot().resolve("users"));
+            Files.createDirectories(UploadPathUtils.databaseManagedRoot().resolve("operation-documentation"));
+        } catch (IOException ex) {
+            throw new RuntimeException("Error creating database-related folders", ex);
+        }
     }
 
     public record FileBrowserItem(String id, String type, Long size, Boolean lazy) {

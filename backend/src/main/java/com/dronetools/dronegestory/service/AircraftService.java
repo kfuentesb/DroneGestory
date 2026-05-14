@@ -107,7 +107,7 @@ public class AircraftService {
     }
 
     private void handleImageUpload(Aircraft aircraft, MultipartFile imageFile) throws IOException {
-        Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+        Path uploadDir = UploadPathUtils.databaseManagedRoot();
         Path profileDir = uploadDir.resolve(Paths.get("aircraft", aircraftFolder(aircraft), "profile")).normalize();
         Files.createDirectories(profileDir);
 
@@ -115,8 +115,7 @@ public class AircraftService {
         Path target = profileDir.resolve(filename);
         imageFile.transferTo(target.toFile());
 
-        aircraft.setImagePath(Paths.get("aircraft", aircraftFolder(aircraft), "profile", filename)
-                .toString().replace("\\", "/"));
+        aircraft.setImagePath(UploadPathUtils.databaseRelativePathString("aircraft", aircraftFolder(aircraft), "profile", filename));
     }
 
     private void handleImageLogic(Aircraft aircraft, MultipartFile imageFile, boolean removeImage) throws IOException {
@@ -124,12 +123,12 @@ public class AircraftService {
         String oldImage = aircraft.getImagePath();
 
         if (removeImage) {
-            if (oldImage != null && oldImage.startsWith("aircraft/")) {
+            if (isAircraftSpecificImage(oldImage)) {
                 deleteExistingImage(uploadDir, oldImage);
             }
             aircraft.setImagePath(null);
         } else if (imageFile != null && !imageFile.isEmpty()) {
-            if (oldImage != null && oldImage.startsWith("aircraft/")) {
+            if (isAircraftSpecificImage(oldImage)) {
                 deleteExistingImage(uploadDir, oldImage);
             }
             handleImageUpload(aircraft, imageFile);
@@ -172,6 +171,15 @@ public class AircraftService {
     private String aircraftFolder(Aircraft aircraft) {
         String modelName = aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel();
         return UploadPathUtils.aircraftFolder(aircraft.getSerialNumber(), modelName);
+    }
+
+    private boolean isAircraftSpecificImage(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return false;
+        }
+        String cleanPath = UploadPathUtils.cleanRelativePath(imagePath);
+        return cleanPath.startsWith("aircraft/")
+                || cleanPath.startsWith(UploadPathUtils.DATABASE_RELATED_DIR + "/aircraft/");
     }
 
     @Transactional
