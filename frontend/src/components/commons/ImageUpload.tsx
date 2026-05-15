@@ -49,6 +49,35 @@ const resolveEndpointBase = (apiBaseUrl: string, imageEndpointPath: string) => {
   return `${base}${path}`;
 };
 
+const getRemoveImageEndpoint = (
+  apiBaseUrl: string,
+  imageEndpointPath: string,
+  normalizedPath: string
+) => {
+  const endpoint = imageEndpointPath.toLowerCase();
+
+  if (endpoint.includes("/api/users/images")) {
+    const match = normalizedPath.match(/^(?:database-relationed\/)?users\/(\d+)(?:-[^/]*)?\/profile(?:\/.*)?$/);
+    if (match) return `${ensureTrailingSlash(resolveEndpointBase(apiBaseUrl, "/api/users"))}${match[1]}`;
+  }
+
+  if (endpoint.includes("/api/aircraft-models/images")) {
+    const match = normalizedPath.match(
+      /^(?:database-relationed\/)?aircraft-model\/[^/]+\/profile\/aircraft_model_(\d+)_profile\.[^/]+$/
+    );
+    if (match) return `${ensureTrailingSlash(resolveEndpointBase(apiBaseUrl, "/api/aircraft-models"))}${match[1]}`;
+  }
+
+  if (endpoint.includes("/api/aircraft/images")) {
+    const match = normalizedPath.match(
+      /^(?:database-relationed\/)?aircraft\/[^/]+\/profile\/aircraft_(\d+)_profile\.[^/]+$/
+    );
+    if (match) return `${ensureTrailingSlash(resolveEndpointBase(apiBaseUrl, "/api/aircraft"))}${match[1]}`;
+  }
+
+  return null;
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTE
 // ═══════════════════════════════════════════════════════════════════════════════
