@@ -149,7 +149,16 @@ public final class UploadPathUtils {
         pruneEmptyParents(file.getParent(), uploadsDir);
     }
 
+    private static String customUploadsRootPath = null;
+
+    public static void setCustomUploadsRootPath(String path) {
+        customUploadsRootPath = path;
+    }
+
     public static Path uploadsRoot() {
+        if (customUploadsRootPath != null && !customUploadsRootPath.isBlank()) {
+            return Paths.get(customUploadsRootPath).toAbsolutePath().normalize();
+        }
         return Paths.get("uploads").toAbsolutePath().normalize();
     }
 

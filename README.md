@@ -70,8 +70,14 @@ Copia los archivos `.env` e introduzca en raíz y en `backend/`. Asegúrate de q
 # Limpieza (Opcional)
 docker system prune -f
 
-# Construcción y arranque
-docker compose build
+# Construcción y arranque (todo a la vez)
+docker compose build -d
+docker compose up -d
+# Construcción y arranque por partes (recomendado)
+docker compose pull db
+docker compose up -d db
+docker compose build backend
+docker compose build frontend
 docker compose up -d
 
 ```
@@ -79,8 +85,9 @@ docker compose up -d
 ### 4. Inicialización de Datos
 
 ```bash
+# Espera a que el backend cargue para que se generen las tablas
 # Ejecutar postgresql
-docker exec -i dronegestory-db psql -U admin -d aeronaves_db
+docker exec -it dronegestory-db psql -U admin -d aeronaves_db
 # Cargar esquema e inserciones iniciales (solo usuario admin)
 docker exec -i dronegestory-db psql -U admin -d aeronaves_db < ./backend/init.sql
 

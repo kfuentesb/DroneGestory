@@ -18,6 +18,7 @@ services:
       - APP_FRONTEND_URL=https://quizzical-morse.213-165-78-203.plesk.page
       - EMAIL_USER=${EMAIL_USER:?EMAIL_USER is required}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD:?EMAIL_PASSWORD is required}
+      - APP_UPLOADS_ROOT=/app/uploads
     volumes:
       - ./backend/uploads:/app/uploads
     networks:
