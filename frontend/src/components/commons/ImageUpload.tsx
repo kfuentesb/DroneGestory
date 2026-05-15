@@ -6,7 +6,7 @@ import {
   type ImageUploadState,
   type ImageUploadHandlers,
 } from "./hooks/useImageUpload";
-import { apiFetchRaw } from "../../api";
+import { apiFetch, apiFetchRaw } from "../../api";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIPOS
@@ -105,6 +105,53 @@ export default function ImageUploadField({
   const handleClear = () => {
     handlers.onClear();
     onChange?.(null, fieldName);
+  };
+
+  const handleDeleteSaved = async () => {
+    // Si no hay filename guardado, solo limpiar localmente
+    if (!state.savedFilename) {
+      handleClear();
+      return;
+    }
+    // Normalizar y detectar contexto (usuarios, operaciones, etc.)
+    const normalized = normalizeImagePath(state.savedFilename);
+
+    // Si es una imagen de perfil de usuario, llamar al endpoint de actualización
+    // para que el backend borre el archivo y actualice la entidad (removeImage=true)
+    const userProfileMatch = normalized.match(/^users\/(\d+)(?:-[^/]*)?\/profile(?:\/.*)?$/);
+    try {
+      setServerImageLoading(true);
+
+      if (userProfileMatch) {
+        const userId = userProfileMatch[1];
+        const usersEndpoint = resolveEndpointBase(apiBaseUrl, "/api/users");
+        const formData = new FormData();
+        formData.append("removeImage", "true");
+
+        await apiFetch(`${ensureTrailingSlash(usersEndpoint)}${userId}`, {
+          method: "PUT",
+          body: formData,
+        });
+
+        handlers.onClear();
+        onChange?.(null, fieldName);
+        return;
+      }
+
+      // Por defecto, intentar DELETE directo sobre el recurso (para endpoints que soporten DELETE)
+      const encoded = normalized.split("/").map((s) => encodeURIComponent(s)).join("/");
+      const deleteUrl = `${ensureTrailingSlash(endpointBase)}${encoded}`;
+      await apiFetch(deleteUrl, { method: "DELETE" });
+
+      // Al borrar en servidor, limpiar estado local y notificar al padre
+      handlers.onClear();
+      onChange?.(null, fieldName);
+    } catch (err: any) {
+      console.error("Error al eliminar la imagen:", err);
+      alert(err?.message || "No se pudo eliminar la imagen en el servidor.");
+    } finally {
+      setServerImageLoading(false);
+    }
   };
 
   const acceptString = acceptedTypes.join(",");
@@ -251,7 +298,7 @@ export default function ImageUploadField({
               <button
                 type="button"
                 className="btn btn-sm btn-outline-danger"
-                onClick={handleClear}
+                onClick={handleDeleteSaved}
               >
                 Eliminar imagen
               </button>

@@ -1,8 +1,8 @@
 INSERT INTO app_user (
     first_name, last_name, username, password_hash, email, phone_number, doc_identidad, fecha_nac, state
 ) VALUES (
-    'ADMIN', 'ADMIN', 'admin', 
-    '$2b$12$6cdleoSsH9EtO.vo2bT84Ohltj4SthGTl5dZbsV0bDXogVEEXuICS', 
+    'ADMIN', 'ADMIN', 'admin',
+    '$2b$12$6cdleoSsH9EtO.vo2bT84Ohltj4SthGTl5dZbsV0bDXogVEEXuICS',
     'admin@admin.es', '600111333', '00000000T', '1990-01-01', true
 );
 
