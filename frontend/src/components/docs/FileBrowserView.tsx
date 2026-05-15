@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef, type ChangeEvent } from "react";
-import { Filemanager, Material, Willow } from "@svar-ui/react-filemanager";
+import { Filemanager, Willow } from "@svar-ui/react-filemanager";
 import type { IApi, IEntity } from "@svar-ui/filemanager-store";
 import "@svar-ui/react-filemanager/all.css";
 import ConfirmModal from "../commons/ConfirmModal";
@@ -27,7 +27,6 @@ export default function FileBrowserView() {
 
     const isSearchModeRef = useRef(false);
     const searchWasJustClearedRef = useRef(false);
-    const apiRef = useRef<IApi | null>(null);
 
     useEffect(() => {
         isSearchModeRef.current = isSearchMode;
@@ -160,8 +159,6 @@ export default function FileBrowserView() {
     const closeModal = () => setModalConfig(prev => ({ ...prev, show: false }));
 
     const init = useCallback((api: IApi) => {
-        const wasSearchClick = () => isSearchModeRef.current || searchWasJustClearedRef.current;
-
         api.intercept("filter-files", ({ text }) => {
             const searching = !!text;
 
@@ -191,7 +188,6 @@ export default function FileBrowserView() {
                 return;
             }
             const file = api.getFile(id);
-            // MODIFICADO: Ahora guarda la ruta de cualquier archivo/carpeta cliqueada, ignorando si está en modo búsqueda o no
             setSearchSelectedPath(String(id));
             setSelectedFileId(file?.type === "file" ? String(id) : "");
         });
@@ -296,18 +292,11 @@ export default function FileBrowserView() {
     };
 
     return (
-        <div className="container py-4"
-            style={{ 
-                display: "flex", 
-                flexDirection: "column", 
-                height: "100%", 
-                width: "100%", 
-                overflow: "hidden",
-                padding: "20px" 
-            }}>
-            <div className="d-flex justify-content-end align-items-center gap-3 mb-3">
-                {/* Contenedor de la ruta (Izquierda) */}
-                <div className="text-truncate" style={{ minWidth: 0, flexGrow: 1 }}>
+        <div className="container py-4" style={{ width: "100%", padding: "20px" }}>
+            
+            {/* Header Toolbar */}
+            <div className="d-flex justify-content-between align-items-center gap-3 mb-3" style={{ minHeight: "38px" }}>
+                <div className="text-truncate" style={{ minWidth: 0, flex: 1 }}>
                     {searchSelectedPath && (
                         <span className="text-muted small">
                             Ruta: <strong className="text-dark">{searchSelectedPath}</strong>
@@ -315,8 +304,7 @@ export default function FileBrowserView() {
                     )}
                 </div>
 
-                {/* Botón de Reemplazo (Derecha) */}
-                <div className="d-flex gap-2 flex-shrink-0">
+                <div className="flex-shrink-0">
                     <label className={`btn btn-sm ${selectedFileId ? "btn-primary" : "btn-secondary disabled"} mb-0`}>
                         Replace selected file
                         <input type="file" hidden disabled={!selectedFileId} onChange={onReplaceSelected} />
@@ -324,16 +312,17 @@ export default function FileBrowserView() {
                 </div>
             </div>
             
-            <div style={{ height: "700px", width: "100%" }}>
-                <Willow fonts={true}>
+            {/* FIX: Moved Willow outside the inner bounding box and configured explicit sizing for the component container */}
+            <Willow fonts={true}>
+                <div style={{ height: "700px", width: "100%", overflow: "hidden" }}>
                     <Filemanager
                         key={filemanagerKey}
                         init={init}
                         data={data}
                         readonly={false}
                     />
-                </Willow>
-            </div>
+                </div>
+            </Willow>
 
             <ConfirmModal
                 show={modalConfig.show}
