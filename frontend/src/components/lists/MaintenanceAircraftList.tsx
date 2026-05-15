@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { pdf } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { useAuth } from "../commons/hooks/useAuth";
@@ -9,6 +10,8 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import SearchBar from "../commons/props/SearchBar";
 import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
+import downloadIcon from '../../assets/commons/download.svg';
+import { MaintenanceHistoryPdf } from "../pdf/MaintanceHistoryPdf";
 
 type MaintenanceDocumentation = {
     id: number;
@@ -51,6 +54,31 @@ const formatMinutes = (minutes?: number | null) => {
 const toInputDateValue = (value?: string | null) => {
     if (!value) return "";
     return value.includes("T") ? value.split("T")[0] : value;
+};
+
+const encodeDocumentPath = (path: string) => path.split("/").map(encodeURIComponent).join("/");
+
+const getFileNameFromPath = (path: string) => {
+    const parts = path.split("/").filter(Boolean);
+    return parts[parts.length - 1] || "documento";
+};
+
+const sanitizeFileName = (value: string) => value.replace(/[\\/:*?"<>|]+/g, "_");
+
+const buildSafeFileToken = (value?: string | null) => {
+    if (!value) return "aeronave";
+    return value.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_-]/g, "");
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = sanitizeFileName(fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
 };
 
 async function openDocumentationInNewTab(documentation: MaintenanceDocumentation) {
@@ -101,6 +129,7 @@ export default function MaintenanceAircraftList() {
     const [documentationMarkedForDeletion, setDocumentationMarkedForDeletion] = useState(false);
     const [updateLoading, setUpdateLoading] = useState(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
+    const [isPdfDownloading, setIsPdfDownloading] = useState(false);
     const ITEMS_PER_PAGE = 10;
 
     const fetchRecords = useCallback(async () => {
@@ -213,6 +242,110 @@ export default function MaintenanceAircraftList() {
             .includes(search.toLowerCase())
     );
 
+    const recordsForReport = filteredRecords;
+
+    const getAircraftForReport = (recordsList: MaintenanceRecord[]) => {
+        if (recordsList.length > 0) {
+            const first = recordsList[0];
+            return {
+                manufacturer: first.aircraftManufacturer ?? "Aeronave",
+                model: first.aircraftModel ?? "",
+                serialNumber: first.aircraftSerialNumber ?? aircraftId ?? "",
+            };
+        }
+        return {
+            manufacturer: "Aeronave",
+            model: "",
+            serialNumber: aircraftId ?? "",
+        };
+    };
+
+    const buildReportToken = (recordsList: MaintenanceRecord[]) => {
+        const serial = recordsList[0]?.aircraftSerialNumber ?? aircraftId ?? "aeronave";
+        return buildSafeFileToken(serial);
+    };
+
+    const downloadPdfBlob = async (pdfDocument: JSX.Element, fileName: string) => {
+        const blob = await pdf(pdfDocument).toBlob();
+        downloadBlob(blob, fileName);
+    };
+
+    const downloadMaintenanceAttachments = async (recordsList: MaintenanceRecord[], fileToken: string) => {
+        const attachments = recordsList
+            .map((record) => {
+                const doc = record.documentation;
+                if (!doc) return null;
+                const path = doc.filePath || doc.documentationName;
+                if (!path) return null;
+                const name = sanitizeFileName(doc.documentationName || getFileNameFromPath(path));
+                return { path, name };
+            })
+            .filter((item): item is { path: string; name: string } => Boolean(item));
+
+        if (attachments.length === 0) {
+            return;
+        }
+
+        if (attachments.length === 1) {
+            const response = await apiFetch(`/api/maintenance-documentation/files/${encodeDocumentPath(attachments[0].path)}`);
+            if (!response) throw new Error("Sin respuesta del servidor");
+            const blob = await response.blob();
+            downloadBlob(blob, attachments[0].name);
+            return;
+        }
+
+        const zip = new JSZip();
+        const nameCount = new Map<string, number>();
+
+        const results = await Promise.allSettled(
+            attachments.map(async (attachment) => {
+                const response = await apiFetch(`/api/maintenance-documentation/files/${encodeDocumentPath(attachment.path)}`);
+                if (!response) throw new Error("Sin respuesta del servidor");
+                const blob = await response.blob();
+                return { name: attachment.name, blob };
+            })
+        );
+
+        results.forEach((result) => {
+            if (result.status !== "fulfilled") return;
+            const baseName = result.value.name || "documento";
+            const current = nameCount.get(baseName) ?? 0;
+            nameCount.set(baseName, current + 1);
+            const extIndex = baseName.lastIndexOf(".");
+            const hasExt = extIndex > 0;
+            const base = hasExt ? baseName.slice(0, extIndex) : baseName;
+            const ext = hasExt ? baseName.slice(extIndex) : "";
+            const uniqueName = current === 0 ? baseName : `${base}_${current + 1}${ext}`;
+            zip.file(uniqueName, result.value.blob);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        downloadBlob(zipBlob, `Documentos_Mantenimiento_${fileToken}.zip`);
+    };
+
+    const handleDownloadHistory = async () => {
+        if (isPdfDownloading) return;
+        if (recordsForReport.length === 0) {
+            alert("No hay registros de mantenimiento para descargar.");
+            return;
+        }
+        setIsPdfDownloading(true);
+        try {
+            const aircraft = getAircraftForReport(recordsForReport);
+            const fileToken = buildReportToken(recordsForReport);
+            await downloadPdfBlob(
+                <MaintenanceHistoryPdf aircraft={aircraft} maintenanceRecords={recordsForReport} />,
+                `Historial_Mantenimiento_${fileToken}.pdf`
+            );
+            await downloadMaintenanceAttachments(recordsForReport, fileToken);
+        } catch (err) {
+            console.error("Error descargando historial de mantenimiento", err);
+            alert("No se pudo descargar el historial de mantenimiento.");
+        } finally {
+            setIsPdfDownloading(false);
+        }
+    };
+
     const paginatedRecords = filteredRecords.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
     const headers: TableHeader[] = [
         { label: "Fecha", key: "maintenanceDate", sortable: true },
@@ -246,7 +379,27 @@ export default function MaintenanceAircraftList() {
                     {error && <div className="alert alert-danger">{error}</div>}
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        <ButtonProp type="button" onClick={() => navigate(`/register-maintenance?aircraftId=${aircraftId}`)}>+ Registrar mantenimiento</ButtonProp>
+                        <div className="d-flex gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
+                                style={{ backgroundColor: "#111827", color: "#FFFFFF", fontWeight: "bold" }}
+                                onClick={() => void handleDownloadHistory()}
+                                disabled={isPdfDownloading}
+                            >
+                                <img
+                                    src={downloadIcon}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="d-inline d-md-none"
+                                    style={{ width: 16, height: 16 }}
+                                />
+                                <span className="d-none d-md-inline">
+                                    {isPdfDownloading ? "Generando..." : "Descargar historial"}
+                                </span>
+                            </button>
+                            <ButtonProp type="button" onClick={() => navigate(`/register-maintenance?aircraftId=${aircraftId}`)}>+ Registrar mantenimiento</ButtonProp>
+                        </div>
                     </div>
                     <ReusableTable
                         headers={headers}
