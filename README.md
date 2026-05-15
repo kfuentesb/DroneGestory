@@ -79,7 +79,9 @@ docker compose up -d db
 docker compose build backend
 docker compose build frontend
 docker compose up -d
-
+# Para ver logs
+docker compose logs backend
+docker compose logs frontend
 ```
 
 ### 4. Inicialización de Datos
