@@ -688,7 +688,12 @@ export default function FormOperationAnexo4Detail({
         disabled={disabled || saving}
         helpText="Adjunte el mapa del espacio aéreo (JPG o PNG, máx. 5 MB)"
         externalError={errors.imagenEspacioAereoFile}
-        onChange={(file, fieldName) => handleChange(fieldName, file)}
+        onChange={(file, fieldName) => {
+          handleChange(fieldName, file);
+          if (!file) {
+            handleChange("imagenEspacioAereo", null);
+          }
+        }}
       />
 
       {/* SECCIÓN 4 */}
@@ -709,7 +714,12 @@ export default function FormOperationAnexo4Detail({
         disabled={disabled || saving}
         helpText="Adjunte el mapa detallado de la zona de operación (JPG o PNG, máx. 5 MB)"
         externalError={errors.imagenZonaVueloFile}
-        onChange={(file, fieldName) => handleChange(fieldName, file)}
+        onChange={(file, fieldName) => {
+          handleChange(fieldName, file);
+          if (!file) {
+            handleChange("imagenZonaVuelo", null);
+          }
+        }}
       />
 
       {/* SECCIÓN 6 */}

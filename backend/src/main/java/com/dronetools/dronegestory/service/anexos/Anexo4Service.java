@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,6 +27,8 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
     private static final Set<String> OPCIONES_LIMITACIONES = Set.of("SI", "NO", "N/A");
     private static final Set<String> VALORES_HABILITADORES_LIMITACIONES = Set.of("SI");
+    private static final String SECTION_ESPACIO_AEREO = "espacioaereo";
+    private static final String SECTION_ZONA_VUELO = "zonavuelo";
     private final UserRepository userRepository;
     private final Anexo5Service anexo5Service;
 
@@ -210,6 +214,26 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         return copia;
     }
 
+    @Override
+    protected void afterRehacerCopia(Anexo4 origen, Anexo4 nuevaVersion) {
+        Operation operation = nuevaVersion.getOperation();
+        if (operation == null) {
+            return;
+        }
+        nuevaVersion.setImagenEspacioAereo(copyImageForVersion(
+                operation,
+                nuevaVersion.getNumeroVersion(),
+                origen.getImagenEspacioAereo(),
+                SECTION_ESPACIO_AEREO
+        ));
+        nuevaVersion.setImagenZonaVuelo(copyImageForVersion(
+                operation,
+                nuevaVersion.getNumeroVersion(),
+                origen.getImagenZonaVuelo(),
+                SECTION_ZONA_VUELO
+        ));
+    }
+
     @Transactional
     public Anexo4 createWithFile(
             Long operationId,
@@ -237,19 +261,27 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
                 .normalize();
         Files.createDirectories(anexoDir);
 
+        int numeroVersion = resolveVersionForSave(operationForPath);
+        Anexo4 current = operationForPath.getAnexo4Actual();
+        boolean updatingDraft = current != null
+                && current.getEstado() == com.dronetools.dronegestory.model.enums.AnexoStatus.BORRADOR;
+        String previousImagenEspacioAereo = updatingDraft ? current.getImagenEspacioAereo() : null;
+        String previousImagenZonaVuelo = updatingDraft ? current.getImagenZonaVuelo() : null;
+
         // Imagen espacio aéreo
         if (imagenEspacioAereoFile != null && !imagenEspacioAereoFile.isEmpty()) {
             String originalName = imagenEspacioAereoFile.getOriginalFilename();
             String safeName = (originalName == null || originalName.isBlank())
                     ? "espacioAereo"
                     : Paths.get(originalName).getFileName().toString();
-            String filename = System.currentTimeMillis() + "_" + safeName;
+            String filename = buildImageFilename(operationForPath.getCodigo(), numeroVersion, SECTION_ESPACIO_AEREO, safeName, imagenEspacioAereoFile.getContentType());
             Path target = anexoDir.resolve(filename).normalize();
             if (!target.startsWith(anexoDir)) {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenEspacioAereoFile.transferTo(target.toFile());
             anexo4.setImagenEspacioAereo(UploadPathUtils.databaseRelativePathString("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename));
+            deleteIfReplaced(previousImagenEspacioAereo, anexo4.getImagenEspacioAereo());
         }
 
         // Imagen zona vuelo
@@ -258,13 +290,14 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
             String safeName = (originalName == null || originalName.isBlank())
                     ? "zonaVuelo"
                     : Paths.get(originalName).getFileName().toString();
-            String filename = System.currentTimeMillis() + "_" + safeName;
+            String filename = buildImageFilename(operationForPath.getCodigo(), numeroVersion, SECTION_ZONA_VUELO, safeName, imagenZonaVueloFile.getContentType());
             Path target = anexoDir.resolve(filename).normalize();
             if (!target.startsWith(anexoDir)) {
                 throw new IllegalArgumentException("Nombre de archivo no válido");
             }
             imagenZonaVueloFile.transferTo(target.toFile());
             anexo4.setImagenZonaVuelo(UploadPathUtils.databaseRelativePathString("operations", UploadPathUtils.operationFolder(operationForPath.getCodigo()), "anexo4", filename));
+            deleteIfReplaced(previousImagenZonaVuelo, anexo4.getImagenZonaVuelo());
         }
 
         // Use proper versioned registration (handles BORRADOR/FIRMADO states and version numbers)
@@ -285,6 +318,134 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("La imagen no puede superar los 5 MB");
         }
+    }
+
+    @Transactional
+    public void deleteImageAndClearReference(String relativePath) throws IOException {
+        if (relativePath == null || relativePath.isBlank()) {
+            return;
+        }
+
+        Anexo4Repository anexo4Repository = (Anexo4Repository) repository;
+        for (String candidate : buildPathCandidates(relativePath)) {
+            for (Anexo4 anexo : anexo4Repository.findByImagenEspacioAereo(candidate)) {
+                anexo.setImagenEspacioAereo(null);
+                repository.save(anexo);
+            }
+            for (Anexo4 anexo : anexo4Repository.findByImagenZonaVuelo(candidate)) {
+                anexo.setImagenZonaVuelo(null);
+                repository.save(anexo);
+            }
+        }
+
+        UploadPathUtils.deleteFileAndPruneEmptyParents(UploadPathUtils.toDatabaseRelativePath(relativePath));
+    }
+
+    private int resolveVersionForSave(Operation operation) {
+        Anexo4 current = operation.getAnexo4Actual();
+        if (current != null && current.getEstado() == com.dronetools.dronegestory.model.enums.AnexoStatus.BORRADOR) {
+            return current.getNumeroVersion();
+        }
+        return operation.getNextVersionAnexo4();
+    }
+
+    private String copyImageForVersion(Operation operation, int numeroVersion, String sourceRelativePath, String sectionName) {
+        if (sourceRelativePath == null || sourceRelativePath.isBlank()) {
+            return null;
+        }
+
+        try {
+            Path source = UploadPathUtils.resolveExistingUploadPath(sourceRelativePath);
+            if (!Files.exists(source) || !Files.isRegularFile(source)) {
+                return sourceRelativePath;
+            }
+
+            String imageName = extractOriginalImageName(source.getFileName().toString(), sectionName);
+            String filename = buildImageFilename(operation.getCodigo(), numeroVersion, sectionName, imageName, null);
+            Path anexoDir = UploadPathUtils.databaseManagedRoot()
+                    .resolve(Paths.get("operations", UploadPathUtils.operationFolder(operation.getCodigo()), "anexo4"))
+                    .normalize();
+            Files.createDirectories(anexoDir);
+
+            Path target = anexoDir.resolve(filename).normalize();
+            if (!target.startsWith(anexoDir)) {
+                throw new IllegalArgumentException("Nombre de archivo no valido");
+            }
+
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            return UploadPathUtils.databaseRelativePathString(
+                    "operations",
+                    UploadPathUtils.operationFolder(operation.getCodigo()),
+                    "anexo4",
+                    filename
+            );
+        } catch (IOException ex) {
+            throw new IllegalStateException("No se pudo copiar la imagen del Anexo 4 a la nueva version.", ex);
+        }
+    }
+
+    private String buildImageFilename(
+            String operationCode,
+            int numeroVersion,
+            String sectionName,
+            String originalFilename,
+            String contentType
+    ) {
+        String safeOriginal = safeFilename(originalFilename, sectionName, contentType);
+        int dot = safeOriginal.lastIndexOf('.');
+        String baseName = dot > 0 ? safeOriginal.substring(0, dot) : safeOriginal;
+        String extension = dot > 0 ? safeOriginal.substring(dot) : defaultImageExtension(contentType);
+        return UploadPathUtils.safeSegment(operationCode)
+                + "_a4_v"
+                + numeroVersion
+                + "_"
+                + sectionName
+                + "_"
+                + UploadPathUtils.safeSegment(baseName)
+                + extension.toLowerCase();
+    }
+
+    private String safeFilename(String originalFilename, String sectionName, String contentType) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return sectionName + defaultImageExtension(contentType);
+        }
+        return Paths.get(originalFilename).getFileName().toString();
+    }
+
+    private String defaultImageExtension(String contentType) {
+        return "image/jpeg".equals(contentType) ? ".jpg" : ".png";
+    }
+
+    private String extractOriginalImageName(String filename, String sectionName) {
+        String marker = "_" + sectionName + "_";
+        int markerIndex = filename.indexOf(marker);
+        if (markerIndex < 0) {
+            return filename;
+        }
+        return filename.substring(markerIndex + marker.length());
+    }
+
+    private void deleteIfReplaced(String previousPath, String newPath) throws IOException {
+        if (previousPath == null || previousPath.isBlank() || previousPath.equals(newPath)) {
+            return;
+        }
+        UploadPathUtils.deleteFileAndPruneEmptyParents(previousPath);
+    }
+
+    private LinkedHashSet<String> buildPathCandidates(String relativePath) {
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
+        String clean = UploadPathUtils.cleanRelativePath(relativePath);
+        String databasePath = UploadPathUtils.toDatabaseRelativePath(clean);
+        candidates.add(databasePath);
+        candidates.add(clean);
+        if (databasePath.startsWith(UploadPathUtils.DATABASE_RELATED_DIR + "/")) {
+            candidates.add(databasePath.substring((UploadPathUtils.DATABASE_RELATED_DIR + "/").length()));
+        }
+        Path fileName = Paths.get(clean).getFileName();
+        if (fileName != null) {
+            candidates.add(fileName.toString());
+        }
+        return candidates;
     }
 
     private List<Long> copyAircraftIds(List<Long> aircraftIds) {

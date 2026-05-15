@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.controller.anexos;
 
+import com.dronetools.dronegestory.service.anexos.Anexo4Service;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -29,6 +30,11 @@ public class OperationAnexo4ImageController {
 
     private static final String IMAGE_URL_MARKER = "/api/operations/anexo4/images/";
     private static final String ANEXO4_IMAGE_PATH_PATTERN = "(?:database-relationed/)?operations/[a-zA-Z0-9_-]+/anexo4/[^/]+";
+    private final Anexo4Service anexo4Service;
+
+    public OperationAnexo4ImageController(Anexo4Service anexo4Service) {
+        this.anexo4Service = anexo4Service;
+    }
 
     @GetMapping("/images/**")
     @PreAuthorize("isAuthenticated()")
@@ -130,12 +136,7 @@ public class OperationAnexo4ImageController {
         if (!filePath.startsWith(uploadsDir)) {
             return ResponseEntity.badRequest().build();
         }
-        // Delete file if exists
-        if (Files.exists(filePath)) {
-            Files.delete(filePath);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        anexo4Service.deleteImageAndClearReference(filename);
+        return ResponseEntity.noContent().build();
     }
 }

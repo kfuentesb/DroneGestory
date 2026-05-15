@@ -66,6 +66,7 @@ public abstract class AnexoServiceBase<T extends Anexo> {
         nuevaVersion.setEstado(AnexoStatus.BORRADOR);
         nuevaVersion.setFirmadoPor(null);
         nuevaVersion.setFechaFirma(null);
+        afterRehacerCopia(anexoOrigen, nuevaVersion);
         return repository.save(nuevaVersion);
     }
 
@@ -121,6 +122,9 @@ public abstract class AnexoServiceBase<T extends Anexo> {
 
     protected abstract T crearCopia(T origen);
     protected abstract void actualizarCampos(T actual, T nuevosDatos);
+
+    protected void afterRehacerCopia(T origen, T nuevaVersion) {
+    }
 
     @FunctionalInterface
     public interface GetUltimaVersionFunction<O, T> {
