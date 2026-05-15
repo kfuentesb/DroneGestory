@@ -137,27 +137,23 @@ export default function ImageUploadField({
   };
 
   const handleDeleteSaved = async () => {
-    // Si no hay filename guardado, solo limpiar localmente
     if (!state.savedFilename) {
       handleClear();
       return;
     }
-    // Normalizar y detectar contexto (usuarios, operaciones, etc.)
-    const normalized = normalizeImagePath(state.savedFilename);
 
-    // Si es una imagen de perfil de usuario, llamar al endpoint de actualización
-    // para que el backend borre el archivo y actualice la entidad (removeImage=true)
-    const userProfileMatch = normalized.match(/^users\/(\d+)(?:-[^/]*)?\/profile(?:\/.*)?$/);
+    const normalized = normalizeImagePath(state.savedFilename);
+    const removeEndpoint = getRemoveImageEndpoint(apiBaseUrl, imageEndpointPath, normalized);
+
     try {
       setServerImageLoading(true);
 
-      if (userProfileMatch) {
-        const userId = userProfileMatch[1];
-        const usersEndpoint = resolveEndpointBase(apiBaseUrl, "/api/users");
+      if (removeEndpoint) {
+        // ✅ Users, aircraft-models y aircraft → PUT con removeImage=true
         const formData = new FormData();
         formData.append("removeImage", "true");
 
-        await apiFetch(`${ensureTrailingSlash(usersEndpoint)}${userId}`, {
+        await apiFetch(removeEndpoint, {
           method: "PUT",
           body: formData,
         });
