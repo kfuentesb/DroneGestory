@@ -175,7 +175,7 @@ export default function FileBrowserView() {
         });
 
         api.intercept("open-file", async ({ id }) => {
-            if (id && wasSearchClick()) {
+            if (id) {
                 setSearchSelectedPath(String(id));
             }
             searchWasJustClearedRef.current = false;
@@ -191,12 +191,13 @@ export default function FileBrowserView() {
                 return;
             }
             const file = api.getFile(id);
-            setSearchSelectedPath(isSearchModeRef.current ? String(id) : "");
+            // MODIFICADO: Ahora guarda la ruta de cualquier archivo/carpeta cliqueada, ignorando si está en modo búsqueda o no
+            setSearchSelectedPath(String(id));
             setSelectedFileId(file?.type === "file" ? String(id) : "");
         });
 
         api.intercept("set-path", ({ id }) => {
-            if (id && wasSearchClick()) {
+            if (id) {
                 setSearchSelectedPath(String(id));
             }
             searchWasJustClearedRef.current = false;
@@ -306,7 +307,7 @@ export default function FileBrowserView() {
             }}>
             <div className="d-flex justify-content-end align-items-center gap-3 mb-3">
                 {/* Contenedor de la ruta (Izquierda) */}
-                <div className="text-truncate" style={{ minWidth: 0 }}>
+                <div className="text-truncate" style={{ minWidth: 0, flexGrow: 1 }}>
                     {searchSelectedPath && (
                         <span className="text-muted small">
                             Ruta: <strong className="text-dark">{searchSelectedPath}</strong>
@@ -323,16 +324,16 @@ export default function FileBrowserView() {
                 </div>
             </div>
             
-            <Willow fonts={true}>
-                <div style={{ height: "700px", width: "100%" }}>
+            <div style={{ height: "700px", width: "100%" }}>
+                <Willow fonts={true}>
                     <Filemanager
                         key={filemanagerKey}
                         init={init}
                         data={data}
                         readonly={false}
                     />
-                </div>
-            </Willow>
+                </Willow>
+            </div>
 
             <ConfirmModal
                 show={modalConfig.show}
