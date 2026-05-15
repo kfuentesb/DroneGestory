@@ -3,7 +3,7 @@ INSERT INTO app_user (
 ) VALUES (
     'ADMIN', 'ADMIN', 'admin', 
     '$2b$12$6cdleoSsH9EtO.vo2bT84Ohltj4SthGTl5dZbsV0bDXogVEEXuICS', 
-    'admin@admin.es', '600111333', '00000000T', '1990-01-01', true
+    'admin@admin.es', null, '00000000T', null, true
 );
 
 INSERT INTO app_user_roles (user_id, role)
