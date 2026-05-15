@@ -78,10 +78,12 @@ public final class UploadPathUtils {
         );
     }
 
-    public static String operationDocumentationPath(Long documentationId, Integer versionNumber, String storedValue) {
+    public static String operationDocumentationPath(Long documentationId, String documentationName, Integer versionNumber, String storedValue) {
+        String idNameFolder = entityFolder(documentationId, documentationName);
+
         return resolveRelativePath(
                 storedValue,
-                databaseRelativePath("operation-documentation", documentationId.toString(), "v" + versionNumber)
+                databaseRelativePath("operation-documentation", idNameFolder, "v" + versionNumber)
         );
     }
 

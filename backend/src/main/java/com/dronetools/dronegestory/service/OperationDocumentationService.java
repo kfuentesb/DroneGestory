@@ -75,7 +75,7 @@ public class OperationDocumentationService {
         
         int finalR = (rNum != null) ? rNum : 0;
 
-        String storedName = storeDocumentationFile(documentation.getId(), finalV, file);
+        String storedName = storeDocumentationFile(documentation.getId(), documentation.getName(), finalV, finalR, file);
         
         DocumentVersion newVersion = new DocumentVersion(documentation, finalV, storedName, notes);
         newVersion.setRevisionNumber(finalR);
@@ -87,18 +87,24 @@ public class OperationDocumentationService {
         OperationDocumentation documentation = operationDocumentationRepository.findWithVersionsById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Operation documentation not found with id: " + id));
 
-        documentation.getVersions().forEach(version -> deleteStoredFile(documentation.getId(), version.getVersionNumber(), version.getFileUrl()));
+        documentation.getVersions().forEach(version -> 
+            deleteStoredFile(documentation.getId(), documentation.getName(), version.getVersionNumber(), version.getFileUrl())
+        );
         operationDocumentationRepository.delete(documentation);
     }
 
-    private String storeDocumentationFile(Long documentationId, int versionNumber, MultipartFile file) {
+    private String storeDocumentationFile(Long documentationId, String documentationName, int versionNumber, int revisionNumber, MultipartFile file) {
         try {
             Path uploadsDir = UploadPathUtils.databaseManagedRoot();
+            
+            String idNameFolder = UploadPathUtils.entityFolder(documentationId, documentationName);
+
             Path targetDir = uploadsDir.resolve(Paths.get(
                     "operation-documentation",
-                    documentationId.toString(),
+                    idNameFolder,
                     "v" + versionNumber
             )).normalize();
+            
             Files.createDirectories(targetDir);
 
             String originalName = file.getOriginalFilename();
@@ -108,8 +114,8 @@ public class OperationDocumentationService {
             int dot = safeName.lastIndexOf('.');
             String baseName = dot >= 0 ? safeName.substring(0, dot) : safeName;
             String extension = dot >= 0 ? safeName.substring(dot) : "";
-            String filename = "operation_documentation_" + documentationId + "_v" + versionNumber + "_" +
-                    baseName.replaceAll("[^a-zA-Z0-9_-]", "_") + extension;
+            String filename = "v" + versionNumber + "_r" + revisionNumber + "_" + documentationId + "_" +
+                baseName.replaceAll("[^a-zA-Z0-9_-]", "_") + "_operation_documentation" + extension;
 
             Path target = targetDir.resolve(filename).normalize();
             if (!target.startsWith(uploadsDir)) {
@@ -123,8 +129,8 @@ public class OperationDocumentationService {
         }
     }
 
-    private void deleteStoredFile(Long documentationId, Integer versionNumber, String storedValue) {
-        String relativePath = UploadPathUtils.operationDocumentationPath(documentationId, versionNumber, storedValue);
+    private void deleteStoredFile(Long documentationId, String documentationName, Integer versionNumber, String storedValue) {
+        String relativePath = UploadPathUtils.operationDocumentationPath(documentationId, documentationName, versionNumber, storedValue);
         if (relativePath == null) return;
 
         try {
@@ -149,7 +155,7 @@ public class OperationDocumentationService {
                             LocalDateTime createdAt = version.getCreatedAt();
                             return createdAt == null ? LocalDateTime.MIN : createdAt;
                         }, Comparator.reverseOrder()))
-                .map(this::toDto)
+                .map(version -> this.toDto(version, documentation.getName()))
                 .toList();
         DocumentVersionDTO latest = allVersions.isEmpty() ? null : allVersions.get(0);
 
@@ -173,19 +179,20 @@ public class OperationDocumentationService {
         if (documentation.getVersions().size() <= 1) {
             throw new IllegalStateException("Cannot delete the only version.");
         }
-        deleteStoredFile(documentationId, versionToDelete.getVersionNumber(), versionToDelete.getFileUrl());
+        deleteStoredFile(documentationId, documentation.getName(), versionToDelete.getVersionNumber(), versionToDelete.getFileUrl());
         versionToDelete.setDocumentation(null); 
         documentation.getVersions().remove(versionToDelete);
         return toDto(operationDocumentationRepository.save(documentation), true);
     }
 
-    private DocumentVersionDTO toDto(DocumentVersion version) {
+    private DocumentVersionDTO toDto(DocumentVersion version, String documentationName) {
         return new DocumentVersionDTO(
                 version.getId(),
                 version.getVersionNumber(),
                 version.getRevisionNumber(),
                 UploadPathUtils.operationDocumentationPath(
                         version.getDocumentation().getId(),
+                        documentationName,
                         version.getVersionNumber(),
                         version.getFileUrl()
                 ),
