@@ -55,7 +55,8 @@ public class Aircraft {
     @Column(name = "impact_energy", precision = 9, scale = 3, nullable = false)
     private BigDecimal impactEnergy;
 
-    @Column(name = "max_autonomy", precision = 9, scale = 3, nullable = false)
+    // puede ser nulo, hay drones que vuelan enchufados y tienen max autonomía ilimitada
+    @Column(name = "max_autonomy", precision = 9, scale = 3)
     private BigDecimal maxAutonomy;
 
     @Column(name="camera", nullable = false)

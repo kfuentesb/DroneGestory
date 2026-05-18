@@ -1224,14 +1224,14 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         setShowConfirm(false);
 
         const numericFields = [
-            "mtom", "wingspan", "maxSpeed", "impactEnergy", 
-            "mtomDefault", "wingspanDefault", "maxSpeedDefault", "impactEnergyDefault"
+            "mtom", "wingspan", "maxSpeed", "impactEnergy", "maxAutonomy",
+            "mtomDefault", "wingspanDefault", "maxSpeedDefault", "impactEnergyDefault", "maxAutonomyDefault"
         ];
         const booleanFields = [
             "state", "hasCamera", "privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS",
             "hasCameraDefault", "privatelyBuiltDefault", "hasParachuteDefault", "hasEnsuranceDefault", "hasFTSDefault"
         ];
-        const clearableFieldKeys = ["accessories", ...(props.clearableFieldKeys || [])];
+        const clearableFieldKeys = ["accessories","observations", ...(props.clearableFieldKeys || [])];
 
         const isNumericField = (key: string) => numericFields.includes(key);
         const isBooleanField = (key: string) => booleanFields.includes(key);
@@ -1274,7 +1274,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                 const isCleared = value === null || value === undefined || value.toString().trim() === "";
 
                 const isClearable = clearableFieldKeys.includes(field.key) || 
-                    (props.entityType === "aircraft" && ["privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS", "cautive", "accessories"].includes(field.key));
+                    (props.entityType === "aircraft" && ["privatelyBuilt", "hasParachute", "hasEnsurance", "hasFTS", "cautive", "accessories", "observations"].includes(field.key));
 
                 if (isCleared) {
                     if (isClearable) formData.append(field.key, "");

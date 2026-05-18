@@ -79,6 +79,7 @@ export default function FormAircraftModel() {
     maxSpeedDefault: "",
     configDefault: null as SelectOption | null,
     impactEnergyDefault: "",
+    maxAutonomyDefault: "",
     hasCameraDefault: null as SelectOption | null,
     privatelyBuiltDefault: null as SelectOption | null,
     hasParachuteDefault: null as SelectOption | null,
@@ -86,6 +87,7 @@ export default function FormAircraftModel() {
     hasFTSDefault: null as SelectOption | null,
     cautiveDefault: null as SelectOption | null,
     accessoriesDefault: "",
+    observationsDefault: "",
     powerSourceDefault: null as SelectOption | null,
     powerSourceNonHybrid: null as SelectOption | null,
   });
@@ -237,6 +239,7 @@ export default function FormAircraftModel() {
       if (defaultValues.hasFTSDefault) formData.append("hasFTSDefault", defaultValues.hasFTSDefault.value);
       if (defaultValues.cautiveDefault?.value) formData.append("cautiveDefault", defaultValues.cautiveDefault.value);
       if (defaultValues.accessoriesDefault.trim()) formData.append("accessoriesDefault", defaultValues.accessoriesDefault.trim());
+      if (defaultValues.observationsDefault.trim()) formData.append("observationsDefault", defaultValues.observationsDefault.trim());
       if (defaultValues.powerSourceDefault?.value) formData.append("powerSourceDefault", defaultValues.powerSourceDefault.value);
       if (defaultValues.powerSourceNonHybrid?.value) formData.append("powerSourceTypeDefault", defaultValues.powerSourceNonHybrid.value);
     }
@@ -424,7 +427,10 @@ export default function FormAircraftModel() {
                       isClearable
                     />
                   </div>
-                  <div className="col-12 col-md">
+                </div>
+
+                <div className="row mb-3">
+                  <div className="col-12 col-md mb-3 mb-md-0">
                     <label className="form-label d-block text-start ps-1">Paracaídas por defecto</label>
                     <Select
                       options={yesNoOptions}
@@ -433,6 +439,18 @@ export default function FormAircraftModel() {
                       value={defaultValues.hasParachuteDefault}
                       onChange={(value) => setDefaultValues((prev) => ({ ...prev, hasParachuteDefault: value }))}
                       isClearable
+                    />
+                  </div>
+                  <div className="col-12 col-md mb-3 mb-md-0">
+                    <label className="form-label d-block text-start ps-1">Autonomía Máxima (min)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={defaultValues.maxAutonomyDefault}
+                      onChange={(e) => setDefaultValues((prev) => ({ ...prev, maxAutonomyDefault: e.target.value }))}
+                      min={0}
+                      max={LIMITS.MAX_AUTONOMY}
+                      style={backgroundBorderInputs}
                     />
                   </div>
                 </div>
@@ -494,12 +512,25 @@ export default function FormAircraftModel() {
 
                 <div className="row mb-3">
                   <div className="col-12">
-                    <label className="form-label d-block text-start ps-1">Accesorios / notas por defecto</label>
+                    <label className="form-label d-block text-start ps-1">Accesorios (por defecto)</label>
                     <textarea
                       className="form-control"
                       rows={3}
                       value={defaultValues.accessoriesDefault}
                       onChange={(e) => setDefaultValues((prev) => ({ ...prev, accessoriesDefault: e.target.value }))}
+                      style={{ ...backgroundBorderInputs, resize: "vertical", minHeight: "80px" }}
+                    />
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <label className="form-label d-block text-start ps-1">Observaciones (por defecto)</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      value={defaultValues.observationsDefault}
+                      onChange={(e) => setDefaultValues((prev) => ({ ...prev, observationsDefault: e.target.value }))}
                       style={{ ...backgroundBorderInputs, resize: "vertical", minHeight: "80px" }}
                     />
                   </div>
@@ -575,6 +606,7 @@ export default function FormAircraftModel() {
               </button>
             </div>
           </form>
+
         </div>
       </div>
     </div>

@@ -60,6 +60,7 @@ interface FormAircraftProps {
     maxSpeedDefault?: number;
     configDefault?: string;
     impactEnergyDefault?: number;
+    maxAutonomyDefault?: number;
     hasCameraDefault?: boolean;
     privatelyBuiltDefault?: boolean;
     hasParachuteDefault?: boolean;
@@ -67,6 +68,7 @@ interface FormAircraftProps {
     hasFTSDefault?: boolean;
     cautiveDefault?: string;
     accessoriesDefault?: string;
+    observationsDefault?: string;
     powerSourceDefault?: string;
     powerSourceTypeDefault?: string;
   };
@@ -141,6 +143,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     maxSpeed: initialValues?.maxSpeedDefault ?? 0,
     config: getOptionByValue(configs, initialValues?.configDefault) as SelectOption | null,
     impactEnergy: initialValues?.impactEnergyDefault ?? 0,
+    maxAutonomy: initialValues?.maxAutonomyDefault ?? 0,
     flightMinutes: 0,
     hasCamera: getYesNoOption(initialValues?.hasCameraDefault) as SelectOption | null,
     privatelyBuilt: getYesNoOption(initialValues?.privatelyBuiltDefault) as SelectOption | null,
@@ -149,6 +152,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     hasFTS: getYesNoOption(initialValues?.hasFTSDefault) as SelectOption | null,
     cautive: getOptionByValue(cautiveOptions, initialValues?.cautiveDefault) as SelectOption | null,
     accessories: initialValues?.accessoriesDefault ?? "",
+    observations: initialValues?.observationsDefault ?? "",
     image: null as File | null,
     fechaFab: normalizeMonthValue(),
     powerSource: getOptionByValue(powerSources, initialValues?.powerSourceDefault) as SelectOption | null,
@@ -165,9 +169,11 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
     maxSpeed: false,
     config: false,
     impactEnergy: false,
+    maxAutonomy: false,
     flightMinutes: false,
     hasCamera: false,
     tooMuchTextAccesories: false,
+    tooMuchTextObservations: false,
   });
 
   const navigate = useNavigate();
@@ -507,12 +513,18 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
         isNaN(Number(formValues.impactEnergy)) ||
         Number(formValues.impactEnergy) < 0 ||
         Number(formValues.impactEnergy) > LIMITS.MAX_ENERGY,
+      maxAutonomy:
+        formValues.maxAutonomy === 0 ||
+        isNaN(Number(formValues.maxAutonomy)) ||
+        Number(formValues.maxAutonomy) < 0 ||
+        Number(formValues.maxAutonomy) > LIMITS.MAX_AUTONOMY,
       flightMinutes:
         !Number.isInteger(Number(formValues.flightMinutes)) ||
         Number(formValues.flightMinutes) < 0,
       config: !formValues.config,
       hasCamera: formValues.hasCamera === null || formValues.hasCamera === undefined,
       tooMuchTextAccesories: formValues.accessories.length > 800,
+      tooMuchTextObservations: formValues.observations.length > 800,
       powerSource: false,
       powerSourceNonElectric:
         formValues.powerSource?.value === "NON_ELECTRIC" &&
@@ -557,6 +569,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       if (formValues.maxSpeed) formData.append("maxSpeed", String(formValues.maxSpeed));
       if (formValues.config) formData.append("config", formValues.config?.value ?? "");
       if (formValues.impactEnergy) formData.append("impactEnergy", String(formValues.impactEnergy));
+      if (formValues.maxAutonomy) formData.append("maxAutonomy", String(formValues.maxAutonomy));
       formData.append("flightMinutes", String(formValues.flightMinutes));
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
       if (formValues.powerSource) formData.append("powerSource", formValues.powerSource.value);
@@ -569,6 +582,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
       if (formValues.hasFTS) formData.append("hasFTS", formValues.hasFTS.value);
       if (formValues.cautive) formData.append("cautive", formValues.cautive.value);
       if (formValues.accessories.trim()) formData.append("accessories", formValues.accessories.trim());
+      if (formValues.observations.trim()) formData.append("observations", formValues.observations.trim());
       if (selectedFile) {
         formData.append("imageFile", selectedFile, selectedFile.name);
       }
@@ -787,6 +801,9 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                 />
                 {errors.config && <div className="text-danger small">Campo requerido</div>}
               </div>
+            </div>
+
+            <div className="row mb-3">
               <div className="col-12 col-md">
                 <label className="form-label d-block text-start ps-1">Energía de impacto (J)</label>
                 <input
@@ -803,6 +820,24 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                 />
                 {errors.impactEnergy && (
                   <div className="text-danger small">Máximo permitido: {LIMITS.MAX_ENERGY} Julios</div>
+                )}
+              </div>
+              <div className="col-12 col-md">
+                <label className="form-label d-block text-start ps-1">Autonomía máxima (minutos)</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={formValues.maxAutonomy}
+                  onChange={(e) =>
+                    setFormValues({ ...formValues, maxAutonomy: e.target.value === "" ? 0 : Number(e.target.value) })
+                  }
+                  style={{
+                    ...backgroundBorderInputs,
+                    border: errors.maxAutonomy ? "1px solid red" : "1px solid #D1D5DB",
+                  }}
+                />
+                {errors.maxAutonomy && (
+                  <div className="text-danger small">Máximo permitido: {LIMITS.MAX_AUTONOMY} minutos</div>
                 )}
               </div>
             </div>
@@ -981,7 +1016,7 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
 
             <div className="row mb-3">
               <div className="col-12 col-md">
-                <label className="form-label d-block text-start ps-1">Accesorios / Notas (800 caracteres)</label>
+                <label className="form-label d-block text-start ps-1">Accesorios (800 caracteres)</label>
                 <textarea
                   className="form-control"
                   placeholder="Describe accesorios o notas relevantes"
@@ -992,6 +1027,21 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
                 />
               </div>
               {errors.tooMuchTextAccesories && <div className="text-danger small">Límite 800 caracteres</div>}
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-12 col-md">
+                <label className="form-label d-block text-start ps-1">Observaciones (800 caracteres)</label>
+                <textarea
+                  className="form-control"
+                  placeholder="Describe observaciones relevantes"
+                  rows={3}
+                  style={{ ...backgroundBorderInputs, resize: "vertical", minHeight: "80px" }}
+                  value={formValues.observations}
+                  onChange={(e) => setFormValues({ ...formValues, observations: e.target.value })}
+                />
+              </div>
+              {errors.tooMuchTextObservations && <div className="text-danger small">Límite 800 caracteres</div>}
             </div>
 
             <AircraftDocumentationSection

@@ -126,6 +126,16 @@ export const aircraftFields: FieldConfig[] = [
     error: `Maximo permitido: ${LIMITS.MAX_ENERGY} J`,
   },
   {
+    key: "maxAutonomy",
+    label: "Autonomía máxima (min)",
+    type: "number",
+    validate: (val: any) => {
+      const num = Number(val);
+      return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_AUTONOMY;
+    },
+    error: `Maximo permitido: ${LIMITS.MAX_AUTONOMY} min`,
+  },
+  {
     label: "Camara",
     key: "hasCamera",
     type: "select",
@@ -198,6 +208,13 @@ export const aircraftFields: FieldConfig[] = [
   {
     label: "Accesorios",
     key: "accessories",
+    type: "textarea",
+    validate: (v: any) => v == null || String(v).length <= 800,
+    error: "Maximo 800 caracteres",
+  },
+  {
+    label: "Observaciones",
+    key: "observations",
     type: "textarea",
     validate: (v: any) => v == null || String(v).length <= 800,
     error: "Maximo 800 caracteres",
