@@ -23,7 +23,7 @@ export type Anexo4Data = AnexoBaseData & {
   }>;
   otrasLimitacionesValor?: string;
   otrasLimitacionesItems?: ExpandableTableItem[];
-  // ✅ Campos de imagen: devueltos por el backend después de guardar un FormData con imágenes
+  // Campos de imagen: devueltos por el backend después de guardar un FormData con imágenes
   // El frontend envía: formData.append("imagenEspacioAereoFile", file)
   // El backend devuelve: imagenEspacioAereo: "img_123.jpg"
   imagenEspacioAereo?: string | null;

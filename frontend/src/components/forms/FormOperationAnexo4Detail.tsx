@@ -376,7 +376,7 @@ export default function FormOperationAnexo4Detail({
 
       const savedData = await saveAnexo4Data(operationId, formData);
 
-      // ✅ CRÍTICO: Actualizar formValues con los filenames guardados del servidor
+      // CRÍTICO: Actualizar formValues con los filenames guardados del servidor
       // Esto hace que ImageUploadField sincronice su savedFilename prop
       setFormValues((prev) => ({
         ...prev,
