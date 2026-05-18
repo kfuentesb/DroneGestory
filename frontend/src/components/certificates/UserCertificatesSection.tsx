@@ -136,14 +136,14 @@ export default function UserCertificatesSection({
                         <div className="p-3 mb-3 border rounded-3 drone-check" style={{ backgroundColor: "#f1f2f3" }}>
                             <div className="d-flex align-items-center mb-3">
                                 <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                    Categoria Abierta
+                                    Categoría Abierta
                                 </h6>
                                 <InfoBadge text={infoText} />
                             </div>
 
                             <InsertDoc
                                 className="mb-4"
-                                checkboxLabel="A1 / A3 (Prueba de superacion)"
+                                checkboxLabel="A1 / A3 (Prueba de superación)"
                                 isChecked={activeChecks.chkA1A3}
                                 onToggleCheck={() => onToggleCheck("chkA1A3")}
                                 fileInputId="file-upload-a1a3"
@@ -180,7 +180,7 @@ export default function UserCertificatesSection({
                         <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                             <div className="d-flex align-items-center mb-3">
                                 <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                    Categoria específica escenarios estandar
+                                    Categoría específica escenarios estandar
                                 </h6>
                                 <InfoBadge text={infoText} />
                             </div>
@@ -205,13 +205,13 @@ export default function UserCertificatesSection({
                         <div className="p-3 mb-3 border rounded-3" style={{ backgroundColor: "#f1f2f3" }}>
                             <div className="d-flex align-items-center mb-3">
                                 <h6 className="fw-bold m-0" style={{ color: "#2F8F5B" }}>
-                                    Categoria específica bajo autorizacion
+                                    Categoría específica bajo autorización
                                 </h6>
                                 <InfoBadge text={"info"} />
                             </div>
                             <InsertDoc
                                 className="mb-4"
-                                checkboxLabel="Formacion teorica generica"
+                                checkboxLabel="Formación teórica genérica"
                                 isChecked={activeChecks.chkFormcnTeoricaGen}
                                 onToggleCheck={() => onToggleCheck("chkFormcnTeoricaGen")}
                                 fileInputId="file-upload-ftg"
@@ -440,7 +440,7 @@ export function UserCertificatesSummarySection({ items }: { items: CertificateSu
                         {item.dateIndefinite ? (
                         <span className="badge bg-info text-dark fw-normal">Indefinida</span>
                         ) : (
-                        <span className="text-secondary">{item.expireDate || "No específicada"}</span>
+                        <span className="text-secondary">{item.expireDate || "No especificada"}</span>
                         )}
                     </td>
                     </tr>
