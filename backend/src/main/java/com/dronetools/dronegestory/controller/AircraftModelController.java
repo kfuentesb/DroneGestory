@@ -168,6 +168,7 @@ public class AircraftModelController {
                 model.getMaxSpeedDefault(),
                 model.getConfigDefault(),
                 model.getImpactEnergyDefault(),
+                model.getMaxAutonomyDefault(),
                 model.getHasCameraDefault(),
                 model.getPrivatelyBuiltDefault(),
                 model.getHasParachuteDefault(),
@@ -175,7 +176,8 @@ public class AircraftModelController {
                 model.getPowerSourceDefault(),
                 model.getPowerSourceTypeDefault(),
                 model.getCautiveDefault(),
-                model.getAccessoriesDefault()
+                model.getAccessoriesDefault(),
+                model.getObservationsDefault()
         );
     }
 }

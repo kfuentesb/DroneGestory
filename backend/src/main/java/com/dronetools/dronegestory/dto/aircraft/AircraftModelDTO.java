@@ -18,6 +18,7 @@ public record AircraftModelDTO(
     BigDecimal maxSpeedDefault,
     AircraftConfig configDefault,
     BigDecimal impactEnergyDefault,
+    BigDecimal maxAutonomyDefault,
     Boolean hasCameraDefault,
     Boolean privatelyBuiltDefault,
     Boolean hasParachuteDefault,
@@ -25,5 +26,6 @@ public record AircraftModelDTO(
     AircraftPowersSource.PowerSource powerSourceDefault,
     AircraftPowersSource.PowerSourceType powerSourceTypeDefault,
     SelectionStatus cautiveDefault,
-    String accessoriesDefault
+    String accessoriesDefault,
+    String observationsDefault
 ) {}

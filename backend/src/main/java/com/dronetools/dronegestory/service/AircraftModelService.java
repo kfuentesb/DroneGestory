@@ -90,6 +90,8 @@ public class AircraftModelService {
         newModel.setPowerSourceTypeDefault(request.getPowerSourceTypeDefault());
         newModel.setCautiveDefault(request.getCautiveDefault());
         newModel.setAccessoriesDefault(request.getAccessoriesDefault());
+        newModel.setMaxAutonomyDefault(request.getMaxAutonomyDefault());
+        newModel.setObservationsDefault(request.getObservationsDefault());
         AircraftModel savedModel = repository.save(newModel);
         if (imageFile != null && !imageFile.isEmpty()) {
             handleImageUpload(savedModel, imageFile);
@@ -154,6 +156,8 @@ public class AircraftModelService {
         applyIfPresent(parameterMap, "powerSourceTypeDefault", dto.getPowerSourceTypeDefault(), model::setPowerSourceTypeDefault);
         applyIfPresent(parameterMap, "cautiveDefault", dto.getCautiveDefault(), model::setCautiveDefault);
         applyIfPresent(parameterMap, "accessoriesDefault", normalizeNullableText(dto.getAccessoriesDefault()), model::setAccessoriesDefault);
+        applyIfPresent(parameterMap, "maxAutonomyDefault", dto.getMaxAutonomyDefault(), model::setMaxAutonomyDefault);
+        applyIfPresent(parameterMap, "observationsDefault", normalizeNullableText(dto.getObservationsDefault()), model::setObservationsDefault);
 
         handleImageLogic(model, imageFile, removeImage);
         return repository.save(model);

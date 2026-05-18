@@ -55,6 +55,9 @@ public class Aircraft {
     @Column(name = "impact_energy", precision = 9, scale = 3, nullable = false)
     private BigDecimal impactEnergy;
 
+    @Column(name = "max_autonomy", precision = 9, scale = 3, nullable = false)
+    private BigDecimal maxAutonomy;
+
     @Column(name="camera", nullable = false)
     private Boolean hasCamera;
 
@@ -93,6 +96,9 @@ public class Aircraft {
 
     @Column(name = "accessories", length = 800)
     private String accessories;
+
+    @Column(name = "observations", length = 800)
+    private String observations;
 
     @Column(name = "flight_minutes", nullable = false, columnDefinition = "integer default 0")
     private Integer flightMinutes = 0;

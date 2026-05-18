@@ -22,6 +22,7 @@ public class AircraftModelRequestDTO {
     private BigDecimal maxSpeedDefault;
     private AircraftConfig configDefault;
     private BigDecimal impactEnergyDefault;
+    private BigDecimal maxAutonomyDefault;
     private Boolean hasCameraDefault;
     private Boolean privatelyBuiltDefault;
     private Boolean hasParachuteDefault;
@@ -31,4 +32,5 @@ public class AircraftModelRequestDTO {
     private AircraftPowersSource.PowerSourceType powerSourceTypeDefault;
     private SelectionStatus cautiveDefault;
     private String accessoriesDefault;
+    private String observationsDefault;
 }
