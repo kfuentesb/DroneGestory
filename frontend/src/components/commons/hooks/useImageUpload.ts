@@ -68,7 +68,7 @@ export function useImageUpload(
     error: null,
   });
 
-  // ✅ CRÍTICO: Sincronizar savedFilename cuando cambia la prop inicial
+  // CRÍTICO: Sincronizar savedFilename cuando cambia la prop inicial
   // Esto permite que cuando se carga un nuevo formulario (ej: cargar operación existente),
   // el componente muestre la imagen guardada en el servidor.
   useEffect(() => {
@@ -160,7 +160,7 @@ export function useImageUpload(
 
   const getFileForUpload = useCallback(() => state.file, [state.file]);
 
-  // ✅ hasChanges: true si hay archivo nuevo seleccionado
+  // hasChanges: true si hay archivo nuevo seleccionado
   // (el archivo se enviará al servidor en FormData)
   const hasChanges = state.file !== null;
 

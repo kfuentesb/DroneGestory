@@ -92,7 +92,7 @@ public class OperationController {
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ NUEVO: Endpoint para servir imágenes guardadas en el Anexo 4
+    // NUEVO: Endpoint para servir imágenes guardadas en el Anexo 4
     // Acceso: GET /api/operations/{operationId}/anexo4/images/{filename}
     @GetMapping("/{operationId}/anexo4/images/{filename}")
     public ResponseEntity<Resource> getAnexo4Image(
