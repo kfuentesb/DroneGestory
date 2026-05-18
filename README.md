@@ -244,3 +244,10 @@ exit
 ---
 
 © 2026 DroneGestory Team
+
+## TODO
+* AIRCRAFT <br>
+-Añadir campo observaciones y añadir campo AUTONOMIA MAXIMA <br>
+
+* OPERACIONES <br>
+-CORREGIR HORAS <br>
