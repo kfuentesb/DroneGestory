@@ -1,6 +1,6 @@
 ---
 
-# DroneGestory 🚁🕹️🛩️𖥂
+# DroneGestory 🚁🕹️🛩️
 
 Sistema integral de gestión de aeronaves (drones), operadores y documentación técnica.
 

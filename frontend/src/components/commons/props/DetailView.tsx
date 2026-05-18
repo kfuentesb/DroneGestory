@@ -53,7 +53,7 @@ export default function DetailView({ data, fields }: Props) {
                                         marginTop: "4px" 
                                     }}
                                 >
-                                    {value || "No específicado"}
+                                    {value || "No especificado"}
                                 </span>
                             </div>
                         </div>

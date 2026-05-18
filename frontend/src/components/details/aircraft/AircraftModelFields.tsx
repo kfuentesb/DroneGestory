@@ -80,7 +80,7 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No específicado";
+      return "No especificado";
     },
   },
   {
@@ -91,7 +91,7 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No específicado";
+      return "No especificado";
     },
   },
   {
@@ -102,7 +102,7 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No específicado";
+      return "No especificado";
     },
   },
   // {
@@ -113,7 +113,7 @@ export const aircraftModelFields: FieldConfig[] = [
   //   format: (v: any) => {
   //     if (v === true) return "Si";
   //     if (v === false) return "No";
-  //     return "No específicado";
+  //     return "No especificado";
   //   },
   // },
   {
@@ -124,18 +124,22 @@ export const aircraftModelFields: FieldConfig[] = [
     format: (v: any) => {
       if (v === true) return "Si";
       if (v === false) return "No";
-      return "No específicado";
+      return "No especificado";
     },
   },
   {
     label: "Fuente de potencia (valor por defecto)",
     key: "powerSourceDefault",
     type: "select",
-    options: ["HYBRID_VTOL", "NON_HYBRID"],
+    options: [
+      { value: "Electric", label: "Eléctrico" },
+      { value: "Non_Electric", label: "No Eléctrico" }
+    ],
     format: (v: any) => {
-      if (v === "HYBRID_VTOL") return "Híbrido/VTOL";
-      if (v === "NON_HYBRID") return "No Híbrido";
-      return v ? String(v) : "No específicado";
+      const normalized = String(v).toUpperCase().trim();
+      if (normalized === "ELECTRIC" || normalized === "ELÉCTRICO") return "Eléctrico";
+      if (normalized === "NON_ELECTRIC" || normalized === "NO ELÉCTRICO") return "No Eléctrico";
+      return "No especificado";
     },
   },
   {
@@ -147,7 +151,7 @@ export const aircraftModelFields: FieldConfig[] = [
       if (v === "HYDROGEN") return "Hidrógeno";
       if (v === "GASOLINE") return "Gasolina";
       if (v === "OTHERS") return "Otros";
-      return v ? String(v) : "No específicado";
+      return v ? String(v) : "No especificado";
     },
   },
   {
@@ -156,7 +160,7 @@ export const aircraftModelFields: FieldConfig[] = [
     type: "select",
     options: ["Si", "No", "Opcional"],
     format: (v: any) => {
-      if (v === null || v === undefined || v === "") return "No específicado";
+      if (v === null || v === undefined || v === "") return "No especificado";
       const val = String(v).toUpperCase();
       if (val === "YES" || val === "SI" || val === "SÍ") return "Si";
       if (val === "NO") return "No";
