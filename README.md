@@ -47,16 +47,21 @@ JWT_EXPIRATION_MS=86400000
 EMAIL_USER=tu-correo@gmail.com
 EMAIL_PASSWORD=tu-clave
 ```
-
 ---
 
 ## Despliegue en Servidor (Producción)
 
-### 1. Clonar el repositorio
+> **¡IMPORTANTE (Optimización de Recursos)!**
+> Para evitar caídas del servidor por falta de memoria RAM (OOM Killer) debido a las altas demandas de Vite/Node al minificar código, **el frontend NO se compila en el servidor**.
+> La compilación se realiza en la máquina local (desarrollo) y se sube la carpeta `dist/` resultante al repositorio. El servidor únicamente levantará un contenedor Nginx ultraligero que servirá dichos archivos estáticos.
+
+### 1. Clonar o pullear última versión el repositorio
 
 ```bash
 git clone https://github.com/tu-usuario/dronegestory.git
 cd dronegestory
+
+git pull origin main
 
 ```
 
@@ -77,7 +82,7 @@ docker compose up -d
 docker compose pull db
 docker compose up -d db
 docker compose build backend
-docker compose build frontend
+docker compose build --no-cache frontend
 docker compose up -d
 # Para ver logs
 docker compose logs backend
@@ -137,6 +142,15 @@ docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 cmd
 docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
 exit
+```
+
+### 5. ¡¡ANTES DE SUBIR CAMBIOS!!
+
+Así se sube la nueva versión de dist para el servidor.
+
+```bash
+cd frontend
+npm run build
 ```
 
 ## Estructura de carpetas
