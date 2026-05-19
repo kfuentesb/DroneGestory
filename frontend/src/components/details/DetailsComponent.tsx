@@ -1521,13 +1521,29 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                             </button>
 
                             {/* IMAGEN DE PERFIL */}
-                            <img
-                                src={imageUrl || profileInfo.img}
-                                alt={profileInfo.title}
-                                onError={(e) => { (e.target as HTMLImageElement).src = profileInfo.img; }}
+                            <div
                                 className="rounded me-3 d-none d-sm-block flex-shrink-0"
-                                style={styles.profileImg}
-                            />
+                                style={{
+                                    position: "relative",
+                                    width: ui.isAircraft || ui.isModel ? "150px" : styles.profileImg?.width || "60px",
+                                    height: ui.isAircraft || ui.isModel ? "150px" : styles.profileImg?.height || "60px",
+                                    overflow: "hidden",
+                                    border: ui.isAircraft || ui.isModel ? "2px solid #297e51" : "2px solid #297e51",
+                                    backgroundColor: "#ffffff"
+                                }}
+                            >
+                                <img
+                                    src={imageUrl || profileInfo.img}
+                                    alt={profileInfo.title}
+                                    onError={(e) => { (e.target as HTMLImageElement).src = profileInfo.img; }}
+                                    className="w-100 h-100"
+                                    style={{
+                                        position: "relative",
+                                        zIndex: 2,
+                                        objectFit: ui.isAircraft || ui.isModel ? "contain" : "cover"
+                                    }}
+                                />
+                            </div>
 
                             {/* CONTENIDO TEXTUAL */}
                             <div className="d-flex flex-column flex-grow-1" style={{ minWidth: 0 }}>

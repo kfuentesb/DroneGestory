@@ -50,10 +50,7 @@ export const aircraftFields: FieldConfig[] = [
     label: "Fuente de potencia",
     key: "powerSource",
     type: "select",
-    options: [
-      { value: "Electric", label: "Eléctrico" },
-      { value: "Non_Electric", label: "No Eléctrico" }
-    ],
+    options: powerSources,
     format: (v: any) => {
       const normalized = String(v).toUpperCase().trim();
       if (normalized === "ELECTRIC" || normalized === "ELÉCTRICO") return "Eléctrico";
