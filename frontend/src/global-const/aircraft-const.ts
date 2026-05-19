@@ -45,5 +45,6 @@ export const LIMITS = {
     MIN_WINGSPAN: 0.05,    // meters
     MAX_WINGSPAN: 50,      // meters
     MAX_SPEED: 360,        // km/h
-    MAX_ENERGY: 100000      // Joules
+    MAX_ENERGY: 100000,     // Joules
+    MAX_AUTONOMY: 7200      // minutes (5 días)
 };

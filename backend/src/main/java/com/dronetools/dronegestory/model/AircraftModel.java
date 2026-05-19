@@ -50,6 +50,9 @@ public class AircraftModel {
     @Column(name = "impact_energy_default", precision = 9, scale = 3)
     private BigDecimal impactEnergyDefault;
 
+    @Column(name = "max_autonomy_default", precision = 9, scale = 3)
+    private BigDecimal maxAutonomyDefault;
+
     @Column(name = "has_camera_default")
     private Boolean hasCameraDefault;
 
@@ -76,4 +79,7 @@ public class AircraftModel {
 
     @Column(name = "accessories_default", length = 800)
     private String accessoriesDefault;
+
+    @Column(name = "observations_default", length = 800)
+    private String observationsDefault;
 }

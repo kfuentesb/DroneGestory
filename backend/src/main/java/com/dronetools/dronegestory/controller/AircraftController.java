@@ -106,12 +106,14 @@ public class AircraftController {
         boolean wingspanPresent = request.getParameterMap().containsKey("wingspan");
         boolean maxSpeedPresent = request.getParameterMap().containsKey("maxSpeed");
         boolean impactEnergyPresent = request.getParameterMap().containsKey("impactEnergy");
+        boolean maxAutonomyPresent = request.getParameterMap().containsKey("maxAutonomy");
         boolean privatelyBuiltPresent = request.getParameterMap().containsKey("privatelyBuilt");
         boolean hasParachutePresent = request.getParameterMap().containsKey("hasParachute");
         boolean hasEnsurancePresent = request.getParameterMap().containsKey("hasEnsurance");
         boolean hasFTSPresent = request.getParameterMap().containsKey("hasFTS");
         boolean cautivePresent = request.getParameterMap().containsKey("cautive");
         boolean accessoriesPresent = request.getParameterMap().containsKey("accessories");
+        boolean observationsPresent = request.getParameterMap().containsKey("observations");
         boolean fechaFabPresent = request.getParameterMap().containsKey("fechaFab");
         boolean powerSourcePresent = request.getParameterMap().containsKey("powerSource");
         boolean powerSourceTypePresent = request.getParameterMap().containsKey("powerSourceType");
@@ -127,12 +129,14 @@ public class AircraftController {
                 wingspanPresent,
                 maxSpeedPresent,
                 impactEnergyPresent,
+                maxAutonomyPresent,
                 privatelyBuiltPresent,
                 hasParachutePresent,
                 hasEnsurancePresent,
                 hasFTSPresent,
                 cautivePresent,
                 accessoriesPresent,
+                observationsPresent,
                 fechaFabPresent,
                 powerSourcePresent,
                 powerSourceTypePresent

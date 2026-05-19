@@ -29,6 +29,7 @@ public class AircraftResponseDTO {
     private BigDecimal maxSpeed;
     private AircraftConfig config;
     private BigDecimal impactEnergy;
+    private BigDecimal maxAutonomy;
     private Boolean hasCamera;
     private String imagePath;
     private Boolean privatelyBuilt;
@@ -37,6 +38,7 @@ public class AircraftResponseDTO {
     private Boolean hasFTS;
     private SelectionStatus cautive;
     private String accessories;
+    private String observations;
     private Integer flightMinutes;
     private String fechaFab;
     private AircraftPowersSource.PowerSource powerSource;
@@ -65,6 +67,7 @@ public class AircraftResponseDTO {
         dto.setMaxSpeed(aircraft.getMaxSpeed());
         dto.setConfig(aircraft.getConfig());
         dto.setImpactEnergy(aircraft.getImpactEnergy());
+        dto.setMaxAutonomy(aircraft.getMaxAutonomy());
         dto.setHasCamera(aircraft.getHasCamera());
         dto.setImagePath(UploadPathUtils.toDatabaseRelativePath(aircraft.getImagePath()));
         dto.setPrivatelyBuilt(aircraft.getPrivatelyBuilt());
@@ -73,6 +76,7 @@ public class AircraftResponseDTO {
         dto.setHasFTS(aircraft.getHasFTS());
         dto.setCautive(aircraft.getCautive());
         dto.setAccessories(aircraft.getAccessories());
+        dto.setObservations(aircraft.getObservations());
         dto.setFlightMinutes(aircraft.getFlightMinutes());
         return dto;
     }

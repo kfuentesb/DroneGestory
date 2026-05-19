@@ -28,6 +28,7 @@ public class AircraftRequestDTO {
     private BigDecimal maxSpeed;
     private AircraftConfig config;
     private BigDecimal impactEnergy;
+    private BigDecimal maxAutonomy;
     private Boolean hasCamera;
     private String fechaFab;
     private AircraftPowersSource.PowerSource powerSource;
@@ -61,6 +62,7 @@ public class AircraftRequestDTO {
         aircraft.setMaxSpeed(maxSpeed);
         aircraft.setConfig(config);
         aircraft.setImpactEnergy(impactEnergy);
+        aircraft.setMaxAutonomy(maxAutonomy);
         aircraft.setHasCamera(hasCamera);
         aircraft.setPrivatelyBuilt(privatelyBuilt);
         if (fechaFab != null && !fechaFab.isBlank()) {

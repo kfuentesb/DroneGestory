@@ -72,9 +72,9 @@ public class AircraftService {
             MultipartFile imageFile, 
             boolean removeImage,
             boolean mtomPresent, boolean wingspanPresent, boolean maxSpeedPresent,
-            boolean impactEnergyPresent, boolean privatelyBuiltPresent,
+            boolean impactEnergyPresent, boolean maxAutonomyPresent, boolean privatelyBuiltPresent,
             boolean hasParachutePresent, boolean hasEnsurancePresent,
-            boolean hasFTSPresent, boolean cautivePresent, boolean accessoriesPresent,
+            boolean hasFTSPresent, boolean cautivePresent, boolean accessoriesPresent, boolean observationsPresent,
             boolean fechaFabPresent, boolean powerSourcePresent, boolean powerSourceTypePresent
     ) throws IOException {
         
@@ -96,10 +96,13 @@ public class AircraftService {
         if (updatedData.getPowerSourceType() != null) aircraft.setPowerSourceType(updatedData.getPowerSourceType()); else if (powerSourceTypePresent) aircraft.setPowerSourceType(null);
 
         // Logic for nullable numeric/boolean fields (MTOM, Wingspan, etc.)
-        updateNullableFields(aircraft, updatedData, mtomPresent, wingspanPresent, maxSpeedPresent, 
-                            impactEnergyPresent, privatelyBuiltPresent, hasParachutePresent, 
-                            hasEnsurancePresent, hasFTSPresent, cautivePresent, accessoriesPresent);
-
+        updateNullableFields(
+            aircraft, updatedData, 
+            mtomPresent, wingspanPresent, maxSpeedPresent, impactEnergyPresent, 
+            maxAutonomyPresent, privatelyBuiltPresent, hasParachutePresent, 
+            hasEnsurancePresent, hasFTSPresent, cautivePresent, 
+            accessoriesPresent, observationsPresent
+        );
         // --- Image Logic ---
         handleImageLogic(aircraft, imageFile, removeImage);
 
@@ -135,21 +138,25 @@ public class AircraftService {
         }
     }
 
-    private void updateNullableFields(Aircraft aircraft, Aircraft updatedData, /* ... booleans */
-                                    boolean mtomP, boolean wingP, boolean speedP, boolean energyP, 
-                                    boolean builtP, boolean paraP, boolean insuP, boolean ftsP, 
-                                    boolean cautP, boolean accP) {
-        
+    private void updateNullableFields(
+        Aircraft aircraft, Aircraft updatedData,
+        boolean mtomP, boolean wingP, boolean speedP, boolean energyP, 
+        boolean maxAutonomyP, boolean privatelyBuiltP, boolean hasParachuteP, 
+        boolean hasEnsuranceP, boolean ftsP, boolean cautP, 
+        boolean accP, boolean observationsP
+    ) {
         if (updatedData.getMtom() != null) aircraft.setMtom(updatedData.getMtom()); else if (mtomP) aircraft.setMtom(null);
         if (updatedData.getWingspan() != null) aircraft.setWingspan(updatedData.getWingspan()); else if (wingP) aircraft.setWingspan(null);
         if (updatedData.getMaxSpeed() != null) aircraft.setMaxSpeed(updatedData.getMaxSpeed()); else if (speedP) aircraft.setMaxSpeed(null);
         if (updatedData.getImpactEnergy() != null) aircraft.setImpactEnergy(updatedData.getImpactEnergy()); else if (energyP) aircraft.setImpactEnergy(null);
-        if (updatedData.getPrivatelyBuilt() != null) aircraft.setPrivatelyBuilt(updatedData.getPrivatelyBuilt()); else if (builtP) aircraft.setPrivatelyBuilt(null);
-        if (updatedData.getHasParachute() != null) aircraft.setHasParachute(updatedData.getHasParachute()); else if (paraP) aircraft.setHasParachute(null);
-        if (updatedData.getHasEnsurance() != null) aircraft.setHasEnsurance(updatedData.getHasEnsurance()); else if (insuP) aircraft.setHasEnsurance(null);
+        if (updatedData.getMaxAutonomy() != null) aircraft.setMaxAutonomy(updatedData.getMaxAutonomy()); else if (maxAutonomyP) aircraft.setMaxAutonomy(null);
+        if (updatedData.getPrivatelyBuilt() != null) aircraft.setPrivatelyBuilt(updatedData.getPrivatelyBuilt()); else if (privatelyBuiltP) aircraft.setPrivatelyBuilt(null);
+        if (updatedData.getHasParachute() != null) aircraft.setHasParachute(updatedData.getHasParachute()); else if (hasParachuteP) aircraft.setHasParachute(null);
+        if (updatedData.getHasEnsurance() != null) aircraft.setHasEnsurance(updatedData.getHasEnsurance()); else if (hasEnsuranceP) aircraft.setHasEnsurance(null);
         if (updatedData.getHasFTS() != null) aircraft.setHasFTS(updatedData.getHasFTS()); else if (ftsP) aircraft.setHasFTS(null);
         if (updatedData.getCautive() != null) aircraft.setCautive(updatedData.getCautive()); else if (cautP) aircraft.setCautive(null);
         if (updatedData.getAccessories() != null) aircraft.setAccessories(updatedData.getAccessories()); else if (accP) aircraft.setAccessories(null);
+        if (updatedData.getObservations() != null) aircraft.setObservations(updatedData.getObservations()); else if (observationsP) aircraft.setObservations(null);
     }
 
     private void deleteExistingImage(Path uploadDir, String oldImage) throws IOException {
