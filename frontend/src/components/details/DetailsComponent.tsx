@@ -38,6 +38,8 @@ import {
     type LoadingState,
     type DocumentationState,
     createEmptyDocState,
+    useConopsHandlers,
+    useAdditionalDocsHandlers
 } from "./detailsUtils";
 
 import editIcon from '../../assets/commons/edit_white.svg';
@@ -88,11 +90,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     const [aircraftDocumentations, setAircraftDocumentations] = useState<AircraftDocumentation[]>([]);
     const [aircraftModelDefaults, setAircraftModelDefaults] = useState<AircraftModelDocumentation[]>([]);
 
-    // Estados Específicos de Secciones Dinámicas
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [conopsDocs, setConopsDocs] = useState<Record<string, CertificateFieldPayload>>({});
-    const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
-    const [currentSelection, setCurrentSelection] = useState<string>("");
+    const conops = useConopsHandlers(validateCertificateFile);
+
+    const additional = useAdditionalDocsHandlers(validateCertificateFile);
+
+    // const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
 
     const [status, setStatus] = useState(200);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -272,14 +274,13 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         });
 
         // Actualizamos los estados dinámicos que decidimos mantener fuera
-        setSelectedCategories(nextCategories);
-        setConopsDocs(nextConopsDocs);
-        setAdditionalDocs(nextAdditionalDocs);
+        conops.initConopsData(nextCategories, nextConopsDocs);
+        additional.initAdditionalDocsData(nextAdditionalDocs, nextAdditionalNames);
         
         setExistingConopsFileNames(nextConopsNames);
         setExistingAdditionalFileNames(nextAdditionalNames);
         
-        setCurrentSelection("");
+        conops.setCurrentSelection("");
     }, [certificates, ui.isUser]);
 
     // Cargar documentación si corresponde, tanto de aeronave como de modelo
@@ -431,8 +432,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
 
         // --- ACTUALIZACIÓN AGRUPADA DE MODELO ---
         if (ui.isAircraft) {
-            setAdditionalDocs(nextAdditionalDocs);
-            setExistingAdditionalFileNames(nextAdditionalNames);
+            additional.initAdditionalDocsData(nextAdditionalDocs, nextAdditionalNames);
         }
 
         setModelDocState({
@@ -732,142 +732,6 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         }));
     };
 
-    const addCategory = () => {
-        if (currentSelection && !selectedCategories.includes(currentSelection)) {
-            setSelectedCategories((prev) => [...prev, currentSelection]);
-            setConopsDocs((prev) => ({
-                ...prev,
-                [currentSelection]: {
-                    certificate: null,
-                    dateExpire: null,
-                    dateIndefinite: null,
-                },
-            }));
-            setCurrentSelection("");
-        }
-    };
-
-    const removeCategory = (categoryId: string) => {
-        setSelectedCategories((prev) => prev.filter((idValue) => idValue !== categoryId));
-        setConopsDocs((prev) => {
-            const next = { ...prev };
-            delete next[categoryId];
-            return next;
-        });
-    };
-
-    const handleConopsFileChange = (catId: string, event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0] ?? null;
-        if (!file) {
-            setConopsDocs((prev) => ({
-                ...prev,
-                [catId]: {
-                    ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                    certificate: null,
-                },
-            }));
-            return;
-        }
-
-        const fileError = validateCertificateFile(file);
-        if (fileError) {
-            alert(fileError);
-            return;
-        }
-
-        setConopsDocs((prev) => ({
-            ...prev,
-            [catId]: {
-                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                certificate: file,
-            },
-        }));
-    };
-
-    const handleConopsClearFile = (catId: string) => {
-        setConopsDocs((prev) => ({
-            ...prev,
-            [catId]: {
-                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                certificate: null,
-            },
-        }));
-        const input = document.getElementById(`file-${catId}`) as HTMLInputElement | null;
-        if (input) input.value = "";
-    };
-
-    const handleConopsDateChange = (catId: string, value: string) => {
-        setConopsDocs((prev) => ({
-            ...prev,
-            [catId]: {
-                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
-                dateExpire: value || null,
-                dateIndefinite: false,
-            },
-        }));
-    };
-
-    const handleConopsToggleIndefinite = (catId: string) => {
-        setConopsDocs((prev) => {
-            const current = prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null };
-            const nextIndefinite = !current.dateIndefinite;
-            return {
-                ...prev,
-                [catId]: {
-                    ...current,
-                    dateIndefinite: nextIndefinite,
-                    dateExpire: nextIndefinite ? null : current.dateExpire,
-                },
-            };
-        });
-    };
-
-    const handleAddAdditionalDoc = () => {
-        if (additionalDocs.length >= 10) {
-            return;
-        }
-        setAdditionalDocs((prev) => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                label: "",
-                certificate: null,
-                dateExpire: null,
-                dateIndefinite: false,
-            },
-        ]);
-    };
-
-    const handleRemoveAdditionalDoc = (idValue: string) => {
-        setAdditionalDocs((prev) => prev.filter((doc) => doc.id !== idValue));
-        setExistingAdditionalFileNames((prev) => {
-            const next = { ...prev };
-            delete next[idValue];
-            return next;
-        });
-    };
-
-    const handleAdditionalFieldChange = (
-        idValue: string,
-        field: keyof AdditionalCertificatePayload,
-        value: any
-    ) => {
-        if (field === "certificate" && value instanceof File) {
-            const fileError = validateCertificateFile(value);
-            if (fileError) {
-                alert(fileError);
-                return;
-            }
-        }
-
-        setAdditionalDocs((prev) =>
-            prev.map((doc) => (doc.id === idValue ? { ...doc, [field]: value } : doc))
-        );
-        if (field === "certificate" && value === null) {
-            setExistingAdditionalFileNames((prev) => ({ ...prev, [idValue]: "" }));
-        }
-    };
-
     const syncCertificates = async () => {
         if (!ui.isUser || !props.id) return;
 
@@ -910,11 +774,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                 indefinite: userDocState.checks[f.indefiniteKey]
             }));
 
-        const conopsList = selectedCategories.map(catId => ({
+        const conopsList = conops.selectedCategories.map(catId => ({
             type: `conops_${catId}`,
-            file: conopsDocs[catId]?.certificate,
-            date: conopsDocs[catId]?.dateExpire,
-            indefinite: conopsDocs[catId]?.dateIndefinite
+            file: conops.conopsDocs[catId]?.certificate,
+            date: conops.conopsDocs[catId]?.dateExpire,
+            indefinite: conops.conopsDocs[catId]?.dateIndefinite
         }));
 
         for (const item of [...staticDocs, ...conopsList]) {
@@ -928,7 +792,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         }
 
         // PROCESAR ADICIONALES
-        for (const doc of additionalDocs) {
+        for (const doc of additional.additionalDocs) {
             const existing = doc.existingCertificateId ? certificates.find(c => c.id === doc.existingCertificateId) : null;
             const type = doc.label.trim() || existing?.certificateType || `additional_${doc.id}`;
             
@@ -1042,7 +906,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             }
         }
 
-        for (const doc of additionalDocs) {
+        for (const doc of additional.additionalDocs) {
             const label = doc.label.trim();
             const existingId = doc.existingCertificateId;
             const existing = existingId ? customAircraftDocs.find((item) => item.id === existingId) : undefined;
@@ -1638,23 +1502,23 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                                             onClearFile={handleCertificateClearFile}
                                             
                                             conopsCategories={CONOPS_CATEGORIES}
-                                            selectedCategories={selectedCategories}
-                                            currentSelection={currentSelection}
-                                            onCurrentSelectionChange={setCurrentSelection}
-                                            onAddCategory={addCategory}
-                                            onRemoveCategory={removeCategory}
-                                            conopsDocs={conopsDocs}
-                                            onConopsFileChange={handleConopsFileChange}
-                                            onConopsClearFile={handleConopsClearFile}
-                                            onConopsDateChange={handleConopsDateChange}
-                                            onConopsToggleIndefinite={handleConopsToggleIndefinite}
+                                            selectedCategories={conops.selectedCategories}
+                                            currentSelection={conops.currentSelection}
+                                            onCurrentSelectionChange={conops.setCurrentSelection}
+                                            onAddCategory={conops.addCategory}
+                                            onRemoveCategory={conops.removeCategory}
+                                            conopsDocs={conops.conopsDocs}
+                                            onConopsFileChange={conops.handleConopsFileChange}
+                                            onConopsClearFile={conops.handleConopsClearFile}
+                                            onConopsDateChange={conops.handleConopsDateChange}
+                                            onConopsToggleIndefinite={conops.handleConopsToggleIndefinite}
                                             existingStaticFileNames={userDocState.existingNames}
                                             existingConopsFileNames={existingConopsFileNames}
-                                            additionalDocs={additionalDocs}
-                                            onAddAdditionalDoc={handleAddAdditionalDoc}
-                                            onRemoveAdditionalDoc={handleRemoveAdditionalDoc}
-                                            onAdditionalFieldChange={handleAdditionalFieldChange}
-                                            existingAdditionalFileNames={existingAdditionalFileNames}
+                                            additionalDocs={additional.additionalDocs}
+                                            onAddAdditionalDoc={additional.handleAddAdditionalDoc}
+                                            onRemoveAdditionalDoc={additional.handleRemoveAdditionalDoc}
+                                            onAdditionalFieldChange={additional.handleAdditionalFieldChange}
+                                            existingAdditionalFileNames={additional.existingAdditionalFileNames}
                                             onFormDateChange={(k, v) => handleDocChange(setUserDocState, 'dates', k, v)}
                                         />
                                     )}
@@ -1686,11 +1550,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                                             }}
                                             modelDefaultByType={modelDefaults.checks}
                                             onRestoreModelDefault={handleRestoreModelDefault}
-                                            additionalDocs={ui.isAircraft ? additionalDocs : []}
-                                            existingAdditionalFileNames={ui.isAircraft ? existingAdditionalFileNames : {}}
-                                            onAddAdditionalDoc={ui.isAircraft ? handleAddAdditionalDoc : undefined}
-                                            onRemoveAdditionalDoc={ui.isAircraft ? handleRemoveAdditionalDoc : undefined}
-                                            onAdditionalFieldChange={ui.isAircraft ? handleAdditionalFieldChange as (id: string, field: keyof AdditionalDoc, value: any) => void : undefined}
+                                            additionalDocs={ui.isAircraft ? additional.additionalDocs : []}
+                                            existingAdditionalFileNames={ui.isAircraft ? additional.existingAdditionalFileNames : {}}
+                                            onAddAdditionalDoc={ui.isAircraft ? additional.handleAddAdditionalDoc : undefined}
+                                            onRemoveAdditionalDoc={ui.isAircraft ? additional.handleRemoveAdditionalDoc : undefined}
+                                            onAdditionalFieldChange={ui.isAircraft ? additional.handleAdditionalFieldChange as (id: string, field: keyof AdditionalDoc, value: any) => void : undefined}
                                         />
                                     )}
                                 </div>
