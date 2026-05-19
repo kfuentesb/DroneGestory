@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.nio.file.Files;
 import java.util.List;
@@ -59,6 +58,13 @@ public class UserService {
 
     public Optional<User> findByUsername(String username){
         return userRepository.findByUsername(username);
+    }
+
+    public Optional<User> findByUsernameOrEmail(String input) {
+        if (input == null || input.isBlank()) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsernameOrEmail(input.trim());
     }
 
     public User getAuthenticatedUser() {
