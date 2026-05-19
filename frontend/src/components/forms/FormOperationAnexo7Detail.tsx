@@ -17,6 +17,7 @@ type FormOperationAnexo7DetailProps = {
 
 export type FormOperationAnexo7DetailRef = {
   validateFechaOp: () => boolean;
+  validateTiempoVuelo: () => boolean;
 };
 
 const FORM_FIELDS = [
@@ -116,7 +117,9 @@ const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormO
     initialValues: initialValues as Record<string, unknown> | null | undefined,
   });
   const [fechaOpError, setFechaOpError] = useState(false);
+  const [tiempoVueloError, setTiempoVueloError] = useState(false);
   const fechaOpInputRef = useRef<HTMLInputElement | null>(null);
+  const tiempoVueloInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!fallbackFechaOp) return;
@@ -135,14 +138,27 @@ const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormO
     return true;
   };
 
+  const validateTiempoVuelo = () => {
+    if (formValues.tiempoVueloMinutos === null || formValues.tiempoVueloMinutos === undefined || formValues.tiempoVueloMinutos === "") {
+      setTiempoVueloError(true);
+      if (tiempoVueloInputRef.current) {
+        tiempoVueloInputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        tiempoVueloInputRef.current.focus();
+      }
+      return false;
+    }
+    return true;
+  };
+
   useImperativeHandle(ref, () => ({
     validateFechaOp,
-  }), [formValues.fechaOp]);
+    validateTiempoVuelo,
+  }), [formValues.fechaOp, formValues.tiempoVueloMinutos]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (disabled) return;
-    if (!validateFechaOp()) {
+    if (!validateFechaOp() || !validateTiempoVuelo()) {
       return;
     }
 
@@ -281,11 +297,24 @@ const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormO
           <input
             type="number"
             min={0}
-            className="form-control bg-white border"
+            className={`form-control bg-white border${tiempoVueloError ? " is-invalid" : ""}`}
             value={formValues.tiempoVueloMinutos ?? ""}
-            onChange={(e) => handleChange("tiempoVueloMinutos", e.target.value)}
+            onChange={(e) => {
+              if (tiempoVueloError) {
+                setTiempoVueloError(false);
+              }
+              handleChange("tiempoVueloMinutos", e.target.value);
+            }}
             disabled={disabled || saving}
+            ref={tiempoVueloInputRef}
+            aria-invalid={tiempoVueloError}
+            aria-describedby={tiempoVueloError ? "anexo7-tiempovuelo-error" : undefined}
           />
+          {tiempoVueloError && (
+            <div id="anexo7-tiempovuelo-error" className="text-danger small mt-1">
+              El tiempo de vuelo es obligatorio.
+            </div>
+          )}
         </div>
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold small text-uppercase text-muted">Ciclos de aterrizaje</label>

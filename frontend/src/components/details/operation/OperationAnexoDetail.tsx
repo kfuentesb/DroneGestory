@@ -698,7 +698,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     // Validacion fecha
     if (tipoAnexo === 7) {
       const isFechaOpValid = anexo7FormRef.current?.validateFechaOp() ?? true;
+      const isTiempoVueloValid = anexo7FormRef.current?.validateTiempoVuelo() ?? true;
       if (!isFechaOpValid) {
+        return;
+      }
+      if (!isTiempoVueloValid) {
         return;
       }
     }
@@ -712,7 +716,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const handleTriggerSign = () => {
     if (tipoAnexo === 7) {
       const isFechaOpValid = anexo7FormRef.current?.validateFechaOp() ?? true;
+      const isTiempoVueloValid = anexo7FormRef.current?.validateTiempoVuelo() ?? true;
       if (!isFechaOpValid) {
+        return;
+      }
+      if (!isTiempoVueloValid) {
         return;
       }
     }
