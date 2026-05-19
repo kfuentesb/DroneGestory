@@ -29,8 +29,8 @@ export const cautiveOptions = [
 ];
 
 export const powerSources = [
-    { value: "ELECTRIC", label: "Eléctrico" },
-    { value: "NON_ELECTRIC", label: "No Eléctrico" },
+    { value: "Electric", label: "Eléctrico" },
+    { value: "Non_Electric", label: "No Eléctrico" }
 ];
 
 export const powerSourcesNonElectric = [

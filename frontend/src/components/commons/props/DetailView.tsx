@@ -34,13 +34,18 @@ export default function DetailView({ data, fields }: Props) {
                             >
                                 <small 
                                     className="text-muted fw-semibold"
+                                    title={field.label}
                                     style={{ 
                                         position: "absolute",
                                         top: "6px",
                                         left: "12px",
                                         fontSize: "0.7rem",
                                         textTransform: "uppercase",
-                                        letterSpacing: "0.05em"
+                                        letterSpacing: "0.05em",
+                                        maxWidth: "calc(100% - 24px)",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
                                     }}
                                 >
                                     {field.label}

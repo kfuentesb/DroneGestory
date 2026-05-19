@@ -63,7 +63,7 @@ export const aircraftModelFields: FieldConfig[] = [
   },
   {
     key: "impactEnergyDefault",
-    label: "Energia impacto (valor por defecto, J)",
+    label: "Energía impacto (valor por defecto, J)",
     type: "number",
     validate: (val: any) => {
       if (val === null || val === undefined || String(val).trim() === "") return true;
@@ -73,7 +73,17 @@ export const aircraftModelFields: FieldConfig[] = [
     error: `Maximo permitido: ${LIMITS.MAX_ENERGY} J`,
   },
   {
-    label: "Camara (valor por defecto)",
+    key: "maxAutonomyDefault",
+    label: "Autonomía máxima (min)",
+    type: "number",
+    validate: (val: any) => {
+      const num = Number(val);
+      return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_AUTONOMY;
+    },
+    error: `Maximo permitido: ${LIMITS.MAX_AUTONOMY} min`,
+  },
+  {
+    label: "Cámara (valor por defecto)",
     key: "hasCameraDefault",
     type: "select",
     options: ["Si", "No"],
@@ -171,6 +181,13 @@ export const aircraftModelFields: FieldConfig[] = [
   {
     label: "Accesorios (valor por defecto)",
     key: "accessoriesDefault",
+    type: "textarea",
+    validate: (v: any) => v == null || String(v).length <= 800,
+    error: "Maximo 800 caracteres",
+  },
+  {
+    label: "Observaciones (valor por defecto)",
+    key: "observationsDefault",
     type: "textarea",
     validate: (v: any) => v == null || String(v).length <= 800,
     error: "Maximo 800 caracteres",

@@ -49,6 +49,12 @@ EMAIL_PASSWORD=tu-clave
 ```
 ---
 
+### Plantilla del archivo `frontend/.env.production`
+```
+# --- Configuración de url ---
+VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
+```
+
 ## Despliegue en Servidor (Producción)
 
 > **¡IMPORTANTE (Optimización de Recursos)!**
@@ -261,7 +267,6 @@ npm run build
 
 ## TODO
 * AIRCRAFT <br>
--Añadir campo observaciones y añadir campo AUTONOMIA MAXIMA <br>
 
 * OPERACIONES <br>
 -CORREGIR HORAS <br>
