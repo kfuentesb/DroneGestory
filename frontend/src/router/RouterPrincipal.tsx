@@ -31,6 +31,7 @@ import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
 import Settings from "../components/main-elements-views/Settings";
 import MailCenter from "../components/mail/MailCenter";
 import OperationDocumentationList from "../components/lists/OperationDocumentationList";
+import FormResetPasswordWithToken from "../components/forms/FormResetPasswordWithToken";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -41,6 +42,7 @@ export default class RouterPrincipal extends React.Component {
         {/* Commons */}
         <Route path="/home" element={<Home />} />
         <Route path="/login" element={<LogIn />} />
+        <Route path="/reset-password" element={<FormResetPasswordWithToken />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route
           path="/settings"
