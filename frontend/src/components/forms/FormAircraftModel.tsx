@@ -232,6 +232,7 @@ export default function FormAircraftModel() {
       if (parseNumber(defaultValues.maxSpeedDefault) !== undefined) formData.append("maxSpeedDefault", String(parseNumber(defaultValues.maxSpeedDefault)));
       if (defaultValues.configDefault?.value) formData.append("configDefault", defaultValues.configDefault.value);
       if (parseNumber(defaultValues.impactEnergyDefault) !== undefined) formData.append("impactEnergyDefault", String(parseNumber(defaultValues.impactEnergyDefault)));
+      let val; if ((val = parseNumber(defaultValues.maxAutonomyDefault)) !== undefined) formData.append("maxAutonomyDefault", String(Math.trunc(val)));
       if (defaultValues.hasCameraDefault) formData.append("hasCameraDefault", defaultValues.hasCameraDefault.value);
       if (defaultValues.privatelyBuiltDefault) formData.append("privatelyBuiltDefault", defaultValues.privatelyBuiltDefault.value);
       if (defaultValues.hasParachuteDefault) formData.append("hasParachuteDefault", defaultValues.hasParachuteDefault.value);
@@ -466,7 +467,7 @@ export default function FormAircraftModel() {
                           setDefaultValues((prev) => ({
                             ...prev,
                             powerSourceDefault: val,
-                            powerSourceNonHybrid: val?.value === "NON_ELECTRIC" ? prev.powerSourceNonHybrid : null,
+                            powerSourceNonHybrid: val?.value === "Non_Electric" ? prev.powerSourceNonHybrid : null,
                           }));
                         }}
                         isClearable
@@ -480,7 +481,7 @@ export default function FormAircraftModel() {
                         placeholder="Seleccione fuente no electrica"
                         onChange={(value) => setDefaultValues((prev) => ({ ...prev, powerSourceNonHybrid: value }))}
                         isClearable
-                        isDisabled={defaultValues.powerSourceDefault?.value !== "NON_ELECTRIC"}
+                        isDisabled={defaultValues.powerSourceDefault?.value !== "Non_Electric"}
                       />
                     </div>
                 </div>

@@ -1,5 +1,6 @@
 import { aircraftDocumentationFields, MODEL_SPECIFIC_KEYS } from "../certificates/AircraftDocumentationSection";
 import { staticUserCertificateFields as staticUserCertificateConfig } from "../certificates/staticUserCertificateFields";
+import { useState, type ChangeEvent } from "react";
 
 export interface DetailsComponentProps {
     id: string | undefined
@@ -187,3 +188,195 @@ export const stateColors: Record<string, { backgroundColor: string; color: strin
     active: { backgroundColor: "#DCFCE7", color: "#166534" },
     inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
 };
+
+export function useConopsHandlers(validateCertificateFile: (file: File) => string | null) {
+    // --- ESTADOS CONCENTRADOS ---
+    const [conopsDocs, setConopsDocs] = useState<Record<string, any>>({});
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [currentSelection, setCurrentSelection] = useState<string>("");
+
+    // --- MANEJADORES EXISTENTES ---
+    const handleConopsFileChange = (catId: string, event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+        if (!file) {
+            setConopsDocs((prev) => ({
+                ...prev,
+                [catId]: {
+                    ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                    certificate: null,
+                },
+            }));
+            return;
+        }
+
+        const fileError = validateCertificateFile(file);
+        if (fileError) {
+            alert(fileError);
+            return;
+        }
+
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: file,
+            },
+        }));
+    };
+
+    const handleConopsClearFile = (catId: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                certificate: null,
+            },
+        }));
+        const input = document.getElementById(`file-${catId}`) as HTMLInputElement | null;
+        if (input) input.value = "";
+    };
+
+    const handleConopsDateChange = (catId: string, value: string) => {
+        setConopsDocs((prev) => ({
+            ...prev,
+            [catId]: {
+                ...(prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null }),
+                dateExpire: value || null,
+                dateIndefinite: false,
+            },
+        }));
+    };
+
+    const handleConopsToggleIndefinite = (catId: string) => {
+        setConopsDocs((prev) => {
+            const current = prev[catId] ?? { certificate: null, dateExpire: null, dateIndefinite: null };
+            const nextIndefinite = !current.dateIndefinite;
+            return {
+                ...prev,
+                [catId]: {
+                    ...current,
+                    dateIndefinite: nextIndefinite,
+                    dateExpire: nextIndefinite ? null : current.dateExpire,
+                },
+            };
+        });
+    };
+
+    // --- NUEVOS MANEJADORES DE CATEGORÍAS ---
+    const addCategory = () => {
+        if (currentSelection && !selectedCategories.includes(currentSelection)) {
+            setSelectedCategories((prev) => [...prev, currentSelection]);
+            setConopsDocs((prev) => ({
+                ...prev,
+                [currentSelection]: {
+                    certificate: null,
+                    dateExpire: null,
+                    dateIndefinite: null,
+                },
+            }));
+            setCurrentSelection("");
+        }
+    };
+
+    const removeCategory = (categoryId: string) => {
+        setSelectedCategories((prev) => prev.filter((idValue) => idValue !== categoryId));
+        setConopsDocs((prev) => {
+            const next = { ...prev };
+            delete next[categoryId];
+            return next;
+        });
+    };
+
+    const initConopsData = (categories: string[], docs: Record<string, any>) => {
+        setSelectedCategories(categories);
+        setConopsDocs(docs);
+        setCurrentSelection("");
+    };
+
+    // Retornamos todo lo necesario para la UI
+    return {
+        conopsDocs,
+        selectedCategories,
+        currentSelection,
+        setCurrentSelection,
+        handleConopsFileChange,
+        handleConopsClearFile,
+        handleConopsDateChange,
+        handleConopsToggleIndefinite,
+        addCategory,
+        removeCategory,
+        initConopsData
+    };
+}
+
+export function useAdditionalDocsHandlers(validateCertificateFile: (file: File) => string | null) {
+    // --- ESTADOS INTERNOS ---
+    const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
+    const [existingAdditionalFileNames, setExistingAdditionalFileNames] = useState<Record<string, string>>({});
+
+    // --- MANEJADORES DE ACCIONES ---
+    const handleAddAdditionalDoc = () => {
+        if (additionalDocs.length >= 10) {
+            return;
+        }
+        setAdditionalDocs((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                label: "",
+                certificate: null,
+                dateExpire: null,
+                dateIndefinite: false,
+            },
+        ]);
+    };
+
+    const handleRemoveAdditionalDoc = (idValue: string) => {
+        setAdditionalDocs((prev) => prev.filter((doc) => doc.id !== idValue));
+        setExistingAdditionalFileNames((prev) => {
+            const next = { ...prev };
+            delete next[idValue];
+            return next;
+        });
+    };
+
+    const handleAdditionalFieldChange = (
+        idValue: string,
+        field: keyof AdditionalCertificatePayload,
+        value: any
+    ) => {
+        if (field === "certificate" && value instanceof File) {
+            const fileError = validateCertificateFile(value);
+            if (fileError) {
+                alert(fileError);
+                return;
+            }
+        }
+
+        setAdditionalDocs((prev) =>
+            prev.map((doc) => (doc.id === idValue ? { ...doc, [field]: value } : doc))
+        );
+
+        if (field === "certificate" && value === null) {
+            setExistingAdditionalFileNames((prev) => ({ ...prev, [idValue]: "" }));
+        }
+    };
+
+    // --- FUNCIÓN DE INICIALIZACIÓN (Para el useEffect del componente) ---
+    const initAdditionalDocsData = (
+        docs: AdditionalCertificatePayload[],
+        names: Record<string, string>
+    ) => {
+        setAdditionalDocs(docs);
+        setExistingAdditionalFileNames(names);
+    };
+
+    return {
+        additionalDocs,
+        existingAdditionalFileNames,
+        handleAddAdditionalDoc,
+        handleRemoveAdditionalDoc,
+        handleAdditionalFieldChange,
+        initAdditionalDocsData
+    };
+}

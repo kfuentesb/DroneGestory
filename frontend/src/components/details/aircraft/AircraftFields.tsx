@@ -128,9 +128,9 @@ export const aircraftFields: FieldConfig[] = [
     type: "number",
     validate: (val: any) => {
       const num = Number(val);
-      return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_AUTONOMY;
+      return !isNaN(num) && num >= 0 && num <= LIMITS.MAX_AUTONOMY && Number.isInteger(num);
     },
-    error: `Maximo permitido: ${LIMITS.MAX_AUTONOMY} min`,
+    error: `Maximo permitido: ${LIMITS.MAX_AUTONOMY} min y no se permiten decimales`,
   },
   {
     label: "Camara",
