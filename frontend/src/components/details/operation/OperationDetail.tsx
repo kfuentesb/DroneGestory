@@ -143,8 +143,8 @@ export default function OperationDetail() {
     return [
       { label: "Creador", value: operation.nombreCreador },
       { label: "Creación", value: formatDateTime(operation.fechaCreacion) },
-      { label: "Todos los anexos firmados", value: operation.todosAnexosFirmados ? "Sí" : "No" },
       { label: "Actualización", value: formatDateTime(operation.fechaActualizacion) },
+      { label: "Todos los anexos firmados", value: operation.todosAnexosFirmados ? "Sí" : "No" },
     ];
   }, [operation]);
 
@@ -463,19 +463,43 @@ export default function OperationDetail() {
       >        
         <div className="card-body p-4">
           <div className="row g-4">
-            {resumen.map((item, index) => (
+          {resumen.map((item) => {
+            const isAllSigned = item.label === "Todos los anexos firmados" && item.value === "Sí";
+
+            return (
               <div key={item.label} className="col-md-6 col-lg-3">
-                <div className="p-3 rounded-3 bg-light h-100 border border-white" style={{ transition: 'transform 0.2s' }}>
-                  <label className="text-uppercase text-muted fw-bold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                <div
+                  className="p-3 rounded-3 h-100 border"
+                  style={{
+                    transition: "transform 0.2s",
+                    backgroundColor: isAllSigned ? "rgb(219, 234, 254)" : "#f8f9fa",
+                    borderColor: isAllSigned ? "rgb(191, 219, 254)" : "#ffffff",
+                  }}
+                >
+                  <label
+                    className="text-uppercase fw-bold mb-1 d-block"
+                    style={{
+                      fontSize: "0.7rem",
+                      letterSpacing: "0.5px",
+                      color: isAllSigned ? "rgb(37, 99, 235)" : "#6c757d",
+                    }}
+                  >
                     {item.label}
                   </label>
-                  <div className="h6 fw-bold text-dark mb-0" style={{ wordBreak: 'break-word' }}>
+                  <div
+                    className="h6 fw-bold mb-0"
+                    style={{
+                      wordBreak: "break-word",
+                      color: isAllSigned ? "rgb(30, 58, 138)" : "#212529",
+                    }}
+                  >
                     {item.value || <span className="text-muted fw-normal">No definido</span>}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
         </div>
       </div>
 
@@ -512,8 +536,14 @@ export default function OperationDetail() {
                       </div>
                     </div>
 
-                        <ButtonProp style={{ backgroundColor: "rgb(254, 243, 199)", color: "rgb(146, 64, 14)", border: "1px solid", padding: "0.45rem 0.6rem" }} onClick={() => navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
-                      Ver borrador
+                      <ButtonProp 
+                        style={
+                          anexo.versiones.length === 0
+                            ? { backgroundColor: "#166534", color: "#FFFFFF", border: "1px solid", padding: "0.45rem 0.6rem", fontWeight: "bold" }
+                            : { backgroundColor: "rgb(254, 243, 199)", color: "rgb(146, 64, 14)", border: "1px solid", padding: "0.45rem 0.6rem" }
+                        }
+                        onClick={() => navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`)}>
+                      {anexo.versiones.length === 0 ? "Empezar anexo" : "Ver borrador"}
                     </ButtonProp>
                   </div>
 

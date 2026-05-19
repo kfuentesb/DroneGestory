@@ -228,7 +228,8 @@ export default function OperationsTableView({
               onChange={setSearch}
             />
             <ButtonProp onClick={() => void handleOpenCreateModal()}>
-              <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
+              {/* <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" /> */}
+              Crear operación
             </ButtonProp>
           </div>
           <ReusableTable
