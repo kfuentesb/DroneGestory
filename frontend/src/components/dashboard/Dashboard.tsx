@@ -100,44 +100,39 @@ export default function Dashboard() {
   const [showForm, setShowForm] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<RoleOption[]>([]);
 
-  const handleCloseModal = () => {
-    setSelectedDay(null);
-    setShowForm(false);
-    setNewDescription("");
-  };
-
-    useEffect(() => {
-      apiFetch("/api/dashboard")
-        .then((res) => {
-          if (!res) return;
-          if (!res.ok) throw new Error("Error cargando resumen");
-          return res.json();
-        })
-      .then((data: Partial<DashboardData>) => {
-
-        const nextSummary: DashboardData = {
-          totalUsuarios: data.totalUsuarios ?? 0,
-          totalPilotos: data.totalPilotos ?? 0,
-          totalDocumentacionUsuarios: data.totalDocumentacionUsuarios ?? 0,
-          totalOperaciones: data.totalOperaciones ?? 0,
-          totalDrones: data.totalDrones ?? 0,
-          totalMantenimientos: data.totalMantenimientos ?? 0,
-          totalDocumentacionAeronaves: data.totalDocumentacionAeronaves ?? 0,
-          certificateExpirations: data.certificateExpirations ?? [],
-          aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
-          birthdays: data.birthdays ?? [],
-          maintenance: data.maintenance ?? [],
-          operations: data.operations ?? [],
-          extraEvents: data.extraEvents ?? [],
-        };
-
-        setSummary(nextSummary);
+  useEffect(() => {
+    apiFetch("/api/dashboard")
+      .then((res) => {
+        if (!res) return;
+        if (!res.ok) throw new Error("Error cargando resumen");
+        return res.json();
       })
-      .catch((err) => {
-        console.error("Fetch Error:", err);
-        setSummary({ error: err.message });
-      })
-      .finally(() => setLoading(false));
+    .then((data: Partial<DashboardData>) => {
+
+      const nextSummary: DashboardData = {
+        totalUsuarios: data.totalUsuarios ?? 0,
+        totalPilotos: data.totalPilotos ?? 0,
+        totalDocumentacionUsuarios: data.totalDocumentacionUsuarios ?? 0,
+        totalOperaciones: data.totalOperaciones ?? 0,
+        totalDrones: data.totalDrones ?? 0,
+        totalModelos: data.totalModelos ?? 0,
+        totalMantenimientos: data.totalMantenimientos ?? 0,
+        totalDocumentacionAeronaves: data.totalDocumentacionAeronaves ?? 0,
+        certificateExpirations: data.certificateExpirations ?? [],
+        aircraftDocumentationExpirations: data.aircraftDocumentationExpirations ?? [],
+        birthdays: data.birthdays ?? [],
+        maintenance: data.maintenance ?? [],
+        operations: data.operations ?? [],
+        extraEvents: data.extraEvents ?? [],
+      };
+
+      setSummary(nextSummary);
+    })
+    .catch((err) => {
+      console.error("Fetch Error:", err);
+      setSummary({ error: err.message });
+    })
+    .finally(() => setLoading(false));
   }, []);
 
   const isError = (s: SummaryState): s is { error: string } => s !== null && "error" in s;
@@ -459,10 +454,11 @@ export default function Dashboard() {
                   </>
                 ) : null}
                 <StatCard icon="bi-person-badge-fill" value={summary.totalPilotos} label="Pilotos Activos" color="red" delay={100} />
-                <StatCard icon="bi-airplane-engines-fill" value={summary.totalDrones} label="Drones en Flota" color="blue" delay={150} />
-                <StatCard icon="bi-file-earmark-text-fill" value={summary.totalDocumentacionAeronaves} label="Docs. Aeronaves" color="blue" delay={200} />
-                <StatCard icon="bi-clipboard-check" value={summary.totalOperaciones} label="Operaciones Totales" color="purple" delay={250} />
-                <StatCard icon="bi-clipboard-check" value={summary.totalMantenimientos} label="Mantenimientos Totales" color="green" delay={300} />
+                <StatCard icon="bi-clipboard-check" value={summary.totalModelos} label="Plantillas disponibles" color="blue" delay={150} />
+                <StatCard icon="bi-airplane-engines-fill" value={summary.totalDrones} label="Drones en Flota" color="blue" delay={200} />
+                <StatCard icon="bi-file-earmark-text-fill" value={summary.totalDocumentacionAeronaves} label="Docs. Aeronaves" color="blue" delay={250} />
+                <StatCard icon="bi-clipboard-check" value={summary.totalOperaciones} label="Operaciones Totales" color="purple" delay={300} />
+                <StatCard icon="bi-clipboard-check" value={summary.totalMantenimientos} label="Mantenimientos Totales" color="green" delay={350} />
               </>
             ) : null}
           </div>

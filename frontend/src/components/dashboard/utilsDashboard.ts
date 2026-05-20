@@ -47,6 +47,7 @@ export interface DashboardData {
     totalDocumentacionUsuarios: number;
     totalOperaciones: number;
     totalDrones: number;
+    totalModelos: number;
     totalMantenimientos: number;
     totalDocumentacionAeronaves: number;
     certificateExpirations: DashboardCertificateExpiration[];
