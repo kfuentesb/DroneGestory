@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Select, { type StylesConfig } from "react-select";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { apiFetch, API_BASE_URL } from "../../api";
 import { aircraftClasses, configs, LIMITS, yesNoOptions,
@@ -15,6 +15,8 @@ import AircraftDocumentationSection, {
 } from "../certificates/AircraftDocumentationSection";
 import { getAircraftDocumentationFlags } from "../certificates/aircraftDocumentationUtils";
 import "../../styles/generic-form.css";
+import { styles } from "../../styles/styles";
+import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 
 type SelectOption = { value: string; label: string };
 
@@ -75,7 +77,17 @@ interface FormAircraftProps {
   initialDocumentation?: InitialDocumentationItem[];
 }
 
-export default function FormAircraft({ initialValues, initialDocumentation = [] }: FormAircraftProps) {
+export default function FormAircraft({ initialValues: propsInitialValues, initialDocumentation: propsInitialDocumentation = [] }: FormAircraftProps) {
+  const location = useLocation();
+  
+  // Get data from navigation state if available, otherwise use props
+  const navigationState = location.state as {
+    selectedModelData?: any;
+    selectedDocumentation?: InitialDocumentationItem[];
+  } | undefined;
+  
+  const initialValues = navigationState?.selectedModelData ?? propsInitialValues;
+  const initialDocumentation = navigationState?.selectedDocumentation ?? propsInitialDocumentation;
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -601,8 +613,16 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
         body: formData,
       });
 
-      if (!res) return;
-      navigate("/aircrafts");
+      if (!res) {
+        throw new Error("No se recibió respuesta del servidor.");
+      }
+
+      if (res instanceof Response && !res.ok) {
+        throw new Error(`Error en el servidor: ${res.statusText}`);
+      }
+
+      navigate("/aircrafts", { replace: true });
+      return;
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -659,11 +679,29 @@ export default function FormAircraft({ initialValues, initialDocumentation = [] 
   };
 
   return (
-    <div className="card shadow-sm mt-5" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
-      <div className="card-body py-5 pb-5" style={{ maxWidth: "1000px" }}>
-        <h2 className="mb-2 fw-bold pb-3" style={{ color: "#1E1E1E" }}>
-          Registrar aeronave
-        </h2>
+    <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
+      <div className="card-body py-4 pb-5" style={{ maxWidth: "1000px" }}>
+        <div className="position-relative d-flex align-items-center justify-content-center mb-2 pb-3 w-100">
+          <button 
+            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0" 
+            onClick={() => navigate(-1)}
+            style={styles.backBtn}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            title="Volver"
+          >
+              <img 
+                src={arroBackIcon} 
+                alt="Volver" 
+                style={styles.backIcon} 
+              />
+          </button>
+          
+          <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E" }}>
+            Registrar aeronave
+          </h2>
+          
+        </div>
 
         <div
           className="card shadow-sm p-4"

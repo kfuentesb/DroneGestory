@@ -9,6 +9,7 @@ import UsersIcon from '../../assets/sidebar/group_white.svg';
 import DroneIcon from '../../assets/sidebar/drone_white.svg';
 import FlyIcon from '../../assets/sidebar/fly_drone_white.svg';
 import DocIcon from '../../assets/sidebar/docs.svg';
+import Plantilla from '../../assets/sidebar/plantilla_white.svg';
 
 interface SidebarMenuProps {
     toggled: boolean;
@@ -124,7 +125,16 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                         onOpenChange={() => handleToggle("aircraft")}
                         icon={<img src={DroneIcon} alt="Drone" />}
                     >
-
+                        {canManage && (
+                            <MenuItem
+                                onClick={() => {navigate("/aircraft-models"); setToggled(false);}}
+                                icon={<img src={Plantilla} alt="Plantilla" />}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", marginLeft: "10px" }}>
+                                <span>Plantillas</span>
+                                </div>
+                            </MenuItem>
+                        )}
                         <MenuItem 
                             onClick={() => { navigate("/aircrafts"); setToggled(false); }}
                             icon={<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><g transform="matrix(0.7 0 0 0.7 0 -150)"><path d="M259-80q-75 0-127-53T80-261q0-75 52-127t127-52q22 0 42.5 5t38.5 14q14-29 15-60t-11-60q-19 10-40 15t-44 5q-75 0-127.5-52.5T80-701q0-75 52.5-127T260-880q75 0 127.5 52T440-701q0 23-5.5 44T419-617q29 12 60 11.5t60-14.5q-9-18-14-38.5t-5-42.5q0-75 52-127t127-52q75 0 128 52t53 127q0 75-53 128t-128 53q-24 0-45.5-6T612-543q-13 30-12 61.5t15 62.5q19-10 40-15.5t44-5.5q75 0 128 52t53 127q0 75-53 128T699-80q-75 0-127-53t-52-128q0-23 5.5-44t15.5-40q-31-14-62.5-15.5T417-349q11 20 17 42t6 46q0 75-53 128T259-80Zm440-520q42 0 71.5-29.5T800-701q0-42-29.5-70.5T699-800q-42 0-70.5 28.5T600-701q0 8 1.5 16.5T605-668l60-60q12-12 28-12t28 12q12 12 12 28t-12 28l-62 63q9 5 19 7t21 2Zm-439-1q10 0 19-2t17-5l-64-64q-12-12-12-28t12-28q12-12 28-12t28 12l65 64q3-8 5-17.5t2-19.5q0-42-29-71t-71-29q-42 0-71 29t-29 71q0 42 29 71t71 29Zm439 441q42 0 71.5-29.5T800-261q0-42-29.5-70.5T699-360q-10 0-19 1.5t-17 4.5l66 66q12 12 12 28t-12 28q-13 12-29 12t-28-12l-65-65q-3 8-5 17t-2 19q0 42 28.5 71.5T699-160Zm-440 0q42 0 71.5-29.5T360-261q0-11-2-21.5t-7-19.5l-70 70q-12 12-28.5 12T224-232q-12-12-12-28t12-28l67-67q-8-2-16-3.5t-16-1.5q-42 0-70.5 28.5T160-261q0 42 28.5 71.5T259-160Zm221-280q17 0 28.5-11.5T520-480q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480q0 17 11.5 28.5T480-440Z" /></g><path d="M680-240v-80h200v80H680Zm-80-200v-80h280v80H600Zm-80-200v-80h360v80H520Z" /></svg>}
@@ -133,7 +143,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                             <span>Listar</span>
                             </div>
                         </MenuItem>
-                        {canManage && (
+                        {/* {canManage && (
                             <MenuItem 
                                 onClick={() => { navigate("/register-aircraft"); setToggled(false); }}
                                 icon={<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><g transform="matrix(0.65 0 0 0.65 20 -180)"><path d="M259-80q-75 0-127-53T80-261q0-75 52-127t127-52q22 0 42.5 5t38.5 14q14-29 15-60t-11-60q-19 10-40 15t-44 5q-75 0-127.5-52.5T80-701q0-75 52.5-127T260-880q75 0 127.5 52T440-701q0 23-5.5 44T419-617q29 12 60 11.5t60-14.5q-9-18-14-38.5t-5-42.5q0-75 52-127t127-52q75 0 128 52t53 127q0 75-53 128t-128 53q-24 0-45.5-6T612-543q-13 30-12 61.5t15 62.5q19-10 40-15.5t44-5.5q75 0 128 52t53 127q0 75-53 128T699-80q-75 0-127-53t-52-128q0-23 5.5-44t15.5-40q-31-14-62.5-15.5T417-349q11 20 17 42t6 46q0 75-53 128T259-80Zm440-520q42 0 71.5-29.5T800-701q0-42-29.5-70.5T699-800q-42 0-70.5 28.5T600-701q0 8 1.5 16.5T605-668l60-60q12-12 28-12t28 12q12 12 12 28t-12 28l-62 63q9 5 19 7t21 2Zm-439-1q10 0 19-2t17-5l-64-64q-12-12-12-28t12-28q12-12 28-12t28 12l65 64q3-8 5-17.5t2-19.5q0-42-29-71t-71-29q-42 0-71 29t-29 71q0 42 29 71t71 29Zm439 441q42 0 71.5-29.5T800-261q0-42-29.5-70.5T699-360q-10 0-19 1.5t-17 4.5l66 66q12 12 12 28t-12 28q-13 12-29 12t-28-12l-65-65q-3 8-5 17t-2 19q0 42 28.5 71.5T699-160Zm-440 0q42 0 71.5-29.5T360-261q0-11-2-21.5t-7-19.5l-70 70q-12 12-28.5 12T224-232q-12-12-12-28t12-28l67-67q-8-2-16-3.5t-16-1.5q-42 0-70.5 28.5T160-261q0 42 28.5 71.5T259-160Zm221-280q17 0 28.5-11.5T520-480q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480q0 17 11.5 28.5T480-440Z"/></g><path d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z" /></svg>}
@@ -142,7 +152,7 @@ export default function SidebarMenu({ toggled, setToggled }: SidebarMenuProps) {
                                 <span>Registrar</span>
                                 </div>
                             </MenuItem>
-                        )}
+                        )} */}
                         {canViewMaintenance && (
                             <MenuItem 
                                 onClick={() => { navigate("/maintenance"); setToggled(false); }}

@@ -35,7 +35,6 @@ type SelectOption = { value: string; label: string };
 export default function FormAircraftModel() {
   const navigate = useNavigate();
   const location = useLocation();
-  const returnTo = (location.state as { from?: string } | null)?.from ?? "/aircraft-models";
   const [manufacturer, setManufacturer] = useState("");
   const [model, setModel] = useState("");
   const [showDefaults, setShowDefaults] = useState(false);
@@ -259,7 +258,7 @@ export default function FormAircraftModel() {
       });
 
       if (!res) return;
-      navigate(returnTo);
+      navigate(-1);
     } catch (err: any) {
       setError(err?.message ?? "No se pudo registrar el modelo.");
     } finally {
@@ -270,22 +269,29 @@ export default function FormAircraftModel() {
   return (
     <div className="container py-4">
       <div className="card shadow-sm position-relative" style={{ border: "1px solid #E5E7EB", borderRadius: "8px", backgroundColor: "#ffffff"}}>
-        <button 
-          className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0 ms-3" 
-          onClick={() => navigate(returnTo)}
-          style={styles.backBtn}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-          title="Volver"
-        >
-            <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
-            <span className="ms-2 fw-medium text-muted" style={{ fontSize: '0.9rem' }}/>
-        </button>
 
         <div className="card-body pt-5" style={{backgroundColor: "#ffffff"}}>
-          <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-            Registrar modelo
+          <div className="position-relative d-flex align-items-center justify-content-center mb-2 pb-3 w-100">
+          <button 
+            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0" 
+            onClick={() => navigate(-1)}
+            style={styles.backBtn}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            title="Volver"
+          >
+              <img 
+                src={arroBackIcon} 
+                alt="Volver" 
+                style={styles.backIcon} 
+              />
+          </button>
+          
+          <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E" }}>
+            Registrar plantilla
           </h2>
+          
+        </div>
 
           <form onSubmit={handleSubmit}>
             <div className="row mb-3">
@@ -594,13 +600,13 @@ export default function FormAircraftModel() {
                 disabled={loading}
                 style={{ minWidth: "160px", transition: "all 0.3s ease" }}
               >
-                  Registrar modelo
+                  Registrar Plantilla
               </button>
 
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate(returnTo)}
+                onClick={() => navigate(-1)}
                 disabled={loading}
               >
                 Cancelar
