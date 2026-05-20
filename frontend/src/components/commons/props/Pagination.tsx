@@ -1,3 +1,6 @@
+import arrow_back_black from '../../../assets/commons/arrow_back_black.svg';
+import arrow_forward_black from '../../../assets/commons/arrow_forward_black.svg';
+
 type PaginationProps = {
   totalItems: number;
   currentPage: number;
@@ -29,17 +32,22 @@ export default function Pagination({
   };
 
   return (
-    <div className="d-flex flex-column align-items-center gap-2 mt-4">
-      {/* Top Row: Navigation Buttons and Status */}
+    <div className="d-flex flex-column align-items-center gap-2 mt-2 mb-2">
       <div className="d-flex align-items-center gap-3">
         <button
           type="button"
-          className="btn btn-sm btn-outline-secondary"
-          disabled={currentPage === 1}
+          disabled={currentPage < totalPages}
           onClick={() => handleInternalPageChangeSmooth(currentPage - 1)}
-          style={{ borderRadius: "6px" }}
+          className="btn btn-sm btn-outline-secondary"
+          style={{ borderRadius: "6px", minWidth: "32px", height: "32px" }}
         >
-          Anterior
+          <img 
+            src={arrow_back_black} 
+            alt="Anterior" 
+            className="d-inline d-sm-none" 
+            style={{ width: "16px", height: "16px" }} 
+          />
+          <span className="d-none d-sm-inline">Anterior</span>
         </button>
 
         <span className="small fw-medium text-secondary">
@@ -48,12 +56,18 @@ export default function Pagination({
 
         <button
           type="button"
-          className="btn btn-sm btn-outline-secondary"
-          disabled={currentPage === totalPages}
+          className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
           onClick={() => handleInternalPageChangeSmooth(currentPage + 1)}
-          style={{ borderRadius: "6px" }}
+          disabled={currentPage === totalPages}
+          style={{ borderRadius: "6px", minWidth: "32px", height: "32px" }}
         >
-          Siguiente
+          <span className="d-none d-sm-inline">Siguiente</span>
+          <img 
+            src={arrow_forward_black} 
+            alt="Siguiente" 
+            className="d-inline d-sm-none" 
+            style={{ width: "16px", height: "16px" }} 
+          />
         </button>
       </div>
 

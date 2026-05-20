@@ -8,6 +8,7 @@ import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import Pagination from "../commons/props/Pagination";
 import { useAuth } from "../commons/hooks/useAuth";
 import Select from "react-select";
+import DefaultDroneImage from '../../../public/default-drone.png';
 
 import LoadingSpinner from "../commons/Loading";
 
@@ -26,6 +27,7 @@ type Aircraft = {
   hasCamera: boolean;
   powerSource: "Electric" | "Non_Electric";
   powerSourceType?: "Hydrogen" | "Gasoline";
+  imagePath?: string | null;
 };
 
 export default function AircraftList() {
@@ -137,7 +139,6 @@ export default function AircraftList() {
       
       setIsModalOpen(false);
 
-      // Redirigimos a la vista del formulario inyectando los datos requeridos en el state
       navigate("/register-aircraft", {
         state: {
           flowMode: "existing",
@@ -181,7 +182,35 @@ export default function AircraftList() {
     currentPage * ITEMS_PER_PAGE
   );
 
+  const getImageUrl = (path?: string | null) => {
+    if (!path) return DefaultDroneImage;
+
+    const trimmedPath = path.trim();
+    if (trimmedPath.startsWith("http://") || trimmedPath.startsWith("https://")) {
+      return trimmedPath;
+    }
+
+    const marker = "/api/aircraft/images/";
+    let relativePath = trimmedPath;
+    if (trimmedPath.includes(marker)) {
+      relativePath = trimmedPath.substring(trimmedPath.indexOf(marker) + marker.length);
+    }
+
+    if (relativePath.startsWith("/")) {
+      relativePath = relativePath.slice(1);
+    }
+
+    const encodedPath = relativePath
+      .split("/")
+      .filter(Boolean)
+      .map(encodeURIComponent)
+      .join("/");
+
+    return `${API_BASE_URL}/api/aircraft/images/${encodedPath}`;
+  };
+
   const modelHeaders: TableHeader[] = [
+    { label: "Imagen", key: "image", sortable: false },
     { label: "Fabricante", key: "manufacturer", sortable: true },
     { label: "Modelo", key: "model", sortable: true },
     { label: "Nº Serie", key: "serialNumber", sortable: true },
@@ -195,6 +224,10 @@ export default function AircraftList() {
     { label: "Camara", key: "hasCamera", sortable: true },
   ];
 
+  const handleRowClick = (a: Aircraft) => {
+    navigate(`/aircrafts/${a.id}`);
+  };
+
   return (
     <div className="container py-4">
       <div
@@ -206,7 +239,7 @@ export default function AircraftList() {
             Aeronaves registradas
           </h2>
 
-          <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
             <SearchBar value={search} onChange={setSearch} />
 
             <div className="d-flex align-items-stretch gap-2">
@@ -218,31 +251,173 @@ export default function AircraftList() {
             </div>
           </div>
 
-          <ReusableTable
-            headers={modelHeaders}
-            rows={paginatedAircrafts}
-            renderRow={(a) => (
-              <>
-                <td>{a.manufacturer || "N/A"}</td>
-                <td>{a.model || "N/A"}</td>
-                <td>{a.serialNumber ?? "-"}</td>
-                <td>{a.aircraftClass}</td>
-                <td>{a.mtom ?? "-"} <b> Kg</b></td>
-                <td>{a.wingspan ?? "-"} <b>m</b></td>
-                <td>{a.maxSpeed ?? "-"} <b>m/s</b></td>
-                <td>{a.config}</td>
-                <td>{a.impactEnergy ?? "-"} <b>J</b></td>
-                <td>{formatMonthYear(a.fechaFab)}</td>
-                <td className="text-center">
-                  <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
-                    {a.hasCamera ? "Si" : "No"}
-                  </span>
-                </td>
-              </>
-            )}
-            onRowClick={(a) => navigate(`/aircrafts/${a.id}`)}
-            emptyText="No hay aeronaves registradas."
+          <Pagination
+            totalItems={filteredAircrafts.length}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
           />
+
+          {/* DESKTOP VIEW: Standard Table layout */}
+          <div className="d-none d-md-block">
+            <ReusableTable
+              headers={modelHeaders}
+              rows={paginatedAircrafts}
+              renderRow={(a) => (
+                <>
+                  {/* Put the image inside a <td> cell so it aligns with the headers */}
+                  <td>
+                    <img
+                      src={getImageUrl(a.imagePath)}
+                      alt={`${a.manufacturer} ${a.model}`}
+                      style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }}
+                      onError={(e) => {
+                        e.currentTarget.src = DefaultDroneImage;
+                      }}
+                    />
+                  </td>
+                  <td>{a.manufacturer || "N/A"}</td>
+                  <td>{a.model || "N/A"}</td>
+                  <td>{a.serialNumber ?? "-"}</td>
+                  <td>{a.aircraftClass}</td>
+                  <td>{a.mtom ?? "-"} <b> Kg</b></td>
+                  <td>{a.wingspan ?? "-"} <b>m</b></td>
+                  <td>{a.maxSpeed ?? "-"} <b>m/s</b></td>
+                  <td>{a.config}</td>
+                  <td>{a.impactEnergy ?? "-"} <b>J</b></td>
+                  <td>{formatMonthYear(a.fechaFab)}</td>
+                  <td className="text-center">
+                    <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
+                      {a.hasCamera ? "Si" : "No"}
+                    </span>
+                  </td>
+                </>
+              )}
+              onRowClick={handleRowClick}
+              emptyText="No hay aeronaves registradas."
+            />
+          </div>
+
+          {/* MOBILE VIEW: Clickable Mobile Cards layout */}
+          <div className="d-block d-md-none">
+            {paginatedAircrafts.length === 0 ? (
+              <div className="text-center text-muted py-5" style={{ fontSize: "0.9rem" }}>
+                No hay aeronaves registradas.
+              </div>
+            ) : (
+              <div className="d-flex flex-column gap-3">
+                {paginatedAircrafts.map((a, idx) => (
+                  <div
+                    key={a.id ?? idx}
+                    className="card p-3 shadow-sm border-0"
+                    onClick={() => handleRowClick(a)}
+                    style={{
+                      cursor: "pointer",
+                      borderRadius: "12px",
+                      backgroundColor: "#FFFFFF",
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+                      border: "1px solid #E5E7EB",
+                      transition: "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#FAFAFA";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.06)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#FFFFFF";
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.04)";
+                    }}
+                  >
+                    {/* Top Info Header Block */}
+                    <div className="d-flex gap-3 align-items-start mb-3">
+                      {/* Expanded & Cleaned Image Frame */}
+                      <img
+                        src={getImageUrl(a.imagePath)}
+                        alt={`${a.manufacturer} ${a.model}`}
+                        style={{
+                          width: "75px",
+                          height: "75px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          border: "1px solid #F3F4F6",
+                          backgroundColor: "#F9FAFB"
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.src = DefaultDroneImage;
+                        }}
+                      />
+
+                      {/* Core Text Info */}
+                      <div className="flex-grow-1 min-w-0">
+                        <div className="d-flex justify-content-between align-items-start gap-2">
+                          <div className="text-truncate">
+                            <span className="text-muted text-uppercase fw-bold tracking-wider" style={{ fontSize: "0.7rem" }}>
+                              {a.manufacturer || "N/A"}
+                            </span>
+                            <h5 className="mb-0 fw-bold text-dark text-truncate" style={{ fontSize: "1.05rem", marginTop: "-2px" }}>
+                              {a.model || "N/A"}
+                            </h5>
+                          </div>
+                          
+                          {/* Badges Stacked Right */}
+                          <div className="text-end flex-shrink-0">
+                            <span className="badge bg-dark fw-semibold px-2 py-1" style={{ fontSize: "0.7rem", borderRadius: "4px" }}>
+                              {a.aircraftClass}
+                            </span>
+                            <div className="text-muted small mt-1 fw-medium" style={{ fontSize: "0.7rem" }}>
+                              {a.config}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-muted mt-2" style={{ fontSize: "0.75rem" }}>
+                          S/N: <span className="text-dark fw-mono">{a.serialNumber ?? "-"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Premium Parameters Grid */}
+                    <div className="row g-2 text-muted mb-3" style={{ fontSize: "0.78rem" }}>
+                      {[
+                        { label: "MTOM", value: `${a.mtom ?? "-"} Kg` },
+                        { label: "Dimensión", value: `${a.wingspan ?? "-"} m` },
+                        { label: "Velocidad", value: `${a.maxSpeed ?? "-"} m/s` },
+                        { label: "Energía", value: `${a.impactEnergy ?? "-"} J` },
+                        { label: "Fabricación", value: formatMonthYear(a.fechaFab) },
+                        { 
+                          label: "Cámara", 
+                          value: (
+                            <span className={`badge ${a.hasCamera ? "bg-success-subtle text-success" : "bg-light text-secondary"} border`} style={{ fontSize: "0.7rem", padding: "2px 6px" }}>
+                              {a.hasCamera ? "Sí" : "No"}
+                            </span>
+                          ) 
+                        }
+                      ].map((stat, i) => (
+                        <div className="col-4" key={i}>
+                          <div className="p-2" style={{ backgroundColor: "#F9FAFB", borderRadius: "6px", border: "1px solid #F3F4F6" }}>
+                            <span className="d-block text-muted mb-0.5" style={{ fontSize: "0.68rem" }}>{stat.label}</span>
+                            <strong className="text-dark d-block text-truncate">{stat.value}</strong>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer Action Anchor */}
+                    <div className="d-flex justify-content-end pt-2 border-top" style={{ borderColor: "#F3F4F6" }}>
+                      <span className="text-primary small d-flex align-items-center gap-1" style={{ fontSize: "0.8rem", fontWeight: 600 }}>
+                        Ver detalles
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" className="bi bi-chevron-right" viewBox="0 0 16 16" style={{ transition: "transform 0.15s ease" }}>
+                          <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <Pagination
             totalItems={filteredAircrafts.length}

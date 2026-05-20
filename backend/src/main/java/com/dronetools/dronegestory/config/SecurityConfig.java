@@ -82,10 +82,12 @@ public class SecurityConfig {
                         // El listado general expone solo un resumen para usuarios no privilegiados.
                         .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
 
+                        .requestMatchers(HttpMethod.GET, "/api/aircraft/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/aircraft/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/aircraft-models/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/aircraft-models/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/aircraft-models/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/aircraft-models/**").hasAnyRole("ADMIN", "MANAGER")
