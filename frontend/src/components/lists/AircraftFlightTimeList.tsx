@@ -14,7 +14,6 @@ import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 import downloadIcon from '../../assets/commons/download.svg';
 import { FlightTimeHistoryPdf } from "../pdf/FlightTimeHistoryPdf";
-import JSZip from "jszip";
 
 type FlightTimeDocumentation = {
     id: number;

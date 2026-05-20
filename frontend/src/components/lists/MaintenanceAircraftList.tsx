@@ -12,7 +12,6 @@ import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 import downloadIcon from '../../assets/commons/download.svg';
 import { MaintenanceHistoryPdf } from "../pdf/MaintanceHistoryPdf";
-import JSZip from "jszip";
 
 type MaintenanceDocumentation = {
     id: number;
