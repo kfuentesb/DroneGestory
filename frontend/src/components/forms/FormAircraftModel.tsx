@@ -327,7 +327,7 @@ export default function FormAircraftModel() {
                 className="btn btn-success"
                 onClick={() => setShowDefaults((prev) => !prev)}
               >
-                Quieres añadir datos por defecto a este modelo?
+                Quieres añadir datos por defecto a esta plantilla?
               </button>
             </div>
 

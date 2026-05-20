@@ -83,6 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/aircraft/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/aircraft/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/aircraft/**").hasAnyRole("ADMIN", "MANAGER")
