@@ -212,7 +212,7 @@ export default function AircraftList() {
             <div className="d-flex align-items-stretch gap-2">
               {(roles.includes("ADMIN") || roles.includes("MANAGER")) && (
                 <ButtonProp onClick={() => setIsModalOpen(true)}>
-                  Registrar nueva aeronave
+                  + Registrar nueva aeronave
                 </ButtonProp>
               )}
             </div>

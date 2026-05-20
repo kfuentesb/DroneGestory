@@ -121,7 +121,7 @@ export default function AircraftModelList() {
             <div className="d-flex align-items-stretch gap-2">
               {(roles.includes("ADMIN") || roles.includes("MANAGER")) && (
                 <ButtonProp onClick={() => navigate("/register-model", { state: { from: "/register-aircraft" } })}>
-                  Registrar nueva plantilla
+                  + Registrar nueva plantilla
                 </ButtonProp>
               )}
             </div>

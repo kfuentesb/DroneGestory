@@ -19,7 +19,6 @@ import OperationDetail from "../components/details/operation/OperationDetail";
 import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
-// import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
 import FormAircraft from "../components/forms/FormAircraft";
 import FormAircraftModel from "../components/forms/FormAircraftModel";
 import FormFlightTime from "../components/forms/FormFlightTime";
@@ -116,7 +115,6 @@ export default class RouterPrincipal extends React.Component {
           path="/register-aircraft" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
-              {/* <RegisterAircraftFlow /> */}
               <FormAircraft/>
             </ProtectedRoute>
           } 
@@ -155,18 +153,14 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/maintenance" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MAINTAINER"]}>
               <MaintenanceList />
-            </ProtectedRoute>
           } 
         />
 
         <Route 
           path="/maintenance/aircraft/:aircraftId" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MAINTAINER"]}>
               <MaintenanceAircraftList />
-            </ProtectedRoute>
           } 
         />
 
@@ -181,7 +175,6 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Operations */}
         <Route path="/operations" element={<OperationList />} />
-        {/* <Route path="/operations/details/mine" element={<MyOperationList />} /> */}
         <Route path="/operations/docs" element={<OperationDocumentationList />} />
         <Route path="/operations/:id" element={<OperationDetail />} />
         <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />
