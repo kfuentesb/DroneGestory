@@ -376,14 +376,17 @@ export default function OperationDetail() {
                     position: "absolute",
                     right: 0,
                     marginTop: 8,
-                    minWidth: 300,
+                    minWidth: 240,
+                    maxWidth: "calc(100vw - 2rem)",   // nunca se sale de la pantalla
                     borderRadius: 8,
                     boxShadow: "0 10px 15px -3px rgba(0,0,0,0.15)",
+                    zIndex: 1050,
                   }}
                 >
                   <button
                     type="button"
                     className="dropdown-item"
+                    style={{ whiteSpace: "normal", wordBreak: "break-word" }}  // texto envuelve en móvil
                     onClick={() => void handleDownloadPdfs("full")}
                   >
                     Descargar PDF completo (todas las versiones)
@@ -391,6 +394,7 @@ export default function OperationDetail() {
                   <button
                     type="button"
                     className="dropdown-item"
+                    style={{ whiteSpace: "normal", wordBreak: "break-word" }}
                     onClick={() => void handleDownloadPdfs("latest")}
                   >
                     Descargar PDF completo (última version)
@@ -398,6 +402,7 @@ export default function OperationDetail() {
                   <button
                     type="button"
                     className="dropdown-item"
+                    style={{ whiteSpace: "normal", wordBreak: "break-word" }}
                     onClick={() => void handleDownloadPdfs("detail")}
                   >
                     Descargar solo detalle de operación
