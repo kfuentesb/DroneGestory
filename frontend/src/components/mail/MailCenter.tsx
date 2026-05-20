@@ -352,7 +352,7 @@ export default function MailCenter() {
             
             {/* GIF Izquierdo */}
             <div 
-              className="rounded-4 overflow-hidden shadow-sm border p-1 bg-white d-none d-md-block" 
+              className="d-none d-md-block" 
               style={{ width: "fit-content" }}
             >
               <img 
@@ -377,7 +377,7 @@ export default function MailCenter() {
 
             {/* GIF Derecho */}
             <div 
-              className="rounded-4 overflow-hidden shadow-sm border p-1 bg-white d-none d-md-block" 
+              className="d-none d-md-block" 
               style={{ width: "fit-content" }}
             >
               <img 
