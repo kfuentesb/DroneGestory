@@ -9,6 +9,8 @@ import { Month } from "@svar-ui/react-core";
 import Select from 'react-select';
 import "@svar-ui/react-core/all.css";
 import "./dashboardStyles.css";
+import arrow_back_black from "../../assets/commons/arrow_back_black.svg";
+import arrow_forward_black from "../../assets/commons/arrow_forward_black.svg";
 
 import {
   type DashboardMaintenanceDate, type DashboardData, 
@@ -479,22 +481,29 @@ export default function Dashboard() {
               Año {selectedYear}
             </div>
 
-            <div className="d-flex align-items-center gap-3">
+            <div className="d-flex align-items-center gap-2 gap-sm-3">
               <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
                 onClick={() => setSelectedYear((year) => Math.max(MIN_CALENDAR_YEAR, year - 1))}
                 disabled={selectedYear <= MIN_CALENDAR_YEAR}
-                style={{ borderRadius: "6px" }}
+                style={{ borderRadius: "6px", minWidth: "32px", height: "31px" }}
               >
-                Anterior
+                <img 
+                  src={arrow_back_black} 
+                  alt="Anterior" 
+                  className="d-inline d-sm-none" 
+                  style={{ width: "16px", height: "16px" }} 
+                />
+                <span className="d-none d-sm-inline">Anterior</span>
               </button>
               
-              <small className="text-muted" style={{ fontSize: "0.75rem" }}>Ir al año:</small>
+              <small className="text-muted d-none d-sm-inline" style={{ fontSize: "0.75rem" }}>Ir al año:</small>
+              
               <select
                 className="form-select form-select-sm shadow-none"
                 style={{
-                  width: "90px",
+                  width: "80px", // Shrunk slightly for better mobile layouts
                   cursor: "pointer",
                   borderColor: "#D1D5DB",
                   fontSize: "0.8rem"
@@ -514,12 +523,18 @@ export default function Dashboard() {
 
               <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
                 onClick={() => setSelectedYear((year) => Math.min(MAX_CALENDAR_YEAR, year + 1))}
                 disabled={selectedYear >= MAX_CALENDAR_YEAR}
-                style={{ borderRadius: "6px" }}
+                style={{ borderRadius: "6px", minWidth: "32px", height: "31px" }}
               >
-                Siguiente
+                <span className="d-none d-sm-inline">Siguiente</span>
+                <img 
+                  src={arrow_forward_black} 
+                  alt="Siguiente" 
+                  className="d-inline d-sm-none" 
+                  style={{ width: "16px", height: "16px" }} 
+                />
               </button>
             </div>
 

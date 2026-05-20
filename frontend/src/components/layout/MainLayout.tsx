@@ -23,7 +23,8 @@ export default function MainLayout({ children }: any) {
             >
                 {/* Mobile Header - Button aligned to the left */}
                 {username && (
-                    <div className="d-md-none p-2 border-bottom bg-light d-flex justify-content-start">
+                    <div className="d-md-none p-2 border-bottom d-flex justify-content-start"
+                    style={{ backgroundColor: "#3cb574" }}>
                         <button 
                             className="btn" 
                             style={{ 
@@ -40,7 +41,7 @@ export default function MainLayout({ children }: any) {
                     </div>
                 )}
 
-                <div className="p-3">
+                <div className="p-0 p-sm-3">
                     {children}
                 </div>
             </div>

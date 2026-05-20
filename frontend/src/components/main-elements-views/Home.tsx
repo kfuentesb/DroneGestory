@@ -10,7 +10,7 @@ const Home: React.FC = () => {
   }
   
   return (
-    <main style={{ backgroundColor: "#F3F4F6", minHeight: "100vh" }}>
+    <main style={{ backgroundColor: "#F3F4F6", minHeight: "100vh", borderRadius: "20px" }}>
       <section className="container py-5">
         <div className="d-flex justify-content-center g-5">
           <div className="col-md-6">

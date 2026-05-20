@@ -49,7 +49,7 @@ function LogIn() {
         errorMsg.includes("Failed to fetch") || 
         errorMsg.includes("fetch failed")
       ) {
-        setError("no ha cargado el backend");
+        setError("No ha cargado el backend");
       } else {
         setError(errorMsg);
       }
@@ -114,7 +114,7 @@ function LogIn() {
       style={{ minHeight: "100vh", backgroundColor: "#F3F4F6" }}
     >
       <div style={{ width: "100%", maxWidth: "400px" }}>
-        <h4 className="text-center mb-3 fw-normal" style={{ color: "#1E1E1E" }}>
+        <h4 className="text-center mb-3 fw-normal fw-bold" style={{ color: "#1E1E1E" }}>
           Iniciar sesión en Drone Gestor
         </h4>
 
