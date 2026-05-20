@@ -302,8 +302,8 @@ function FormUser() {
                 fechaNac: getValidationError("fechaNac", formValues.fechaNac.trim()),
                 password: validateUserPassword(formValues.password) ? null : USER_PASSWORD_ERROR,
                 confirmPassword: formValues.confirmPassword.trim()
-                    ? (formValues.password === formValues.confirmPassword ? null : "Las contrasenas no coinciden.")
-                    : "Confirma la contrasena."
+                    ? (formValues.password === formValues.confirmPassword ? null : "Las contraseñas no coinciden.")
+                    : "Confirma la contraseña."
             };
 
             setErrors(newErrors);
@@ -685,29 +685,34 @@ function FormUser() {
 
                     {/* Row 5: Contraseña */}
                     <div className="row mb-3">
-                    <div className="col-12 col-md mb-3 mb-md-0">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={formValues.password}
-                            onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
-                            style={{ ...backgroundBorderInputs, border: errors.password ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                        {errors.password && <small className="text-danger">{errors.password}</small>}
-                    </div>
+                        <div className="col-12 col-md mb-3 mb-md-0">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Contraseña</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                value={formValues.password}
+                                onChange={(e) => setFormValues({ ...formValues, password: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.password ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                            {errors.password && <small className="text-danger">{errors.password}</small>}
+                        </div>
 
-                    <div className="col-12 col-md">
-                        <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={formValues.confirmPassword}
-                            onChange={(e) => setFormValues({ ...formValues, confirmPassword: e.target.value })}
-                            style={{ ...backgroundBorderInputs, border: errors.confirmPassword ? "1px solid red" : "1px solid #D1D5DB" }}
-                        />
-                        {errors.confirmPassword && <small className="text-danger">{errors.confirmPassword}</small>}
-                    </div>
+                        <div className="col-12 col-md">
+                            <label className="text-start d-block ps-1 form-label" style={{ color: "#1E1E1E" }}>Confirmación de contraseña</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                value={formValues.confirmPassword}
+                                onChange={(e) => setFormValues({ ...formValues, confirmPassword: e.target.value })}
+                                style={{ ...backgroundBorderInputs, border: errors.confirmPassword ? "1px solid red" : "1px solid #D1D5DB" }}
+                            />
+                            {errors.confirmPassword && <small className="text-danger">{errors.confirmPassword}</small>}
+                        </div>
+                        {!errors.password && !errors.confirmPassword && (
+                            <div className="text-muted small ps-1 mb-1" style={{ fontSize: "0.75rem" }}>
+                                La contraseña debe tener al menos 8 caracteres y una número.
+                            </div>
+                        )}
                     </div>
 
                     {/* Error message */}

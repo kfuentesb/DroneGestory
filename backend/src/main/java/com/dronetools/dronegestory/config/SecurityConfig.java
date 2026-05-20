@@ -50,10 +50,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/home", "/home").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/login", "/api/login/").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/logout", "/api/logout/").permitAll()
+                        .requestMatchers("/api/login", "/api/forgot-password", "/api/reset-password").permitAll()
     
                         .requestMatchers("/api/user-certificates/**").authenticated()
                         .requestMatchers("/api/aircraft-documentation/**").authenticated()
-                        .requestMatchers("/api/maintenance/**").hasAnyRole("ADMIN", "MAINTAINER")
+                        .requestMatchers(HttpMethod.GET, "/api/maintenance/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/register-maintenance").hasAnyRole("ADMIN", "MAINTAINER")
                         .requestMatchers("/api/flight-hours/**").authenticated()
                         .requestMatchers("/api/flight-time-documentation/**").authenticated()
                         .requestMatchers("/api/sent-mails/**").hasAnyRole("ADMIN", "MANAGER")
