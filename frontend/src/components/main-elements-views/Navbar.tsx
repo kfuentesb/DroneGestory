@@ -52,11 +52,13 @@ function Navbar() {
                     </button>
                   )}
 
-                  <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
-                    style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
-                    onClick={() => navigate("/settings")}>
-                    <img src={SettingsIcon} alt="Settings" style={{ width: "20px" }} />
-                  </button>
+                  {username && (
+                    <button className="btn d-flex align-items-center justify-content-center shadow-sm" 
+                      style={{ backgroundColor: "#2F8F5B", width: "45px", height: "45px", borderRadius: "8px" }}
+                      onClick={() => navigate("/settings")}>
+                      <img src={SettingsIcon} alt="Settings" style={{ width: "20px" }} />
+                    </button>
+                  )}
 
                   {username ? (
                     <button className="btn d-flex align-items-center justify-content-center shadow-sm" 

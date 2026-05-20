@@ -61,7 +61,7 @@ export default function UserDetail() {
                                     Gestion de Usuario ID: {id}
                                 </h6>
                                 <small className="text-muted d-block text-truncate" style={{ fontSize: "0.72rem" }}>
-                                    {canManageUsers ? "Actualmente solo funciona el cambio de contrasena" : "Vista de solo lectura"}
+                                    {canManageUsers ? "Actualmente solo funciona el cambio de contraseña" : "Vista de solo lectura"}
                                 </small>
                             </div>
 

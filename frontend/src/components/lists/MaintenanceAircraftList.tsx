@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { pdf } from "@react-pdf/renderer";
+import { pdf, type DocumentProps } from "@react-pdf/renderer";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../api";
 import { useAuth } from "../commons/hooks/useAuth";
@@ -12,6 +12,7 @@ import { styles } from "../../styles/styles";
 import arroBackIcon from '../../assets/commons/arrow_back_white.svg';
 import downloadIcon from '../../assets/commons/download.svg';
 import { MaintenanceHistoryPdf } from "../pdf/MaintanceHistoryPdf";
+import JSZip from "jszip";
 
 type MaintenanceDocumentation = {
     id: number;
@@ -117,6 +118,7 @@ export default function MaintenanceAircraftList() {
     const { role } = useAuth();
     const isAdmin = role === "ADMIN";
     const [records, setRecords] = useState<MaintenanceRecord[]>([]);
+    const [aircraftData, setAircraftData] = useState<{ manufacturer?: string; serialNumber?: string } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -141,9 +143,20 @@ export default function MaintenanceAircraftList() {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await apiFetch(`/api/maintenance/aircraft/${aircraftId}`);
-            const data = response ? await response.json() : [];
-            setRecords(Array.isArray(data) ? data : []);
+            const [maintenanceResponse, aircraftResponse] = await Promise.all([
+                apiFetch(`/api/maintenance/aircraft/${aircraftId}`),
+                apiFetch(`/api/aircraft/${aircraftId}`)
+            ]);
+            const maintenanceData = maintenanceResponse ? await maintenanceResponse.json() : [];
+            const aircraft = aircraftResponse ? await aircraftResponse.json() : null;
+            
+            setRecords(Array.isArray(maintenanceData) ? maintenanceData : []);
+            if (aircraft) {
+                setAircraftData({
+                    manufacturer: aircraft.aircraftModel?.manufacturer || aircraft.manufacturer,
+                    serialNumber: aircraft.serialNumber
+                });
+            }
         } catch (err) {
             console.error("Error cargando mantenimientos de aeronave", err);
             setRecords([]);
@@ -164,6 +177,7 @@ export default function MaintenanceAircraftList() {
             const response = await apiFetch(`/api/maintenance/${id}`, { method: "DELETE" });
             if (response?.ok) {
                 if (selectedMaintenance?.id === id) setSelectedMaintenance(null);
+                setCurrentPage(1);
                 await fetchRecords();
             }
         } catch (err) {
@@ -180,6 +194,7 @@ export default function MaintenanceAircraftList() {
         setDocumentationMarkedForDeletion(false);
         setUpdateError(null);
         setUpdateLoading(false);
+        setCurrentPage(1);
     };
 
     const handleEditStart = (record: MaintenanceRecord) => {
@@ -265,7 +280,10 @@ export default function MaintenanceAircraftList() {
         return buildSafeFileToken(serial);
     };
 
-    const downloadPdfBlob = async (pdfDocument: JSX.Element, fileName: string) => {
+    const downloadPdfBlob = async (
+        pdfDocument: React.ReactElement<DocumentProps>, 
+        fileName: string
+    ) => {
         const blob = await pdf(pdfDocument).toBlob();
         downloadBlob(blob, fileName);
     };
@@ -357,24 +375,35 @@ export default function MaintenanceAircraftList() {
         { label: "Documentacion", key: "documentation", sortable: false },
     ];
     if (isAdmin) headers.push({ label: "Acciones", key: "actions", sortable: false });
-    const aircraftLabel = records.length > 0 ? `${records[0].aircraftManufacturer ?? ""} ${records[0].aircraftModel ?? ""}`.trim() : `Aeronave ${aircraftId ?? ""}`;
+    const aircraftLabel = aircraftData?.manufacturer || (records.length > 0 ? records[0].aircraftManufacturer : null)
+        ? `${(aircraftData?.manufacturer?.trim() || records[0]?.aircraftManufacturer?.trim() || "Aeronave")} (S/N: ${(aircraftData?.serialNumber?.trim() || records[0]?.aircraftSerialNumber?.trim() || "N/A")})`.trim()
+        : `Aeronave ${aircraftId ?? ""}`;
 
     return (
         <div className="container py-4">
             <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
                 <div className="card-body">
-                    <button 
-                        className="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                        onClick={() => navigate(-1)}
-                        style={styles.backBtn}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                        title="Volver"
-                    >
-                        <img src={arroBackIcon} alt="Back" style={styles.backIcon} />
-                        <span className="ms-2 fw-medium text-muted" style={{ fontSize: '0.9rem' }}/>
-                    </button>
-                    <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>Mantenimientos de {aircraftLabel}</h2>
+                    <div className="position-relative d-flex align-items-center justify-content-center mb-2 pb-3 w-100">
+                        <button 
+                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0" 
+                            onClick={() => navigate(-1)}
+                            style={styles.backBtn}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                            title="Volver"
+                        >
+                            <img 
+                                src={arroBackIcon} 
+                                alt="Volver" 
+                                style={styles.backIcon}
+                            />
+                        </button>
+                        
+                        <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E", paddingLeft: "60px", paddingRight: "60px"}}>
+                            Mantenimientos de {aircraftLabel}
+                        </h2>
+                    
+                    </div>
                     <style>{`.maintenance-row td{background-color:rgba(13,110,253,.04)!important}.maintenance-row td:first-child{border-left:4px solid #0d6efd!important}.maintenance-row td:last-child{border-right:4px solid #0d6efd!important}.text-truncate-custom{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`}</style>
                     {error && <div className="alert alert-danger">{error}</div>}
                     <div className="d-flex justify-content-between align-items-center mb-4">
@@ -398,7 +427,14 @@ export default function MaintenanceAircraftList() {
                                     {isPdfDownloading ? "Generando..." : "Descargar historial"}
                                 </span>
                             </button>
-                            <ButtonProp type="button" onClick={() => navigate(`/register-maintenance?aircraftId=${aircraftId}`)}>+ Registrar mantenimiento</ButtonProp>
+                            {(role === "ADMIN" || role === "MAINTAINER") && (
+                                <ButtonProp 
+                                    type="button" 
+                                    onClick={() => navigate(`/register-maintenance?aircraftId=${aircraftId}`)}
+                                >
+                                    + Registrar mantenimiento
+                                </ButtonProp>
+                            )}
                         </div>
                     </div>
                     <ReusableTable

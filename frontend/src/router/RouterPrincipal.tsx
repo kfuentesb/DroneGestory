@@ -19,7 +19,7 @@ import OperationDetail from "../components/details/operation/OperationDetail";
 import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
 import FileBrowserView from "../components/docs/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
-import RegisterAircraftFlow from "../components/forms/RegisterAircraftFlow";
+import FormAircraft from "../components/forms/FormAircraft";
 import FormAircraftModel from "../components/forms/FormAircraftModel";
 import FormFlightTime from "../components/forms/FormFlightTime";
 import FormMaintenance from "../components/forms/FormMaintenance";
@@ -31,6 +31,7 @@ import AircraftFlightTimeList from "../components/lists/AircraftFlightTimeList";
 import Settings from "../components/main-elements-views/Settings";
 import MailCenter from "../components/mail/MailCenter";
 import OperationDocumentationList from "../components/lists/OperationDocumentationList";
+import FormResetPasswordWithToken from "../components/forms/FormResetPasswordWithToken";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -41,6 +42,7 @@ export default class RouterPrincipal extends React.Component {
         {/* Commons */}
         <Route path="/home" element={<Home />} />
         <Route path="/login" element={<LogIn />} />
+        <Route path="/reset-password" element={<FormResetPasswordWithToken />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route
           path="/settings"
@@ -113,7 +115,7 @@ export default class RouterPrincipal extends React.Component {
           path="/register-aircraft" 
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
-              <RegisterAircraftFlow />
+              <FormAircraft/>
             </ProtectedRoute>
           } 
         />
@@ -130,14 +132,14 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/flight-hours" 
           element={
-              <AircraftFlightTimeList />
+              <FlightTimeList />
           } 
         />
 
         <Route 
           path="/flight-hours/:aircraftId" 
           element={
-              <FlightTimeList />
+              <AircraftFlightTimeList />
           } 
         />
 
@@ -151,18 +153,14 @@ export default class RouterPrincipal extends React.Component {
         <Route 
           path="/maintenance" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MAINTAINER"]}>
               <MaintenanceList />
-            </ProtectedRoute>
           } 
         />
 
         <Route 
           path="/maintenance/aircraft/:aircraftId" 
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MAINTAINER"]}>
               <MaintenanceAircraftList />
-            </ProtectedRoute>
           } 
         />
 
@@ -177,7 +175,6 @@ export default class RouterPrincipal extends React.Component {
 
         {/* Operations */}
         <Route path="/operations" element={<OperationList />} />
-        {/* <Route path="/operations/details/mine" element={<MyOperationList />} /> */}
         <Route path="/operations/docs" element={<OperationDocumentationList />} />
         <Route path="/operations/:id" element={<OperationDetail />} />
         <Route path="/operations/:id/anexo4" element={<OperationAnexoDetail tipoAnexo={4} />} />

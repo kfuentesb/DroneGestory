@@ -11,8 +11,13 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
+    
     Optional<User> findByUsername(String username);
+    
     boolean existsByUsernameIgnoreCase(String username);
+
+    @Query("SELECT u FROM User u WHERE LOWER(u.username) = LOWER(:value) OR LOWER(u.email) = LOWER(:value)")
+    Optional<User> findByUsernameOrEmail(@Param("value") String usernameOrEmail);
 
     @Query("select count(distinct u) from User u join u.roles r where u.state = true and r = :role")
     long countByRoleAndStateTrue(@Param("role") UserType role);
