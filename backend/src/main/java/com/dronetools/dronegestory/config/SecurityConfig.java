@@ -51,7 +51,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/login", "/api/login/").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/logout", "/api/logout/").permitAll()
                         .requestMatchers("/api/login", "/api/forgot-password", "/api/reset-password").permitAll()
-    
+                        // .requestMatchers(HttpMethod.GET, "/api/**/images/**").permitAll()
+
                         .requestMatchers("/api/user-certificates/**").authenticated()
                         .requestMatchers("/api/aircraft-documentation/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/maintenance/**").authenticated()

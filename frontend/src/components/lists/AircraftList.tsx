@@ -185,25 +185,26 @@ export default function AircraftList() {
   const getImageUrl = (path?: string | null) => {
     if (!path) return DefaultDroneImage;
 
-    const trimmedPath = path.trim();
-    if (trimmedPath.startsWith("http://") || trimmedPath.startsWith("https://")) {
-      return trimmedPath;
+    const cleanedPath = path.trim().replace(/\\/g, "/");
+    if (/^https?:\/\//.test(cleanedPath) || cleanedPath.startsWith("//")) {
+      return cleanedPath;
     }
 
     const marker = "/api/aircraft/images/";
-    let relativePath = trimmedPath;
-    if (trimmedPath.includes(marker)) {
-      relativePath = trimmedPath.substring(trimmedPath.indexOf(marker) + marker.length);
+    const markerNoLeadingSlash = "api/aircraft/images/";
+    let relativePath = cleanedPath;
+
+    if (cleanedPath.includes(marker)) {
+      relativePath = cleanedPath.substring(cleanedPath.indexOf(marker) + marker.length);
+    } else if (cleanedPath.includes(markerNoLeadingSlash)) {
+      relativePath = cleanedPath.substring(cleanedPath.indexOf(markerNoLeadingSlash) + markerNoLeadingSlash.length);
     }
 
-    if (relativePath.startsWith("/")) {
-      relativePath = relativePath.slice(1);
-    }
-
+    relativePath = relativePath.replace(/^\/+/, "");
     const encodedPath = relativePath
       .split("/")
       .filter(Boolean)
-      .map(encodeURIComponent)
+      .map((segment) => encodeURIComponent(segment))
       .join("/");
 
     return `${API_BASE_URL}/api/aircraft/images/${encodedPath}`;
