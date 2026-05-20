@@ -12,6 +12,7 @@ public class DashboardDTO {
     private long totalPilotos;
     private long totalUsuarios;
     private long totalDocumentacionUsuarios;
+    private long totalModelos;
     private long totalDrones;
     private long totalMantenimientos;
     private long totalDocumentacionAeronaves;

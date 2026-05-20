@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.dto.DashboardMaintenanceDateDTO;
 import com.dronetools.dronegestory.dto.DashboardOperationDTO;
 import com.dronetools.dronegestory.dto.ExtraDateDTO;
 import com.dronetools.dronegestory.model.AircraftDocumentation;
+import com.dronetools.dronegestory.model.AircraftModel;
 import com.dronetools.dronegestory.model.ExtraDate;
 import com.dronetools.dronegestory.model.Maintenance;
 import com.dronetools.dronegestory.model.Operation;
@@ -15,6 +16,7 @@ import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.UserCertificate;
 import com.dronetools.dronegestory.repository.AircraftDocumentationRepository;
 import com.dronetools.dronegestory.repository.AircraftRepository;
+import com.dronetools.dronegestory.repository.AircraftModelRepository;
 import com.dronetools.dronegestory.repository.ExtraDateRepository;
 import com.dronetools.dronegestory.repository.MaintenanceRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
@@ -32,6 +34,7 @@ public class DashboardService {
 
         @Autowired private OperationRepository operationRepo;
         @Autowired private UserRepository userRepo;
+        @Autowired private AircraftModelRepository aircraftModelRepo;
         @Autowired private AircraftRepository aircraftRepo;
         @Autowired private AircraftDocumentationRepository aircraftDocumentationRepository;
         @Autowired private UserCertificateRepository userCertificateRepository;
@@ -48,6 +51,7 @@ public class DashboardService {
                 dto.setTotalUsuarios(userRepo.count());
                 dto.setTotalDocumentacionUsuarios(userCertificateRepository.count());
                 dto.setTotalDrones(aircraftRepo.count());
+                dto.setTotalModelos(aircraftModelRepo.count());
                 dto.setTotalMantenimientos(maintenanceRepo.count());
                 dto.setTotalDocumentacionAeronaves(aircraftDocumentationRepository.count());
 
