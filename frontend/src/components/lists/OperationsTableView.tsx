@@ -6,7 +6,6 @@ import ButtonProp from "../commons/props/ButtonProp";
 import ConfirmModal from "../commons/ConfirmModal";
 import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable";
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
-import FlyDroneIconPlus from "../../assets/commons/fly_drone_add_white.svg";
 import DeleteIcon from "../../assets/commons/delete_white.svg";
 import CancelIcon from "../../assets/commons/cancel_white.svg";
 import { cancelOperation, createOperation, deleteOperation, fetchNextOperationCodigo, fetchOperations } from "../operations/operation.api";
@@ -228,7 +227,7 @@ export default function OperationsTableView({
               onChange={setSearch}
             />
             <ButtonProp onClick={() => void handleOpenCreateModal()}>
-              <img src={FlyDroneIconPlus} style={{ width: "32px", height: "32px" }} alt="Nueva" />
+              + Registrar nueva operación
             </ButtonProp>
           </div>
           <ReusableTable

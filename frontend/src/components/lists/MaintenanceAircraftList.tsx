@@ -118,6 +118,7 @@ export default function MaintenanceAircraftList() {
     const { role } = useAuth();
     const isAdmin = role === "ADMIN";
     const [records, setRecords] = useState<MaintenanceRecord[]>([]);
+    const [aircraftData, setAircraftData] = useState<{ manufacturer?: string; serialNumber?: string } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -142,9 +143,20 @@ export default function MaintenanceAircraftList() {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await apiFetch(`/api/maintenance/aircraft/${aircraftId}`);
-            const data = response ? await response.json() : [];
-            setRecords(Array.isArray(data) ? data : []);
+            const [maintenanceResponse, aircraftResponse] = await Promise.all([
+                apiFetch(`/api/maintenance/aircraft/${aircraftId}`),
+                apiFetch(`/api/aircraft/${aircraftId}`)
+            ]);
+            const maintenanceData = maintenanceResponse ? await maintenanceResponse.json() : [];
+            const aircraft = aircraftResponse ? await aircraftResponse.json() : null;
+            
+            setRecords(Array.isArray(maintenanceData) ? maintenanceData : []);
+            if (aircraft) {
+                setAircraftData({
+                    manufacturer: aircraft.aircraftModel?.manufacturer || aircraft.manufacturer,
+                    serialNumber: aircraft.serialNumber
+                });
+            }
         } catch (err) {
             console.error("Error cargando mantenimientos de aeronave", err);
             setRecords([]);
@@ -165,6 +177,7 @@ export default function MaintenanceAircraftList() {
             const response = await apiFetch(`/api/maintenance/${id}`, { method: "DELETE" });
             if (response?.ok) {
                 if (selectedMaintenance?.id === id) setSelectedMaintenance(null);
+                setCurrentPage(1);
                 await fetchRecords();
             }
         } catch (err) {
@@ -181,6 +194,7 @@ export default function MaintenanceAircraftList() {
         setDocumentationMarkedForDeletion(false);
         setUpdateError(null);
         setUpdateLoading(false);
+        setCurrentPage(1);
     };
 
     const handleEditStart = (record: MaintenanceRecord) => {
@@ -361,8 +375,8 @@ export default function MaintenanceAircraftList() {
         { label: "Documentacion", key: "documentation", sortable: false },
     ];
     if (isAdmin) headers.push({ label: "Acciones", key: "actions", sortable: false });
-    const aircraftLabel = records.length > 0 
-        ? `${records[0].aircraftManufacturer ?? "Aeronave"} (S/N: ${records[0].aircraftSerialNumber ?? "N/A"})`.trim() 
+    const aircraftLabel = aircraftData?.manufacturer || (records.length > 0 ? records[0].aircraftManufacturer : null)
+        ? `${(aircraftData?.manufacturer?.trim() || records[0]?.aircraftManufacturer?.trim() || "Aeronave")} (S/N: ${(aircraftData?.serialNumber?.trim() || records[0]?.aircraftSerialNumber?.trim() || "N/A")})`.trim()
         : `Aeronave ${aircraftId ?? ""}`;
 
     return (
@@ -381,11 +395,11 @@ export default function MaintenanceAircraftList() {
                             <img 
                                 src={arroBackIcon} 
                                 alt="Volver" 
-                                style={styles.backIcon} 
+                                style={styles.backIcon}
                             />
                         </button>
                         
-                        <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E" }}>
+                        <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E", paddingLeft: "60px", paddingRight: "60px"}}>
                             Mantenimientos de {aircraftLabel}
                         </h2>
                     
