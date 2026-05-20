@@ -311,7 +311,6 @@ export default function MaintenanceAircraftList() {
             return;
         }
 
-        const zip = new JSZip();
         const nameCount = new Map<string, number>();
 
         const results = await Promise.allSettled(
@@ -333,11 +332,8 @@ export default function MaintenanceAircraftList() {
             const base = hasExt ? baseName.slice(0, extIndex) : baseName;
             const ext = hasExt ? baseName.slice(extIndex) : "";
             const uniqueName = current === 0 ? baseName : `${base}_${current + 1}${ext}`;
-            zip.file(uniqueName, result.value.blob);
+            downloadBlob(result.value.blob, uniqueName);
         });
-
-        const zipBlob = await zip.generateAsync({ type: "blob" });
-        downloadBlob(zipBlob, `Documentos_Mantenimiento_${fileToken}.zip`);
     };
 
     const handleDownloadHistory = async () => {
