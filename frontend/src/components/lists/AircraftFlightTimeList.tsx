@@ -449,7 +449,7 @@ export default function AircraftFlightTimeList() {
                     <div className="position-relative d-flex align-items-center justify-content-center mb-2 pb-3 w-100">
                         <button 
                             className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0" 
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate("/flight-hours")}
                             style={styles.backBtn}
                             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
                             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
