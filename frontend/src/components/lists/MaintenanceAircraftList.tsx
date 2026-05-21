@@ -205,10 +205,6 @@ export default function MaintenanceAircraftList() {
         setUpdateError(null);
     };
 
-    const handleEditingFieldChange = (field: keyof MaintenanceRecord, value: unknown) => {
-        setEditingMaintenance((prev) => prev ? { ...prev, [field]: value } : prev);
-    };
-
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setUpdateError(null);
@@ -380,12 +376,11 @@ export default function MaintenanceAircraftList() {
 
     return (
         <div className="container py-4">
-            <div className="card shadow-sm border-0" style={{ borderRadius: "12px", overflow: "hidden" }}>
-                {/* Header unificado y responsive */}
-                <div className="card-header bg-white border-bottom py-3">
-                    <div className="d-flex align-items-center">
+            <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
+                <div className="card-body">
+                    <div className="position-relative d-flex align-items-center justify-content-center mb-2 pb-3 w-100">
                         <button 
-                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute p-2 me-2" 
+                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0" 
                             onClick={() => navigate("/maintenance")}
                             style={styles.backBtn}
                             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
@@ -393,24 +388,23 @@ export default function MaintenanceAircraftList() {
                             title="Volver"
                         >
                             <img 
-                            src={arroBackIcon} 
-                            alt="Volver" 
-                            style={styles.backIcon} 
+                                src={arroBackIcon} 
+                                alt="Volver" 
+                                style={styles.backIcon}
                             />
                         </button>
-                        <h2 className="h4 mb-0 fw-bold text-dark flex-grow-1">
-                            Mantenimientos de <span className="text-primary">{aircraftLabel}</span>
+                        
+                        <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E", paddingLeft: "60px", paddingRight: "60px"}}>
+                            Mantenimientos de {aircraftLabel}
                         </h2>
+                    
                     </div>
-                </div>
+                    <style>{`.maintenance-row td{background-color:rgba(13,110,253,.04)!important}.maintenance-row td:first-child{border-left:4px solid #0d6efd!important}.maintenance-row td:last-child{border-right:4px solid #0d6efd!important}.text-truncate-custom{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`}</style>
+                    {error && <div className="alert alert-danger">{error}</div>}
 
-                <div className="card-body p-3 p-md-4">
-                    {error && <div className="alert alert-danger rounded-3">{error}</div>}
-
-                    {/* Barra de Herramientas: Buscador + Acciones */}
                     <div className="row g-3 mb-4 align-items-center">
                         <div className="col-12 col-md-6">
-                            <SearchBar value={search} placeholder="Buscar por tipo o comentario..." onChange={setSearch} />
+                        <SearchBar value={search} placeholder="Buscar por tipo o comentario..." onChange={setSearch} />
                         </div>
                         <div className="col-12 col-md-6 d-flex justify-content-md-end gap-2">
                             <button
@@ -435,9 +429,6 @@ export default function MaintenanceAircraftList() {
                             )}
                         </div>
                     </div>
-                    <style>{`.maintenance-row td{background-color:rgba(13,110,253,.04)!important}.maintenance-row td:first-child{border-left:4px solid #0d6efd!important}.maintenance-row td:last-child{border-right:4px solid #0d6efd!important}.text-truncate-custom{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`}</style>
-
-                    {/* --- VISTA ESCRITORIO (TABLA) --- */}
                     <div className="d-none d-md-block">
                         <ReusableTable
                             headers={headers}
@@ -446,41 +437,19 @@ export default function MaintenanceAircraftList() {
                             rowClassName={() => "cursor-pointer maintenance-row"}
                             renderRow={(row: MaintenanceRecord) => (
                                 <>
-                                    <td className="fw-medium">{formatDate(row.maintenanceDate)}</td>
-                                    <td className="text-muted">{formatDate(row.nextMaintenanceDate)}</td>
-                                    <td><span className="badge bg-light text-dark border">{row.reviewType || "N/A"}</span></td>
-                                    <td>{row.monthsRequired ?? "N/A"} m</td>
+                                    <td>{formatDate(row.maintenanceDate)}</td>
+                                    <td>{formatDate(row.nextMaintenanceDate)}</td>
+                                    <td>{row.reviewType || "N/A"}</td>
+                                    <td>{row.monthsRequired ?? "N/A"}</td>
                                     <td>{formatMinutes(row.hoursFlightRequired)}</td>
-                                    <td><div className="text-truncate-custom text-muted small" title={row.comments ?? ""}>{row.comments || "N/A"}</div></td>
-                                    <td>
-                                        {row.documentation?.documentationName || row.documentation?.filePath 
-                                            ? <span className="badge bg-success-subtle text-success">Sí</span> 
-                                            : <span className="badge bg-light text-muted">No</span>}
-                                    </td>
-                                    {isAdmin && <td>
-                                        <div className="d-flex gap-1">
-                                            <button className="btn btn-sm btn-outline-primary" onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </button>
-                                            <button className="btn btn-sm btn-outline-danger" onClick={(e) => handleDelete(e, row.id)}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                <line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>}
-                            </>
-
-                        )} 
-                            emptyText="No hay datos de mantenimiento."
+                                    <td><div className="text-truncate-custom" title={row.comments ?? ""}>{row.comments?.trim() ? row.comments : "N/A"}</div></td>
+                                    <td className="fw-medium">{row.documentation?.documentationName || row.documentation?.filePath ? <span className="text-success">Si</span> : <span className="text-muted">No</span>}</td>
+                                    {isAdmin && <td><div className="d-flex gap-1"><button className="btn btn-sm btn-outline-primary" onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button className="btn btn-sm btn-outline-danger" onClick={(e) => handleDelete(e, row.id)}><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div></td>}
+                                </>
+                            )}
+                            emptyText="No hay datos de mantenimiento para esta aeronave."
                         />
                     </div>
-
                     {/* --- VISTA MÓVIL (CARDS) --- */}
                     <div className="d-md-none">
                         {paginatedRecords.length > 0 ? (
@@ -534,177 +503,148 @@ export default function MaintenanceAircraftList() {
                         )}
                     </div>
 
-                    {/* Paginación común */}
-                    <div className="mt-4 d-flex justify-content-center">
-                        <Pagination 
-                            totalItems={filteredRecords.length} 
-                            currentPage={currentPage} 
-                            itemsPerPage={ITEMS_PER_PAGE} 
-                            onPageChange={setCurrentPage} 
-                        />
-                    </div>
+                    <Pagination totalItems={filteredRecords.length} currentPage={currentPage} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage} />
+
+                    {editingMaintenance && (
+                        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+                            <div className="modal-dialog modal-dialog-centered">
+                                <form className="modal-content border-0 shadow-lg" onSubmit={handleUpdate}>
+                                    <div className="modal-header bg-dark text-white">
+                                        <h5 className="modal-title fw-bold">Modificar mantenimiento</h5>
+                                        <button type="button" className="btn-close btn-close-white" onClick={resetEditState}></button>
+                                    </div>
+                                    <div className="modal-body p-4">
+                                        {updateError && <div className="alert alert-danger py-2 small">{updateError}</div>}
+                                        <div className="row">
+                                            <div className="col-12 mb-3">
+                                                <label className="form-label small fw-bold text-muted">TIPO DE REVISION</label>
+                                                <input type="text" className="form-control" value={editingMaintenance.reviewType || ""} onChange={(e) => setEditingMaintenance({ ...editingMaintenance, reviewType: e.target.value })} required />
+                                            </div>
+                                            <div className="col-6 mb-3">
+                                                <label className="form-label small fw-bold text-muted">FECHA DE MANTENIMIENTO</label>
+                                                <input type="date" className="form-control" value={toInputDateValue(editingMaintenance.maintenanceDate)} onChange={(e) => setEditingMaintenance({ ...editingMaintenance, maintenanceDate: e.target.value })} required />
+                                            </div>
+                                            <div className="col-6 mb-3">
+                                                <label className="form-label small fw-bold text-muted">PROXIMO MANTENIMIENTO</label>
+                                                <input type="date" className="form-control" value={toInputDateValue(editingMaintenance.nextMaintenanceDate)} onChange={(e) => setEditingMaintenance({ ...editingMaintenance, nextMaintenanceDate: e.target.value })} />
+                                            </div>
+                                            <div className="col-12 mb-3">
+                                                <label className="form-label small fw-bold text-muted">MESES REQUERIDOS</label>
+                                                <input type="number" className="form-control" value={editingMaintenance.monthsRequired ?? 0} min={0} onChange={(e) => setEditingMaintenance({ ...editingMaintenance, monthsRequired: Number(e.target.value) })} required />
+                                            </div>
+                                            <div className="col-6 mb-3">
+                                                <label className="form-label small fw-bold text-muted">HORAS DE VUELO</label>
+                                                <input type="number" className="form-control" value={editingHours} min={0} onChange={(e) => setEditingHours(Number(e.target.value))} required />
+                                            </div>
+                                            <div className="col-6 mb-3">
+                                                <label className="form-label small fw-bold text-muted">MINUTOS</label>
+                                                <input type="number" className="form-control" value={editingMinutes} min={0} max={59} onChange={(e) => setEditingMinutes(Math.max(0, Math.min(59, Number(e.target.value))))} required />
+                                            </div>
+                                            <div className="col-12 mb-3">
+                                                <label className="form-label small fw-bold text-muted">COMENTARIOS</label>
+                                                <textarea className="form-control" rows={3} value={editingMaintenance.comments || ""} onChange={(e) => setEditingMaintenance({ ...editingMaintenance, comments: e.target.value })} />
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="form-label small fw-bold text-muted">DOCUMENTACION ADJUNTA</label>
+                                                {editingMaintenance.documentation?.documentationName && (
+                                                    <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded border mb-2">
+                                                        <span className="small text-truncate">{editingMaintenance.documentation.documentationName}</span>
+                                                        <button
+                                                            type="button"
+                                                            className="btn border-0 d-flex align-items-center justify-content-center"
+                                                            style={{ width: "32px", height: "32px", backgroundColor: "#dc3545", color: "#ffffff", borderRadius: "6px", padding: 0, flexShrink: 0 }}
+                                                            onClick={() => {
+                                                                setEditingMaintenance({ ...editingMaintenance, documentation: null });
+                                                                setSelectedFile(null);
+                                                                setDocumentationMarkedForDeletion(true);
+                                                            }}
+                                                        >
+                                                            <span style={{ fontSize: "20px", lineHeight: 1, fontWeight: 700 }}>X</span>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                <div className="input-group">
+                                                    <input type="file" className="form-control" onChange={(e) => { setSelectedFile(e.target.files?.[0] || null); if (e.target.files?.[0]) setDocumentationMarkedForDeletion(false); }} />
+                                                </div>
+                                                {documentationMarkedForDeletion && !selectedFile && <small className="text-danger d-block mt-2">La documentacion actual se eliminara al guardar.</small>}
+                                                {selectedFile && <small className="text-muted d-block mt-2">Se subira: {selectedFile.name}</small>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer bg-light border-0">
+                                        <button type="button" className="btn btn-outline-secondary" onClick={resetEditState}>Cancelar</button>
+                                        <button type="submit" className="btn btn-primary px-4 fw-bold" disabled={updateLoading}>{updateLoading ? "Guardando..." : "Guardar"}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedMaintenance && (
+                        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                            <div className="modal-dialog modal-dialog-centered">
+                                <div className="modal-content border-0">
+                                    <div className="modal-header text-white bg-primary">
+                                        <h5 className="modal-title">Detalle del mantenimiento</h5>
+                                        <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedMaintenance(null)}></button>
+                                    </div>
+                                    <div className="modal-body p-4">
+                                        <div className="row g-3">
+                                            <div className="col-6">
+                                                <label className="text-muted small d-block">Aeronave</label>
+                                                <span className="fw-bold">{selectedMaintenance.aircraftManufacturer} {selectedMaintenance.aircraftModel}</span>
+                                            </div>
+                                            <div className="col-6">
+                                                <label className="text-muted small d-block">N Serie</label>
+                                                <span className="fw-bold">{selectedMaintenance.aircraftSerialNumber}</span>
+                                            </div>
+                                            <div className="col-6">
+                                                <label className="text-muted small d-block">Fecha mantenimiento</label>
+                                                <span>{formatDate(selectedMaintenance.maintenanceDate)}</span>
+                                            </div>
+                                            <div className="col-6">
+                                                <label className="text-muted small d-block">Proximo mantenimiento</label>
+                                                <span>{formatDate(selectedMaintenance.nextMaintenanceDate)}</span>
+                                            </div>
+                                            <hr />
+                                            <div className="col-6">
+                                                <label className="text-muted small d-block">Tipo de revision</label>
+                                                <span className="fw-bold">{selectedMaintenance.reviewType || "N/A"}</span>
+                                            </div>
+                                            <div className="col-6">
+                                                <label className="text-muted small d-block">Meses requeridos</label>
+                                                <span className="fw-bold">{selectedMaintenance.monthsRequired ?? "N/A"}</span>
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="text-muted small d-block">Horas de vuelo</label>
+                                                <span className="fw-bold">{formatMinutes(selectedMaintenance.hoursFlightRequired)}</span>
+                                            </div>
+                                            <div className="col-12">
+                                                <label className="text-muted small d-block">Comentarios</label>
+                                                <p className="bg-light p-2 rounded small" style={{ minHeight: "60px" }}>{selectedMaintenance.comments || "Sin comentarios."}</p>
+                                            </div>
+                                            <div className="col-12 border-top pt-3 mt-2">
+                                                <label className="text-muted small d-block mb-2">Documentacion adjunta</label>
+                                                {selectedMaintenance.documentation?.documentationName || selectedMaintenance.documentation?.filePath ? (
+                                                    <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded border">
+                                                        <span className="small text-truncate me-2">{selectedMaintenance.documentation?.documentationName || "Archivo adjunto"}</span>
+                                                        <button className="btn btn-primary btn-sm" onClick={() => openDocumentationInNewTab(selectedMaintenance.documentation as MaintenanceDocumentation)}>Ver documento</button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted small italic">No hay documentos cargados.</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer border-0">
+                                        <button type="button" className="btn btn-outline-secondary" onClick={() => setSelectedMaintenance(null)}>Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
-
-            {/* --- MODALES DE DETALLE Y EDICIÓN --- */}
-            {selectedMaintenance && (
-                <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onClick={() => setSelectedMaintenance(null)}>
-                    <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-content border-0 shadow rounded-4">
-                            <div className="modal-header border-0 pb-0">
-                                <h5 className="modal-title fw-bold text-dark">Detalle del Mantenimiento</h5>
-                                <button type="button" className="btn-close" onClick={() => setSelectedMaintenance(null)}></button>
-                            </div>
-                            <div className="modal-body py-3">
-                                <div className="mb-3">
-                                    <label className="text-muted small d-block">Tipo de Revisión</label>
-                                    <span className="fw-semibold text-dark">{selectedMaintenance.reviewType || "N/A"}</span>
-                                </div>
-                                <div className="row g-3 mb-3">
-                                    <div className="col-6">
-                                        <label className="text-muted small d-block">Fecha Mantenimiento</label>
-                                        <span className="fw-medium">{formatDate(selectedMaintenance.maintenanceDate)}</span>
-                                    </div>
-                                    <div className="col-6">
-                                        <label className="text-muted small d-block">Próxima Fecha</label>
-                                        <span className="fw-medium text-danger">{formatDate(selectedMaintenance.nextMaintenanceDate)}</span>
-                                    </div>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="text-muted small d-block">Comentarios</label>
-                                    <p className="bg-light p-3 rounded-3 text-muted small mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                                        {selectedMaintenance.comments || "Sin comentarios adicionales."}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="modal-footer border-0 pt-0">
-                                <button type="button" className="btn btn-light rounded-3 w-100" onClick={() => setSelectedMaintenance(null)}>Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {editingMaintenance && (
-                <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onClick={resetEditState}>
-                    <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-content border-0 shadow rounded-4">
-                            <form onSubmit={handleUpdate}>
-                                <div className="modal-header border-0 pb-0">
-                                    <h5 className="modal-title fw-bold text-dark">Editar Mantenimiento</h5>
-                                    <button type="button" className="btn-close" onClick={resetEditState}></button>
-                                </div>
-                                <div className="modal-body py-3">
-                                    {updateError && <div className="alert alert-danger rounded-3">{updateError}</div>}
-
-                                    <div className="row g-3 mb-3">
-                                        <div className="col-12 col-md-6">
-                                            <label className="form-label">Tipo de Revisión</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={editingMaintenance.reviewType ?? ""}
-                                                onChange={(e) => handleEditingFieldChange("reviewType", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="col-6 col-md-3">
-                                            <label className="form-label">Fecha</label>
-                                            <input
-                                                type="date"
-                                                className="form-control"
-                                                value={toInputDateValue(editingMaintenance.maintenanceDate)}
-                                                onChange={(e) => handleEditingFieldChange("maintenanceDate", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="col-6 col-md-3">
-                                            <label className="form-label">Próxima Fecha</label>
-                                            <input
-                                                type="date"
-                                                className="form-control"
-                                                value={toInputDateValue(editingMaintenance.nextMaintenanceDate)}
-                                                onChange={(e) => handleEditingFieldChange("nextMaintenanceDate", e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="row g-3 mb-3">
-                                        <div className="col-6 col-md-3">
-                                            <label className="form-label">Meses</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                className="form-control"
-                                                value={editingMaintenance.monthsRequired ?? 0}
-                                                onChange={(e) => handleEditingFieldChange("monthsRequired", Number(e.target.value))}
-                                            />
-                                        </div>
-                                        <div className="col-6 col-md-3">
-                                            <label className="form-label">Horas</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                className="form-control"
-                                                value={editingHours}
-                                                onChange={(e) => setEditingHours(Number(e.target.value))}
-                                            />
-                                        </div>
-                                        <div className="col-6 col-md-3">
-                                            <label className="form-label">Minutos</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="59"
-                                                className="form-control"
-                                                value={editingMinutes}
-                                                onChange={(e) => setEditingMinutes(Number(e.target.value))}
-                                            />
-                                        </div>
-                                        <div className="col-6 col-md-3">
-                                            <label className="form-label">Documento</label>
-                                            <input
-                                                type="file"
-                                                className="form-control"
-                                                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-3">
-                                        <label className="form-label">Comentarios</label>
-                                        <textarea
-                                            className="form-control"
-                                            rows={3}
-                                            value={editingMaintenance.comments ?? ""}
-                                            onChange={(e) => handleEditingFieldChange("comments", e.target.value)}
-                                        />
-                                    </div>
-
-                                    {editingMaintenance.documentation && (
-                                        <div className="form-check form-switch mb-3">
-                                            <input
-                                                className="form-check-input"
-                                                type="checkbox"
-                                                checked={documentationMarkedForDeletion}
-                                                onChange={(e) => setDocumentationMarkedForDeletion(e.target.checked)}
-                                                id="deleteDocumentationSwitch"
-                                            />
-                                            <label className="form-check-label" htmlFor="deleteDocumentationSwitch">
-                                                Eliminar documentación existente
-                                            </label>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="modal-footer border-0 pt-0">
-                                    <button type="button" className="btn btn-secondary rounded-3" onClick={resetEditState}>Cancelar</button>
-                                    <button type="submit" className="btn btn-primary rounded-3" disabled={updateLoading}>
-                                        {updateLoading ? "Guardando..." : "Guardar cambios"}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
