@@ -399,7 +399,12 @@ export default function MaintenanceAircraftList() {
                         </h2>
                     
                     </div>
-                    <style>{`.maintenance-row td{background-color:rgba(13,110,253,.04)!important}.maintenance-row td:first-child{border-left:4px solid #0d6efd!important}.maintenance-row td:last-child{border-right:4px solid #0d6efd!important}.text-truncate-custom{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`}</style>
+                    <style>{`
+                    .maintenance-row td{background-color:rgba(13,110,253,.04)!important}.maintenance-row 
+                    td:first-child{border-left:4px solid #0d6efd!important}
+                    .maintenance-row td:last-child{border-right:4px solid #0d6efd!important}
+                    .text-truncate-custom{max-width:220px;white-space:nowrap;overflow:hidden;
+                    text-overflow:ellipsis}`}</style>
                     {error && <div className="alert alert-danger">{error}</div>}
 
                     <div className="row g-3 mb-4 align-items-center">
