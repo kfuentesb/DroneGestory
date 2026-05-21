@@ -9,6 +9,7 @@ import { ReusableTable, type TableHeader } from "../commons/props/ReusableTable"
 import { useSearchFilter } from "../commons/hooks/useSearchFilter";
 import ButtonProp from "../commons/props/ButtonProp";
 import { useAuth } from "../commons/hooks/useAuth";
+import { InfoBadge } from "../commons/InfoBadge";
 
 type AircraftModel = {
   id: number;
@@ -112,9 +113,45 @@ export default function AircraftModelList() {
       <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
         <div className="card-body">
 
-          <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-            Plantillas registradas
-          </h2>
+          <div className="mb-4">
+            <style>{`
+              .custom-hover-text {
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+              }
+              .custom-hover-text:hover {
+                color: #212529 !important;
+              }
+            `}</style>
+
+            <div className="d-flex align-items-baseline flex-wrap">
+              
+              <h2 className="card-title fw-bold mb-0 me-3" style={{ color: "#1E1E1E", whiteSpace: "nowrap" }}>
+                Plantillas registradas
+              </h2>
+              
+              <div className="d-block d-md-none align-self-center">
+                <InfoBadge text="Gestione las plantillas de aeronaves para estandarizar los datos técnicos y la documentación comunes a un mismo modelo." />
+              </div>
+
+              <div 
+                className="d-none d-md-block text-truncate flex-grow-1" 
+                style={{ 
+                  maxWidth: "50vw",
+                  minWidth: "350px"
+                }}
+              >
+                <span 
+                  className="text-muted small custom-hover-text"
+                  style={{ fontSize: "0.875rem" }}
+                  title="Gestione las plantillas de aeronaves para estandarizar los datos técnicos y la documentación comunes a un mismo modelo. Utilice plantillas para agilizar el registro de sus aeronaves."
+                >
+                  Gestione las plantillas de aeronaves para estandarizar los datos técnicos y la documentación comunes a un mismo modelo. Utilice plantillas para agilizar el registro de sus aeronaves.
+                </span>
+              </div>
+              
+            </div>
+          </div>
 
           <div className="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
             <SearchBar value={search} placeholder="Buscar por fabricante o modelo..." onChange={setSearch} />
