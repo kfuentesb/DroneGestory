@@ -401,7 +401,35 @@ export default function MaintenanceAircraftList() {
                     </div>
                     <style>{`.maintenance-row td{background-color:rgba(13,110,253,.04)!important}.maintenance-row td:first-child{border-left:4px solid #0d6efd!important}.maintenance-row td:last-child{border-right:4px solid #0d6efd!important}.text-truncate-custom{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`}</style>
                     {error && <div className="alert alert-danger">{error}</div>}
-                    <div className="d-flex justify-content-between align-items-center mb-4">
+
+                    <div className="row g-3 mb-4 align-items-center">
+                        <div className="col-12 col-md-6">
+                        <SearchBar value={search} placeholder="Buscar por tipo o comentario..." onChange={setSearch} />
+                        </div>
+                        <div className="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-dark d-flex align-items-center gap-2 px-3 shadow-sm"
+                                style={{ borderRadius: "8px" }}
+                                onClick={() => void handleDownloadHistory()}
+                                disabled={isPdfDownloading}
+                            >
+                                <img src={downloadIcon} alt="" style={{ width: 16, height: 16, filter: "brightness(0) invert(1)" }} />
+                                <span>{isPdfDownloading ? "Generando..." : "Descargar"}</span>
+                            </button>
+                            
+                            {(role === "ADMIN" || role === "MAINTAINER") && (
+                                <ButtonProp 
+                                    type="button" 
+                                    onClick={() => navigate(`/register-maintenance?aircraftId=${aircraftId}`)}
+                                >
+                                    <span className="d-none d-sm-inline">+ Registrar</span>
+                                    <span className="d-sm-none">+ Nuevo</span>
+                                </ButtonProp>
+                            )}
+                        </div>
+                    </div>
+                    {/* <div className="d-flex justify-content-between align-items-center mb-4">
                         <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
                         <div className="d-flex gap-2">
                             <button
@@ -431,26 +459,81 @@ export default function MaintenanceAircraftList() {
                                 </ButtonProp>
                             )}
                         </div>
+                    </div> */}
+                    <div className="d-none d-md-block">
+                        <ReusableTable
+                            headers={headers}
+                            rows={paginatedRecords}
+                            onRowClick={(row: MaintenanceRecord) => setSelectedMaintenance(row)}
+                            rowClassName={() => "cursor-pointer maintenance-row"}
+                            renderRow={(row: MaintenanceRecord) => (
+                                <>
+                                    <td>{formatDate(row.maintenanceDate)}</td>
+                                    <td>{formatDate(row.nextMaintenanceDate)}</td>
+                                    <td>{row.reviewType || "N/A"}</td>
+                                    <td>{row.monthsRequired ?? "N/A"}</td>
+                                    <td>{formatMinutes(row.hoursFlightRequired)}</td>
+                                    <td><div className="text-truncate-custom" title={row.comments ?? ""}>{row.comments?.trim() ? row.comments : "N/A"}</div></td>
+                                    <td className="fw-medium">{row.documentation?.documentationName || row.documentation?.filePath ? <span className="text-success">Si</span> : <span className="text-muted">No</span>}</td>
+                                    {isAdmin && <td><div className="d-flex gap-1"><button className="btn btn-sm btn-outline-primary" onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button className="btn btn-sm btn-outline-danger" onClick={(e) => handleDelete(e, row.id)}><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div></td>}
+                                </>
+                            )}
+                            emptyText="No hay datos de mantenimiento para esta aeronave."
+                        />
                     </div>
-                    <ReusableTable
-                        headers={headers}
-                        rows={paginatedRecords}
-                        onRowClick={(row: MaintenanceRecord) => setSelectedMaintenance(row)}
-                        rowClassName={() => "cursor-pointer maintenance-row"}
-                        renderRow={(row: MaintenanceRecord) => (
-                            <>
-                                <td>{formatDate(row.maintenanceDate)}</td>
-                                <td>{formatDate(row.nextMaintenanceDate)}</td>
-                                <td>{row.reviewType || "N/A"}</td>
-                                <td>{row.monthsRequired ?? "N/A"}</td>
-                                <td>{formatMinutes(row.hoursFlightRequired)}</td>
-                                <td><div className="text-truncate-custom" title={row.comments ?? ""}>{row.comments?.trim() ? row.comments : "N/A"}</div></td>
-                                <td className="fw-medium">{row.documentation?.documentationName || row.documentation?.filePath ? <span className="text-success">Si</span> : <span className="text-muted">No</span>}</td>
-                                {isAdmin && <td><div className="d-flex gap-1"><button className="btn btn-sm btn-outline-primary" onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button className="btn btn-sm btn-outline-danger" onClick={(e) => handleDelete(e, row.id)}><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div></td>}
-                            </>
+                    {/* --- VISTA MÓVIL (CARDS) --- */}
+                    <div className="d-md-none">
+                        {paginatedRecords.length > 0 ? (
+                            <div className="d-flex flex-column gap-3">
+                                {paginatedRecords.map((row) => (
+                                    <div 
+                                        key={row.id} 
+                                        className="card-mobile bg-white rounded-3 p-3 shadow-sm"
+                                        onClick={() => setSelectedMaintenance(row)}
+                                    >
+                                        <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <span className="small text-muted d-block text-uppercase fw-bold" style={{ fontSize: '0.65rem' }}>Tipo de Revisión</span>
+                                                <span className="fw-bold text-primary">{row.reviewType || "General"}</span>
+                                            </div>
+                                            <span className={`badge ${row.documentation?.filePath ? 'bg-success-subtle text-success' : 'bg-light text-muted'}`}>
+                                                {row.documentation?.filePath ? 'Con Doc' : 'Sin Doc'}
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="row g-2 mb-3">
+                                            <div className="col-6">
+                                                <span className="text-muted small d-block">Fecha</span>
+                                                <span className="small fw-medium">{formatDate(row.maintenanceDate)}</span>
+                                            </div>
+                                            <div className="col-6 text-end">
+                                                <span className="text-muted small d-block">Siguiente</span>
+                                                <span className="small fw-medium text-danger">{formatDate(row.nextMaintenanceDate)}</span>
+                                            </div>
+                                            <div className="col-6">
+                                                <span className="text-muted small d-block">Horas Vuelo</span>
+                                                <span className="small">{formatMinutes(row.hoursFlightRequired)}</span>
+                                            </div>
+                                            <div className="col-6 text-end">
+                                                <span className="text-muted small d-block">Meses</span>
+                                                <span className="small">{row.monthsRequired ?? "0"} meses</span>
+                                            </div>
+                                        </div>
+
+                                        {isAdmin && (
+                                            <div className="d-flex gap-2 border-top pt-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                                                <button className="btn btn-sm btn-outline-primary flex-grow-1" onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}>Editar</button>
+                                                <button className="btn btn-sm btn-outline-danger flex-grow-1" onClick={(e) => { e.stopPropagation(); handleDelete(e, row.id); }}>Eliminar</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-5 text-muted small">No hay datos para mostrar.</div>
                         )}
-                        emptyText="No hay datos de mantenimiento para esta aeronave."
-                    />
+                    </div>
+
                     <Pagination totalItems={filteredRecords.length} currentPage={currentPage} itemsPerPage={ITEMS_PER_PAGE} onPageChange={setCurrentPage} />
 
                     {editingMaintenance && (
