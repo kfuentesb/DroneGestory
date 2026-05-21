@@ -10,19 +10,6 @@ interface ButtonProp {
 }
 
 const ButtonProp: React.FC<ButtonProp> = ({
-    /**
-     * EJEMPLOS PARA REUSO
-        //Añadir aeronave
-            <ButtonProp onClick={() => navigate("/register-aircraft")}>
-            + Añadir aeronave
-        </ButtonProp>
-
-        // Registrar usuario
-        <ButtonProp onClick={registerUser}>Registrar usuario</ButtonProp>
-
-        Volver atrás
-        <ButtonProp onClick={() => navigate(-1)}>Volver</ButtonProp>
-     */
     children,
     onClick,
     className = "btn",
