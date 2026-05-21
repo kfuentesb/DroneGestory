@@ -1,8 +1,57 @@
+import { useRef, useState } from "react";
 import infoIcon from "../../assets/commons/info_white.svg";
 
 export function InfoBadge({ text }: { text: React.ReactNode }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({
+        left: "50%",
+        transform: "translateX(-50%)",
+    });
+    
+    const [arrowLeft, setArrowLeft] = useState<string>("50%");
+
+    const handleMouseEnter = () => {
+        if (!containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const screenCenterX = window.innerWidth / 2;
+
+        if (rect.left < screenCenterX) {
+            setPositionStyle({
+                left: "0",
+                transform: "none",
+            });
+            setArrowLeft("12px");
+        } else {
+            setPositionStyle({
+                right: "0",
+                left: "auto",
+                transform: "none",
+            });
+            setArrowLeft("calc(100% - 24px)");
+        }
+    };
+
     return (
-        <div className="info-tooltip-wrapper ms-2">
+        <div 
+            ref={containerRef} 
+            className="info-tooltip-wrapper ms-2" 
+            style={{ position: "relative", display: "inline-block" }}
+            onMouseEnter={handleMouseEnter}
+        >
+            <style>{`
+                .info-tooltip-text::after {
+                    content: "";
+                    position: absolute;
+                    top: 100%;
+                    left: var(--arrow-left, 50%);
+                    transform: translateX(-50%);
+                    border-width: 6px;
+                    border-style: solid;
+                    border-color: #1e293b transparent transparent transparent;
+                }
+            `}</style>
+
             <img
                 src={infoIcon}
                 alt="info"
@@ -13,7 +62,29 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
                     cursor: "pointer",
                 }}
             />
-            <span className="info-tooltip-text z-3">{text}</span>
+            <span 
+                className="info-tooltip-text z-3 shadow-lg"
+                style={{
+                    position: "absolute",
+                    bottom: "135%", 
+                    width: "240px", 
+                    maxWidth: "calc(100vw - 32px)", 
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    
+                    ...positionStyle,
+                    ["--arrow-left" as any]: arrowLeft,
+
+                    backgroundColor: "#1e293b",
+                    color: "#ffffff",
+                    padding: "10px 14px",
+                    borderRadius: "6px",
+                    fontSize: "0.75rem",
+                    lineHeight: "1.4",
+                }}
+            >
+                {text}
+            </span>
         </div>
     );
 }

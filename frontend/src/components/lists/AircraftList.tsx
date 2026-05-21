@@ -11,6 +11,7 @@ import Select from "react-select";
 import DefaultDroneImage from '../../../public/default-drone.png';
 
 import LoadingSpinner from "../commons/Loading";
+import { InfoBadge } from "../commons/InfoBadge";
 
 type Aircraft = {
   id: number;
@@ -229,6 +230,10 @@ export default function AircraftList() {
     navigate(`/aircrafts/${a.id}`);
   };
 
+  const customText = roles.includes("ADMIN") || roles.includes("MANAGER") 
+    ? "Registre y modifique" 
+    : "Vea";
+
   return (
     <div className="container py-4">
       <div
@@ -236,9 +241,45 @@ export default function AircraftList() {
         style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}
       >
         <div className="card-body">
-          <h2 className="card-title mb-4" style={{ color: "#1E1E1E" }}>
-            Aeronaves registradas
-          </h2>
+          <div className="mb-4">
+            <style>{`
+              .custom-hover-text {
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+              }
+              .custom-hover-text:hover {
+                color: #212529 !important;
+              }
+            `}</style>
+
+            <div className="d-flex align-items-baseline flex-wrap">
+              
+              <h2 className="card-title fw-bold mb-0 me-3" style={{ color: "#1E1E1E", whiteSpace: "nowrap" }}>
+                Aeronaves registradas
+              </h2>
+              
+              <div className="d-block d-md-none align-self-center">
+                <InfoBadge text={`${customText} aeronaves a partir de plantillas existentes y personalice sus datos individuales.`} />
+              </div>
+
+              <div 
+                className="d-none d-md-block text-truncate flex-grow-1" 
+                style={{ 
+                  maxWidth: "50vw",
+                  minWidth: "350px"
+                }}
+              >
+                <span 
+                  className="text-muted small custom-hover-text"
+                  style={{ fontSize: "0.875rem" }}
+                  title={`${customText} aeronaves a partir de plantillas existentes y personalice sus datos individuales.`}
+                >
+                  {customText} aeronaves a partir de plantillas existentes y personalice sus datos individuales.
+                </span>
+              </div>
+              
+            </div>
+          </div>
 
           <div className="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
             <SearchBar value={search} onChange={setSearch} />
