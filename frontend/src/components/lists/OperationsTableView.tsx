@@ -13,6 +13,7 @@ import type { OperationListDTO } from "../operations/operation.types";
 import Pagination from "../commons/props/Pagination";
 import { formatDateTime, getAnexoColorStyle, getOperationStatusStyle } from "../operations/operation.utils";
 import LoadingSpinner from "../commons/Loading";
+import { useFormatDate } from "../commons/hooks/useFormatDate";
 
 type OperationsTableViewProps = {
   title: string;
@@ -70,6 +71,7 @@ export default function OperationsTableView({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const ITEMS_PER_PAGE = 10;
+  const { format } = useFormatDate();
 
   const filteredOperations = useSearchFilter(operations, search, (op) => [
     op.codigo,
@@ -272,7 +274,7 @@ export default function OperationsTableView({
                     </div>
                   </td>
                   <td>{operation.nombreCreador}</td>
-                  <td>{formatDateTime(operation.fechaCreacion)}</td>
+                  <td>{format(operation.fechaCreacion)}</td>
                   <td className="text-center"><AnexoBadge version={operation.anexo4Version} color={operation.anexo4Color} /></td>
                   <td className="text-center"><AnexoBadge version={operation.anexo5Version} color={operation.anexo5Color} /></td>
                   <td className="text-center"><AnexoBadge version={operation.anexo6Version} color={operation.anexo6Color} /></td>
@@ -394,7 +396,7 @@ export default function OperationsTableView({
                       {/* Datos del creador y fecha */}
                       <div className="text-muted small mb-3">
                         <div><strong>Creador:</strong> {operation.nombreCreador}</div>
-                        <div><strong>Fecha:</strong> {formatDateTime(operation.fechaCreacion)}</div>
+                        <div><strong>Fecha:</strong> {format(operation.fechaCreacion)}</div>
                       </div>
 
                       <div className="bg-light p-2 rounded mb-3 border" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>

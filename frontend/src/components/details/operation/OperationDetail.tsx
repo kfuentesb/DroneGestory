@@ -28,6 +28,7 @@ import arroBackIcon from '../../../assets/commons/arrow_back_white.svg';
 import { OperationDetailPdf } from "../../pdf/OperationDetailPdf";
 import { OperationMasterPdf } from "../../pdf/OperationMasterPdf";
 import { buildVersionData } from "../../pdf/buildVersionData";
+import { useFormatDate } from "../../commons/hooks/useFormatDate";
 
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
@@ -75,6 +76,8 @@ export default function OperationDetail() {
   const pdfMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [isSticky, setIsSticky] = useState(false);
+
+  const { format } = useFormatDate();
 
   const loadOperation = async () => {
     if (!id) {
@@ -142,8 +145,8 @@ export default function OperationDetail() {
 
     return [
       { label: "Creador", value: operation.nombreCreador },
-      { label: "Creación", value: formatDateTime(operation.fechaCreacion) },
-      { label: "Actualización", value: formatDateTime(operation.fechaActualizacion) },
+      { label: "Creación", value: format(operation.fechaCreacion) },
+      { label: "Actualización", value: format(operation.fechaActualizacion) },
       { label: "Todos los anexos firmados", value: operation.todosAnexosFirmados ? "Sí" : "No" },
     ];
   }, [operation]);
@@ -582,7 +585,7 @@ export default function OperationDetail() {
                                 </td>
                               )}
                               <td>{version.firmadoPor ?? "-"}</td>
-                              <td>{formatDateTime(version.fechaFirma)}</td>
+                              <td>{format(version.fechaFirma)}</td>
                               <td>
                                 {version.estado === "FIRMADO" ? (
                                   <ButtonProp

@@ -3,6 +3,7 @@ import { Document, Page, Text, View } from "@react-pdf/renderer";
 import type { OperationDetailDTO } from "../operations/operation.types";
 import { formatDateTime } from "../operations/operation.utils";
 import { pdfStyles, textValue } from "./pdfUtils";
+import { useFormatDate } from "../commons/hooks/useFormatDate";
 
 type OperationDetailPdfProps = {
   operation: OperationDetailDTO;
@@ -10,13 +11,17 @@ type OperationDetailPdfProps = {
 };
 
 export function OperationDetailPages({ operation, generatedAt }: OperationDetailPdfProps) {
+  const { format } = useFormatDate();
+
   const resumenCampos = [
     { label: "CONOPS", value: textValue(operation.conops) },
     { label: "Creador", value: textValue(operation.nombreCreador) },
-    { label: "Fecha creación", value: formatDateTime(operation.fechaCreacion) },
-    { label: "Última actualización", value: formatDateTime(operation.fechaActualizacion) },
+    { label: "Fecha creación", value: format(operation.fechaCreacion) },
+    { label: "Última actualización", value: format(operation.fechaActualizacion) },
     { label: "Estado operación", value: textValue(operation.estadoOperacion) },
   ];
+
+    
 
   return (
     <Page size="A4" style={pdfStyles.page} wrap>
@@ -85,7 +90,7 @@ export function OperationDetailPages({ operation, generatedAt }: OperationDetail
                           case "firmadoPor":
                             return version.firmadoPor ?? "-";
                           case "fechaFirma":
-                            return formatDateTime(version.fechaFirma);
+                            return format(version.fechaFirma);
                           default:
                             return "-";
                         }
