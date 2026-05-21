@@ -454,7 +454,7 @@ export default function Dashboard() {
                   </>
                 ) : null}
                 <StatCard icon="bi-person-badge-fill" value={summary.totalPilotos} label="Pilotos Activos" color="red" delay={100} />
-                <StatCard icon="bi-clipboard-check" value={summary.totalModelos} label="Plantillas disponibles" color="blue" delay={150} />
+                {isPrivilegedUser ? (<StatCard icon="bi-clipboard-check" value={summary.totalModelos} label="Plantillas disponibles" color="blue" delay={150} />) : null}
                 <StatCard icon="bi-airplane-engines-fill" value={summary.totalDrones} label="Drones en Flota" color="blue" delay={200} />
                 <StatCard icon="bi-file-earmark-text-fill" value={summary.totalDocumentacionAeronaves} label="Docs. Aeronaves" color="blue" delay={250} />
                 <StatCard icon="bi-clipboard-check" value={summary.totalOperaciones} label="Operaciones Totales" color="purple" delay={300} />
