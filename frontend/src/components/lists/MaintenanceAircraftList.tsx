@@ -429,37 +429,6 @@ export default function MaintenanceAircraftList() {
                             )}
                         </div>
                     </div>
-                    {/* <div className="d-flex justify-content-between align-items-center mb-4">
-                        <SearchBar value={search} placeholder="Buscar..." onChange={setSearch} />
-                        <div className="d-flex gap-2">
-                            <button
-                                type="button"
-                                className="btn btn-sm px-3 px-md-3 py-2 d-inline-flex align-items-center justify-content-center gap-2"
-                                style={{ backgroundColor: "#111827", color: "#FFFFFF", fontWeight: "bold" }}
-                                onClick={() => void handleDownloadHistory()}
-                                disabled={isPdfDownloading}
-                            >
-                                <img
-                                    src={downloadIcon}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="d-inline d-md-none"
-                                    style={{ width: 16, height: 16 }}
-                                />
-                                <span className="d-none d-md-inline">
-                                    {isPdfDownloading ? "Generando..." : "Descargar historial"}
-                                </span>
-                            </button>
-                            {(role === "ADMIN" || role === "MAINTAINER") && (
-                                <ButtonProp 
-                                    type="button" 
-                                    onClick={() => navigate(`/register-maintenance?aircraftId=${aircraftId}`)}
-                                >
-                                    + Registrar mantenimiento
-                                </ButtonProp>
-                            )}
-                        </div>
-                    </div> */}
                     <div className="d-none d-md-block">
                         <ReusableTable
                             headers={headers}
