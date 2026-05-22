@@ -270,3 +270,26 @@ npm run build
 
 * OPERACIONES <br>
 -CORREGIR HORAS <br>
+
+
+## DESCARGAR DATOS DE PRODUCCIÓN DE FORMA MANUAL
+
+```bash
+# dentro del servidor mueva los datos a un nuevo documento .sql
+docker exec -t dronegestory-db pg_dump -U admin aeronaves_db > sqlfile.sql
+
+# en local, descargue tanto los datos .sql como la carpeta /uploads
+scp root@213.165.78.203:/home/DroneGestory/sqlfile.sql "ruta"
+scp -r root@213.165.78.203:/home/DroneGestory/backend/uploads "ruta"
+
+# IMPORTANTE !! ESTO BORRA TODOS LOS DATOS QUE SE TIENEN EN LOCAL
+docker exec -i aeronaves_db psql -U admin -d aeronaves_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+docker exec -i aeronaves_db psql -U admin -d aeronaves_db < sqlfile.sql
+
+Get-ChildItem -Path ".\uploads" -Recurse -Directory | Where-Object {$_.Name -match ','} | ForEach-Object {$newName =$_.Name -replace ',', ' 'Rename-Item -Path $_.FullName -NewName $newName}
+
+```
+
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+.\backup_dronegestory.ps1
