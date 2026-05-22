@@ -45,6 +45,9 @@ build/
 /backend/uploads/*
 /backend/AuditLog.txt
 
+## FRONTEND
+/frontend/.env.production
+
 
 ##DATABASE
 

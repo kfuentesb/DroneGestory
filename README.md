@@ -24,11 +24,16 @@ Mira aquí [Project Screenshots](screenshots.md) para ver capturas de la aplicac
 sudo apt update
 sudo apt install -y openjdk-21-jdk
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+## esto solo para que no tengas que refrescar el terminal y salga node -v
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+###
 nvm install 24.14.0
 nvm alias default 24.14.0
 nvm use default
 rm -rf node_modules package-lock.json
-npm install
+cd frontend
+npm i
 ```
 ---
 
@@ -41,6 +46,16 @@ Para que el sistema funcione correctamente, es necesario crear un archivo **`.en
 ```properties
 # --- Configuración de API (Local) ---
 VITE_API_BASE_URL=http://localhost:8080
+
+# --- Base de Datos (Replicadas aquí para Docker Compose) ---
+DB_USER=admin
+DB_PASSWORD=admin123
+DB_NAME=aeronaves_db
+
+# --- Configuración de Email (Gmail) ---
+# Requiere "Contraseña de Aplicación" de Google
+EMAIL_USER=tu-correo@gmail.com
+EMAIL_PASSWORD=tu-clave-de-aplicacion
 ```
 
 #### 1. Plantilla para el Backend (`backend/.env`)
