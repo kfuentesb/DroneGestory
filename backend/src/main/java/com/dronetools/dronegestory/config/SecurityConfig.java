@@ -128,10 +128,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-            frontendUrl, 
-            "https://quizzical-morse.213-165-78-203.plesk.page"
-        ));
+        
+        // Separamos por comas las URLs que se definen en el .env
+        List<String> allowedOrigins = java.util.Arrays.stream(frontendUrl.split(","))
+                .map(String::trim)
+                .collect(java.util.stream.Collectors.toList());
+
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -140,7 +143,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
+    
     @Bean
     public MultipartFilter multipartFilter() {
         MultipartFilter multipartFilter = new MultipartFilter();

@@ -1,6 +1,6 @@
 app:
     frontend:
-        url: http://localhost:5173
+        url: ${APP_FRONTEND_URL:http://localhost:5173}
 
 server:
     max-http-request-header-size: 16KB
