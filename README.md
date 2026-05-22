@@ -9,12 +9,27 @@ Mira aquí [Project Screenshots](screenshots.md) para ver capturas de la aplicac
 
 ## Requisitos Previos
 
+### Producción
+* **Docker & Docker Compose**
+* **Git** 
+
+### Desarrollo
 * **Docker & Docker Compose** (Instalado y funcionando)
 * **Node.js** (v24.14.0+)
 * **npm** (v11.9.0+)
-* **Java OpenJDK 17/21**
+* **Java OpenJDK 21**
 * **Maven**
 
+```bash
+sudo apt update
+sudo apt install -y openjdk-21-jdk
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+nvm install 24.14.0
+nvm alias default 24.14.0
+nvm use default
+rm -rf node_modules package-lock.json
+npm install
+```
 ---
 
 ## Configuración del Entorno (`.env`)
@@ -24,12 +39,12 @@ Para que el sistema funcione correctamente, es necesario crear un archivo **`.en
 ### Plantilla del archivo `.env`
 
 ```properties
-# --- Configuración de Red ---
-SERVER_IP=YOUR_SERVER_IP
-VITE_API_BASE_URL=http://${SERVER_IP}:8080
+# --- Configuración de API (Local) ---
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
-### Plantilla del archivo `backend/.env`
+#### 1. Plantilla para el Backend (`backend/.env`)
+Crea un archivo llamado `.env` en la raíz de la carpeta del backend.
 
 ```properties
 # --- Base de Datos ---
@@ -45,14 +60,17 @@ JWT_EXPIRATION_MS=86400000
 # --- Configuración de Email (Gmail) ---
 # Requiere "Contraseña de Aplicación" de Google
 EMAIL_USER=tu-correo@gmail.com
-EMAIL_PASSWORD=tu-clave
-```
+EMAIL_PASSWORD=tu-clave-de-aplicacion
+
+# --- Configuración de Red ---
+# Lista de URLs del Frontend permitidas por CORS (separadas por comas)
+APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:5173)
 ---
 
 ### Plantilla del archivo `frontend/.env.production`
 ```
-# --- Configuración de url ---
-VITE_API_BASE_URL=https://quizzical-morse.213-165-78-203.plesk.page
+# --- Configuración de API (Producción) ---
+VITE_API_BASE_URL=[https://quizzical-morse.213-165-78-203.plesk.page](https://quizzical-morse.213-165-78-203.plesk.page)
 ```
 
 ## Despliegue en Servidor (Producción)
@@ -116,7 +134,7 @@ Levanta solo el contenedor de PostgreSQL:
 
 ```bash
 cd backend
-docker compose up -d db
+docker compose up -d postgres
 
 ```
 
@@ -271,25 +289,29 @@ npm run build
 * OPERACIONES <br>
 -CORREGIR HORAS <br>
 
+## BACKUPS
 
-## DESCARGAR DATOS DE PRODUCCIÓN DE FORMA MANUAL
+### DESCARGAR DATOS DE PRODUCCIÓN DE FORMA MANUAL (WSL)
 
+(Recuerda dar permisos a los bash para que se puedan ejecutar)
 ```bash
-# dentro del servidor mueva los datos a un nuevo documento .sql
-docker exec -t dronegestory-db pg_dump -U admin aeronaves_db > sqlfile.sql
-
-# en local, descargue tanto los datos .sql como la carpeta /uploads
-scp root@213.165.78.203:/home/DroneGestory/sqlfile.sql "ruta"
-scp -r root@213.165.78.203:/home/DroneGestory/backend/uploads "ruta"
-
-# IMPORTANTE !! ESTO BORRA TODOS LOS DATOS QUE SE TIENEN EN LOCAL
-docker exec -i aeronaves_db psql -U admin -d aeronaves_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-
-docker exec -i aeronaves_db psql -U admin -d aeronaves_db < sqlfile.sql
-
-Get-ChildItem -Path ".\uploads" -Recurse -Directory | Where-Object {$_.Name -match ','} | ForEach-Object {$newName =$_.Name -replace ',', ' 'Rename-Item -Path $_.FullName -NewName $newName}
-
+chmod +x nombre_del_bash.sh
 ```
 
+Para bajarte una copia de todos los datos en producción:
+```bash
+download_backup.sh
+```
+
+Para subir los datos del backup al un proyecto local:
+```bash
+restore_local_with_backup.sh
+```
+
+### DESCARGAR DATOS DE PRODUCCIÓN DE FORMA MANUAL (Windows 10/11)
+
+Aún no funciona
+```bash
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 .\backup_dronegestory.ps1
+```

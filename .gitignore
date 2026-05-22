@@ -48,4 +48,5 @@ build/
 
 ##DATABASE
 
-sqlfile.sql
+databasecopy.sql
+database-pre-backup/*
