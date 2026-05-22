@@ -2,6 +2,7 @@ import { useState } from "react";
 import { apiFetch } from "../../api";
 import { useAuth } from "../commons/hooks/useAuth";
 import { useUserTimezone } from "../commons/hooks/useUserTimezone";
+import { InfoBadge } from "../commons/InfoBadge";
 
 const TIMEZONES = [
   { label: "UTC-12:00 — Línea internacional de fecha oeste", value: "-12:00" },
@@ -89,8 +90,11 @@ export default function Settings() {
             style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}
           >
             <div>
-              <div className="fw-semibold">Zona horaria</div>
-              <small className="text-muted">Selecciona la zona horaria de tu país para mostrar las fechas correctamente.</small>
+              <div className="fw-semibold">
+                Zona horaria
+                <InfoBadge text="Cada vez que se inicie sesión, se establecerá por defecto la zona horaria UTC+01:00." />
+              </div>
+              <small className="text-muted">Seleccione su zona horaria para ajustar el uso horario de la web.</small>
             </div>
             <div style={{ minWidth: "260px", maxWidth: "100%" }}>
               <select
