@@ -39,6 +39,12 @@ function LogIn() {
 
         login(data.id, data.username, cleanRoles); 
         setToken(data.token);
+        // Inicializar UTC
+        const savedTz = localStorage.getItem("userTimezone");
+        if (savedTz) {
+          localStorage.setItem("userTimezone", "+01:00");
+        }
+        
         navigate("/home");
       }
     } catch (err: any) {
