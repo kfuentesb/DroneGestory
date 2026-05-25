@@ -1,10 +1,11 @@
 // Primero comprobamos si hay una URL definida en el entorno (producción/servidor).
 // Si no existe, recurrimos a las comprobaciones locales de desarrollo.
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL 
-    ? import.meta.env.VITE_API_BASE_URL
-    : (import.meta.env.DEV 
-        ? 'http://localhost:8080' 
-        : `http://${import.meta.env.VITE_SERVER_IP || 'localhost'}:8080`);
+export const API_BASE_URL = import.meta.env.DEV 
+    ? 'http://localhost:8080' // En local siempre usa localhost
+    : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'); // En producción usa la variable de entorno
+
+console.log("Modo:", import.meta.env.DEV ? "Desarrollo" : "Producción");
+console.log("API Base URL:", API_BASE_URL);
 
 function resolveUrl(path: string) {
     if (path.startsWith("http://") || path.startsWith("https://")) {
