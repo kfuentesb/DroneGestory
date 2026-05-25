@@ -526,10 +526,10 @@ export default function FormAircraft({ initialValues: propsInitialValues, initia
         Number(formValues.impactEnergy) < 0 ||
         Number(formValues.impactEnergy) > LIMITS.MAX_ENERGY,
       maxAutonomy:
-        formValues.maxAutonomy === 0 ||
-        isNaN(Number(formValues.maxAutonomy)) ||
+        formValues.maxAutonomy !== 0 &&
+        (isNaN(Number(formValues.maxAutonomy)) ||
         Number(formValues.maxAutonomy) < 0 ||
-        Number(formValues.maxAutonomy) > LIMITS.MAX_AUTONOMY,
+        Number(formValues.maxAutonomy) > LIMITS.MAX_AUTONOMY),
       flightMinutes:
         !Number.isInteger(Number(formValues.flightMinutes)) ||
         Number(formValues.flightMinutes) < 0,
@@ -581,8 +581,9 @@ export default function FormAircraft({ initialValues: propsInitialValues, initia
       if (formValues.maxSpeed) formData.append("maxSpeed", String(formValues.maxSpeed));
       if (formValues.config) formData.append("config", formValues.config?.value ?? "");
       if (formValues.impactEnergy) formData.append("impactEnergy", String(formValues.impactEnergy));
-      if (formValues.maxAutonomy) formData.append("maxAutonomy", String(formValues.maxAutonomy));
-      formData.append("flightMinutes", String(formValues.flightMinutes));
+      if (formValues.maxAutonomy && formValues.maxAutonomy !== 0) {
+        formData.append("maxAutonomy", String(formValues.maxAutonomy));
+      }
       if (formValues.hasCamera) formData.append("hasCamera", formValues.hasCamera?.value === "true" ? "true" : "false");
       if (formValues.powerSource) formData.append("powerSource", formValues.powerSource.value);
       if (formValues.powerSourceNonElectric) formData.append("powerSourceType", formValues.powerSourceNonElectric.value);
