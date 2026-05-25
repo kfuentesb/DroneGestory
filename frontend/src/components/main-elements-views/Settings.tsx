@@ -91,7 +91,7 @@ export default function Settings() {
             <div>
               <div className="fw-semibold">
                 Zona horaria
-                <InfoBadge text="Cada vez que se inicie sesión, se establecerá por defecto la zona horaria UTC+01:00." />
+                <InfoBadge text="El servidor se encuentra en UTC-02:00. Cada vez que se inicie sesión, se establecerá por defecto la zona horaria UTC+02:00." />
               </div>
               <small className="text-muted">Seleccione su zona horaria para ajustar el uso horario de la web.</small>
             </div>
