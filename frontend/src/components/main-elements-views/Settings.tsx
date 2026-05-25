@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from "../../api";
 import { useAuth } from "../commons/hooks/useAuth";
 import { useUserTimezone } from "../commons/hooks/useUserTimezone";
@@ -40,6 +40,42 @@ export default function Settings() {
   const [showEmptyAlert, setShowEmptyAlert] = useState(false);
   const { timezone, saveTimezone, isLoading: tzLoading } = useUserTimezone();
 
+  // Estado para controlar el tiempo real de los relojes
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Helper para formatear cualquier hora basada en un string de offset "±HH:MM"
+  const formatTimeWithOffset = (offsetString: string) => {
+    if (!offsetString) return "--:--:--";
+    try {
+      const sign = offsetString.startsWith("-") ? -1 : 1;
+      const [hoursPart, minutesPart] = offsetString.replace(/[+-]/, "").split(":");
+      const offsetMinutes = sign * (parseInt(hoursPart, 10) * 60 + parseInt(minutesPart, 10));
+
+      // Obtener hora UTC actual y sumarle el offset elegido
+      const utc = currentTime.getTime() + currentTime.getTimezoneOffset() * 60000;
+      const targetDate = new Date(utc + offsetMinutes * 60000);
+
+      return targetDate.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    } catch (e) {
+      return "--:--:--";
+    }
+  };
+
+  // Según el log de tu backend: "TimeZone Europe/Madrid" (UTC+01:00 en invierno o UTC+02:00 en verano)
+  // Ajustamos un hardcode dinámico a UTC+01:00 para la sincronía estricta del servidor reflejada en el badge.
+  const userTimeStr = formatTimeWithOffset(timezone);
+
   const handleDownloadAuditLog = async () => {
     setIsDownloading(true);
     setError(null);
@@ -50,7 +86,6 @@ export default function Settings() {
 
       const blob = await res.blob();
 
-      // Si el archivo está vacío mostramos modal bonito
       if (blob.size === 0) {
         setShowEmptyAlert(true);
         return;
@@ -66,7 +101,7 @@ export default function Settings() {
       window.URL.revokeObjectURL(url);
 
     } catch (err: any) {
-      if (err.status = 404) {
+      if (err.status === 404) {
         setShowEmptyAlert(true);
       } else {
         setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.txt");
@@ -85,32 +120,47 @@ export default function Settings() {
 
           {/* Card: Zona horaria */}
           <div
-            className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded mb-3"
+            className="p-3 rounded mb-3"
             style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}
           >
-            <div>
-              <div className="fw-semibold">
-                Zona horaria
-                <InfoBadge text="El servidor se encuentra en UTC-02:00. Cada vez que se inicie sesión, se establecerá por defecto la zona horaria UTC+02:00." />
+            {/* Fila superior: Texto y Selector */}
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+              <div>
+                <div className="fw-semibold">
+                  Zona horaria{" "}
+                  <InfoBadge text="El servidor se encuentra en UTC+01:00. Cada vez que se inicie sesión, se establecerá por defecto la zona horaria UTC+02:00." />
+                </div>
+                <small className="text-muted">Seleccione su zona horaria para ajustar el uso horario de la web.</small>
               </div>
-              <small className="text-muted">Seleccione su zona horaria para ajustar el uso horario de la web.</small>
+              <div style={{ minWidth: "260px", maxWidth: "100%" }}>
+                <select
+                  className="form-select form-select-sm"
+                  value={timezone}
+                  disabled={tzLoading}
+                  onChange={(e) => saveTimezone(e.target.value)}
+                >
+                  {TIMEZONES.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div style={{ minWidth: "260px", maxWidth: "100%" }}>
-              <select
-                className="form-select form-select-sm"
-                value={timezone}
-                disabled={tzLoading}
-                onChange={(e) => saveTimezone(e.target.value)}
-              >
-                {TIMEZONES.map((tz) => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
+
+            <div 
+              className="p-3 rounded text-center" 
+              style={{ backgroundColor: "#F3F4F6", border: "1px solid #E5E7EB" }}
+            >
+              <div className="text-uppercase text-success fw-bold small mb-1">
+                Hora Ajustada ({timezone || "Seleccionada"})
+              </div>
+              <h4 className="font-monospace mb-0 fw-bold text-success">{userTimeStr}</h4>
             </div>
           </div>
+          
 
+          {/* Sección del Audit Log */}
           {canDownloadAuditLog ? (
             <div
               className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded"
@@ -143,7 +193,7 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Modal bonito Bootstrap - se muestra solo si showEmptyAlert es true */}
+      {/* Modal bonito Bootstrap */}
       {showEmptyAlert && (
         <div
           className="modal fade show d-block"
