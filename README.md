@@ -83,6 +83,7 @@ APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:
 ---
 
 ### Plantilla del archivo `frontend/.env.production`
+> **!IMPORTANTE¡**
 ```
 # --- Configuración de API (Producción) ---
 VITE_API_BASE_URL=[https://quizzical-morse.213-165-78-203.plesk.page](https://quizzical-morse.213-165-78-203.plesk.page)
@@ -93,6 +94,7 @@ VITE_API_BASE_URL=[https://quizzical-morse.213-165-78-203.plesk.page](https://qu
 > **¡IMPORTANTE (Optimización de Recursos)!**
 > Para evitar caídas del servidor por falta de memoria RAM (OOM Killer) debido a las altas demandas de Vite/Node al minificar código, **el frontend NO se compila en el servidor**.
 > La compilación se realiza en la máquina local (desarrollo) y se sube la carpeta `dist/` resultante al repositorio. El servidor únicamente levantará un contenedor Nginx ultraligero que servirá dichos archivos estáticos.
+> Es importante hacer npm run build con VITE_API_BASE_URL asignado en /frontend/.env para que se cargue bien el valor en el servidor
 
 ### 1. Clonar o pullear última versión el repositorio
 
