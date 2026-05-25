@@ -907,7 +907,7 @@ export default function FormAircraft({ initialValues: propsInitialValues, initia
                       setFormValues({ 
                         ...formValues, 
                         powerSource: val,
-                        powerSourceNonElectric: val?.value === 'NON_ELECTRIC' ? formValues.powerSourceNonElectric : null 
+                        powerSourceNonElectric: val?.value === 'Non_Electric' ? formValues.powerSourceNonElectric : null 
                       });
                     }}
                     isClearable
@@ -922,7 +922,7 @@ export default function FormAircraft({ initialValues: propsInitialValues, initia
                     value={formValues.powerSourceNonElectric}
                     onChange={(val) => setFormValues({ ...formValues, powerSourceNonElectric: val })}
                     isClearable
-                    isDisabled={formValues.powerSource?.value !== 'NON_ELECTRIC'}
+                    isDisabled={formValues.powerSource?.value !== 'Non_Electric'}
                   />
                 </div>
             </div>
