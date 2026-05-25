@@ -1,8 +1,10 @@
-// Si estamos en desarrollo (local), usa localhost:8080
-// Si estamos en producción (servidor), usa la variable del .env
-export const API_BASE_URL = import.meta.env.DEV 
-    ? 'http://localhost:8080' 
-    : (import.meta.env.VITE_API_BASE_URL || `http://${import.meta.env.VITE_SERVER_IP}:8080`);
+// Primero comprobamos si hay una URL definida en el entorno (producción/servidor).
+// Si no existe, recurrimos a las comprobaciones locales de desarrollo.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL 
+    ? import.meta.env.VITE_API_BASE_URL
+    : (import.meta.env.DEV 
+        ? 'http://localhost:8080' 
+        : `http://${import.meta.env.VITE_SERVER_IP || 'localhost'}:8080`);
 
 function resolveUrl(path: string) {
     if (path.startsWith("http://") || path.startsWith("https://")) {
