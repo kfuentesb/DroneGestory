@@ -6,6 +6,9 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
         ? 'http://localhost:8080' 
         : `http://${import.meta.env.VITE_SERVER_IP || 'localhost'}:8080`);
 
+console.log("API Base URL:", API_BASE_URL);
+console.log("Environment Variables:", import.meta.env.VITE_API_BASE_URL);
+
 function resolveUrl(path: string) {
     if (path.startsWith("http://") || path.startsWith("https://")) {
         return path;
