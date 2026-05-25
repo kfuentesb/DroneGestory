@@ -42,7 +42,7 @@ function LogIn() {
         // Inicializar UTC
         const savedTz = localStorage.getItem("userTimezone");
         if (savedTz) {
-          localStorage.setItem("userTimezone", "+01:00");
+          localStorage.setItem("userTimezone", "+04:00");
         }
         
         navigate("/home");
