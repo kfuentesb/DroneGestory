@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 const STORAGE_KEY = "userTimezone";
 
 export function useUserTimezone() {
-  const [timezone, setTimezone] = useState<string>("+01:00");
+  const [timezone, setTimezone] = useState<string>("+02:00");
   const [isLoading, setIsLoading] = useState(true);
 
   // Cargar de localStorage al montar
