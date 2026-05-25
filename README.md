@@ -296,17 +296,13 @@ npm run build
 
 ---
 
-© 2026 DroneGestory Team
-
-## TODO
-* AIRCRAFT <br>
-
-* OPERACIONES <br>
--CORREGIR HORAS <br>
-
 ## BACKUPS
 
 ### DESCARGAR DATOS DE PRODUCCIÓN DE FORMA MANUAL (WSL)
+
+IMPORTANTE
+> Actualmente solo permite la bajada de backup y la subida del backup a un proyecto en local, no se puede
+> subir a producción un back-up. 
 
 (Recuerda dar permisos a los bash para que se puedan ejecutar)
 ```bash
@@ -330,3 +326,7 @@ Aún no funciona
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 .\backup_dronegestory.ps1
 ```
+
+
+
+© 2026 DroneGestory Team
