@@ -34,7 +34,7 @@ export default function DetailEdit({
     const normalize = (v: string) =>
         v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
-    const isNonElectricPowerSource = values.powerSource === "NON_ELECTRIC";
+    const isNonElectricPowerSource = values.powerSource === "Non_Electric";
 
     const BOOLEAN_FIELD_KEYS = new Set([
         "state",
@@ -222,7 +222,7 @@ export default function DetailEdit({
                                     else finalValue = null;
                                 }
                                 const nextValues = { ...values, [field.key]: finalValue };
-                                if (field.key === "powerSource" && finalValue !== "NON_ELECTRIC") {
+                                if (field.key === "powerSource" && finalValue !== "Non_Electric") {
                                     nextValues.powerSourceType = null;
                                 }
                                 setValues(nextValues);

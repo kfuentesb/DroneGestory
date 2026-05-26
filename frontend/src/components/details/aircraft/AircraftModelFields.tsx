@@ -1,5 +1,5 @@
 import type { FieldConfig } from "../FieldConfig";
-import { LIMITS, aircraftClasses, configs } from "../../../global-const/aircraft-const";
+import { LIMITS, aircraftClasses, configs, powerSources} from "../../../global-const/aircraft-const";
 
 export const aircraftModelFields: FieldConfig[] = [
   {
@@ -141,10 +141,7 @@ export const aircraftModelFields: FieldConfig[] = [
     label: "Fuente de potencia (valor por defecto)",
     key: "powerSourceDefault",
     type: "select",
-    options: [
-      { value: "Electric", label: "Eléctrico" },
-      { value: "Non_Electric", label: "No Eléctrico" }
-    ],
+    options: powerSources,
     format: (v: any) => {
       const normalized = String(v).toUpperCase().trim();
       if (normalized === "ELECTRIC" || normalized === "ELÉCTRICO") return "Eléctrico";

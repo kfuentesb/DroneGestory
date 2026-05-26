@@ -1,14 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom"
-import {API_BASE_URL} from "../../../api";
+import { API_BASE_URL } from "../../../api";
 import DetailsComponent from "../DetailsComponent"
-
-import { aircraftFields } from "./AircraftFields"
+import { getAircraftFields } from "./AircraftFields"
 import { useAuth } from "../../commons/hooks/useAuth";
 
-
-// esta es la vista que ve un admin cuando selecciona un dron de la lista de drones
 export default function AircraftDetail() {
-
     const { id } = useParams()
     const navigate = useNavigate()
 
@@ -18,20 +14,15 @@ export default function AircraftDetail() {
     const handleDelete = async () => {
         try {
             const token = localStorage.getItem("token");
-            console.log("Token found:", token ? "Yes" : "No");
             const headers: HeadersInit = {};
             if (token) {
                 headers["Authorization"] = `Bearer ${token}`;
-                console.log("Authorization header set");
             }
 
-            console.log("Deleting aircraft with ID:", id);
             const response = await fetch(`${API_BASE_URL}/api/aircraft/${id}`, {
                 method: "DELETE",
                 headers
             })
-            
-            console.log("DELETE response status:", response.status);
             
             if (response.status === 403) {
                 alert("No tienes permisos para eliminar este dron. Verifica tu rol de usuario.");
@@ -61,17 +52,13 @@ export default function AircraftDetail() {
         }
     }
 
-    const validateForm = (values:any) => {
-
-        const errors: Record<string,string|null> = {}
-
-        aircraftFields.forEach(field => {
-
+    const validateForm = (values: any) => {
+        const errors: Record<string, string | null> = {}
+        getAircraftFields().forEach(field => {
             if (field.validate) {
                 const valid = field.validate(values[field.key])
                 errors[field.key] = valid ? null : field.error || "Campo inválido"
             }
-
         })
 
         return errors
@@ -84,13 +71,11 @@ export default function AircraftDetail() {
             imageEndpoint={`${API_BASE_URL}/api/aircraft/images`}
             defaultImage="drone"
             entityType="aircraft"
-            fields={aircraftFields}
+            fields={getAircraftFields()}
 
             allowEdit={canManage}
             allowDelete={canManage}
-
             onDelete={handleDelete}
-
             validateForm={validateForm}
             certificateSectionType="aircraft"
             clearableFieldKeys={["fechaFab", "powerSourceType"]}
