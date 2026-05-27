@@ -15,9 +15,10 @@ export default function FormFlightTime() {
     const [aircraft, setAircraft] = useState<{ id: number; manufacturer?: string; model?: string; serialNumber?: string } | null>(null);
     const [operations, setOperations] = useState<Array<{ idOperacion: number; codigo: string }>>([]);
     
+    // Estados para controlar el flujo de operación (Arreglados)
+    const [isNewOperation, setIsNewOperation] = useState(false);
     const [selectedOperationCodigo, setSelectedOperationCodigo] = useState("");
     const [newOperationCodigo, setNewOperationCodigo] = useState("");
-    const [isNewOperation, setIsNewOperation] = useState(false);
 
     const [flightDate, setFlightDate] = useState("");
     const [hours, setHours] = useState<number>(1);
@@ -60,34 +61,22 @@ export default function FormFlightTime() {
             return;
         }
 
-        if (!flightDate) {
-            setError("Por favor ingrese la fecha de vuelo.");
+        // Determinar qué código enviar basándonos en la pestaña activa
+        const finalOperationCodigo = isNewOperation ? newOperationCodigo : selectedOperationCodigo;
+
+        // NUEVA VALIDACIÓN: Verifica que se haya seleccionado o escrito una operación
+        if (!finalOperationCodigo || !finalOperationCodigo.trim()) {
+            setError(
+                isNewOperation 
+                    ? "Por favor, introduzca el código de la nueva operación." 
+                    : "Por favor, seleccione una operación existente."
+            );
             return;
         }
 
-        let finalOperationCodigo = "";
-
-        if (isNewOperation) {
-            finalOperationCodigo = newOperationCodigo.trim();
-            if (!finalOperationCodigo) {
-                setError("Por favor escriba el código de la nueva operación.");
-                return;
-            }
-        } else {
-            finalOperationCodigo = selectedOperationCodigo.trim();
-            if (!finalOperationCodigo) {
-                setError("Por favor seleccione una operación existente.");
-                return;
-            }
-
-            const operationExists = operations.some(
-                (op) => op.codigo?.toLowerCase() === finalOperationCodigo.toLowerCase()
-            );
-
-            if (!operationExists) {
-                setError("La operación escrita no existe. Por favor, elija una opción válida de la lista desplegable.");
-                return;
-            }
+        if (!flightDate) {
+            setError("Por favor ingrese la fecha de vuelo.");
+            return;
         }
 
         let durationMinutes = hours * 60 + minutes;
@@ -104,7 +93,7 @@ export default function FormFlightTime() {
         try {
             const payload = {
                 aircraftId: Number(aircraftId),
-                operationCodigo: finalOperationCodigo,
+                operationCodigo: finalOperationCodigo.trim(),
                 flightDate,
                 durationMinutes,
                 comments: comments.trim() || null,
@@ -153,9 +142,10 @@ export default function FormFlightTime() {
                 <div className="card-body p-4">
                     
                     {/* Encabezado con título e información de aeronave */}
-                    <div className="card-body"> 
+                    <div className="position-relative mb-4"> 
                         <button
-                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-3"
+                            type="button"
+                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0 top-50 translate-middle-y"
                             onClick={() => navigate(-1)}
                             style={styles.backBtn}
                             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
@@ -168,12 +158,14 @@ export default function FormFlightTime() {
                                 style={styles.backIcon}
                             />
                         </button> 
-                        <h2 className="card-title mb-1" style={{ color: "#1E1E1E" }}>Registrar horas de vuelo</h2>
-                        {aircraft && (
-                            <p className="mb-0 text-muted">
-                                {aircraft.manufacturer ?? ""} {aircraft.model ?? ""} · {aircraft.serialNumber ?? ""}
-                            </p>
-                        )} 
+                        <div className="ps-5">
+                            <h2 className="card-title mb-1" style={{ color: "#1E1E1E" }}>Registrar horas de vuelo</h2>
+                            {aircraft && (
+                                <p className="mb-0 text-muted">
+                                    {aircraft.manufacturer ?? ""} {aircraft.model ?? ""} · {aircraft.serialNumber ?? ""}
+                                </p>
+                            )} 
+                        </div>
                     </div>
 
                     {!aircraft && !error && (
@@ -346,9 +338,9 @@ export default function FormFlightTime() {
                                             </div>
                                         </div>
 
-                                        {/* Visualizador de tiempo total dinámico estilo UI moderna */}
-                                        <div className="col-12 col-md-3 text-end-md">
-                                            <span className={`badge px-3 py-2 fs-6 fw-bold ${isNegative ? 'text-danger' : 'text-success'}`} style={{ borderRadius: "8px" }}>
+                                        {/* Visualizador de tiempo total dinámico */}
+                                        <div className="col-12 col-md-3 text-end">
+                                            <span className={`badge px-3 py-2 fs-6 fw-bold ${isNegative ? 'text-danger bg-danger-subtle' : 'text-success bg-success-subtle'}`} style={{ borderRadius: "8px" }}>
                                                 Total: {isNegative ? "-" : ""}{hours}h {minutes}m
                                             </span>
                                         </div>

@@ -36,6 +36,9 @@ public class FlightTime {
     @JoinColumn(name = "operation_id", nullable = true)
     private Operation operation;
 
+    @Column(name = "operation_code", length = 50)
+    private String operationCode;
+
     @Column(name = "flight_date", nullable = false)
     private Date flightDate;
 
