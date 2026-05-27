@@ -28,7 +28,6 @@ export default function ComboBox({
   const [options, setOptions] = useState<Option[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Cargar opciones al montar el componente o usar las opciones proporcionadas
   useEffect(() => {
     if (optionsProp) {
       setOptions(optionsProp);
@@ -72,15 +71,19 @@ export default function ComboBox({
   const customStyles = {
     control: (provided: any) => ({
       ...provided,
-      backgroundColor: "#F3F4F6",
+      backgroundColor: "#ffffff", 
       borderColor: error ? "red" : "#D1D5DB",
       borderRadius: "0.375rem",
+      "&:hover": {
+        borderColor: error ? "red" : "#9CA3AF",
+        backgroundColor: "#ffffff",
+      },
     }),
   };
 
   return (
     <div className="mb-0">
-      <label className="form-label">{label}</label>
+      {label && <label className="form-label">{label}</label>}
       <CreatableSelect
         isClearable
         isDisabled={isLoading}

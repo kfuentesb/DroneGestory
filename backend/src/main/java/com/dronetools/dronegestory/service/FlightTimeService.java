@@ -5,12 +5,15 @@ import com.dronetools.dronegestory.dto.FlightTimeRequestDTO;
 import com.dronetools.dronegestory.model.Aircraft;
 import com.dronetools.dronegestory.model.FlightTime;
 import com.dronetools.dronegestory.model.Operation;
+import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.FlightTimeRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.dronetools.dronegestory.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,7 @@ public class FlightTimeService {
     private final FlightTimeRepository flightTimeRepository;
     private final AircraftRepository aircraftRepository;
     private final OperationRepository operationRepository;
+    private final UserRepository userRepository;
     private final FlightTimeDocumentationService flightTimeDocumentationService;
     private final AuditLogService auditLogService;
 
@@ -37,12 +41,14 @@ public class FlightTimeService {
             FlightTimeRepository flightTimeRepository,
             AircraftRepository aircraftRepository,
             OperationRepository operationRepository,
+            UserRepository userRepository,
             FlightTimeDocumentationService flightTimeDocumentationService,
             AuditLogService auditLogService
     ) {
         this.flightTimeRepository = flightTimeRepository;
         this.aircraftRepository = aircraftRepository;
         this.operationRepository = operationRepository;
+        this.userRepository = userRepository;
         this.flightTimeDocumentationService = flightTimeDocumentationService;
         this.auditLogService = auditLogService;
     }
@@ -141,7 +147,7 @@ public class FlightTimeService {
 
             create(new FlightTimeRequestDTO(
                     aircraftId,
-                    operation.getIdOperacion(),
+                    operation.getCodigo(),
                     LocalDate.from(anexo7.getFechaOp()),
                     anexo7.getTiempoVueloMinutos(),
                     buildAutomaticComment(anexo7)
@@ -165,7 +171,6 @@ public class FlightTimeService {
     }
 
     private String buildAutomaticComment(Anexo7 anexo7) {
-        LocalDate fechaOp = LocalDate.from(anexo7.getFechaOp());
         return "Registro automático desde Anexo 7: +" + anexo7.getTiempoVueloMinutos()
                 + " min";
     }
@@ -183,16 +188,18 @@ public class FlightTimeService {
         if (request.durationMinutes() == 0) {
             throw new IllegalArgumentException("durationMinutes must not be zero");
         }
+        if (request.operationCodigo() == null || request.operationCodigo().trim().isEmpty()) {
+            throw new IllegalArgumentException("operationCodigo is required");
+        }
         // Permitimos duraciones negativas para ajustes de tiempo.
 
         Aircraft aircraft = aircraftRepository.findById(request.aircraftId())
                 .orElseThrow(() -> new EntityNotFoundException("Aircraft not found with id: " + request.aircraftId()));
 
-        Operation operation = null;
-        if (request.operationId() != null) {
-            operation = operationRepository.findById(request.operationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Operation not found with id: " + request.operationId()));
-        }
+        // Find or create operation by codigo
+        String codigoTrimmed = request.operationCodigo().trim();
+        Operation operation = operationRepository.findByCodigo(codigoTrimmed)
+                .orElseGet(() -> createOperationWithCodigo(codigoTrimmed));
 
         flightTime.setAircraft(aircraft);
         flightTime.setAircraftManufacturer(aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getManufacturer());
@@ -205,6 +212,29 @@ public class FlightTimeService {
         if (flightTime.getTotalFlightTimeMinutes() == null) {
             flightTime.setTotalFlightTimeMinutes(0);
         }
+    }
+
+    private Operation createOperationWithCodigo(String codigo) {
+        // Get current user from security context
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User creador = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found"));
+
+        Operation newOperation = new Operation();
+        newOperation.setCodigo(codigo);
+        newOperation.setCreador(creador);
+        
+        // Parse year and correlativo from codigo if possible, otherwise use defaults
+        // Format expected: O-YYYY-NNN or similar
+        int currentYear = LocalDate.now().getYear();
+        newOperation.setAnioCorrelativo(currentYear);
+        
+        // Extract correlativo from codigo or use a generated one
+        Integer nextCorrelativo = operationRepository.findMaxCorrelativoByAnio(currentYear);
+        nextCorrelativo = (nextCorrelativo == null ? 0 : nextCorrelativo) + 1;
+        newOperation.setCorrelativoAnual(nextCorrelativo);
+
+        return operationRepository.save(newOperation);
     }
 
     private void validateAnexo7FlightTimeData(Anexo7 anexo7, String operationCode) {

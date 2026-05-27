@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { apiFetch } from "../../api";
 import LoadingSpinner from "../commons/Loading";
+import ComboBox from "../commons/ComboBox";
 import Pagination from "../commons/props/Pagination";
 import SearchBar from "../commons/props/SearchBar";
 import ButtonProp from "../commons/props/ButtonProp";
@@ -155,6 +156,7 @@ export default function AircraftFlightTimeList() {
     const [updateLoading, setUpdateLoading] = useState(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
     const [updateSuccess, setUpdateSuccess] = useState(false);
+    const [operations, setOperations] = useState<Array<{ idOperacion: number; codigo: string }>>([]);
     const [isPdfDownloading, setIsPdfDownloading] = useState(false);
 
     const ITEMS_PER_PAGE = 10;
@@ -228,7 +230,7 @@ export default function AircraftFlightTimeList() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     aircraftId: editingFlight.aircraftId,
-                    operationId: editingFlight.operationId ?? null,
+                    operationCodigo: editingFlight.operationReference ?? null,
                     flightDate:
                         typeof editingFlight.flightDate === "string"
                             ? editingFlight.flightDate
@@ -409,9 +411,6 @@ export default function AircraftFlightTimeList() {
     );
 
     const headers: TableHeader[] = [
-        { label: "Fabricante", key: "aircraftManufacturer", sortable: true },
-        { label: "Modelo", key: "aircraftModel", sortable: true },
-        { label: "N Serie", key: "aircraftSerialNumber", sortable: true },
         { label: "Ref. Operación", key: "operationReference", sortable: true },
         { label: "Fecha vuelo", key: "flightDate", sortable: true },
         { label: "Duración", key: "durationMinutes", sortable: true },
@@ -431,11 +430,11 @@ export default function AircraftFlightTimeList() {
     const aircraftManufacturer = aircraftData?.manufacturer || (aircraftId && flightTimes.length > 0 
         ? flightTimes[0].aircraftManufacturer 
         : null);
-
+    const aircraftModel = flightTimes.length > 0 ? flightTimes[0].aircraftModel : null;
     const heading = aircraftId 
         ? aircraftManufacturer 
-            ? `Horas de vuelo de la aeronave: ${aircraftManufacturer} (S/N: ${aircraftSerial || "N/A"})`
-            : `Horas de vuelo de la aeronave: ${aircraftSerial || aircraftId}`
+            ? `${aircraftManufacturer} ${aircraftModel} (S/N: ${aircraftSerial || "N/A"})`
+            : `${aircraftSerial || aircraftId}`
         : "Registro de Horas de Vuelo";
 
     return (
@@ -457,10 +456,14 @@ export default function AircraftFlightTimeList() {
                                 style={styles.backIcon} 
                             />
                         </button>
-                        
-                        <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E", paddingLeft: "60px", paddingRight: "60px" }}>
-                            {heading}
-                        </h2>
+                        <div className="d-flex flex-column align-items-center justify-content-center p-4">
+                            <span className="text-uppercase tracking-wider text-muted small fw-semibold mb-2" style={{ letterSpacing: "1px" }}>
+                                Horas de vuelo de la aeronave
+                            </span>
+                            <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E", paddingLeft: "60px", paddingRight: "60px" }}>
+                                {heading}
+                            </h2> 
+                        </div>
                     </div>
                     <style>{`
                         .flight-time-positive-row td {
@@ -552,9 +555,6 @@ export default function AircraftFlightTimeList() {
                             }}
                             renderRow={(row: FlightTimeDetail) => (
                                 <>
-                                    <td>{row.aircraftManufacturer ?? "N/A"}</td>
-                                    <td>{row.aircraftModel ?? "N/A"}</td>
-                                    <td>{row.aircraftSerialNumber ?? "N/A"}</td>
                                     <td>{row.operationReference ?? "N/A"}</td>
                                     <td>{formatDate(row.flightDate)}</td>
                                     <td>{formatMinutes(row.durationMinutes)}</td>
@@ -617,11 +617,8 @@ export default function AircraftFlightTimeList() {
                                         >
                                             <div className="d-flex justify-content-between align-items-start mb-2">
                                                 <div>
-                                                    <h6 className="mb-0 fw-bold text-dark">
-                                                        {row.aircraftManufacturer ?? "N/A"} {row.aircraftModel ?? ""}
-                                                    </h6>
                                                     <small className="text-muted d-block mt-0.5">
-                                                        S/N: {row.aircraftSerialNumber ?? "N/A"} | Ref: {row.operationReference ?? "N/A"}
+                                                        Ref: {row.operationReference ?? "N/A"}
                                                     </small>
                                                 </div>
                                                 <span className="badge bg-light text-dark border small fw-normal">
@@ -724,6 +721,16 @@ export default function AircraftFlightTimeList() {
                                                 <label className="form-label small fw-bold text-muted">DURACIÓN (MINUTOS)</label>
                                                 <input type="number" className="form-control" value={editingFlight.durationMinutes} onChange={(e) => setEditingFlight({...editingFlight, durationMinutes: parseInt(e.target.value)})} required />
                                             </div>
+                                            <div className="col-12 mb-3">
+                                                <ComboBox
+                                                    label="Ref. operación"
+                                                    value={editingFlight.operationReference ?? ""}
+                                                    onChange={(val) => setEditingFlight({ ...editingFlight, operationReference: val })}
+                                                    options={operations.map((op) => ({ value: op.codigo, label: op.codigo }))}
+                                                    placeholder="Seleccione una operación o escriba una nueva"
+                                                />
+                                            </div>
+
                                             <div className="col-12 mb-3">
                                                 <label className="form-label small fw-bold text-muted">COMENTARIOS</label>
                                                 <textarea className="form-control" rows={3} value={editingFlight.comments || ""} onChange={(e) => setEditingFlight({...editingFlight, comments: e.target.value})} />

@@ -105,4 +105,6 @@ public interface OperationRepository extends JpaRepository<Operation, Long> {
         WHERE o.idOperacion = :id
     """)
     Optional<Operation> findByIdWithAnexos8(@Param("id") Long id);
+
+    Optional<Operation> findByCodigo(String codigo);
 }
