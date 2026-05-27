@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 @RequestMapping("/api/audit-log")
 public class AuditLogController {
 
-    private static final Path AUDIT_LOG_PATH = Paths.get("AuditLog.txt").toAbsolutePath().normalize();
+    private static final Path AUDIT_LOG_PATH = Paths.get("AuditLog.csv").toAbsolutePath().normalize();
 
     @GetMapping("/download")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

@@ -159,6 +159,10 @@ export default function AircraftFlightTimeList() {
     const [operations, setOperations] = useState<Array<{ idOperacion: number; codigo: string }>>([]);
     const [isPdfDownloading, setIsPdfDownloading] = useState(false);
 
+    const [isNewOperation, setIsNewOperation] = useState(false);
+    const [selectedOperationCodigo, setSelectedOperationCodigo] = useState("");
+    const [newOperationCodigo, setNewOperationCodigo] = useState("");
+
     const ITEMS_PER_PAGE = 10;
 
     const fetchFlights = useCallback(async () => {
@@ -193,6 +197,22 @@ export default function AircraftFlightTimeList() {
     useEffect(() => {
         fetchFlights();
     }, [fetchFlights]);
+
+    // Load operations list for selection in edit modal
+    useEffect(() => {
+        const fetchOperations = async () => {
+            try {
+                const res = await apiFetch(`/api/operations`);
+                if (!res) return setOperations([]);
+                const data = await res.json();
+                setOperations(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error("Error cargando operaciones", err);
+                setOperations([]);
+            }
+        };
+        fetchOperations();
+    }, []);
 
     const handleDelete = async (e: React.MouseEvent, id: number) => {
         e.stopPropagation();
@@ -289,6 +309,9 @@ export default function AircraftFlightTimeList() {
         setDocumentationMarkedForDeletion(false);
         setUpdateError(null);
         setUpdateSuccess(false);
+        // If the current operationReference is not in the operations list, switch to "Escribir nueva"
+        const exists = operations.some((op) => op.codigo === flight.operationReference);
+        setIsNewOperation(!exists);
     };
 
     if (isLoading) {
@@ -722,13 +745,64 @@ export default function AircraftFlightTimeList() {
                                                 <input type="number" className="form-control" value={editingFlight.durationMinutes} onChange={(e) => setEditingFlight({...editingFlight, durationMinutes: parseInt(e.target.value)})} required />
                                             </div>
                                             <div className="col-12 mb-3">
-                                                <ComboBox
-                                                    label="Ref. operación"
-                                                    value={editingFlight.operationReference ?? ""}
-                                                    onChange={(val) => setEditingFlight({ ...editingFlight, operationReference: val })}
-                                                    options={operations.map((op) => ({ value: op.codigo, label: op.codigo }))}
-                                                    placeholder="Seleccione una operación o escriba una nueva"
-                                                />
+                                                <label className="form-label fw-bold text-secondary small text-uppercase tracking-wider mb-3">
+                                                    Ref. operación
+                                                </label>
+                                                
+                                                <div className="btn-group w-100 mb-3" role="group" aria-label="Modo de operación">
+                                                    <input
+                                                        type="radio"
+                                                        className="btn-check"
+                                                        name="operationMode"
+                                                        id="modeExisting"
+                                                        autoComplete="off"
+                                                        checked={!isNewOperation}
+                                                        onChange={() => setIsNewOperation(false)}
+                                                    />
+                                                    <label className="btn btn-outline-success py-2 fw-medium" htmlFor="modeExisting">
+                                                        Seleccionar existente
+                                                    </label>
+
+                                                    <input
+                                                        type="radio"
+                                                        className="btn-check"
+                                                        name="operationMode"
+                                                        id="modeNew"
+                                                        autoComplete="off"
+                                                        checked={isNewOperation}
+                                                        onChange={() => setIsNewOperation(true)}
+                                                    />
+                                                    <label className="btn btn-outline-success py-2 fw-medium" htmlFor="modeNew">
+                                                        Escribir nueva
+                                                    </label>
+                                                </div>
+                                                <div className="mt-2">
+                                                    {!isNewOperation ? (
+                                                        <ComboBox
+                                                            label=""
+                                                            value={editingFlight.operationReference ?? ""}
+                                                            onChange={(val) => setEditingFlight({ ...editingFlight, operationReference: val })}
+                                                            options={operations.map((op) => ({ value: op.codigo, label: op.codigo }))}
+                                                            placeholder="Buscar o seleccionar operación..."
+                                                        />
+                                                    ) : (
+                                                        <div className="form-floating">
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                id="floatingNewOp"
+                                                                placeholder="Ej. OP-2026-X"
+                                                                value={editingFlight.operationReference ?? newOperationCodigo}
+                                                                onChange={(e) => {
+                                                                    setNewOperationCodigo(e.target.value);
+                                                                    setEditingFlight({ ...editingFlight, operationReference: e.target.value });
+                                                                }}
+                                                                style={{ borderRadius: "8px" }}
+                                                            />
+                                                            <label htmlFor="floatingNewOp" className="text-muted">Código de la operación</label>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="col-12 mb-3">
