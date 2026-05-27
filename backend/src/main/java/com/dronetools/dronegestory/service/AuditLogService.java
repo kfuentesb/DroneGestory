@@ -12,7 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 @Service
@@ -20,7 +21,8 @@ public class AuditLogService {
 
     private static final Logger log = LoggerFactory.getLogger(AuditLogService.class);
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final Path AUDIT_LOG_PATH = Paths.get("AuditLog.txt").toAbsolutePath().normalize();
+    private static final DateTimeFormatter HOUR_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final Path AUDIT_LOG_PATH = Paths.get("AuditLog.csv").toAbsolutePath().normalize();
 
     public void record(String functionName, Long entityId, String details) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -28,20 +30,31 @@ public class AuditLogService {
                 ? authentication.getName()
                 : "system";
 
-        String line = String.format(
-                "%s | usuario=%s | funcion=%s | id=%s | detalle=%s%n",
-                LocalDateTime.now().format(TIMESTAMP_FORMAT),
-                username,
-                functionName,
-                entityId,
-                sanitize(details)
-        );
+        // Use UTC time for the timestamp and the hour field
+        ZonedDateTime nowUtc = ZonedDateTime.now(ZoneOffset.UTC);
+        String timestamp = nowUtc.format(TIMESTAMP_FORMAT);
+        String utcHourField = "UTC-0|" + nowUtc.format(HOUR_FORMAT);
+
+        String userEsc = csvEscape(username);
+        String funcEsc = csvEscape(functionName);
+        String idEsc = csvEscape(entityId == null ? "" : entityId.toString());
+        String detailsEsc = csvEscape(sanitize(details));
+        String tsEsc = csvEscape(timestamp);
+        String hourEsc = csvEscape(utcHourField);
+
+        String line = String.format("%s,%s,%s,%s,%s,%s%n", tsEsc, hourEsc, userEsc, funcEsc, idEsc, detailsEsc);
 
         try {
             Path parent = AUDIT_LOG_PATH.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
+            // If file doesn't exist, write a header first
+            if (Files.notExists(AUDIT_LOG_PATH)) {
+                String header = "timestamp,utc_hour,usuario,funcion,id,detalle" + System.lineSeparator();
+                Files.writeString(AUDIT_LOG_PATH, header, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+            }
+
             Files.writeString(
                     AUDIT_LOG_PATH,
                     line,
@@ -59,5 +72,11 @@ public class AuditLogService {
             return "-";
         }
         return details.replace(System.lineSeparator(), " ").replace("\n", " ").replace("\r", " ").trim();
+    }
+
+    private String csvEscape(String s) {
+        if (s == null) return "\"\"";
+        String escaped = s.replace("\"", "\"\"");
+        return "\"" + escaped + "\"";
     }
 }

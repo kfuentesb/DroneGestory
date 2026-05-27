@@ -72,8 +72,6 @@ export default function Settings() {
     }
   };
 
-  // Según el log de tu backend: "TimeZone Europe/Madrid" (UTC+01:00 en invierno o UTC+02:00 en verano)
-  // Ajustamos un hardcode dinámico a UTC+01:00 para la sincronía estricta del servidor reflejada en el badge.
   const userTimeStr = formatTimeWithOffset(timezone);
 
   const handleDownloadAuditLog = async () => {
@@ -94,7 +92,7 @@ export default function Settings() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "AuditLog.txt";
+      link.download = "AuditLog.csv";
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -104,7 +102,7 @@ export default function Settings() {
       if (err.status === 404) {
         setShowEmptyAlert(true);
       } else {
-        setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.txt");
+        setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.csv");
       }
     } finally {
       setIsDownloading(false);
@@ -168,7 +166,7 @@ export default function Settings() {
             >
               <div>
                 <div className="fw-semibold">Descargar Audit Log</div>
-                <small className="text-muted">Descarga el fichero `AuditLog.txt` con el historial registrado.</small>
+                <small className="text-muted">Descarga el fichero `AuditLog.csv` con el historial registrado.</small>
               </div>
               <button
                 type="button"
@@ -176,7 +174,7 @@ export default function Settings() {
                 onClick={handleDownloadAuditLog}
                 disabled={isDownloading}
               >
-                {isDownloading ? "Descargando..." : "Descargar AuditLog.txt"}
+                {isDownloading ? "Descargando..." : "Descargar AuditLog.csv"}
               </button>
             </div>
           ) : (

@@ -10,6 +10,8 @@ import com.dronetools.dronegestory.model.anexos.Anexo7;
 import com.dronetools.dronegestory.repository.AircraftRepository;
 import com.dronetools.dronegestory.repository.FlightTimeRepository;
 import com.dronetools.dronegestory.repository.OperationRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 @Transactional
@@ -79,17 +84,20 @@ public class FlightTimeService {
     public Optional<FlightTimeDTO> update(Long id, FlightTimeRequestDTO request) {
         return flightTimeRepository.findById(id).map(existing -> {
             Long previousAircraftId = existing.getAircraft().getAircraftId();
-            String before = summarize(existing);
+            String jsonBefore = summarize(existing);
             applyRequest(existing, request);
             FlightTime saved = flightTimeRepository.save(existing);
             recalculateAircraftFlightTimes(saved.getAircraft().getAircraftId());
             if (!previousAircraftId.equals(saved.getAircraft().getAircraftId())) {
                 recalculateAircraftFlightTimes(previousAircraftId);
             }
+            String jsonAfter = summarize(saved);
+            String finalDetailsJson = String.format("{\"before\": %s, \"after\": %s}", jsonBefore, jsonAfter);
+
             auditLogService.record(
                     "MODIFICAR_HORAS_VUELO",
                     saved.getFlightTimeId(),
-                    "antes={" + before + "} despues={" + summarize(saved) + "}"
+                    finalDetailsJson
             );
             return toDto(saved);
         });
@@ -182,13 +190,10 @@ public class FlightTimeService {
         if (request.durationMinutes() == 0) {
             throw new IllegalArgumentException("durationMinutes must not be zero");
         }
-        // Permitimos duraciones negativas para ajustes de tiempo.
 
         Aircraft aircraft = aircraftRepository.findById(request.aircraftId())
                 .orElseThrow(() -> new EntityNotFoundException("Aircraft not found with id: " + request.aircraftId()));
 
-        // If operationCodigo provided and exists, link; otherwise leave operation null
-        // Store the operation code in the column regardless (for display when operation record doesn't exist)
         Operation operation = null;
         String operationCodeValue = null;
         if (request.operationCodigo() != null && !request.operationCodigo().trim().isEmpty()) {
@@ -280,18 +285,33 @@ public class FlightTimeService {
         return minutes / 60.0;
     }
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private String summarize(FlightTime flightTime) {
-        return "flightTimeId=" + flightTime.getFlightTimeId()
-                + ", aircraftId=" + (flightTime.getAircraft() == null ? null : flightTime.getAircraft().getAircraftId())
-                + ", aircraftManufacturer=" + flightTime.getAircraftManufacturer()
-                + ", aircraftModel=" + flightTime.getAircraftModel()
-                + ", aircraftSerialNumber=" + flightTime.getAircraftSerialNumber()
-                + ", operationId=" + (flightTime.getOperation() == null ? null : flightTime.getOperation().getIdOperacion())
-                + ", operationCode=" + (flightTime.getOperation() == null ? null : flightTime.getOperation().getCodigo())
-                + ", storedOperationCode=" + flightTime.getOperationCode()
-                + ", flightDate=" + (flightTime.getFlightDate() == null ? null : flightTime.getFlightDate().toLocalDate())
-                + ", durationMinutes=" + flightTime.getDurationMinutes()
-                + ", totalFlightTimeMinutes=" + flightTime.getTotalFlightTimeMinutes()
-                + ", comments=" + flightTime.getComments();
+        try {
+            String operationCodeDisplay = "";
+            if (flightTime.getOperation() != null && flightTime.getOperation().getCodigo() != null) {
+                operationCodeDisplay = flightTime.getOperation().getCodigo();
+            } else if (flightTime.getOperationCode() != null) {
+                operationCodeDisplay = flightTime.getOperationCode();
+            }
+
+            Map<String, Object> summary = Map.ofEntries(
+                Map.entry("flightTimeId", flightTime.getFlightTimeId() != null ? flightTime.getFlightTimeId() : ""),
+                Map.entry("aircraftId", flightTime.getAircraft() != null ? flightTime.getAircraft().getAircraftId() : ""),
+                Map.entry("aircraftManufacturer", flightTime.getAircraftManufacturer() != null ? flightTime.getAircraftManufacturer() : ""),
+                Map.entry("aircraftModel", flightTime.getAircraftModel() != null ? flightTime.getAircraftModel() : ""),
+                Map.entry("aircraftSerialNumber", flightTime.getAircraftSerialNumber() != null ? flightTime.getAircraftSerialNumber() : ""),
+                Map.entry("operationId", flightTime.getOperation() != null ? flightTime.getOperation().getIdOperacion() : ""),
+                Map.entry("operationCode", operationCodeDisplay), // <-- Fixed to handle non-existing strings safely
+                Map.entry("flightDate", flightTime.getFlightDate() != null ? flightTime.getFlightDate().toString() : ""),
+                Map.entry("durationMinutes", flightTime.getDurationMinutes() != null ? flightTime.getDurationMinutes() : 0),
+                Map.entry("totalFlightTimeMinutes", flightTime.getTotalFlightTimeMinutes() != null ? flightTime.getTotalFlightTimeMinutes() : 0),
+                Map.entry("comments", flightTime.getComments() != null ? flightTime.getComments() : "")
+            );
+            return objectMapper.writeValueAsString(summary);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
     }
 }
