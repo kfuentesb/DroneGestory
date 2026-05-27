@@ -11,4 +11,5 @@ export type FieldConfig = {
     // parse?: (v: any) => any; // Parsea el valor desde el input
     readOnly?: boolean;
     isMulti?: boolean;
+    disabled?: boolean;
 };

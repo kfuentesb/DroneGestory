@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public record FlightTimeRequestDTO(
         Long aircraftId,
-        Long operationId,
+        String operationCodigo,
         LocalDate flightDate,
         Integer durationMinutes,
         String comments

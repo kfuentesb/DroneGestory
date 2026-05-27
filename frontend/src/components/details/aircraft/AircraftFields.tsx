@@ -7,7 +7,7 @@ const formatMonthYear = (value: string) => {
   return `${month}/${year}`;
 };
 
-export const aircraftFields: FieldConfig[] = [
+export const getAircraftFields = (): FieldConfig[] => [
   {
     label: "Fabricante",
     key: "manufacturer",

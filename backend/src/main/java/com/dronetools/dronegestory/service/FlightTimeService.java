@@ -141,7 +141,7 @@ public class FlightTimeService {
 
             create(new FlightTimeRequestDTO(
                     aircraftId,
-                    operation.getIdOperacion(),
+                    operation.getCodigo(),
                     LocalDate.from(anexo7.getFechaOp()),
                     anexo7.getTiempoVueloMinutos(),
                     buildAutomaticComment(anexo7)
@@ -165,7 +165,6 @@ public class FlightTimeService {
     }
 
     private String buildAutomaticComment(Anexo7 anexo7) {
-        LocalDate fechaOp = LocalDate.from(anexo7.getFechaOp());
         return "Registro automático desde Anexo 7: +" + anexo7.getTiempoVueloMinutos()
                 + " min";
     }
@@ -188,10 +187,14 @@ public class FlightTimeService {
         Aircraft aircraft = aircraftRepository.findById(request.aircraftId())
                 .orElseThrow(() -> new EntityNotFoundException("Aircraft not found with id: " + request.aircraftId()));
 
+        // If operationCodigo provided and exists, link; otherwise leave operation null
+        // Store the operation code in the column regardless (for display when operation record doesn't exist)
         Operation operation = null;
-        if (request.operationId() != null) {
-            operation = operationRepository.findById(request.operationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Operation not found with id: " + request.operationId()));
+        String operationCodeValue = null;
+        if (request.operationCodigo() != null && !request.operationCodigo().trim().isEmpty()) {
+            String codigoTrimmed = request.operationCodigo().trim();
+            operationCodeValue = codigoTrimmed;
+            operation = operationRepository.findByCodigo(codigoTrimmed).orElse(null);
         }
 
         flightTime.setAircraft(aircraft);
@@ -199,6 +202,7 @@ public class FlightTimeService {
         flightTime.setAircraftModel(aircraft.getAircraftModel() == null ? null : aircraft.getAircraftModel().getModel());
         flightTime.setAircraftSerialNumber(aircraft.getSerialNumber());
         flightTime.setOperation(operation);
+        flightTime.setOperationCode(operationCodeValue);
         flightTime.setFlightDate(Date.valueOf(request.flightDate()));
         flightTime.setDurationMinutes(request.durationMinutes());
         flightTime.setComments(normalizeComments(request.comments()));
@@ -206,6 +210,8 @@ public class FlightTimeService {
             flightTime.setTotalFlightTimeMinutes(0);
         }
     }
+
+    
 
     private void validateAnexo7FlightTimeData(Anexo7 anexo7, String operationCode) {
         if (anexo7.getFechaOp() == null) {
@@ -235,6 +241,12 @@ public class FlightTimeService {
     }
 
     private FlightTimeDTO toDto(FlightTime flightTime) {
+        // Use operationCode from column if available, otherwise try from operation entity
+        String operationCodeDisplay = flightTime.getOperationCode();
+        if (operationCodeDisplay == null && flightTime.getOperation() != null) {
+            operationCodeDisplay = flightTime.getOperation().getCodigo();
+        }
+
         return new FlightTimeDTO(
                 flightTime.getFlightTimeId(),
                 flightTime.getAircraft().getAircraftId(),
@@ -242,7 +254,7 @@ public class FlightTimeService {
                 flightTime.getAircraftModel(),
                 flightTime.getAircraftSerialNumber(),
                 flightTime.getOperation() == null ? null : flightTime.getOperation().getIdOperacion(),
-                flightTime.getOperation() == null ? null : flightTime.getOperation().getCodigo(),
+                operationCodeDisplay,
                 flightTime.getFlightDate() == null ? null : flightTime.getFlightDate().toLocalDate(),
                 flightTime.getDurationMinutes(),
                 minutesToHours(flightTime.getDurationMinutes()),
@@ -276,6 +288,7 @@ public class FlightTimeService {
                 + ", aircraftSerialNumber=" + flightTime.getAircraftSerialNumber()
                 + ", operationId=" + (flightTime.getOperation() == null ? null : flightTime.getOperation().getIdOperacion())
                 + ", operationCode=" + (flightTime.getOperation() == null ? null : flightTime.getOperation().getCodigo())
+                + ", storedOperationCode=" + flightTime.getOperationCode()
                 + ", flightDate=" + (flightTime.getFlightDate() == null ? null : flightTime.getFlightDate().toLocalDate())
                 + ", durationMinutes=" + flightTime.getDurationMinutes()
                 + ", totalFlightTimeMinutes=" + flightTime.getTotalFlightTimeMinutes()
