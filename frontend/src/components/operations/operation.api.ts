@@ -21,6 +21,10 @@ export type Anexo4Data = AnexoBaseData & {
     fullName: string;
     roles: string[];
   }>;
+  personalExterno?: Array<{
+    nombreApellidos: string;
+    rol: string;
+  }>;
   otrasLimitacionesValor?: string;
   otrasLimitacionesItems?: ExpandableTableItem[];
   // Campos de imagen: devueltos por el backend después de guardar un FormData con imágenes

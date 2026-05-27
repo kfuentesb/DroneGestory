@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.dto.operation.Anexo4RequestDTO;
 import com.dronetools.dronegestory.dto.operation.Anexo4ResponseDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
 import com.dronetools.dronegestory.model.anexos.ItemTablaExpandible;
+import com.dronetools.dronegestory.model.anexos.PersonalExterno;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.repository.OperationRepository;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @RestController
@@ -64,6 +66,7 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         }
         anexo4.setAircraftIds(resolveAircraftIds(anexo4, request));
         anexo4.setSelectedPersonnelIds(resolveSelectedPersonnelIds(anexo4, request));
+        anexo4.setPersonalExterno(resolvePersonalExterno(anexo4, request));
         Anexo4 saved = service.createWithFile(operationId, anexo4, conops, imagenEspacioAereoFile, imagenZonaVueloFile);
         return ResponseEntity.ok(toResponse(saved, operationId));
     }
@@ -141,6 +144,11 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         anexo.setPersonal(dto.getPersonal());
         anexo.setAircraftIds(dto.getAircraftIds());
         anexo.setSelectedPersonnelIds(dto.getSelectedPersonnelIds());
+        if (dto.getPersonalExterno() != null) {
+            anexo.setPersonalExterno(dto.getPersonalExterno().stream()
+                    .map(item -> new PersonalExterno(item.getNombreApellidos(), item.getRol()))
+                    .collect(Collectors.toList()));
+        }
 
         // Imágenes
         anexo.setImagenEspacioAereo(dto.getImagenEspacioAereo());
@@ -242,6 +250,49 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         return new ArrayList<>(selectedPersonnelIds);
     }
 
+    private List<PersonalExterno> resolvePersonalExterno(Anexo4 anexo4, HttpServletRequest request) {
+        TreeMap<Integer, PersonalExterno> indexed = new TreeMap<>();
+
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            String key = entry.getKey();
+            if (key == null || !key.startsWith("personalExterno[")) {
+                continue;
+            }
+
+            int indexEnd = key.indexOf(']');
+            if (indexEnd < "personalExterno[".length() || indexEnd + 2 >= key.length()) {
+                continue;
+            }
+
+            String rawIndex = key.substring("personalExterno[".length(), indexEnd);
+            String field = key.substring(indexEnd + 2);
+            String value = firstValue(entry.getValue());
+            if (value == null) {
+                continue;
+            }
+
+            try {
+                int index = Integer.parseInt(rawIndex);
+                PersonalExterno personal = indexed.computeIfAbsent(index, ignored -> new PersonalExterno());
+                if ("nombreApellidos".equals(field)) {
+                    personal.setNombreApellidos(value.trim());
+                } else if ("rol".equals(field)) {
+                    personal.setRol(value.trim());
+                }
+            } catch (NumberFormatException ignored) {
+                LOGGER.warn("Índice de personalExterno inválido recibido en Anexo 4: {}", rawIndex);
+            }
+        }
+
+        List<PersonalExterno> parsed = indexed.values().stream()
+                .filter(this::hasPersonalExternoContent)
+                .toList();
+        if (!parsed.isEmpty()) {
+            return new ArrayList<>(parsed);
+        }
+        return anexo4.getPersonalExterno() == null ? new ArrayList<>() : anexo4.getPersonalExterno();
+    }
+
     private void addAircraftIds(LinkedHashSet<Long> target, List<Long> values) {
         if (values == null) {
             return;
@@ -316,6 +367,19 @@ public class Anexo4Controller extends AnexoControllerBase<Anexo4, Anexo4Service>
         dto.setFullName((user.getFirstName() + " " + user.getLastName()).trim());
         dto.setRoles(user.getEffectiveRoles().stream().toList());
         return dto;
+    }
+
+    private String firstValue(String[] values) {
+        if (values == null || values.length == 0) {
+            return null;
+        }
+        return values[0];
+    }
+
+    private boolean hasPersonalExternoContent(PersonalExterno personal) {
+        return personal != null
+                && ((personal.getNombreApellidos() != null && !personal.getNombreApellidos().isBlank())
+                || (personal.getRol() != null && !personal.getRol().isBlank()));
     }
 
 }

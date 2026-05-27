@@ -62,6 +62,7 @@ type FormOperationAnexo4DetailProps = {
 
 type ErrorsMap = Record<string, string | null>;
 type AircraftOption = { id: number; manufacturer?: string; model?: string; serialNumber?: string };
+type ExternalPersonnel = { nombreApellidos: string; rol: string };
 
 const normalizeAircraftIds = (value: unknown): number[] => {
   if (Array.isArray(value)) {
@@ -97,6 +98,28 @@ const normalizeSelectedPersonnelIds = (value: unknown): number[] => {
   }
 
   return [];
+};
+
+const normalizeExternalPersonnel = (value: unknown): ExternalPersonnel[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const raw = item as Record<string, unknown>;
+      return {
+        nombreApellidos: typeof raw.nombreApellidos === "string" ? raw.nombreApellidos.trim() : "",
+        rol: typeof raw.rol === "string" ? raw.rol.trim() : "",
+      };
+    })
+    .filter(
+      (item): item is ExternalPersonnel =>
+        item !== null && (item.nombreApellidos !== "" || item.rol !== ""),
+    );
 };
 
 const normalizeExpandableItems = (value: unknown): ExpandableTableItem[] => {
@@ -141,6 +164,7 @@ export default function FormOperationAnexo4Detail({
   const [formValues, setFormValues] = useState<Record<string, any>>({
     otrasLimitacionesValor: "N/A",
     otrasLimitacionesItems: [],
+    personalExterno: [],
     ...(initialValues ?? {}),
   });
   const [errors, setErrors] = useState<ErrorsMap>({});
@@ -150,6 +174,12 @@ export default function FormOperationAnexo4Detail({
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | "">("");
   const [personnelOptions, setPersonnelOptions] = useState<SelectableUserOption[]>([]);
   const [selectedPersonnelId, setSelectedPersonnelId] = useState<number | "">("");
+  const [showExternalPersonnelModal, setShowExternalPersonnelModal] = useState(false);
+  const [externalPersonnelDraft, setExternalPersonnelDraft] = useState<ExternalPersonnel>({
+    nombreApellidos: "",
+    rol: "",
+  });
+  const [externalPersonnelError, setExternalPersonnelError] = useState<string | null>(null);
   const [alertModal, setAlertModal] = useState<{ show: boolean; title: string; message: string }>({
     show: false,
     title: "",
@@ -180,6 +210,9 @@ export default function FormOperationAnexo4Detail({
         if (k === "selectedPersonnelIds") {
           return [k, normalizeSelectedPersonnelIds(v)];
         }
+        if (k === "personalExterno") {
+          return [k, normalizeExternalPersonnel(v)];
+        }
         if (k === "otrasLimitacionesItems") {
           return [k, normalizeExpandableItems(v)];
         }
@@ -200,6 +233,7 @@ export default function FormOperationAnexo4Detail({
     setFormValues({
       otrasLimitacionesValor: "N/A",
       otrasLimitacionesItems: [],
+      personalExterno: [],
       ...normalized,
     });
 
@@ -302,6 +336,42 @@ export default function FormOperationAnexo4Detail({
     handleChange("selectedPersonnelIds", filtered);
   };
 
+  const handleOpenExternalPersonnelModal = () => {
+    setExternalPersonnelDraft({ nombreApellidos: "", rol: "" });
+    setExternalPersonnelError(null);
+    setShowExternalPersonnelModal(true);
+  };
+
+  const handleCloseExternalPersonnelModal = () => {
+    setShowExternalPersonnelModal(false);
+    setExternalPersonnelError(null);
+  };
+
+  const handleAddExternalPersonnel = () => {
+    const normalized: ExternalPersonnel = {
+      nombreApellidos: externalPersonnelDraft.nombreApellidos.trim(),
+      rol: externalPersonnelDraft.rol.trim(),
+    };
+
+    if (!normalized.nombreApellidos || !normalized.rol) {
+      setExternalPersonnelError("Nombre y rol son obligatorios.");
+      return;
+    }
+
+    handleChange("personalExterno", [
+      ...normalizeExternalPersonnel(formValues.personalExterno),
+      normalized,
+    ]);
+    handleCloseExternalPersonnelModal();
+  };
+
+  const handleRemoveExternalPersonnel = (index: number) => {
+    const filtered = normalizeExternalPersonnel(formValues.personalExterno).filter(
+      (_person, personIndex) => personIndex !== index,
+    );
+    handleChange("personalExterno", filtered);
+  };
+
   // Revoke all object URLs when the component unmounts to prevent memory leaks
   useEffect(() => {
     return () => {
@@ -340,6 +410,13 @@ export default function FormOperationAnexo4Detail({
           normalizeSelectedPersonnelIds(value).forEach((personId, index) =>
             formData.append(`selectedPersonnelIds[${index}]`, String(personId))
           );
+          return;
+        }
+        if (key === "personalExterno" && Array.isArray(value)) {
+          normalizeExternalPersonnel(value).forEach((person, index) => {
+            formData.append(`personalExterno[${index}].nombreApellidos`, person.nombreApellidos);
+            formData.append(`personalExterno[${index}].rol`, person.rol);
+          });
           return;
         }
         if (key === "aircraftIds" && Array.isArray(value)) {
@@ -383,6 +460,7 @@ export default function FormOperationAnexo4Detail({
         // Los campos de archivo guardados
         imagenEspacioAereo: savedData?.imagenEspacioAereo ?? prev.imagenEspacioAereo,
         imagenZonaVuelo: savedData?.imagenZonaVuelo ?? prev.imagenZonaVuelo,
+        personalExterno: savedData?.personalExterno ?? prev.personalExterno,
         // Limpiar los Files después de guardar (ya fueron enviados al servidor)
         imagenEspacioAereoFile: null,
         imagenZonaVueloFile: null,
@@ -428,6 +506,7 @@ export default function FormOperationAnexo4Detail({
 
   const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
   const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
+  const externalPersonnel = normalizeExternalPersonnel(formValues.personalExterno);
 
   return (
     <AnexoFormLayout
@@ -519,10 +598,23 @@ export default function FormOperationAnexo4Detail({
           </button>
         </div>
 
-        {selectedPersonnelIds.length > 0 && (
+        <button
+          type="button"
+          className="btn btn-outline-secondary btn-sm mb-2"
+          onClick={handleOpenExternalPersonnelModal}
+          disabled={disabled || saving}
+        >
+          Añadir personal externo
+        </button>
+
+        {(selectedPersonnelIds.length > 0 || externalPersonnel.length > 0) && (
           <ul
             className="list-group"
-            style={selectedPersonnelIds.length > 8 ? { maxHeight: "280px", overflowY: "auto" } : undefined}
+            style={
+              selectedPersonnelIds.length + externalPersonnel.length > 8
+                ? { maxHeight: "280px", overflowY: "auto" }
+                : undefined
+            }
           >
             {selectedPersonnelIds.map((id: number) => {
               const user = personnelOptions.find((u) => u.id === id);
@@ -543,6 +635,24 @@ export default function FormOperationAnexo4Detail({
                 </li>
               );
             })}
+            {externalPersonnel.map((person, index) => (
+              <li
+                key={`external-${index}-${person.nombreApellidos}`}
+                className="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <span className="text-info fw-semibold">
+                  {person.nombreApellidos} ({person.rol})
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={() => handleRemoveExternalPersonnel(index)}
+                  disabled={disabled || saving}
+                >
+                  Quitar
+                </button>
+              </li>
+            ))}
           </ul>
         )}
       </div>
@@ -747,6 +857,88 @@ export default function FormOperationAnexo4Detail({
         maxItems={8}
         disabled={disabled || saving}
       />
+      {showExternalPersonnelModal && (
+        <>
+          <div
+            className="modal-backdrop fade show"
+            style={{ zIndex: 1050 }}
+            onClick={handleCloseExternalPersonnelModal}
+          />
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1060 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Añadir personal externo</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={handleCloseExternalPersonnelModal}
+                    aria-label="Cerrar"
+                  />
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label fw-bold small text-uppercase text-muted">
+                      Nombre y apellidos
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={externalPersonnelDraft.nombreApellidos}
+                      onChange={(event) => {
+                        setExternalPersonnelError(null);
+                        setExternalPersonnelDraft((prev) => ({
+                          ...prev,
+                          nombreApellidos: event.target.value,
+                        }));
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-bold small text-uppercase text-muted">
+                      Rol
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={externalPersonnelDraft.rol}
+                      onChange={(event) => {
+                        setExternalPersonnelError(null);
+                        setExternalPersonnelDraft((prev) => ({
+                          ...prev,
+                          rol: event.target.value,
+                        }));
+                      }}
+                    />
+                  </div>
+                  {externalPersonnelError && (
+                    <div className="alert alert-danger py-2 small mb-0">
+                      {externalPersonnelError}
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={handleCloseExternalPersonnelModal}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleAddExternalPersonnel}
+                  >
+                    Añadir
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       <ConfirmModal
         show={alertModal.show}
         title={alertModal.title}

@@ -50,6 +50,14 @@ public class Anexo4 extends Anexo {
     @Transient
     private List<Long> selectedPersonnelIds = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "\"personalExterno\"",
+            joinColumns = @JoinColumn(name = "anexo4_id")
+    )
+    @OrderColumn(name = "indice")
+    private List<PersonalExterno> personalExterno = new ArrayList<>();
+
     // --- Imágenes ---
     @Column(name = "imagen_espacio_aereo")
     private String imagenEspacioAereo;

@@ -11,6 +11,7 @@ import { API_BASE_URL } from "../../api";
 import { buildVersionLabel } from "./pdfUtils";
 
 export type ExpandableTableItem = { descripcion: string; valor: string };
+export type ExternalPersonnel = { nombreApellidos: string; rol: string };
 export type SelectableUserOption = {
   id: number;
   firstName: string;
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
 
   list: { marginTop: 2, marginLeft: 10 },
   listItem: { marginBottom: 2 },
+  externalListItem: { marginBottom: 2, color: "#0f766e" },
 
   // apartadoRow: { flexDirection: "row", marginBottom: 4 },
   // apartadoLeft: { width: 46 },
@@ -221,6 +223,23 @@ const normalizeExpandableItems = (value: unknown): ExpandableTableItem[] => {
     .filter((x): x is ExpandableTableItem => x !== null);
 };
 
+const normalizeExternalPersonnel = (value: unknown): ExternalPersonnel[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const raw = item as Record<string, unknown>;
+      return {
+        nombreApellidos: typeof raw.nombreApellidos === "string" ? raw.nombreApellidos.trim() : "",
+        rol: typeof raw.rol === "string" ? raw.rol.trim() : "",
+      };
+    })
+    .filter(
+      (item): item is ExternalPersonnel =>
+        item !== null && (item.nombreApellidos !== "" || item.rol !== ""),
+    );
+};
+
 const getAircraftDisplayName = (aircraft: AircraftOption | undefined, fallbackId: any) => {
   if (!aircraft) return `Aeronave #${fallbackId}`;
   
@@ -289,6 +308,7 @@ export function Anexo4Pages({
 }: FormOperationAnexo4DetailPdfProps) {
   const aircraftIds = normalizeAircraftIds(formValues.aircraftIds);
   const selectedPersonnelIds = normalizeSelectedPersonnelIds(formValues.selectedPersonnelIds);
+  const externalPersonnel = normalizeExternalPersonnel(formValues.personalExterno);
   const selectedPersonnel = Array.isArray(formValues.selectedPersonnel)
     ? formValues.selectedPersonnel
         .map((person: any) => ({
@@ -362,7 +382,7 @@ export function Anexo4Pages({
                     {person.roles.length > 0 ? ` (${person.roles.join(", ")})` : ""}
                   </Text>
                 ))
-              : selectedPersonnelIds.length === 0
+              : selectedPersonnelIds.length === 0 && externalPersonnel.length === 0
                 ? (
                   <Text style={styles.listItem}>—</Text>
                 )
@@ -377,6 +397,14 @@ export function Anexo4Pages({
                       </Text>
                     );
                   })}
+            {externalPersonnel.map((person, index) => (
+              <Text
+                key={`external-${index}-${person.nombreApellidos}`}
+                style={styles.externalListItem}
+              >
+                • {person.nombreApellidos} ({person.rol})
+              </Text>
+            ))}
           </View>
         </View>
 

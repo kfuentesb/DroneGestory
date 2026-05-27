@@ -20,6 +20,7 @@ public class Anexo4RequestDTO {
     // RELACIONES
     private String personal;   // IDs de usuarios
     private List<Long> selectedPersonnelIds;
+    private List<PersonalExternoDTO> personalExterno;
 //    private List<Integer> dronesIds;     // IDs de drones
     private List<Long> aircraftIds;
 
@@ -64,4 +65,11 @@ public class Anexo4RequestDTO {
     private List<ItemTablaExpandibleDTO> otrasLimitacionesItems;
 
     // Si quieres: puedes añadir más campos según evolucione el modelo/anexo.
+
+    @Getter
+    @Setter
+    public static class PersonalExternoDTO {
+        private String nombreApellidos;
+        private String rol;
+    }
 }

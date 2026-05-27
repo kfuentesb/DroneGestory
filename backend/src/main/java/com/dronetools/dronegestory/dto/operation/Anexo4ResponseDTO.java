@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.dto.operation;
 
 import com.dronetools.dronegestory.dto.anexos.ItemTablaExpandibleDTO;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
+import com.dronetools.dronegestory.model.anexos.PersonalExterno;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import com.dronetools.dronegestory.model.enums.UserType;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class Anexo4ResponseDTO {
     private List<Long> aircraftIds;
     private List<Long> selectedPersonnelIds;
     private List<SelectedPersonnelDTO> selectedPersonnel;
+    private List<PersonalExternoDTO> personalExterno;
 
     private String imagenEspacioAereo;
     private String imagenZonaVuelo;
@@ -76,6 +78,13 @@ public class Anexo4ResponseDTO {
         private List<UserType> roles;
     }
 
+    @Getter
+    @Setter
+    public static class PersonalExternoDTO {
+        private String nombreApellidos;
+        private String rol;
+    }
+
     // Método estático de ayuda
     public static Anexo4ResponseDTO fromEntity(Anexo4 anexo) {
         Anexo4ResponseDTO dto = new Anexo4ResponseDTO();
@@ -95,6 +104,11 @@ public class Anexo4ResponseDTO {
         dto.setSelectedPersonnelIds(anexo.getSelectedPersonnelIds() == null
                 ? List.of()
                 : new ArrayList<>(anexo.getSelectedPersonnelIds()));
+        dto.setPersonalExterno(anexo.getPersonalExterno() == null
+                ? List.of()
+                : anexo.getPersonalExterno().stream()
+                    .map(Anexo4ResponseDTO::toPersonalExternoDto)
+                    .collect(Collectors.toList()));
 
 //        if (anexo.getDrones() != null) {
 //            dto.setDrones(anexo.getDrones().stream()
@@ -144,6 +158,13 @@ public class Anexo4ResponseDTO {
             );
         }
 
+        return dto;
+    }
+
+    private static PersonalExternoDTO toPersonalExternoDto(PersonalExterno personal) {
+        PersonalExternoDTO dto = new PersonalExternoDTO();
+        dto.setNombreApellidos(personal.getNombreApellidos());
+        dto.setRol(personal.getRol());
         return dto;
     }
 }

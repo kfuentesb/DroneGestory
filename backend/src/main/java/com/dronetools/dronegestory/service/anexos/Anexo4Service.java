@@ -3,6 +3,7 @@ package com.dronetools.dronegestory.service.anexos;
 import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.User;
 import com.dronetools.dronegestory.model.anexos.Anexo4;
+import com.dronetools.dronegestory.model.anexos.PersonalExterno;
 import com.dronetools.dronegestory.repository.OperationRepository;
 import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
@@ -79,6 +80,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         // Personal y Drones
         destino.setPersonal(origen.getPersonal());
         destino.setAircraftIds(copyAircraftIds(origen.getAircraftIds()));
+        destino.setPersonalExterno(copyPersonalExterno(origen.getPersonalExterno()));
 
 //        destino.getDrones().clear();
 //        if (origen.getDrones() != null) {
@@ -157,6 +159,7 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
         // Relaciones (copiar referencias, no clonar entidades)
         copia.setPersonal(origen.getPersonal());
         copia.setAircraftIds(copyAircraftIds(origen.getAircraftIds()));
+        copia.setPersonalExterno(copyPersonalExterno(origen.getPersonalExterno()));
 
 //        if (origen.getDrones() != null) {
 //            copia.getDrones().addAll(origen.getDrones());
@@ -450,6 +453,29 @@ public class Anexo4Service extends AnexoServiceBase<Anexo4> {
 
     private List<Long> copyAircraftIds(List<Long> aircraftIds) {
         return aircraftIds == null ? new ArrayList<>() : new ArrayList<>(aircraftIds);
+    }
+
+    private List<PersonalExterno> copyPersonalExterno(List<PersonalExterno> personalExterno) {
+        if (personalExterno == null) {
+            return new ArrayList<>();
+        }
+        return personalExterno.stream()
+                .filter(this::hasPersonalExternoContent)
+                .map(personal -> new PersonalExterno(
+                        trimToEmpty(personal.getNombreApellidos()),
+                        trimToEmpty(personal.getRol())
+                ))
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+    }
+
+    private boolean hasPersonalExternoContent(PersonalExterno personal) {
+        return personal != null
+                && ((personal.getNombreApellidos() != null && !personal.getNombreApellidos().isBlank())
+                || (personal.getRol() != null && !personal.getRol().isBlank()));
+    }
+
+    private String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private void applySelectedPersonnel(Operation operation, List<Long> selectedPersonnelIds) {
