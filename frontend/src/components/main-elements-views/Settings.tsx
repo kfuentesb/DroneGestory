@@ -249,7 +249,7 @@ export default function Settings() {
           
 
           {/* Sección del Audit Log */}
-          {canDownloadAuditLog ? (
+          {canDownloadAuditLog && (
             <div
               className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded"
               style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}
@@ -266,10 +266,6 @@ export default function Settings() {
               >
                 {isDownloading ? "Descargando..." : "Descargar AuditLog.csv"}
               </button>
-            </div>
-          ) : (
-            <div className="alert alert-light border mb-0">
-              No hay opciones disponibles para tu perfil.
             </div>
           )}
 

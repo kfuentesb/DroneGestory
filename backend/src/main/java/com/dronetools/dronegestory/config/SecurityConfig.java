@@ -33,6 +33,13 @@ public class SecurityConfig {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        System.out.println("======= DEBUG FRONTEND CORS =======");
+        System.out.println("Allowed frontend URLs: " + frontendUrl);
+        System.out.println("===================================");
+    }
+
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,

@@ -81,13 +81,15 @@ EMAIL_PASSWORD=tu-clave-de-aplicacion
 # Lista de URLs del Frontend permitidas por CORS (separadas por comas)
 APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:5173)
 ---
+```
 
-### Plantilla del archivo `frontend/.env`
+#### Plantilla del archivo (`frontend/.env`)
+
 > **!IMPORTANTE¡**
 > Esta variable es importante para la producción, para unicamente ejecutarlo en local no es necesario, pero al hacer npm run build, tenerlo si o si
 ```
 # --- Configuración de API (Producción) ---
-VITE_API_BASE_URL=[https://quizzical-morse.213-165-78-203.plesk.page](https://quizzical-morse.213-165-78-203.plesk.page)
+VITE_API_BASE_URL=IP_O_DNS
 ```
 
 ## Despliegue en Servidor (Producción)
