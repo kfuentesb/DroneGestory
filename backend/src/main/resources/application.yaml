@@ -42,7 +42,7 @@ spring:
     properties:
       hibernate:
         jdbc:
-          time_zone: Europe/Madrid
+          time_zone: UTC
 #    show-sql: true
     # ESTO YA VIENE POR DEFAULT
     # properties:

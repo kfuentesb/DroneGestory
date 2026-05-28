@@ -322,6 +322,46 @@ Para subir los datos del backup al un proyecto local:
 restore_local_with_backup.sh
 ```
 
+### BACKUP AUTOMATICO MENSUAL EN PRODUCCION
+
+En el servidor de produccion, desde la raiz del proyecto:
+
+```bash
+chmod +x install_monthly_backup_cron.sh
+./install_monthly_backup_cron.sh
+```
+
+Esto instala una tarea cron para ejecutar `monthly_backup.sh` a las 02:00 del dia 1 de cada mes.
+
+Cada backup se guarda en `backups/YYYY-MM-DD/` con esta estructura:
+
+```text
+postgredatabase.sql
+backend/uploads/
+backend/AuditLogs/
+```
+
+Si `backend/AuditLogs` todavia no existe, el script lo omite sin fallar.
+
+### BACKUPS DESDE LA WEB
+
+Los usuarios `ADMIN` y `MANAGER` pueden gestionar los backups desde `Configuracion`.
+
+Desde esa vista se puede:
+
+```text
+Elegir el dia del mes para el backup automatico.
+Ejecutar un backup manual al momento.
+Consultar la ultima fecha y ruta del backup generado.
+```
+
+El backend genera los backups en `backups/YYYY-MM-DD/`. En despliegues Docker hay que reconstruir la imagen del backend para instalar `pg_dump`:
+
+```bash
+docker compose build backend
+docker compose up -d backend
+```
+
 ### DESCARGAR DATOS DE PRODUCCIÓN DE FORMA MANUAL (Windows 10/11)
 
 Aún no funciona

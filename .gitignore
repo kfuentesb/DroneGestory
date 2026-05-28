@@ -45,6 +45,8 @@ build/
 /backend/uploads/*
 /backend/AuditLog.txt
 /backend/AuditLog.csv
+/backend/AuditLogs/*
+!/backend/AuditLogs/.gitkeep
 
 ## FRONTEND
 /frontend/.env.production
@@ -54,3 +56,5 @@ build/
 
 databasecopy.sql
 database-pre-backup/*
+/backups/*
+!/backups/.gitkeep

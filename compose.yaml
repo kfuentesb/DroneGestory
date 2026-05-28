@@ -19,8 +19,12 @@ services:
       - EMAIL_USER=${EMAIL_USER:?EMAIL_USER is required}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD:?EMAIL_PASSWORD is required}
       - APP_UPLOADS_ROOT=/app/uploads
+      - APP_BACKUPS_ROOT=/app/backups
+      - APP_AUDIT_LOGS_ROOT=/app/AuditLogs
     volumes:
       - ./backend/uploads:/app/uploads
+      - ./backend/AuditLogs:/app/AuditLogs
+      - ./backups:/app/backups
     networks:
       - drone_network
 
