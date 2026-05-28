@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { saveAnexo5Data, signAnexo5Data, type Anexo5Data } from "../operations/operation.api";
+import { saveAnexo5Data, signAnexo5Data, type Anexo5Data, type ExternalPersonnelSignature } from "../operations/operation.api";
 import { SectionTitle } from "../commons/SectionTitle";
 import { ApartadoRow, type SectionItem } from "../commons/ApartadoRow";
 import { AnexoFormLayout } from "../commons/AnexoFormLayout";
@@ -14,6 +14,7 @@ type FormOperationAnexo5DetailProps = {
   fallbackFechaOp?: string;
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
+  onExternalPersonnelChange?: (externalPersonnel: ExternalPersonnelSignature[]) => void | Promise<void>;
   onSaved?: (savedData: Anexo5Data | null) => void | Promise<void>;
 };
 
@@ -51,6 +52,30 @@ const BOOL_OPTIONS = [
   { value: "true", label: "Sí" },
   { value: "false", label: "No" },
 ];
+
+const normalizeExternalPersonnel = (value: unknown): ExternalPersonnelSignature[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const raw = item as Record<string, unknown>;
+      const nombreApellidos = typeof raw.nombreApellidos === "string" ? raw.nombreApellidos.trim() : "";
+      const rol = typeof raw.rol === "string" ? raw.rol.trim() : "";
+      const signed = typeof raw.signed === "boolean" ? raw.signed : false;
+
+      if (!nombreApellidos && !rol) {
+        return null;
+      }
+
+      return { nombreApellidos, rol, signed };
+    })
+    .filter((item): item is ExternalPersonnelSignature => item !== null);
+};
 
 const SECCIONES_CONFIG: {
   seccion1: SectionItem[];
@@ -153,6 +178,7 @@ export default function FormOperationAnexo5Detail({
   fallbackFechaOp,
   disabled,
   readOnlyMessage,
+  onExternalPersonnelChange,
   onSaved,
 }: FormOperationAnexo5DetailProps) {
   const { username } = useAuth();
@@ -174,6 +200,8 @@ export default function FormOperationAnexo5Detail({
   }, [fallbackFechaOp, setFormValues]);
 
   const assignedPersonnel = initialValues?.assignedPersonnel ?? [];
+  const externalPersonnel = normalizeExternalPersonnel(initialValues?.externalPersonnel);
+  const hasPersonnel = assignedPersonnel.length > 0 || externalPersonnel.length > 0;
   const currentUserAssignedEntry = assignedPersonnel.find((person) => person.username === username);
 
   const handleSignCurrentUser = async () => {
@@ -195,6 +223,17 @@ export default function FormOperationAnexo5Detail({
     } finally {
       setSigningAptitud(false);
     }
+  };
+
+  const handleToggleExternalSignature = (index: number) => {
+    const nextPersonnel = externalPersonnel.map((person, personIndex) => {
+      if (personIndex !== index) {
+        return person;
+      }
+      return { ...person, signed: !person.signed };
+    });
+
+    void onExternalPersonnelChange?.(nextPersonnel);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -224,6 +263,23 @@ export default function FormOperationAnexo5Detail({
       setSaving(false);
     }
   };
+
+  const renderSignatureStatus = (signed: boolean) => (
+    <span className="d-inline-flex align-items-center gap-2">
+      {signed ? (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" stroke="#16A34A" strokeWidth="1.5" fill="#DCFCE7" />
+          <path d="M5 8.2l1.9 1.9L11 6" stroke="#166534" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" stroke="#D97706" strokeWidth="1.5" fill="#FEF3C7" />
+          <path d="M8 4.6v3.7l2.2 1.2" stroke="#92400E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+      <span>{signed ? "Firmado" : "Pendiente"}</span>
+    </span>
+  );
 
   const renderApartadoRow = (item: SectionItem) => (
     <ApartadoRow
@@ -320,7 +376,7 @@ export default function FormOperationAnexo5Detail({
 
       <SectionTitle>SECCIÓN 8: Aptitud para operar</SectionTitle>
       <div className="bg-white border rounded p-3 mb-4 text-start">
-        {assignedPersonnel.length === 0 ? (
+        {!hasPersonnel ? (
           <div className="alert alert-secondary mb-0">
             No hay personal asignado en Anexo 4 para firmar la aptitud para operar.
           </div>
@@ -341,22 +397,7 @@ export default function FormOperationAnexo5Detail({
                     <tr key={person.id}>
                       <td>{person.fullName}</td>
                       <td>{person.roles.join(", ")}</td>
-                      <td>
-                        <span className="d-inline-flex align-items-center gap-2">
-                          {person.signed ? (
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                              <circle cx="8" cy="8" r="7" stroke="#16A34A" strokeWidth="1.5" fill="#DCFCE7" />
-                              <path d="M5 8.2l1.9 1.9L11 6" stroke="#166534" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                              <circle cx="8" cy="8" r="7" stroke="#D97706" strokeWidth="1.5" fill="#FEF3C7" />
-                              <path d="M8 4.6v3.7l2.2 1.2" stroke="#92400E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          )}
-                          <span>{person.signed ? "Firmado" : "Pendiente"}</span>
-                        </span>
-                      </td>
+                      <td>{renderSignatureStatus(person.signed)}</td>
                       <td>
                         {currentUserAssignedEntry?.id === person.id && initialValues?.id && !person.signed ? (
                           <button
@@ -373,28 +414,51 @@ export default function FormOperationAnexo5Detail({
                       </td>
                     </tr>
                   ))}
+                  {externalPersonnel.map((person, index) => (
+                    <tr key={`external-${index}-${person.nombreApellidos}`}>
+                      <td>{person.nombreApellidos}</td>
+                      <td>{person.rol}</td>
+                      <td>{renderSignatureStatus(Boolean(person.signed))}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={Boolean(person.signed)}
+                          onChange={() => handleToggleExternalSignature(index)}
+                          disabled={disabled || saving}
+                          aria-label={`Firma de ${person.nombreApellidos}`}
+                        />
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
-            {!initialValues?.id ? (
+            {assignedPersonnel.length > 0 && !initialValues?.id ? (
               <div className="text-muted small">
                 Guarda el borrador para habilitar la firma en esta sección.
               </div>
-            ) : !currentUserAssignedEntry ? (
+            ) : assignedPersonnel.length > 0 && !currentUserAssignedEntry ? (
               <div className="text-muted small">
                 Solo el personal asignado en Anexo 4 puede firmar su recuadro.
               </div>
-            ) : currentUserAssignedEntry.signed ? (
+            ) : assignedPersonnel.length > 0 && currentUserAssignedEntry?.signed ? (
               <span
                 className="badge"
                 style={{ backgroundColor: "#DBEAFE", color: "#1D4ED8", border: "1px solid #93C5FD" }}
               >
                 Ya has firmado tu aptitud para operar
               </span>
-            ) : (
+            ) : assignedPersonnel.length > 0 && currentUserAssignedEntry ? (
               <div className="text-muted small">
                 Usa el boton "Firmar" de tu fila para registrar la aptitud.
+              </div>
+            ) : null}
+
+            {externalPersonnel.length > 0 && (
+              <div className="text-muted small">
+                La firma del personal externo es una confirmación visual y no se guarda en la base de datos.
               </div>
             )}
           </>
