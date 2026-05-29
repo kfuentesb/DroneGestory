@@ -351,7 +351,7 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Modal bonito Bootstrap */}
+      {/* Modal Bootstrap */}
       {showEmptyAlert && (
         <div
           className="modal fade show d-block"

@@ -24,9 +24,6 @@ public class AuditLogController {
     @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
     private String auditLogsRoot;
 
-    @Value("${APP_LEGACY_AUDIT_LOG_CSV:AuditLog.csv}")
-    private String legacyAuditLogCsv;
-
     @GetMapping("/download")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Resource> download() throws IOException {
@@ -48,10 +45,6 @@ public class AuditLogController {
     }
 
     private Path getAuditLogPath() {
-        Path configuredPath = Paths.get(auditLogsRoot, "AuditLog.csv").toAbsolutePath().normalize();
-        if (Files.exists(configuredPath)) {
-            return configuredPath;
-        }
-        return Paths.get(legacyAuditLogCsv).toAbsolutePath().normalize();
+        return Paths.get(auditLogsRoot, "AuditLog.csv").toAbsolutePath().normalize();
     }
 }

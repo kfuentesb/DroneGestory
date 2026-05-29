@@ -358,8 +358,12 @@ public class AircraftModelDocumentationService {
                         .toString()
                         .replace("\\", "/"))
                 .orElse(null);
+                
         if (legacyNamedRelativePath != null
                 && Files.exists(UploadPathUtils.uploadsRoot().resolve(legacyNamedRelativePath).normalize())) {
+            
+            System.out.println("[LEGACY DETECTED] -> Documentación de modelo recuperada de la ruta antigua (Fabricante/Modelo) mediante ID " + modelId + ": " + legacyNamedRelativePath);
+            
             return legacyNamedRelativePath;
         }
         return UploadPathUtils.databaseRelativePathString("aircraft-model", modelId.toString(), "documentation", safeTypeDir(documentationType), normalized);

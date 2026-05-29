@@ -180,12 +180,16 @@ public final class UploadPathUtils {
         String normalized = cleanRelativePath(relativePath);
         String databaseRelativePath = toDatabaseRelativePath(normalized);
         Path databasePath = uploadsDir.resolve(databaseRelativePath).normalize();
+        
         if (Files.exists(databasePath)) {
             return databasePath;
         }
 
         Path legacyPath = uploadsDir.resolve(normalized).normalize();
         if (Files.exists(legacyPath)) {
+            
+            System.out.println("[LEGACY DETECTED] -> Archivo físico detectado en la raíz antigua (fuera de 'database-relationed'): " + normalized);
+            
             return legacyPath;
         }
 

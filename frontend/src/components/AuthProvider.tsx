@@ -39,8 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (Array.isArray(parsed)) return parsed;
       } catch {}
     }
+    
     const legacyRole = localStorage.getItem("role");
-    return legacyRole ? [legacyRole] : [];
+    if (legacyRole) {
+      
+      console.warn("[LEGACY DETECTED] -> Sesión de usuario recuperada usando la propiedad singular antigua 'role':", legacyRole);
+      
+      return [legacyRole];
+    }
+    
+    return [];
   });
 
   const role = roles[0] || null;
@@ -90,4 +98,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
