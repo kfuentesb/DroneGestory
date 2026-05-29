@@ -17,7 +17,7 @@ import AircraftModelDetail from "../components/details/aircraft/AircraftModelDet
 import OperationList from "../components/lists/OperationList";
 import OperationDetail from "../components/details/operation/OperationDetail";
 import OperationAnexoDetail from "../components/details/operation/OperationAnexoDetail";
-import FileBrowserView from "../components/docs/FileBrowserView";
+import FileBrowserView from "../components/server/FileBrowserView";
 import FormUserPassword from "../components/forms/FormUserPassword";
 import FormAircraft from "../components/forms/FormAircraft";
 import FormAircraftModel from "../components/forms/FormAircraftModel";
@@ -32,6 +32,7 @@ import Settings from "../components/main-elements-views/Settings";
 import MailCenter from "../components/mail/MailCenter";
 import OperationDocumentationList from "../components/lists/OperationDocumentationList";
 import FormResetPasswordWithToken from "../components/forms/FormResetPasswordWithToken";
+import ServerSettings from "../components/server/ServerSettings";
 
 export default class RouterPrincipal extends React.Component {
   render() {
@@ -196,6 +197,15 @@ export default class RouterPrincipal extends React.Component {
             </ProtectedRoute>
           } 
         />
+
+        <Route
+          path="/server-settings"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ServerSettings />
+            </ProtectedRoute>
+          }>
+        </Route>
         
 
         {/* Error */}

@@ -6,6 +6,7 @@ public record BackupSettingsResponse(
         Integer scheduleDay,
         Integer scheduleHour,
         LocalDate lastRunDate,
-        String lastBackupPath
+        String lastBackupPath,
+        Long lastBackupSizeBytes
 ) {
 }

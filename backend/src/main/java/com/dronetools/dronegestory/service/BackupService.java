@@ -9,19 +9,23 @@ import com.dronetools.dronegestory.repository.BackupSettingsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -88,31 +92,62 @@ public class BackupService {
         return runBackup(getOrCreateEntity());
     }
 
-    @Transactional
+    public DownloadableBackupPackage prepareDownloadableBackupPackage() {
+        try {
+            Path tempRoot = Files.createTempDirectory("backup-download-");
+            Path backupDir = tempRoot.resolve("backup");
+            Files.createDirectories(backupDir);
+            createBackupBundle(backupDir);
+            String fileName = "DroneGestory_backup_"
+                    + LocalDateTime.now(MADRID_ZONE).format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+                    + ".zip";
+            return new DownloadableBackupPackage(tempRoot, backupDir, fileName);
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new IllegalStateException("No se pudo preparar el backup para descarga: " + e.getMessage(), e);
+        }
+    }
+
     public BackupRestoreResponse restoreBackup(MultipartFile backupFile, boolean saveCurrentBeforeRestore) {
+        System.out.println("[RESTORE] -> Iniciando proceso de restauración...");
+        
         if (backupFile == null || backupFile.isEmpty()) {
             throw new IllegalStateException("Debes subir un archivo de backup valido.");
         }
 
-        BackupRunResponse preRestoreBackup = null;
-        if (saveCurrentBeforeRestore) {
-            preRestoreBackup = runBackup(getOrCreateEntity());
-        }
+            BackupRunResponse preRestoreBackup = null;
+            if (saveCurrentBeforeRestore) {
+                System.out.println("[RESTORE] -> Creando backup de seguridad previo...");
+                preRestoreBackup = runBackup(getOrCreateEntity());
+            }
 
         Path tempDir = null;
         try {
+            System.out.println("[RESTORE] -> Creando directorio temporal...");
             tempDir = Files.createTempDirectory("backup-restore-");
+            
+            System.out.println("[RESTORE] -> Desempaquetando archivo ZIP: " + backupFile.getOriginalFilename());
             BackupArchiveContents archiveContents = unpackBackupFile(backupFile, tempDir);
 
             if (archiveContents.sqlFile() == null) {
                 throw new IllegalStateException("El backup no contiene un archivo SQL de base de datos.");
             }
 
+            System.out.println("[RESTORE] -> Reiniciando esquema de base de datos...");
             resetDatabaseSchema();
+            
+            System.out.println("[RESTORE] -> Ejecutando script SQL de restauración...");
             restoreDatabase(archiveContents.sqlFile());
+            
+            System.out.println("[RESTORE] -> Restaurando directorio de uploads...");
             boolean uploadsRestored = restoreDirectoryIfPresent(archiveContents.uploadsDir(), Path.of(uploadsRoot));
+            
+            System.out.println("[RESTORE] -> Restaurando logs de auditoría...");
             boolean auditLogsRestored = restoreDirectoryIfPresent(archiveContents.auditLogsDir(), Path.of(auditLogsRoot));
 
+            System.out.println("[RESTORE] -> ¡Todo completado con éxito!");
             String restoredBackupName = backupFile.getOriginalFilename() == null
                     ? "backup subido"
                     : backupFile.getOriginalFilename();
@@ -125,12 +160,14 @@ public class BackupService {
                     auditLogsRestored
             );
         } catch (IOException | InterruptedException e) {
+            System.out.println("[RESTORE ERROR] -> Excepción catastrófica: " + e.getMessage());
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
             throw new IllegalStateException("No se pudo restaurar el backup: " + e.getMessage(), e);
         } finally {
             if (tempDir != null) {
+                System.out.println("[RESTORE] -> Limpiando directorio temporal...");
                 try {
                     deleteDirectory(tempDir);
                 } catch (IOException ignored) {
@@ -143,14 +180,8 @@ public class BackupService {
         try {
             LocalDate backupDate = LocalDate.now(MADRID_ZONE);
             Path backupDir = Path.of(backupsRoot).toAbsolutePath().normalize().resolve(backupDate.toString());
-            Path backendDir = backupDir.resolve("backend");
-            Path databaseFile = backupDir.resolve("postgredatabase.sql");
-
-            Files.createDirectories(backendDir);
-            dumpDatabase(databaseFile);
-            boolean uploadsCopied = copyDirectoryIfExists(Path.of(uploadsRoot), backendDir.resolve("uploads"));
-            Path auditLogsDestination = backendDir.resolve("AuditLogs");
-            boolean auditLogsCopied = copyDirectoryIfExists(Path.of(auditLogsRoot), auditLogsDestination);
+            BackupBundle bundle = createBackupBundle(backupDir);
+            long backupSizeBytes = calculateDirectorySize(backupDir);
 
             settings.setLastRunDate(backupDate);
             settings.setLastBackupPath(backupDir.toString());
@@ -159,9 +190,10 @@ public class BackupService {
             return new BackupRunResponse(
                     backupDate,
                     backupDir.toString(),
-                    databaseFile.toString(),
-                    uploadsCopied,
-                    auditLogsCopied
+                    bundle.databaseFile().toString(),
+                    backupSizeBytes,
+                    bundle.uploadsCopied(),
+                    bundle.auditLogsCopied()
             );
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) {
@@ -260,7 +292,7 @@ public class BackupService {
             return false;
         }
 
-        deleteDirectory(destination);
+        clearContentsOfDirectory(destination);
         Files.createDirectories(destination);
 
         try (var paths = Files.walk(normalizedSource)) {
@@ -276,6 +308,18 @@ public class BackupService {
         return true;
     }
 
+    private BackupBundle createBackupBundle(Path backupDir) throws IOException, InterruptedException {
+        Path backendDir = backupDir.resolve("backend");
+        Path databaseFile = backupDir.resolve("postgredatabase.sql");
+
+        Files.createDirectories(backendDir);
+        dumpDatabase(databaseFile);
+        boolean uploadsCopied = copyDirectoryIfExists(Path.of(uploadsRoot), backendDir.resolve("uploads"));
+        boolean auditLogsCopied = copyDirectoryIfExists(Path.of(auditLogsRoot), backendDir.resolve("AuditLogs"));
+
+        return new BackupBundle(databaseFile, uploadsCopied, auditLogsCopied);
+    }
+
     private void deleteDirectory(Path directory) throws IOException {
         if (!Files.exists(directory)) {
             return;
@@ -288,25 +332,85 @@ public class BackupService {
         }
     }
 
+    public void writeBackupZip(Path backupDir, OutputStream outputStream) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+             var paths = Files.walk(backupDir)) {
+            for (Path path : paths.sorted(Comparator.naturalOrder()).toList()) {
+                if (Files.isDirectory(path)) {
+                    continue;
+                }
+
+                String entryName = backupDir.relativize(path).toString().replace('\\', '/');
+                zipOutputStream.putNextEntry(new ZipEntry(entryName));
+                Files.copy(path, zipOutputStream);
+                zipOutputStream.closeEntry();
+            }
+        }
+    }
+
+    // --- NUEVO MÉTODO SEGURO PARA VOLÚMENES DOCKER ---
+    private void clearContentsOfDirectory(Path directory) throws IOException {
+        if (!Files.exists(directory)) {
+            return;
+        }
+        // Borramos todo lo de adentro, pero sin borrar la carpeta 'directory' en sí misma
+        try (var paths = Files.walk(directory)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                if (!path.equals(directory)) {
+                    Files.deleteIfExists(path);
+                }
+            }
+        }
+    }
+
     private boolean restoreDirectoryIfPresent(Path source, Path destination) throws IOException {
         if (source == null || !Files.isDirectory(source)) {
+            System.out.println("[RESTORE] -> No se encontró directorio origen para: " + destination.getFileName());
             return false;
         }
 
-        deleteDirectory(destination);
+        // Limpieza radical y nativa del contenido interno
+        clearContentsNative(destination);
+
+        // Asegurar que la estructura base existe
         Files.createDirectories(destination);
 
+        // Copiar archivos uno a uno de forma limpia
         try (var paths = Files.walk(source)) {
             for (Path sourcePath : paths.toList()) {
                 Path targetPath = destination.resolve(source.relativize(sourcePath).toString());
                 if (Files.isDirectory(sourcePath)) {
                     Files.createDirectories(targetPath);
                 } else {
+                    // Usamos StandardCopyOption.REPLACE_EXISTING por seguridad extra
                     Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
                 }
             }
         }
         return true;
+    }
+
+    private void clearContentsNative(Path directory) {
+        String absolutePath = directory.toAbsolutePath().normalize().toString();
+        System.out.println("[RESTORE] -> Vaciando de forma nativa el contenido de: " + absolutePath);
+        
+        try {
+            // Ejecuta "rm -rf /app/uploads/*" de forma segura usando el shell del contenedor
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    "sh", "-c", "rm -rf " + absolutePath + "/* " + absolutePath + "/.[!.]*"
+            );
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            
+            String output = new String(process.getInputStream().readAllBytes());
+            int exitCode = process.waitFor();
+            
+            if (exitCode != 0) {
+                System.out.println("[RESTORE WARNING] -> El comando de limpieza nativa retornó código " + exitCode + ": " + output);
+            }
+        } catch (Exception e) {
+            System.out.println("[RESTORE WARNING] -> No se pudo realizar la limpieza nativa preventiva: " + e.getMessage());
+        }
     }
 
     private BackupArchiveContents unpackBackupFile(MultipartFile backupFile, Path tempDir) throws IOException {
@@ -395,17 +499,52 @@ public class BackupService {
     }
 
     private BackupSettingsResponse toSettingsResponse(BackupSettings settings) {
+        Long lastBackupSizeBytes = null;
+        if (settings.getLastBackupPath() != null) {
+            try {
+                Path lastBackupPath = Path.of(settings.getLastBackupPath());
+                if (Files.exists(lastBackupPath)) {
+                    lastBackupSizeBytes = calculateDirectorySize(lastBackupPath);
+                }
+            } catch (IOException ignored) {
+            }
+        }
         return new BackupSettingsResponse(
                 settings.getScheduleDay(),
                 settings.getScheduleHour(),
                 settings.getLastRunDate(),
-                settings.getLastBackupPath()
+                settings.getLastBackupPath(),
+                lastBackupSizeBytes
         );
+    }
+
+    private long calculateDirectorySize(Path directory) throws IOException {
+        if (!Files.exists(directory)) {
+            return 0L;
+        }
+        try (var paths = Files.walk(directory)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .mapToLong(path -> {
+                        try {
+                            return Files.size(path);
+                        } catch (IOException e) {
+                            return 0L;
+                        }
+                    })
+                    .sum();
+        }
     }
 
     private record DatabaseConnectionInfo(String host, String port, String database) {
     }
 
     private record BackupArchiveContents(Path sqlFile, Path uploadsDir, Path auditLogsDir) {
+    }
+
+    public record DownloadableBackupPackage(Path tempRoot, Path backupDir, String fileName) {
+    }
+
+    private record BackupBundle(Path databaseFile, boolean uploadsCopied, boolean auditLogsCopied) {
     }
 }
