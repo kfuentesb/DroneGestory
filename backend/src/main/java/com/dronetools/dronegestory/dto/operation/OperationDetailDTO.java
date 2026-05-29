@@ -6,7 +6,7 @@ import com.dronetools.dronegestory.model.Operation;
 import com.dronetools.dronegestory.model.enums.OperationStatus;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -14,8 +14,8 @@ public class OperationDetailDTO {
     private Long idOperacion;
     private String codigo;
     private String nombreCreador;
-    private LocalDateTime fechaCreacion;
-    private LocalDateTime fechaActualizacion;
+    private Instant fechaCreacion;
+    private Instant fechaActualizacion;
     private OperationStatus estadoOperacion;
     private boolean completada;
     private boolean todosAnexosFirmados;

@@ -31,7 +31,7 @@ spring:
         location: banner.txt
 
     datasource:
-        url: jdbc:postgresql://localhost:5432/aeronaves_db?options=-c%20TimeZone%3DEurope%2FMadrid
+        url: jdbc:postgresql://localhost:5432/aeronaves_db?options=-c%20TimeZone%3DUTC
         username: admin
         password: admin123
         driver-class-name: org.postgresql.Driver
@@ -46,7 +46,7 @@ spring:
         properties:
             hibernate:
                 jdbc:
-                    time_zone: Europe/Madrid
+                    time_zone: UTC
             #show-sql: true
         # ESTO YA VIENE POR DEFAULT
         # properties:

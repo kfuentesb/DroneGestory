@@ -11,7 +11,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedHashSet;
@@ -66,11 +66,11 @@ public class Operation {
     // FECHAS AUTOMÁTICAS
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion;
+    private Instant fechaCreacion;
 
     @UpdateTimestamp // Actualiza con la última actualización
     @Column(name = "fecha_actualizacion")
-    private LocalDateTime fechaActualizacion;
+    private Instant fechaActualizacion;
 
     // Estado de la operación (enum)
     @Enumerated(EnumType.STRING)

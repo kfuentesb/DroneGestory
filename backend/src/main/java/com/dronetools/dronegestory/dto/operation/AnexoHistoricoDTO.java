@@ -9,7 +9,8 @@ import com.dronetools.dronegestory.model.anexos.Anexo8;
 import com.dronetools.dronegestory.model.enums.AnexoStatus;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 
 @Data
@@ -20,7 +21,7 @@ public class AnexoHistoricoDTO {
     private AnexoStatus estado;
     private String color;
     private String firmadoPor;
-    private LocalDateTime fechaFirma;
+    private Instant fechaFirma;
     private String textoPrueba;
 
     public static AnexoHistoricoDTO fromEntity(Anexo anexo) {
@@ -31,7 +32,11 @@ public class AnexoHistoricoDTO {
         dto.estado = anexo.getEstado();
         dto.color = anexo.getEstado() == AnexoStatus.BORRADOR ? "AMARILLO" : "VERDE";
         dto.firmadoPor = anexo.getFirmadoPor();
-        dto.fechaFirma = anexo.getFechaFirma();
+        
+        dto.fechaFirma = anexo.getFechaFirma() != null 
+            ? anexo.getFechaFirma().atZone(ZoneId.systemDefault()).toInstant() 
+            : null;
+                
         dto.textoPrueba = extractTextoPrueba(anexo);
         return dto;
     }
