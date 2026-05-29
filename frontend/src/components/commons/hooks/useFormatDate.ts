@@ -1,4 +1,4 @@
-import { formatWithOffset } from "./formatWithOffset";
+import { formatDateTime } from "../../operations/operation.utils";
 import { useUserTimezone } from "../hooks/useUserTimezone";
 
 export function useFormatDate() {
@@ -6,6 +6,6 @@ export function useFormatDate() {
 
   return {
     format: (isoString: string | null | undefined): string =>
-      formatWithOffset(isoString, timezone),
+      formatDateTime(isoString, timezone),
   };
 }

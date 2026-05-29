@@ -3,6 +3,14 @@ import type { AnexoColor, OperationStatus } from "./operation.types";
 export const OPERATION_ANEXOS = [4, 5, 6, 7, 8] as const;
 const OPERATION_TIME_ZONE = "Europe/Madrid";
 
+function getStoredUserTimezone() {
+  if (typeof window === "undefined") {
+    return "+02:00";
+  }
+
+  return localStorage.getItem("userTimezone") ?? "+02:00";
+}
+
 function parseBackendDate(value: string) {
   const hasTimeZone = /([zZ]|[+-]\d{2}:\d{2})$/.test(value);
   if (hasTimeZone) {
@@ -15,24 +23,34 @@ function parseBackendDate(value: string) {
   return new Date(year, (month || 1) - 1, day || 1, hours || 0, minutes || 0, seconds || 0);
 }
 
+function parseBackendDateTime(value: string) {
+  const hasTimeZone = /([zZ]|[+-]\d{2}:\d{2})$/.test(value);
+  if (hasTimeZone) {
+    return new Date(value);
+  }
+
+  const normalized = value.includes("T") ? value : value.replace(" ", "T");
+  const [datePart, timePartRaw = "00:00:00"] = normalized.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes, seconds] = timePartRaw.split(":").map((part) => Number(part));
+  return new Date(Date.UTC(year, (month || 1) - 1, day || 1, hours || 0, minutes || 0, seconds || 0));
+}
+
 export function formatDateTime(value?: string | null, userOffset?: string) {
   if (!value) return "-";
-  const date = new Date(value); 
+  const date = parseBackendDateTime(value);
   
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  if (!userOffset) {
-    return date.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
-  }
+  const timezone = userOffset ?? getStoredUserTimezone();
 
   try {
-    const sign = userOffset.startsWith("-") ? -1 : 1;
-    const [hoursPart, minutesPart] = userOffset.replace(/[+-]/, "").split(":");
+    const sign = timezone.startsWith("-") ? -1 : 1;
+    const [hoursPart, minutesPart] = timezone.replace(/[+-]/, "").split(":");
     const offsetMinutes = sign * (parseInt(hoursPart, 10) * 60 + parseInt(minutesPart, 10));
-    const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
-    const adjustedDate = new Date(utcTime + (offsetMinutes * 60000));
+    const adjustedDate = new Date(date.getTime() + (offsetMinutes * 60000));
     return adjustedDate.toLocaleString("es-ES", {
       dateStyle: "short",
       timeStyle: "short",

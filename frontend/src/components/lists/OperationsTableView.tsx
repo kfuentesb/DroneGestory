@@ -276,8 +276,8 @@ export default function OperationsTableView({
                       )}
                     </div>
                   </td>
-                  <td>{operation.nombreCreador}</td>
-                  {formatDateTime(operation.fechaCreacion, timezone)}
+                  <td className="text-center">{operation.nombreCreador}</td>
+                  <td className="text-center">{formatDateTime(operation.fechaCreacion, timezone)}</td>
                   <td className="text-center"><AnexoBadge version={operation.anexo4Version} color={operation.anexo4Color} /></td>
                   <td className="text-center"><AnexoBadge version={operation.anexo5Version} color={operation.anexo5Color} /></td>
                   <td className="text-center"><AnexoBadge version={operation.anexo6Version} color={operation.anexo6Color} /></td>
