@@ -276,7 +276,7 @@ export default function Settings() {
             >
               <div className="d-flex flex-column flex-lg-row justify-content-between gap-3">
                 <div>
-                  <div className="fw-semibold">Backups automaticos</div>
+                  <div className="fw-semibold">Backups automáticos</div>
                   <small className="text-muted">
                     Configura el dia del mes y ejecuta una copia manual cuando sea necesario.
                   </small>

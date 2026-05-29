@@ -14,6 +14,7 @@ import Pagination from "../commons/props/Pagination";
 import { formatDateTime, getAnexoColorStyle, getOperationStatusStyle } from "../operations/operation.utils";
 import LoadingSpinner from "../commons/Loading";
 import { useFormatDate } from "../commons/hooks/useFormatDate";
+import { useUserTimezone } from "../commons/hooks/useUserTimezone";
 
 type OperationsTableViewProps = {
   title: string;
@@ -72,6 +73,8 @@ export default function OperationsTableView({
   const [isCancelling, setIsCancelling] = useState(false);
   const ITEMS_PER_PAGE = 10;
   const { format } = useFormatDate();
+
+  const { timezone } = useUserTimezone();
 
   const filteredOperations = useSearchFilter(operations, search, (op) => [
     op.codigo,
@@ -274,7 +277,7 @@ export default function OperationsTableView({
                     </div>
                   </td>
                   <td>{operation.nombreCreador}</td>
-                  <td>{format(operation.fechaCreacion)}</td>
+                  {formatDateTime(operation.fechaCreacion, timezone)}
                   <td className="text-center"><AnexoBadge version={operation.anexo4Version} color={operation.anexo4Color} /></td>
                   <td className="text-center"><AnexoBadge version={operation.anexo5Version} color={operation.anexo5Color} /></td>
                   <td className="text-center"><AnexoBadge version={operation.anexo6Version} color={operation.anexo6Color} /></td>

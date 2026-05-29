@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,9 @@ public class AuditLogService {
     private static final Logger log = LoggerFactory.getLogger(AuditLogService.class);
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter HOUR_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private static final Path AUDIT_LOG_PATH = Paths.get("AuditLog.csv").toAbsolutePath().normalize();
+
+    @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
+    private String auditLogsRoot;
 
     public void record(String functionName, Long entityId, String details) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -45,26 +48,31 @@ public class AuditLogService {
         String line = String.format("%s,%s,%s,%s,%s,%s%n", tsEsc, hourEsc, userEsc, funcEsc, idEsc, detailsEsc);
 
         try {
-            Path parent = AUDIT_LOG_PATH.getParent();
+            Path auditLogPath = getAuditLogPath();
+            Path parent = auditLogPath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
             // If file doesn't exist, write a header first
-            if (Files.notExists(AUDIT_LOG_PATH)) {
+            if (Files.notExists(auditLogPath)) {
                 String header = "timestamp,utc_hour,usuario,funcion,id,detalle" + System.lineSeparator();
-                Files.writeString(AUDIT_LOG_PATH, header, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                Files.writeString(auditLogPath, header, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
             }
 
             Files.writeString(
-                    AUDIT_LOG_PATH,
+                    auditLogPath,
                     line,
                     StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND
             );
         } catch (IOException e) {
-            log.error("No se pudo escribir en el audit log {}", AUDIT_LOG_PATH, e);
+            log.error("No se pudo escribir en el audit log {}", getAuditLogPath(), e);
         }
+    }
+
+    private Path getAuditLogPath() {
+        return Paths.get(auditLogsRoot, "AuditLog.csv").toAbsolutePath().normalize();
     }
 
     private String sanitize(String details) {

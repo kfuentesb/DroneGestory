@@ -50,6 +50,12 @@ public class BackupService {
     @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
     private String auditLogsRoot;
 
+    @Value("${APP_LEGACY_AUDIT_LOG_CSV:AuditLog.csv}")
+    private String legacyAuditLogCsv;
+
+    @Value("${APP_LEGACY_AUDIT_LOG_TXT:AuditLog.txt}")
+    private String legacyAuditLogTxt;
+
     @Scheduled(cron = "0 0 * * * ?", zone = "Europe/Madrid")
     @Transactional
     public void runScheduledBackup() {
@@ -93,7 +99,9 @@ public class BackupService {
             Files.createDirectories(backendDir);
             dumpDatabase(databaseFile);
             boolean uploadsCopied = copyDirectoryIfExists(Path.of(uploadsRoot), backendDir.resolve("uploads"));
-            boolean auditLogsCopied = copyDirectoryIfExists(Path.of(auditLogsRoot), backendDir.resolve("AuditLogs"));
+            Path auditLogsDestination = backendDir.resolve("AuditLogs");
+            boolean auditLogsCopied = copyDirectoryIfExists(Path.of(auditLogsRoot), auditLogsDestination);
+            boolean legacyAuditLogsCopied = copyLegacyAuditLogFiles(auditLogsDestination);
 
             settings.setLastRunDate(backupDate);
             settings.setLastBackupPath(backupDir.toString());
@@ -104,7 +112,7 @@ public class BackupService {
                     backupDir.toString(),
                     databaseFile.toString(),
                     uploadsCopied,
-                    auditLogsCopied
+                    auditLogsCopied || legacyAuditLogsCopied
             );
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) {
@@ -112,6 +120,24 @@ public class BackupService {
             }
             throw new IllegalStateException("No se pudo crear el backup: " + e.getMessage(), e);
         }
+    }
+
+    private boolean copyLegacyAuditLogFiles(Path destination) throws IOException {
+        boolean copied = false;
+        copied = copyFileIfExists(Path.of(legacyAuditLogCsv), destination.resolve("AuditLog.csv")) || copied;
+        copied = copyFileIfExists(Path.of(legacyAuditLogTxt), destination.resolve("AuditLog.txt")) || copied;
+        return copied;
+    }
+
+    private boolean copyFileIfExists(Path source, Path destination) throws IOException {
+        Path normalizedSource = source.toAbsolutePath().normalize();
+        if (!Files.isRegularFile(normalizedSource)) {
+            return false;
+        }
+
+        Files.createDirectories(destination.getParent());
+        Files.copy(normalizedSource, destination, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+        return true;
     }
 
     private void dumpDatabase(Path databaseFile) throws IOException, InterruptedException {

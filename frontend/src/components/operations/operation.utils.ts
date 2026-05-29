@@ -15,18 +15,32 @@ function parseBackendDate(value: string) {
   return new Date(year, (month || 1) - 1, day || 1, hours || 0, minutes || 0, seconds || 0);
 }
 
-export function formatDateTime(value?: string | null) {
+export function formatDateTime(value?: string | null, userOffset?: string) {
   if (!value) return "-";
-
-  const date = parseBackendDate(value);
+  const date = new Date(value); 
+  
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return date.toLocaleString("es-ES", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: OPERATION_TIME_ZONE,
-  });
+
+  if (!userOffset) {
+    return date.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+  }
+
+  try {
+    const sign = userOffset.startsWith("-") ? -1 : 1;
+    const [hoursPart, minutesPart] = userOffset.replace(/[+-]/, "").split(":");
+    const offsetMinutes = sign * (parseInt(hoursPart, 10) * 60 + parseInt(minutesPart, 10));
+    const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const adjustedDate = new Date(utcTime + (offsetMinutes * 60000));
+    return adjustedDate.toLocaleString("es-ES", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "UTC",
+    });
+  } catch (error) {
+    return date.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+  }
 }
 
 export function formatDate(value?: string | null) {

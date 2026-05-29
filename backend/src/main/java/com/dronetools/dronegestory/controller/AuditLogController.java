@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.controller;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,24 +21,37 @@ import java.nio.file.Paths;
 @RequestMapping("/api/audit-log")
 public class AuditLogController {
 
-    private static final Path AUDIT_LOG_PATH = Paths.get("AuditLog.csv").toAbsolutePath().normalize();
+    @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
+    private String auditLogsRoot;
+
+    @Value("${APP_LEGACY_AUDIT_LOG_CSV:AuditLog.csv}")
+    private String legacyAuditLogCsv;
 
     @GetMapping("/download")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Resource> download() throws IOException {
-        if (!Files.exists(AUDIT_LOG_PATH) || !Files.isReadable(AUDIT_LOG_PATH)) {
+        Path auditLogPath = getAuditLogPath();
+        if (!Files.exists(auditLogPath) || !Files.isReadable(auditLogPath)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        Resource resource = new UrlResource(AUDIT_LOG_PATH.toUri());
-        String contentType = Files.probeContentType(AUDIT_LOG_PATH);
+        Resource resource = new UrlResource(auditLogPath.toUri());
+        String contentType = Files.probeContentType(auditLogPath);
         if (contentType == null) {
             contentType = MediaType.TEXT_PLAIN_VALUE;
         }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"AuditLog.txt\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"AuditLog.csv\"")
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .body(resource);
+    }
+
+    private Path getAuditLogPath() {
+        Path configuredPath = Paths.get(auditLogsRoot, "AuditLog.csv").toAbsolutePath().normalize();
+        if (Files.exists(configuredPath)) {
+            return configuredPath;
+        }
+        return Paths.get(legacyAuditLogCsv).toAbsolutePath().normalize();
     }
 }
