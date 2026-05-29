@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ReactNode } from "react";
 import cancelIcon from "../../assets/commons/cancel_white.svg";
 
 // para usar este componente, pon el propio componente abajo del todo para renderizarlo
@@ -16,6 +16,9 @@ interface ConfirmModalProps {
     inputPlaceholder?: string;
     inputHelperText?: string;
     onInputChange?: (value: string) => void;
+    children?: ReactNode;
+    confirmLabel?: string;
+    showCancelButton?: boolean;
 }
 
 export default function ConfirmModal({
@@ -30,12 +33,17 @@ export default function ConfirmModal({
     inputPlaceholder,
     inputHelperText,
     onInputChange,
+    children,
+    confirmLabel,
+    showCancelButton,
 }: ConfirmModalProps) {
     if (!show) return null;
 
     // Mapeo de colores según la variante (usando clases de Bootstrap)
     const buttonClass = `btn btn-${variant}`;
     const titleClass = variant === "danger" ? "text-danger" : variant === "warning" ? "text-warning" : "text-primary";
+    const shouldShowCancel = showCancelButton ?? variant !== "warning";
+    const confirmButtonLabel = confirmLabel ?? (variant === "warning" ? "Entendido" : "Confirmar");
 
     return (
         <div className="modal-backdrop" style={{
@@ -60,9 +68,10 @@ export default function ConfirmModal({
                         {inputHelperText && <div className="form-text mt-1">{inputHelperText}</div>}
                     </div>
                 )}
+                {children && <div className="mt-3">{children}</div>}
                 <div className="d-flex justify-content-end gap-2 mt-3">
                     {/* Ocultamos cancelar si es solo un aviso de validación */}
-                    {variant !== "warning" && (
+                    {shouldShowCancel && (
                         <button className="btn btn-secondary px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2" onClick={onCancel}>
                             <img
                                 src={cancelIcon}
@@ -75,7 +84,7 @@ export default function ConfirmModal({
                         </button>
                     )}
                     <button className={`${buttonClass} px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2`} onClick={onConfirm}>
-                        {variant === "warning" ? "Entendido" : "Confirmar"}
+                        {confirmButtonLabel}
                     </button>
                 </div>
             </div>

@@ -246,7 +246,6 @@ public class FlightTimeService {
     }
 
     private FlightTimeDTO toDto(FlightTime flightTime) {
-        // Use operationCode from column if available, otherwise try from operation entity
         String operationCodeDisplay = flightTime.getOperationCode();
         if (operationCodeDisplay == null && flightTime.getOperation() != null) {
             operationCodeDisplay = flightTime.getOperation().getCodigo();
@@ -303,7 +302,7 @@ public class FlightTimeService {
                 Map.entry("aircraftModel", flightTime.getAircraftModel() != null ? flightTime.getAircraftModel() : ""),
                 Map.entry("aircraftSerialNumber", flightTime.getAircraftSerialNumber() != null ? flightTime.getAircraftSerialNumber() : ""),
                 Map.entry("operationId", flightTime.getOperation() != null ? flightTime.getOperation().getIdOperacion() : ""),
-                Map.entry("operationCode", operationCodeDisplay), // <-- Fixed to handle non-existing strings safely
+                Map.entry("operationCode", operationCodeDisplay),
                 Map.entry("flightDate", flightTime.getFlightDate() != null ? flightTime.getFlightDate().toString() : ""),
                 Map.entry("durationMinutes", flightTime.getDurationMinutes() != null ? flightTime.getDurationMinutes() : 0),
                 Map.entry("totalFlightTimeMinutes", flightTime.getTotalFlightTimeMinutes() != null ? flightTime.getTotalFlightTimeMinutes() : 0),

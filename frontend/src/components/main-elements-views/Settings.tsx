@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../../api";
+import ConfirmModal from "../commons/ConfirmModal";
 import { useAuth } from "../commons/hooks/useAuth";
 import { useUserTimezone } from "../commons/hooks/useUserTimezone";
 import { InfoBadge } from "../commons/InfoBadge";
@@ -47,6 +48,15 @@ type BackupRunResponse = {
   auditLogsCopied: boolean;
 };
 
+type BackupRestoreResponse = {
+  restoredBackupName: string;
+  preRestoreBackupCreated: boolean;
+  preRestoreBackupPath: string | null;
+  restoredDatabaseFile: string;
+  uploadsRestored: boolean;
+  auditLogsRestored: boolean;
+};
+
 export default function Settings() {
   const { hasRole } = useAuth();
   const canDownloadAuditLog = hasRole("ADMIN") || hasRole("MANAGER");
@@ -58,6 +68,10 @@ export default function Settings() {
   const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const [backupSettings, setBackupSettings] = useState<BackupSettings | null>(null);
   const [selectedBackupDay, setSelectedBackupDay] = useState(1);
+  const [selectedRestoreFile, setSelectedRestoreFile] = useState<File | null>(null);
+  const [restoreCurrentBefore, setRestoreCurrentBefore] = useState(true);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
   const [showEmptyAlert, setShowEmptyAlert] = useState(false);
   const { timezone, saveTimezone, isLoading: tzLoading } = useUserTimezone();
 
@@ -199,6 +213,60 @@ export default function Settings() {
     }
   };
 
+  const handleSelectRestoreFile = (file: File | null) => {
+    setSelectedRestoreFile(file);
+    setError(null);
+    setBackupMessage(null);
+  };
+
+  const handleOpenRestoreConfirm = () => {
+    if (!selectedRestoreFile) {
+      setError("Selecciona un archivo de backup antes de restaurar.");
+      return;
+    }
+    setRestoreCurrentBefore(true);
+    setShowRestoreConfirm(true);
+  };
+
+  const handleRestoreBackup = async () => {
+    if (!selectedRestoreFile) {
+      setError("Selecciona un archivo de backup antes de restaurar.");
+      return;
+    }
+
+    setIsRestoring(true);
+    setError(null);
+    setBackupMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("backupFile", selectedRestoreFile);
+      formData.append("saveCurrentBeforeRestore", String(restoreCurrentBefore));
+
+      const res = await apiFetch("/api/backups/restore", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res) return;
+
+      const data: BackupRestoreResponse = await res.json();
+      const preRestoreText = data.preRestoreBackupCreated
+        ? ` Se guardó un respaldo previo en ${data.preRestoreBackupPath}.`
+        : "";
+
+      setBackupMessage(
+        `Backup restaurado desde ${data.restoredBackupName}.${preRestoreText} Recargando la página...`
+      );
+      setShowRestoreConfirm(false);
+      setSelectedRestoreFile(null);
+      window.setTimeout(() => window.location.reload(), 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo restaurar el backup");
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
   return (
     <div className="container py-4">
       <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "12px" }}>
@@ -335,6 +403,35 @@ export default function Settings() {
                 </div>
               </div>
 
+              <div className="mt-4 pt-3 border-top">
+                <div className="fw-semibold mb-2">Restaurar backup</div>
+                <small className="text-muted d-block mb-3">
+                  Sube un backup generado por el sistema en formato `.zip` o `.sql`.
+                </small>
+                <div className="d-flex flex-column flex-md-row gap-2 align-items-md-center">
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept=".zip,.sql"
+                    onChange={(event) => handleSelectRestoreFile(event.target.files?.[0] ?? null)}
+                    disabled={isRestoring}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={handleOpenRestoreConfirm}
+                    disabled={!selectedRestoreFile || isRestoring}
+                  >
+                    {isRestoring ? "Restaurando..." : "Restaurar backup"}
+                  </button>
+                </div>
+                {selectedRestoreFile && (
+                  <div className="text-muted small mt-2">
+                    Archivo seleccionado: <span className="font-monospace">{selectedRestoreFile.name}</span>
+                  </div>
+                )}
+              </div>
+
               {backupMessage && (
                 <div className="alert alert-success mt-3 mb-0">
                   {backupMessage}
@@ -350,6 +447,38 @@ export default function Settings() {
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        show={showRestoreConfirm}
+        title="Restaurar backup"
+        message="La restauración sobrescribirá los datos actuales con el backup seleccionado."
+        variant="warning"
+        confirmLabel="Restaurar"
+        showCancelButton
+        onConfirm={() => void handleRestoreBackup()}
+        onCancel={() => {
+          if (!isRestoring) {
+            setShowRestoreConfirm(false);
+          }
+        }}
+      >
+        <div className="form-check">
+          <input
+            id="save-current-before-restore"
+            className="form-check-input"
+            type="checkbox"
+            checked={restoreCurrentBefore}
+            onChange={(event) => setRestoreCurrentBefore(event.target.checked)}
+            disabled={isRestoring}
+          />
+          <label className="form-check-label" htmlFor="save-current-before-restore">
+            Guardar un backup del estado actual antes de restaurar
+          </label>
+        </div>
+        <div className="text-muted small mt-2">
+          Archivo: <span className="font-monospace">{selectedRestoreFile?.name ?? "-"}</span>
+        </div>
+      </ConfirmModal>
 
       {/* Modal Bootstrap */}
       {showEmptyAlert && (

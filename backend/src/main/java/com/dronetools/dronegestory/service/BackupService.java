@@ -1,15 +1,18 @@
 package com.dronetools.dronegestory.service;
 
 import com.dronetools.dronegestory.dto.BackupRunResponse;
+import com.dronetools.dronegestory.dto.BackupRestoreResponse;
 import com.dronetools.dronegestory.dto.BackupSettingsRequest;
 import com.dronetools.dronegestory.dto.BackupSettingsResponse;
 import com.dronetools.dronegestory.model.BackupSettings;
 import com.dronetools.dronegestory.repository.BackupSettingsRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -17,6 +20,8 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -81,6 +86,57 @@ public class BackupService {
     @Transactional
     public BackupRunResponse runManualBackup() {
         return runBackup(getOrCreateEntity());
+    }
+
+    @Transactional
+    public BackupRestoreResponse restoreBackup(MultipartFile backupFile, boolean saveCurrentBeforeRestore) {
+        if (backupFile == null || backupFile.isEmpty()) {
+            throw new IllegalStateException("Debes subir un archivo de backup valido.");
+        }
+
+        BackupRunResponse preRestoreBackup = null;
+        if (saveCurrentBeforeRestore) {
+            preRestoreBackup = runBackup(getOrCreateEntity());
+        }
+
+        Path tempDir = null;
+        try {
+            tempDir = Files.createTempDirectory("backup-restore-");
+            BackupArchiveContents archiveContents = unpackBackupFile(backupFile, tempDir);
+
+            if (archiveContents.sqlFile() == null) {
+                throw new IllegalStateException("El backup no contiene un archivo SQL de base de datos.");
+            }
+
+            resetDatabaseSchema();
+            restoreDatabase(archiveContents.sqlFile());
+            boolean uploadsRestored = restoreDirectoryIfPresent(archiveContents.uploadsDir(), Path.of(uploadsRoot));
+            boolean auditLogsRestored = restoreDirectoryIfPresent(archiveContents.auditLogsDir(), Path.of(auditLogsRoot));
+
+            String restoredBackupName = backupFile.getOriginalFilename() == null
+                    ? "backup subido"
+                    : backupFile.getOriginalFilename();
+            return new BackupRestoreResponse(
+                    restoredBackupName,
+                    preRestoreBackup != null,
+                    preRestoreBackup != null ? preRestoreBackup.backupPath() : null,
+                    archiveContents.sqlFile().toString(),
+                    uploadsRestored,
+                    auditLogsRestored
+            );
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new IllegalStateException("No se pudo restaurar el backup: " + e.getMessage(), e);
+        } finally {
+            if (tempDir != null) {
+                try {
+                    deleteDirectory(tempDir);
+                } catch (IOException ignored) {
+                }
+            }
+        }
     }
 
     private BackupRunResponse runBackup(BackupSettings settings) {
@@ -152,6 +208,52 @@ public class BackupService {
         }
     }
 
+    private void restoreDatabase(Path databaseFile) throws IOException, InterruptedException {
+        DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "psql",
+                "-h", connectionInfo.host(),
+                "-p", connectionInfo.port(),
+                "-U", datasourceUsername,
+                "-d", connectionInfo.database(),
+                "-v", "ON_ERROR_STOP=1",
+                "-f", databaseFile.toString()
+        );
+        processBuilder.environment().put("PGPASSWORD", datasourcePassword);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+        String output = new String(process.getInputStream().readAllBytes());
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new IllegalStateException("psql fallo con codigo " + exitCode + ": " + output);
+        }
+    }
+
+    private void resetDatabaseSchema() throws IOException, InterruptedException {
+        DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "psql",
+                "-h", connectionInfo.host(),
+                "-p", connectionInfo.port(),
+                "-U", datasourceUsername,
+                "-d", connectionInfo.database(),
+                "-v", "ON_ERROR_STOP=1",
+                "-c", "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        );
+        processBuilder.environment().put("PGPASSWORD", datasourcePassword);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+        String output = new String(process.getInputStream().readAllBytes());
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new IllegalStateException("No se pudo limpiar la base de datos antes de restaurar: " + output);
+        }
+    }
+
     private boolean copyDirectoryIfExists(Path source, Path destination) throws IOException {
         Path normalizedSource = source.toAbsolutePath().normalize();
         if (!Files.isDirectory(normalizedSource)) {
@@ -183,6 +285,89 @@ public class BackupService {
             for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
                 Files.deleteIfExists(path);
             }
+        }
+    }
+
+    private boolean restoreDirectoryIfPresent(Path source, Path destination) throws IOException {
+        if (source == null || !Files.isDirectory(source)) {
+            return false;
+        }
+
+        deleteDirectory(destination);
+        Files.createDirectories(destination);
+
+        try (var paths = Files.walk(source)) {
+            for (Path sourcePath : paths.toList()) {
+                Path targetPath = destination.resolve(source.relativize(sourcePath).toString());
+                if (Files.isDirectory(sourcePath)) {
+                    Files.createDirectories(targetPath);
+                } else {
+                    Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                }
+            }
+        }
+        return true;
+    }
+
+    private BackupArchiveContents unpackBackupFile(MultipartFile backupFile, Path tempDir) throws IOException {
+        String originalName = backupFile.getOriginalFilename() == null ? "" : backupFile.getOriginalFilename().toLowerCase();
+        Path sourcePath = tempDir.resolve(backupFile.getOriginalFilename() == null ? "backup" : backupFile.getOriginalFilename()).normalize();
+        Files.copy(backupFile.getInputStream(), sourcePath, StandardCopyOption.REPLACE_EXISTING);
+
+        if (originalName.endsWith(".sql")) {
+            return new BackupArchiveContents(sourcePath, findDirectoryByName(tempDir, "uploads"), findDirectoryByName(tempDir, "auditlogs"));
+        }
+
+        if (!originalName.endsWith(".zip")) {
+            throw new IllegalStateException("Formato de backup no soportado. Sube un .zip o un .sql.");
+        }
+
+        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(sourcePath))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                Path resolved = tempDir.resolve(entry.getName()).normalize();
+                if (!resolved.startsWith(tempDir)) {
+                    throw new IllegalStateException("El archivo comprimido contiene rutas no permitidas.");
+                }
+
+                if (entry.isDirectory()) {
+                    Files.createDirectories(resolved);
+                } else {
+                    Files.createDirectories(resolved.getParent());
+                    Files.copy(zipInputStream, resolved, StandardCopyOption.REPLACE_EXISTING);
+                }
+                zipInputStream.closeEntry();
+            }
+        }
+
+        Path sqlFile = findSqlFile(tempDir);
+        Path uploadsDir = findDirectoryByName(tempDir, "uploads");
+        Path auditLogsDir = findDirectoryByName(tempDir, "auditlogs");
+        return new BackupArchiveContents(sqlFile, uploadsDir, auditLogsDir);
+    }
+
+    private Path findSqlFile(Path root) throws IOException {
+        try (var paths = Files.walk(root)) {
+            return paths
+                    .filter(path -> Files.isRegularFile(path))
+                    .filter(path -> {
+                        String name = path.getFileName().toString().toLowerCase();
+                        return name.equals("postgredatabase.sql")
+                                || name.equals("databasecopy.sql")
+                                || name.endsWith(".sql");
+                    })
+                    .findFirst()
+                    .orElse(null);
+        }
+    }
+
+    private Path findDirectoryByName(Path root, String expectedName) throws IOException {
+        try (var paths = Files.walk(root)) {
+            return paths
+                    .filter(path -> Files.isDirectory(path))
+                    .filter(path -> path.getFileName() != null && path.getFileName().toString().equalsIgnoreCase(expectedName))
+                    .findFirst()
+                    .orElse(null);
         }
     }
 
@@ -219,5 +404,8 @@ public class BackupService {
     }
 
     private record DatabaseConnectionInfo(String host, String port, String database) {
+    }
+
+    private record BackupArchiveContents(Path sqlFile, Path uploadsDir, Path auditLogsDir) {
     }
 }
