@@ -46,6 +46,7 @@ Para que el sistema funcione correctamente, es necesario crear un archivo **`.en
 ```properties
 # --- Configuración de API (Local) ---
 VITE_API_BASE_URL=http://localhost:8080
+APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:5173)
 
 # --- Base de Datos (Replicadas aquí para Docker Compose) ---
 DB_USER=admin
