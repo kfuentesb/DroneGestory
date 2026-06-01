@@ -132,7 +132,6 @@ export default function OperationDocumentationList() {
         );
     }, [documentations, search]);
 
-    // Calculate item chunk for the active page view
     const paginatedDocumentations = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredDocumentations.slice(startIndex, startIndex + itemsPerPage);
@@ -285,7 +284,8 @@ export default function OperationDocumentationList() {
                         )}
                     </div>
 
-                    {error && (
+                    {/* Only displays error behind modal context if modal is closed */}
+                    {error && !form && (
                         <div className="alert alert-danger py-2" role="alert">
                             {error}
                         </div>
@@ -463,6 +463,13 @@ export default function OperationDocumentationList() {
                                 <button type="button" className="btn-close" onClick={closeForm}></button>
                             </div>
                             <div className="modal-body">
+                                {/* Error block added right here inside the modal window */}
+                                {error && (
+                                    <div className="alert alert-danger py-2 mb-3" role="alert">
+                                        {error}
+                                    </div>
+                                )}
+
                                 <div className="mb-3">
                                     <label className="form-label">Nombre del documento</label>
                                     <input
