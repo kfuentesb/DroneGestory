@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState, type FormEvent } f
 import { apiFetch } from "../../api";
 import { useAuth } from "../commons/hooks/useAuth";
 import LoadingSpinner from "../commons/Loading";
-import Pagination from "../commons/props/Pagination";
+import Pagination from "../commons/props/Pagination"; // Importing your pagination component
 
 type DocumentVersion = {
     id: number;
@@ -91,14 +91,9 @@ export default function OperationDocumentationList() {
     const [error, setError] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<number | null>(null);
 
-    // const filteredOperationDocumentation = useSearchFilter(aircrafts, search, (a) => [
-    //     a.manufacturer ?? "",
-    //     a.model ?? "",
-    //     a.serialNumber ?? "",
-    //     a.aircraftClass,
-    //     a.config,
-    //     a.fechaFab ?? "",
-    // ]);
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const loadDocumentations = useCallback(async () => {
         setLoading(true);
@@ -120,6 +115,11 @@ export default function OperationDocumentationList() {
         void loadDocumentations();
     }, [loadDocumentations]);
 
+    // Reset pagination to page 1 whenever a search string is altered
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search]);
+
     const filteredDocumentations = useMemo(() => {
         const term = search.trim().toLowerCase();
         if (!term) return documentations;
@@ -131,6 +131,12 @@ export default function OperationDocumentationList() {
             ].some((value) => value?.toLowerCase().includes(term))
         );
     }, [documentations, search]);
+
+    // Calculate item chunk for the active page view
+    const paginatedDocumentations = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredDocumentations.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredDocumentations, currentPage, itemsPerPage]);
 
     const openCreateForm = () => {
         setError(null);
@@ -168,6 +174,11 @@ export default function OperationDocumentationList() {
 
         if (!form.name.trim()) {
             setError("El nombre es obligatorio.");
+            return;
+        }
+
+        if (form.file && form.file.size > 20 * 1024 * 1024) {
+            setError("El archivo debe pesar menos de 20MB.");
             return;
         }
 
@@ -290,7 +301,6 @@ export default function OperationDocumentationList() {
                     </div>
 
                     <div className="table-responsive">
-
                         <table className="table align-middle">
                             <thead>
                                 <tr>
@@ -301,7 +311,7 @@ export default function OperationDocumentationList() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredDocumentations.map((documentation) => {
+                                {paginatedDocumentations.map((documentation) => {
                                     const latest = documentation.latestVersion;
                                     const isExpanded = expandedId === documentation.id;
 
@@ -309,7 +319,7 @@ export default function OperationDocumentationList() {
                                         <Fragment key={documentation.id}>
                                             <tr className="align-middle">
                                                 <td>
-                                                    <div className="d-flex align-items-center justify-content-center">
+                                                    <div className="d-flex align-items-center">
                                                         <i className="bi bi-file-earmark-text text-primary me-2 fs-5"></i>
                                                         <span 
                                                             className="fw-bold text-primary"
@@ -430,13 +440,16 @@ export default function OperationDocumentationList() {
                             No hay documentación disponible.
                         </div>
                     )}
+
+                    <div className="mt-3">
+                        <Pagination 
+                            totalItems={filteredDocumentations.length}
+                            currentPage={currentPage}
+                            itemsPerPage={itemsPerPage}
+                            onPageChange={(page) => setCurrentPage(page)}
+                        />
+                    </div>
                 </div>
-                {/* <Pagination
-                    totalItems={filteredOperationDocumentation.length}
-                    currentPage={currentPage}
-                    itemsPerPage={ITEMS_PER_PAGE}
-                    onPageChange={setCurrentPage}
-                /> */}
             </div>
 
             {form && canManage && (
@@ -460,7 +473,6 @@ export default function OperationDocumentationList() {
                                     />
                                 </div>
 
-                                {/* SELECTORES DE VERSIÓN Y REVISIÓN */}
                                 <div className="row mb-3">
                                     <div className="col-6">
                                         <label className="form-label">Versión</label>
