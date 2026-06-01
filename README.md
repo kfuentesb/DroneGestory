@@ -1,4 +1,4 @@
-# DroneGestory
+# DroneGestory 🚁🕹️🛩️
 
 Para leer este archivo en español, haz clic aquí: **[Español](#español)** To read this file in English, click here: **[English](#english)**
 
@@ -288,7 +288,7 @@ See [LICENSE](https://www.google.com/search?q=LICENSE).
 
 DroneGestory es un sistema completo (full-stack) para la gestión de drones, operadores, documentación técnica y copias de seguridad.
 
-Capturas de pantalla: [screenshots.md](https://www.google.com/search?q=screenshots.md)
+Capturas de pantalla: [screenshots.md](screenshots.md)
 
 ## Qué hay en el repositorio
 
@@ -559,10 +559,79 @@ Las carpetas principales en tiempo de ejecución son:
 
 Consulta el archivo [LICENSE](https://www.google.com/search?q=LICENSE).
 
+
+## Estructura de carpetas
 ```
-
-
-
+.
+├── backend/
+│   ├── database/migrations (Para migrar o hacer cambios a la base de datos)
+│   ├── src/main/
+│   │    ├── java/com/dronetools/dronegrestory/
+│   │    │   ├── common/
+│   │    │   ├── config/ (SecurityConfig declara el rango de visión en base al rol del usuario)
+│   │    │   ├── controller/
+│   │    │   ├── dto/
+│   │    │   ├── exception/
+│   │    │   ├── model/
+│   │    │   ├── repository/
+│   │    │   ├── security/
+│   │    │   ├── service/
+│   │    │   ├── util/
+│   │    │   └── DroneGestoryApplication.java
+│   │    └── resources/ (.yaml para local y servidor )
+│   ├── docker-compose.yml ( postgresql database para desarrollo )
+│   ├── Dockerfile ( docker para montar el backend en despliegue )
+│   ├── init.sql ( Insert para crear primer usuario admin )
+│   ├── pom.xml
+│   ├── string-to-hash.py (Script para generar contraseñas hasheadas )
+│   └── .env/ ( properties / Seguridad JWT / Configuración de Email (Gmail) )
+│
+├── frontend/
+│   ├── public/ ( imágenes )
+│   ├── src/
+│   │    ├── assets/
+│   │    ├── components/
+│   │    │    ├── certificates/
+│   │    │    ├── commons/ ( Componentes reutilizados en diferentes partes del proyecto)
+│   │    │    │    ├── hooks/
+│   │    │    │    ├── MultiStepForm/
+│   │    │    │    ├── props/
+│   │    │    │    └── * 
+│   │    │    ├── dashboard/
+│   │    │    ├── details/ ( Vista detallada del elemento )
+│   │    │    │    ├── aircraft/
+│   │    │    │    ├── operation/
+│   │    │    │    ├── user&profile/
+│   │    │    │    └── DetailsComponent.tsx ( Vista reutilizada para ver los detalles)
+│   │    │    ├── docs/
+│   │    │    ├── forms/
+│   │    │    ├── layout/ ( Distribución principal del proyecto: sidebar, botón hamburguesa)
+│   │    │    ├── lists/
+│   │    │    ├── mail/
+│   │    │    ├── main-elements-views/ ( Elementos principales: footer, 403, 404, home, login, navbar, sidebar, etc)
+│   │    │    ├── operations/
+│   │    │    ├── pdf/
+│   │    │    └── AuthPorvider.tsx
+│   │    ├── global-const/
+│   │    ├── router/
+│   │    │    ├── ProtectedRoute.tsx
+│   │    │    └── RouterPrincipal.tsx
+│   │    ├── styles/
+│   │    ├── api.ts
+│   │    ├── App.css
+│   │    ├── App.tsx
+│   │    ├── index.css
+│   │    └── main.tsx
+│   ├── nginx.conf
+│   ├── vite.config.ts
+│   ├── Dockerfile ( docker para montar frontend en despliegue )
+│   └── index.html
+│
+├── .gitattributes
+├── .gitignore
+├── .env (SERVER_IP / VITE_API_BASE_URL)
+└── compose.yaml (Docker del servidor: backend, frontend, postgresql)
+```
 
 
 
