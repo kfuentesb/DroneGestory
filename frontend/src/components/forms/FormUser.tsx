@@ -176,6 +176,8 @@ function FormUser() {
         setActiveChecks(prev => ({ ...prev, [id]: !prev[id as keyof typeof activeChecks] }));
     };
 
+    // el problema es que aqui entran tanto documentos como imagenes de perfil, pero bueno que se pueda tener una
+    // imagen de perfil de 20MB xd 👌
     const validateFile = (file: File, isProfilePicture: boolean): string | null => {
         const acceptedTypes = isProfilePicture ? allowedImageTypes : allowedCertificateTypes;
 
@@ -183,8 +185,8 @@ function FormUser() {
             return isProfilePicture ? "Only JPG and PNG files are allowed." : "Only PDF, JPG and PNG files are allowed.";
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            return "File size must be less than 5MB.";
+        if (file.size > 20 * 1024 * 1024) {
+            return "File size must be less than 20MB.";
         }
 
         return null;

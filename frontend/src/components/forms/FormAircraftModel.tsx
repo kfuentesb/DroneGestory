@@ -136,8 +136,8 @@ export default function FormAircraftModel() {
     if (!allowedDocumentationTypes.includes(file.type)) {
       return "Solo PDF, JPG, PNG o WEBP.";
     }
-    if (file.size > 5 * 1024 * 1024) {
-      return "El archivo debe pesar menos de 5MB.";
+    if (file.size > 20 * 1024 * 1024) {
+      return "El archivo debe pesar menos de 20MB.";
     }
     return null;
   };
