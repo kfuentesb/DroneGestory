@@ -23,6 +23,12 @@ import type { SelectableUserOption } from "./FormOperationAnexo4DetailPdf";
 
 export type OperationMasterPdfMode = "full" | "latest";
 
+type ExternalPersonnelSignature = {
+  nombreApellidos: string;
+  rol: string;
+  signed: boolean;
+};
+
 export type AnexoVersionData<TData> = {
   tipoAnexo: 4 | 5 | 6 | 7 | 8;
   label: string;
@@ -60,6 +66,76 @@ const getLatestVersion = <T extends { numeroVersion: number }>(versions: T[]) =>
 const normalizeAircraftIds = (value: unknown): number[] => {
   if (!Array.isArray(value)) return [];
   return value.map((item) => Number(item)).filter((item) => Number.isFinite(item));
+};
+
+const normalizeExternalPersonnel = (value: unknown): ExternalPersonnelSignature[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const raw = item as Record<string, unknown>;
+      const nombreApellidos = typeof raw.nombreApellidos === "string" ? raw.nombreApellidos.trim() : "";
+      const rol = typeof raw.rol === "string" ? raw.rol.trim() : "";
+      const signed = typeof raw.signed === "boolean" ? raw.signed : false;
+
+      if (!nombreApellidos && !rol) {
+        return null;
+      }
+
+      return { nombreApellidos, rol, signed };
+    })
+    .filter((item): item is ExternalPersonnelSignature => item !== null);
+};
+
+const EXTERNAL_SIGNATURE_STORAGE_PREFIX = "anexo5ExternalSignatures";
+
+const buildExternalSignatureStorageKey = (operationId: number, anexoId?: number | null) =>
+  `${EXTERNAL_SIGNATURE_STORAGE_PREFIX}:${operationId}:${anexoId ?? "draft"}`;
+
+const readExternalSignatureStorage = (operationId: number, anexoId?: number | null) => {
+  if (typeof localStorage === "undefined") {
+    return null as ExternalPersonnelSignature[] | null;
+  }
+
+  try {
+    const raw = localStorage.getItem(buildExternalSignatureStorageKey(operationId, anexoId));
+    if (!raw) {
+      return null as ExternalPersonnelSignature[] | null;
+    }
+    return normalizeExternalPersonnel(JSON.parse(raw));
+  } catch (error) {
+    console.warn("No se pudieron leer las firmas externas almacenadas:", error);
+    return null as ExternalPersonnelSignature[] | null;
+  }
+};
+
+const mergeExternalPersonnelSignatures = (
+  basePersonnel: ExternalPersonnelSignature[],
+  existingPersonnel: ExternalPersonnelSignature[],
+): ExternalPersonnelSignature[] => {
+  if (!basePersonnel.length && existingPersonnel.length) {
+    return existingPersonnel.map((person) => ({ ...person, signed: Boolean(person.signed) }));
+  }
+
+  const signedLookup = new Map(
+    existingPersonnel.map((person) => [
+      `${person.nombreApellidos}`.trim().toLowerCase() + "|" + `${person.rol}`.trim().toLowerCase(),
+      Boolean(person.signed),
+    ]),
+  );
+
+  return basePersonnel.map((person) => ({
+    ...person,
+    signed:
+      signedLookup.get(
+        `${person.nombreApellidos}`.trim().toLowerCase() + "|" + `${person.rol}`.trim().toLowerCase(),
+      ) ?? Boolean(person.signed),
+  }));
 };
 
 const derivePersonnelOptions = (
@@ -181,6 +257,7 @@ export async function buildVersionData({
   const anexo4Data = await fetchAnexo4Data(operation.idOperacion);
   const personnelOptions = derivePersonnelOptions(anexo4Data?.selectedPersonnel);
   const anexo4AircraftIds = normalizeAircraftIds(anexo4Data?.aircraftIds);
+  const externalPersonnel = normalizeExternalPersonnel(anexo4Data?.personalExterno);
 
   if (mode === "full") {
     for (const version of [...anexo4Versions].sort((a, b) => a.numeroVersion - b.numeroVersion)) {
@@ -239,6 +316,21 @@ export async function buildVersionData({
     mode,
     anexosData[5],
   );
+
+  if (externalPersonnel.length > 0) {
+    anexosData[5] = anexosData[5].map((entry) => {
+      const anexoId = (entry.data as Anexo5Data).id ?? null;
+      const storedExternal = readExternalSignatureStorage(operation.idOperacion, anexoId) ?? [];
+      const mergedExternal = mergeExternalPersonnelSignatures(externalPersonnel, storedExternal);
+      return {
+        ...entry,
+        data: {
+          ...(entry.data as Anexo5Data),
+          externalPersonnel: mergedExternal,
+        },
+      };
+    });
+  }
 
   await buildSimpleEntries(
     8,

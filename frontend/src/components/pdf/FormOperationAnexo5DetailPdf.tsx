@@ -11,6 +11,36 @@ type SectionItem = {
   inputType?: "title";
 };
 
+type ExternalPersonnelSignature = {
+  nombreApellidos: string;
+  rol: string;
+  signed?: boolean;
+};
+
+const normalizeExternalPersonnel = (value: unknown): ExternalPersonnelSignature[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const raw = item as Record<string, unknown>;
+      const nombreApellidos = typeof raw.nombreApellidos === "string" ? raw.nombreApellidos.trim() : "";
+      const rol = typeof raw.rol === "string" ? raw.rol.trim() : "";
+      const signed = typeof raw.signed === "boolean" ? raw.signed : false;
+
+      if (!nombreApellidos && !rol) {
+        return null;
+      }
+
+      return { nombreApellidos, rol, signed };
+    })
+    .filter((item): item is ExternalPersonnelSignature => item !== null);
+};
+
 const SECCIONES_CONFIG: {
   seccion1: SectionItem[];
   seccion2: SectionItem[];
@@ -118,6 +148,8 @@ export function Anexo5Pages({
   numeroVersion
 }: FormOperationAnexo5DetailPdfProps) {
   const assignedPersonnel = Array.isArray(formValues.assignedPersonnel) ? formValues.assignedPersonnel : [];
+  const externalPersonnel = normalizeExternalPersonnel(formValues.externalPersonnel);
+  const hasPersonnel = assignedPersonnel.length > 0 || externalPersonnel.length > 0;
   const versionLabel = buildVersionLabel(numeroVersion);  
 
   const renderSection = (items: SectionItem[]) => (
@@ -198,7 +230,7 @@ export function Anexo5Pages({
         {renderSection(SECCIONES_CONFIG.seccion7)}
 
         <Text style={pdfStyles.subtitle}>SECCIÓN 8: Aptitud para operar</Text>
-        {assignedPersonnel.length === 0 ? (
+        {!hasPersonnel ? (
           <Text>Sin personal asignado.</Text>
         ) : (
           <View style={pdfStyles.table}>
@@ -211,6 +243,13 @@ export function Anexo5Pages({
               <View style={pdfStyles.tr} key={person.id ?? person.fullName}>
                 <Text style={pdfStyles.td}>{textValue(person.fullName)}</Text>
                 <Text style={pdfStyles.td}>{Array.isArray(person.roles) ? person.roles.join(", ") : "—"}</Text>
+                <Text style={pdfStyles.tdLast}>{person.signed ? "Firmado" : "Pendiente"}</Text>
+              </View>
+            ))}
+            {externalPersonnel.map((person, index) => (
+              <View style={pdfStyles.tr} key={`external-${index}-${person.nombreApellidos}`}>
+                <Text style={pdfStyles.td}>{textValue(person.nombreApellidos)}</Text>
+                <Text style={pdfStyles.td}>{textValue(person.rol)}</Text>
                 <Text style={pdfStyles.tdLast}>{person.signed ? "Firmado" : "Pendiente"}</Text>
               </View>
             ))}

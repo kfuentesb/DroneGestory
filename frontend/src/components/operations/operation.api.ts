@@ -12,6 +12,12 @@ export type ExpandableTableItem = {
   valor: string;
 };
 
+export type ExternalPersonnelSignature = {
+  nombreApellidos: string;
+  rol: string;
+  signed?: boolean;
+};
+
 export type Anexo4Data = AnexoBaseData & {
   conops?: string;
   aircraftIds?: number[];
@@ -67,6 +73,7 @@ export type Anexo5Data = AnexoBaseData & {
     roles: string[];
     signed: boolean;
   }>;
+  externalPersonnel?: ExternalPersonnelSignature[];
 };
 
 export type Anexo6Data = AnexoBaseData & {
