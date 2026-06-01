@@ -35,6 +35,7 @@ fi
 DB_USER="${DB_USER:-admin}"
 DB_NAME="${DB_NAME:-aeronaves_db}"
 
+mkdir -p "$BACKUPS_ROOT"
 mkdir -p "$BACKUP_DIR/backend"
 
 echo -e "${YELLOW}[+] Generando volcado PostgreSQL en: $SQL_FILE${NC}"

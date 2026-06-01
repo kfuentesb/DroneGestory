@@ -59,6 +59,12 @@ public class BackupService {
     @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
     private String auditLogsRoot;
 
+    @Value("${PG_DUMP_COMMAND:pg_dump}")
+    private String pgDumpCommand;
+
+    @Value("${PSQL_COMMAND:psql}")
+    private String psqlCommand;
+
     @Scheduled(cron = "0 0 * * * ?", zone = "Europe/Madrid")
     @Transactional
     public void runScheduledBackup() {
@@ -217,7 +223,7 @@ public class BackupService {
     private void dumpDatabase(Path databaseFile) throws IOException, InterruptedException {
         DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "pg_dump",
+                resolveCommand(pgDumpCommand, "pg_dump"),
                 "-h", connectionInfo.host(),
                 "-p", connectionInfo.port(),
                 "-U", datasourceUsername,
@@ -227,7 +233,12 @@ public class BackupService {
         processBuilder.environment().put("PGPASSWORD", datasourcePassword);
         processBuilder.redirectErrorStream(true);
 
-        Process process = processBuilder.start();
+        Process process;
+        try {
+            process = processBuilder.start();
+        } catch (IOException ex) {
+            throw new IllegalStateException(buildMissingCommandMessage("pg_dump", pgDumpCommand), ex);
+        }
         String output = new String(process.getInputStream().readAllBytes());
         int exitCode = process.waitFor();
 
@@ -243,7 +254,7 @@ public class BackupService {
     private void restoreDatabase(Path databaseFile) throws IOException, InterruptedException {
         DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "psql",
+                resolveCommand(psqlCommand, "psql"),
                 "-h", connectionInfo.host(),
                 "-p", connectionInfo.port(),
                 "-U", datasourceUsername,
@@ -254,7 +265,12 @@ public class BackupService {
         processBuilder.environment().put("PGPASSWORD", datasourcePassword);
         processBuilder.redirectErrorStream(true);
 
-        Process process = processBuilder.start();
+        Process process;
+        try {
+            process = processBuilder.start();
+        } catch (IOException ex) {
+            throw new IllegalStateException(buildMissingCommandMessage("psql", psqlCommand), ex);
+        }
         String output = new String(process.getInputStream().readAllBytes());
         int exitCode = process.waitFor();
 
@@ -266,7 +282,7 @@ public class BackupService {
     private void resetDatabaseSchema() throws IOException, InterruptedException {
         DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "psql",
+                resolveCommand(psqlCommand, "psql"),
                 "-h", connectionInfo.host(),
                 "-p", connectionInfo.port(),
                 "-U", datasourceUsername,
@@ -277,7 +293,12 @@ public class BackupService {
         processBuilder.environment().put("PGPASSWORD", datasourcePassword);
         processBuilder.redirectErrorStream(true);
 
-        Process process = processBuilder.start();
+        Process process;
+        try {
+            process = processBuilder.start();
+        } catch (IOException ex) {
+            throw new IllegalStateException(buildMissingCommandMessage("psql", psqlCommand), ex);
+        }
         String output = new String(process.getInputStream().readAllBytes());
         int exitCode = process.waitFor();
 
@@ -487,6 +508,21 @@ public class BackupService {
                 matcher.group(2) == null ? "5432" : matcher.group(2),
                 database
         );
+    }
+
+    private String resolveCommand(String configuredCommand, String defaultCommand) {
+        return (configuredCommand == null || configuredCommand.isBlank())
+                ? defaultCommand
+                : configuredCommand.trim();
+    }
+
+    private String buildMissingCommandMessage(String commandName, String configuredCommand) {
+        if (configuredCommand != null && !configuredCommand.isBlank() && !configuredCommand.trim().equals(commandName)) {
+            return "No se pudo ejecutar \"" + configuredCommand.trim() + "\". Verifica que la ruta exista y sea ejecutable.";
+        }
+
+        return "No se pudo ejecutar \"" + commandName + "\". Instala PostgreSQL client en la máquina donde corre el backend "
+                + "o define la ruta completa con la variable de entorno " + commandName.toUpperCase().replace('-', '_') + "_COMMAND.";
     }
 
     private BackupSettings getOrCreateEntity() {

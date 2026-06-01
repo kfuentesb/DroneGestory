@@ -557,7 +557,7 @@ Las carpetas principales en tiempo de ejecución son:
 
 ## Licencia
 
-Consulta el archivo [LICENSE](https://www.google.com/search?q=LICENSE).
+Consulta el archivo [LICENSE](LICENSE).
 
 
 

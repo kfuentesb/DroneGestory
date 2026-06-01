@@ -189,7 +189,10 @@ export const stateColors: Record<string, { backgroundColor: string; color: strin
     inactive: { backgroundColor: "#F3F4F6", color: "#374151" }
 };
 
-export function useConopsHandlers(validateCertificateFile: (file: File) => string | null) {
+export function useConopsHandlers(
+    validateCertificateFile: (file: File) => string | null,
+    onInvalidFile?: (message: string) => void
+) {
     // --- ESTADOS CONCENTRADOS ---
     const [conopsDocs, setConopsDocs] = useState<Record<string, any>>({});
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -211,7 +214,7 @@ export function useConopsHandlers(validateCertificateFile: (file: File) => strin
 
         const fileError = validateCertificateFile(file);
         if (fileError) {
-            alert(fileError);
+            onInvalidFile?.(fileError);
             return;
         }
 
@@ -309,7 +312,10 @@ export function useConopsHandlers(validateCertificateFile: (file: File) => strin
     };
 }
 
-export function useAdditionalDocsHandlers(validateCertificateFile: (file: File) => string | null) {
+export function useAdditionalDocsHandlers(
+    validateCertificateFile: (file: File) => string | null,
+    onInvalidFile?: (message: string) => void
+) {
     // --- ESTADOS INTERNOS ---
     const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
     const [existingAdditionalFileNames, setExistingAdditionalFileNames] = useState<Record<string, string>>({});
@@ -348,7 +354,7 @@ export function useAdditionalDocsHandlers(validateCertificateFile: (file: File) 
         if (field === "certificate" && value instanceof File) {
             const fileError = validateCertificateFile(value);
             if (fileError) {
-                alert(fileError);
+                onInvalidFile?.(fileError);
                 return;
             }
         }

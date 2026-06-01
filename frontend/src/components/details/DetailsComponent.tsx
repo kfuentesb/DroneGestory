@@ -90,12 +90,6 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     const [aircraftDocumentations, setAircraftDocumentations] = useState<AircraftDocumentation[]>([]);
     const [aircraftModelDefaults, setAircraftModelDefaults] = useState<AircraftModelDocumentation[]>([]);
 
-    const conops = useConopsHandlers(validateCertificateFile);
-
-    const additional = useAdditionalDocsHandlers(validateCertificateFile);
-
-    // const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
-
     const [status, setStatus] = useState(200);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [imageVersion, setImageVersion] = useState(0);
@@ -108,9 +102,44 @@ export default function DetailsComponent(props: DetailsComponentProps) {
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState<"update" | "delete" | "validationError" | null>(null);
 
+    const [feedbackModal, setFeedbackModal] = useState<{
+        show: boolean;
+        title: string;
+        message: string;
+        variant: "warning" | "danger" | "primary";
+    }>({
+        show: false,
+        title: "",
+        message: "",
+        variant: "warning",
+    });
+
     const [errors, setErrors] = useState<Record<string, string | null>>({});
 
     const [removeImage, setRemoveImage] = useState(false);
+
+    const showFeedbackModal = (
+        message: string,
+        title = "Aviso",
+        variant: "warning" | "danger" | "primary" = "warning"
+    ) => {
+        setFeedbackModal({
+            show: true,
+            title,
+            message,
+            variant,
+        });
+    };
+
+    const conops = useConopsHandlers(validateCertificateFile, (message) => {
+        showFeedbackModal(message, "Validación de archivo", "warning");
+    });
+
+    const additional = useAdditionalDocsHandlers(validateCertificateFile, (message) => {
+        showFeedbackModal(message, "Validación de archivo", "warning");
+    });
+
+    // const [additionalDocs, setAdditionalDocs] = useState<AdditionalCertificatePayload[]>([]);
 
 
     // Cargar datos iniciales
@@ -468,7 +497,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         const newTab = window.open("about:blank", "_blank");
         
         if (!newTab) {
-            alert("El bloqueador de ventanas emergentes impidió abrir el documento.");
+            showFeedbackModal("El bloqueador de ventanas emergentes impidió abrir el documento.", "Aviso", "warning");
             return;
         }
 
@@ -494,7 +523,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         } catch (error) {
             newTab.close();
             console.error(`Error: ${errorMessage}`, error);
-            alert(errorMessage);
+            showFeedbackModal(errorMessage, "Error", "danger");
         }
     };
 
@@ -543,7 +572,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         );
 
         if (!modelDoc || !modelDoc.documentationName) {
-            alert("No se encontró el documento del modelo");
+            showFeedbackModal("No se encontró el documento del modelo", "Aviso", "warning");
             return;
         }
 
@@ -627,6 +656,13 @@ export default function DetailsComponent(props: DetailsComponentProps) {
 
     const handleAircraftDocumentationFileChange = (event: React.ChangeEvent<HTMLInputElement>, key: string, isModelContext: boolean = false) => {
         const file = event.target.files?.[0] || null;
+        if (file) {
+            const fileError = validateCertificateFile(file);
+            if (fileError) {
+                showFeedbackModal(fileError, "Validación de archivo", "warning");
+                return;
+            }
+        }
         const targetSetter = isModelContext ? setModelDocState : setAircraftDocState;
 
         targetSetter(prev => {
@@ -658,7 +694,10 @@ export default function DetailsComponent(props: DetailsComponentProps) {
         const file = event.target.files?.[0] || null;
         if (file) {
             const fileError = validateCertificateFile(file);
-            if (fileError) return alert(fileError);
+            if (fileError) {
+                showFeedbackModal(fileError, "Validación de archivo", "warning");
+                return;
+            }
         }
         
         setUserDocState(prev => ({
@@ -1218,7 +1257,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
 
             const syncResults = await Promise.allSettled(syncTasks);
             if (syncResults.some(r => r.status === 'rejected')) {
-                alert("Atención: Los datos principales se guardaron, pero algunos documentos fallaron al sincronizarse.");
+                showFeedbackModal(
+                    "Los datos principales se guardaron, pero algunos documentos fallaron al sincronizarse.",
+                    "Sincronización parcial",
+                    "warning"
+                );
             }
 
             if (updated.fechaNac) updated.fechaNac = updated.fechaNac.split('T')[0];
@@ -1234,7 +1277,11 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             if (!updated.imagePath) setImageUrl(null);
 
         } catch (error: any) {
-            alert("Error actualizando: " + (error.message || "Error desconocido"));
+            showFeedbackModal(
+                "Error actualizando: " + (error.message || "Error desconocido"),
+                "Error",
+                "danger"
+            );
         } finally {
             // updateLoading("details", false);
             setConfirmAction(null);
@@ -1582,6 +1629,16 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                         }
                         onConfirm={confirmAction === "validationError" ? () => setShowConfirm(false) : handleConfirm}
                         onCancel={() => setShowConfirm(false)}
+                    />
+                    <ConfirmModal
+                        show={feedbackModal.show}
+                        variant={feedbackModal.variant}
+                        title={feedbackModal.title}
+                        message={feedbackModal.message}
+                        onConfirm={() => setFeedbackModal(prev => ({ ...prev, show: false }))}
+                        onCancel={() => setFeedbackModal(prev => ({ ...prev, show: false }))}
+                        showCancelButton={false}
+                        confirmLabel="Entendido"
                     />
                 </div>
             </div>
