@@ -282,7 +282,9 @@ See [LICENSE](https://www.google.com/search?q=LICENSE).
 
 ---
 
+<a name="español"></a>
 # Versión en Español
+
 
 DroneGestory es un sistema completo (full-stack) para la gestión de drones, operadores, documentación técnica y copias de seguridad.
 
@@ -558,6 +560,7 @@ Las carpetas principales en tiempo de ejecución son:
 Consulta el archivo [LICENSE](https://www.google.com/search?q=LICENSE).
 
 ```
+
 
 
 
