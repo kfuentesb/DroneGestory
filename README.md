@@ -1,4 +1,3 @@
-```markdown
 # DroneGestory
 
 Para leer este archivo en español, haz clic aquí: **[Español](#español)** To read this file in English, click here: **[English](#english)**
@@ -557,8 +556,6 @@ Las carpetas principales en tiempo de ejecución son:
 ## Licencia
 
 Consulta el archivo [LICENSE](https://www.google.com/search?q=LICENSE).
-
-```
 
 ```
 
