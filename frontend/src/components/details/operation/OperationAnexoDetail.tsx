@@ -128,6 +128,52 @@ const mergeExternalPersonnelSignatures = (
   }));
 };
 
+const EXTERNAL_SIGNATURE_STORAGE_PREFIX = "anexo5ExternalSignatures";
+
+const buildExternalSignatureStorageKey = (operationId: number, anexoId?: number | null) =>
+  `${EXTERNAL_SIGNATURE_STORAGE_PREFIX}:${operationId}:${anexoId ?? "draft"}`;
+
+const readExternalSignatureStorage = (operationId: number, anexoId?: number | null) => {
+  if (typeof localStorage === "undefined") {
+    return { storageAvailable: false, data: null as ExternalPersonnelSignature[] | null };
+  }
+
+  try {
+    const raw = localStorage.getItem(buildExternalSignatureStorageKey(operationId, anexoId));
+    if (!raw) {
+      return { storageAvailable: true, data: null as ExternalPersonnelSignature[] | null };
+    }
+    const parsed = JSON.parse(raw);
+    return { storageAvailable: true, data: normalizeExternalPersonnel(parsed) };
+  } catch (error) {
+    console.warn("No se pudieron leer las firmas externas almacenadas:", error);
+    return { storageAvailable: false, data: null as ExternalPersonnelSignature[] | null };
+  }
+};
+
+const writeExternalSignatureStorage = (
+  operationId: number,
+  anexoId: number | null | undefined,
+  personnel: ExternalPersonnelSignature[],
+) => {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(buildExternalSignatureStorageKey(operationId, anexoId), JSON.stringify(personnel));
+  } catch (error) {
+    console.warn("No se pudieron guardar las firmas externas:", error);
+  }
+};
+
+const removeExternalSignatureStorage = (operationId: number, anexoId: number | null | undefined) => {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.removeItem(buildExternalSignatureStorageKey(operationId, anexoId));
+  } catch (error) {
+    console.warn("No se pudieron limpiar las firmas externas:", error);
+  }
+};
+
+
 function Badge({ label, style }: { label: string; style: CSSProperties }) {
   return (
     <span
@@ -186,9 +232,20 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [isSticky, setIsSticky] = useState(false);
   const anexo7FormRef = useRef<FormOperationAnexo7DetailRef | null>(null);
   const externalPersonnelRef = useRef<ExternalPersonnelSignature[]>([]);
+  const externalPersonnelKeyRef = useRef<string | null>(null);
 
   const handleExternalPersonnelChange = (nextPersonnel: ExternalPersonnelSignature[]) => {
     externalPersonnelRef.current = nextPersonnel;
+    if (operation && tipoAnexo === 5) {
+      const anexoId = (anexoData as Anexo5Data | null)?.id ?? null;
+      const storageKey = buildExternalSignatureStorageKey(operation.idOperacion, anexoId);
+      externalPersonnelKeyRef.current = storageKey;
+      if (nextPersonnel.length > 0) {
+        writeExternalSignatureStorage(operation.idOperacion, anexoId, nextPersonnel);
+      } else {
+        removeExternalSignatureStorage(operation.idOperacion, anexoId);
+      }
+    }
     setAnexoData((prev) => {
       if (!prev || tipoAnexo !== 5) {
         return prev;
@@ -200,9 +257,26 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     });
   };
 
-  const buildAnexo5Data = (anexo5: Anexo5Data | null, anexo4: Anexo4Data | null): Anexo5Data | null => {
+  const buildAnexo5Data = (
+    anexo5: Anexo5Data | null,
+    anexo4: Anexo4Data | null,
+    operationId: number,
+  ): Anexo5Data | null => {
     const baseExternal = normalizeExternalPersonnel(anexo4?.personalExterno);
-    const mergedExternal = mergeExternalPersonnelSignatures(baseExternal, externalPersonnelRef.current);
+    const storageKey = buildExternalSignatureStorageKey(operationId, anexo5?.id ?? null);
+    const { storageAvailable, data: storedExternal } = readExternalSignatureStorage(operationId, anexo5?.id ?? null);
+    const shouldUseRef = !storageAvailable || externalPersonnelKeyRef.current === storageKey;
+    const existingExternal = storedExternal ?? (shouldUseRef ? externalPersonnelRef.current : []);
+    const mergedExternal = mergeExternalPersonnelSignatures(baseExternal, existingExternal);
+
+    if (storageAvailable) {
+      if (mergedExternal.length > 0) {
+        writeExternalSignatureStorage(operationId, anexo5?.id ?? null, mergedExternal);
+      } else {
+        removeExternalSignatureStorage(operationId, anexo5?.id ?? null);
+      }
+      externalPersonnelKeyRef.current = storageKey;
+    }
 
     if (!anexo5 && !anexo4) {
       externalPersonnelRef.current = mergedExternal;
@@ -493,7 +567,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                 fetchAnexo5VersionData(operation.idOperacion, selectedVersionId),
                 fetchAnexo4Data(operation.idOperacion),
               ]);
-              data = buildAnexo5Data(anexo5Version, anexo4);
+              data = buildAnexo5Data(anexo5Version, anexo4, operation.idOperacion);
               break;
             }
             case 6:
@@ -526,7 +600,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                 fetchAnexo5Data(operation.idOperacion),
                 fetchAnexo4Data(operation.idOperacion),
               ]);
-              data = buildAnexo5Data(anexo5, anexo4);
+              data = buildAnexo5Data(anexo5, anexo4, operation.idOperacion);
               break;
             }
             case 6:
@@ -679,9 +753,14 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         case 4:
           remadeData = await remakeAnexo4Data(operation.idOperacion, currentAnexoId);
           break;
-        case 5:
-          remadeData = await remakeAnexo5Data(operation.idOperacion, currentAnexoId);
+        case 5: {
+          const [remadeAnexo5, anexo4] = await Promise.all([
+            remakeAnexo5Data(operation.idOperacion, currentAnexoId),
+            fetchAnexo4Data(operation.idOperacion),
+          ]);
+          remadeData = buildAnexo5Data(remadeAnexo5, anexo4, operation.idOperacion);
           break;
+        }
         case 6:
           remadeData = await remakeAnexo6Data(operation.idOperacion, currentAnexoId);
           break;
@@ -714,10 +793,22 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
   const handleSaved = async (savedData: AnexoData | null) => {
     setSaving(false);
-    if (savedData && tipoAnexo === 5) {
+    if (savedData && tipoAnexo === 5 && operation) {
+      const currentPersonnel = externalPersonnelRef.current;
+      const savedId = (savedData as Anexo5Data).id ?? null;
+      if (savedId !== null) {
+        if (currentPersonnel.length > 0) {
+          writeExternalSignatureStorage(operation.idOperacion, savedId, currentPersonnel);
+        } else {
+          removeExternalSignatureStorage(operation.idOperacion, savedId);
+        }
+        removeExternalSignatureStorage(operation.idOperacion, null);
+        externalPersonnelKeyRef.current = buildExternalSignatureStorageKey(operation.idOperacion, savedId);
+      }
+
       savedData = {
         ...(savedData as Anexo5Data),
-        externalPersonnel: externalPersonnelRef.current,
+        externalPersonnel: currentPersonnel,
       } as AnexoData;
     }
     setAnexoData(savedData);
