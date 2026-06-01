@@ -1,291 +1,5 @@
 # DroneGestory 🚁🕹️🛩️
 
-Para leer este archivo en español, haz clic aquí: **[Español](#español)** To read this file in English, click here: **[English](#english)**
-
----
-
-<a name="english"></a>
-# English Version
-
-DroneGestory is a full-stack system for managing drones, operators, technical documentation, and backups.
-
-Screenshots: [screenshots.md](screenshots.md)
-
-## What is in the repo
-
-- `backend/`: Spring Boot API, PostgreSQL integration, file handling, and backup endpoints.
-- `frontend/`: Vite + React UI.
-- `compose.yaml`: root Docker stack for production-like deployment.
-- `backups/`: generated backup outputs.
-- `download_backup.sh`, `monthly_backup.sh`, `restore_local_with_backup.sh`: backup helper scripts.
-
-## Requirements
-
-### Local development
-
-- Docker and Docker Compose
-- Java 21
-- Maven
-- Node.js 24.x
-- npm 11.x
-
-### Production or server deployment
-
-- Docker and Docker Compose
-- A `.env` file at the repo root
-- A built frontend `dist/` directory before building the frontend image
-
-## Environment files
-
-The project uses different `.env` files depending on how you run it.
-
-### Root `.env`
-
-Used by `compose.yaml` and the Dockerized stack.
-
-```properties
-DB_USER=admin
-DB_PASSWORD=admin123
-DB_NAME=aeronaves_db
-
-JWT_SECRET=change-this-to-a-long-random-value
-JWT_EXPIRATION_MS=86400000
-
-EMAIL_USER=your-gmail@gmail.com
-EMAIL_PASSWORD=your-gmail-app-password
-
-APP_FRONTEND_URL=http://localhost:5173
-VITE_API_BASE_URL=http://localhost:8080
-
-```
-
-### `backend/.env`
-
-Used by the Spring Boot app when you run it locally with the `local` profile.
-
-```properties
-EMAIL_USER=your-gmail@gmail.com
-EMAIL_PASSWORD=your-gmail-app-password
-
-JWT_SECRET=change-this-to-a-long-random-value
-JWT_EXPIRATION_MS=86400000
-
-APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:5173)
-
-```
-
-### `frontend/.env`
-
-Used by Vite at build time.
-
-```properties
-VITE_API_BASE_URL=http://localhost:8080
-
-```
-
-If you build the frontend for production, set `VITE_API_BASE_URL` to the public backend URL before running `npm run build`.
-
-## Run locally
-
-This is the recommended setup for day-to-day development.
-
-### 1. Start PostgreSQL
-
-From the repo root:
-
-```bash
-cd backend
-docker compose up -d postgres
-
-```
-
-### 2. Start the backend
-
-Make sure `backend/.env` exists first.
-
-```bash
-cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=local"
-
-```
-
-The local profile imports `backend/.env` automatically.
-
-### 3. Start the frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-```
-
-### 4. Optional database initialization
-
-If you need to seed the database manually:
-
-```bash
-docker exec -it aeronaves_db psql -U admin -d aeronaves_db
-docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
-
-```
-
-## Run in production
-
-The root Docker stack is defined in `compose.yaml`.
-
-### 1. Build the frontend locally
-
-The frontend image does not build Vite inside the container. It copies the prebuilt `dist/` folder instead.
-
-```bash
-cd frontend
-npm install
-npm run build
-
-```
-
-### 2. Prepare the root `.env`
-
-Create the root `.env` file and set the production values for database, email, JWT, and CORS/frontend URLs.
-
-### 3. Start the stack
-
-From the repo root:
-
-```bash
-docker compose up -d --build
-
-```
-
-### 4. Check logs
-
-```bash
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f db
-
-```
-
-### 5. Useful production notes
-
-* `compose.yaml` uses the root `.env`.
-* The backend container includes `postgresql-client-16`, which is required for backup and restore commands.
-* Uploaded files, audit logs, and generated backups are mounted as persistent volumes/directories.
-* If you change the frontend code, rebuild `frontend/dist/` and then rebuild the frontend image.
-
-## Backups
-
-The application now supports backups from the UI and from shell scripts.
-
-### Web backups
-
-Users with `ADMIN` or `MANAGER` access can manage backups from the configuration screen.
-
-From the UI you can:
-
-* change the automatic backup day of the month,
-* run a manual backup immediately,
-* download a backup package,
-* restore a backup from a `.zip` or `.sql` file.
-
-Generated backup packages contain:
-
-* `postgredatabase.sql`
-* `backend/uploads/`
-* `backend/AuditLogs/` if present
-
-The backup service stores the latest run metadata in the database and writes scheduled backups under `backups/YYYY-MM-DD/`.
-
-### Automatic monthly backup on the server
-
-From the repo root on the production server:
-
-```bash
-chmod +x install_monthly_backup_cron.sh
-./install_monthly_backup_cron.sh
-
-```
-
-This installs a cron job that runs `monthly_backup.sh` at `02:00` on day `1` of every month.
-
-The script writes backups to:
-
-```text
-backups/YYYY-MM-DD/
-  postgredatabase.sql
-  backend/uploads/
-  backend/AuditLogs/
-
-```
-
-If `backend/AuditLogs` does not exist, it is skipped.
-
-### Manual download and local restore
-
-The helper scripts are intended for Linux or WSL.
-
-```bash
-chmod +x download_backup.sh restore_local_with_backup.sh
-
-```
-
-* `download_backup.sh` connects to the production server over SSH, creates a database dump, and downloads the dump plus `backend/uploads`.
-* `restore_local_with_backup.sh` restores a legacy local backup into an existing local project.
-
-Note: the legacy restore script expects `databasecopy.sql` and `uploads/`. The newer application backup flow uses `postgredatabase.sql` inside the generated backup package.
-
-## File storage
-
-The main runtime folders are:
-
-| Type | Path |
-| --- | --- |
-| Users | `uploads/users/{id-username}/...` |
-| Aircraft models | `uploads/aircraft-model/{model-manufacturer}/...` |
-| Aircraft | `uploads/aircraft/{nserie-model}/...` |
-| Operations | `uploads/operations/{codigo}/...` |
-| Operation documentation | `uploads/operation-documentation/{file-name}` |
-
-## Security notes
-
-* Keep `JWT_SECRET` long and random in production.
-* Gmail SMTP requires a Google App Password.
-* `backend/string-to-hash.py` can generate hashed passwords for manual user creation.
-
-## Main technologies
-
-* Backend: Java 21, Spring Boot 4, Spring Security, Maven
-* Frontend: React, TypeScript, Vite
-* Database: PostgreSQL
-* Deployment: Docker, Docker Compose
-
-## Project structure
-
-```text
-.
-|-- backend/
-|-- frontend/
-|-- backups/
-|-- compose.yaml
-|-- download_backup.sh
-|-- install_monthly_backup_cron.sh
-|-- monthly_backup.sh
-|-- restore_local_with_backup.sh
-|-- README.md
-
-```
-
-## License
-
-See [LICENSE](https://www.google.com/search?q=LICENSE).
-
----
-
-<a name="español"></a>
-# Versión en Español
-
-
 DroneGestory es un sistema completo (full-stack) para la gestión de drones, operadores, documentación técnica y copias de seguridad.
 
 Capturas de pantalla: [screenshots.md](screenshots.md)
@@ -355,7 +69,8 @@ APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:
 
 ### `frontend/.env`
 
-Utilizado por Vite en tiempo de compilación.
+Utilizado por Vite en tiempo de compilación. Este es únicamente esencial en producción.
+Si se hace un "npm run build" asegurate de tener el valor de la url donde está desplegado.
 
 ```properties
 VITE_API_BASE_URL=http://localhost:8080
@@ -408,6 +123,11 @@ docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
 
 ```
+
+### 5. Backups
+
+El guardado de backups solo funciona en modo desarrollo, ya que el docker de backend inlcuye pg_dump.
+Si se quisiera probar este sistema, desplegar en local la versión de producción.
 
 ## Ejecución en producción
 
@@ -558,8 +278,6 @@ Las carpetas principales en tiempo de ejecución son:
 ## Licencia
 
 Consulta el archivo [LICENSE](LICENSE).
-
-
 
 
 
