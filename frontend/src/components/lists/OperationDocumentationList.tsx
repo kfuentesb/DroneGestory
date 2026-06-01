@@ -176,8 +176,8 @@ export default function OperationDocumentationList() {
             return;
         }
 
-        if (form.file && form.file.size > 20 * 1024 * 1024) {
-            setError("El archivo debe pesar menos de 20MB.");
+        if (form.file && form.file.size > 50 * 1024 * 1024) {
+            setError("El archivo debe pesar menos de 50MB.");
             return;
         }
 

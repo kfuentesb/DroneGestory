@@ -153,8 +153,8 @@ export const validateCertificateFile = (file: File): string | null => {
     if (!allowedTypes.includes(file.type)) {
         return "Solo PDF, JPG, PNG o WEBP.";
     }
-    if (file.size > 20 * 1024 * 1024) {
-        return "El archivo debe pesar menos de 20MB.";
+    if (file.size > 50 * 1024 * 1024) {
+        return "El archivo debe pesar menos de 50MB.";
     }
     return null;
 };
