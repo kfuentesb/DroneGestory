@@ -19,6 +19,8 @@ type FormOperationAnexo8DetailProps = {
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo8Data | null) => void | Promise<void>;
+  onSaveSettled?: () => void;
+  suppressSuccessAlert?: boolean;
 };
 
 const FORM_FIELDS = [
@@ -75,6 +77,8 @@ export default function FormOperationAnexo8Detail({
   disabled,
   readOnlyMessage,
   onSaved,
+  onSaveSettled,
+  suppressSuccessAlert,
 }: FormOperationAnexo8DetailProps) {
   const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
@@ -133,7 +137,9 @@ export default function FormOperationAnexo8Detail({
       });
 
       const savedData = await saveAnexo8Data(operationId, formData);
-      setAlertModal({ show: true, title: "Anexo 8", message: "Anexo 8 guardado correctamente." });
+      if (!suppressSuccessAlert) {
+        setAlertModal({ show: true, title: "Anexo 8", message: "Anexo 8 guardado correctamente." });
+      }
       await onSaved?.(savedData);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -143,6 +149,7 @@ export default function FormOperationAnexo8Detail({
       }
     } finally {
       setSaving(false);
+      onSaveSettled?.();
     }
   };
 

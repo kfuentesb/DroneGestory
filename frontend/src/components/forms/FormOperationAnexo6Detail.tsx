@@ -21,6 +21,8 @@ type FormOperationAnexo6DetailProps = {
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo6Data | null) => void | Promise<void>;
+  onSaveSettled?: () => void;
+  suppressSuccessAlert?: boolean;
 };
 
 // Ojo: materialesAuxiliares lo gestionamos a parte como array.
@@ -144,6 +146,8 @@ export default function FormOperationAnexo6Detail({
   disabled,
   readOnlyMessage,
   onSaved,
+  onSaveSettled,
+  suppressSuccessAlert,
 }: FormOperationAnexo6DetailProps) {
   const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
@@ -230,7 +234,9 @@ export default function FormOperationAnexo6Detail({
       });
 
       const savedData = await saveAnexo6Data(operationId, formData);
-      setAlertModal({ show: true, title: "Anexo 6", message: "Anexo 6 guardado correctamente." });
+      if (!suppressSuccessAlert) {
+        setAlertModal({ show: true, title: "Anexo 6", message: "Anexo 6 guardado correctamente." });
+      }
       await onSaved?.(savedData);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -240,6 +246,7 @@ export default function FormOperationAnexo6Detail({
       }
     } finally {
       setSaving(false);
+      onSaveSettled?.();
     }
   };
 

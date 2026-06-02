@@ -18,6 +18,7 @@ interface ConfirmModalProps {
     onInputChange?: (value: string) => void;
     children?: ReactNode;
     confirmLabel?: string;
+    confirmDisabled?: boolean;
     showCancelButton?: boolean;
 }
 
@@ -35,6 +36,7 @@ export default function ConfirmModal({
     onInputChange,
     children,
     confirmLabel,
+    confirmDisabled,
     showCancelButton,
 }: ConfirmModalProps) {
     if (!show) return null;
@@ -83,7 +85,11 @@ export default function ConfirmModal({
                             <span className="d-none d-md-inline">Cancelar</span>
                         </button>
                     )}
-                    <button className={`${buttonClass} px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2`} onClick={onConfirm}>
+                    <button
+                        className={`${buttonClass} px-3 py-2 d-inline-flex align-items-center justify-content-center gap-2`}
+                        onClick={onConfirm}
+                        disabled={confirmDisabled}
+                    >
                         {confirmButtonLabel}
                     </button>
                 </div>

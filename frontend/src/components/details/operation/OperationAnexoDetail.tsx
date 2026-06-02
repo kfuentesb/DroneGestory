@@ -215,6 +215,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const [error, setError] = useState<string | null>(null);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
   const [showRemakeConfirm, setShowRemakeConfirm] = useState(false);
+  const [suppressSaveSuccessAlert, setSuppressSaveSuccessAlert] = useState(false);
   const [anexoAircraftOptions, setAnexoAircraftOptions] = useState<AircraftOption[]>([]);
   const [pdfAircraftOptions, setPdfAircraftOptions] = useState<AircraftOption[]>([]);
   const [selectedAircraftId, setSelectedAircraftId] = useState<number | null>(null);
@@ -231,6 +232,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
 
   const [isSticky, setIsSticky] = useState(false);
   const anexo7FormRef = useRef<FormOperationAnexo7DetailRef | null>(null);
+  const saveAndSignPendingRef = useRef(false);
   const externalPersonnelRef = useRef<ExternalPersonnelSignature[]>([]);
   const externalPersonnelKeyRef = useRef<string | null>(null);
 
@@ -472,6 +474,11 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const canEditDraft = !isViewingHistoricalVersion && canCreate && !actualIsSigned;
   const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned;
   const canSign = !isViewingHistoricalVersion && canCreate && actualIsSigned === false && currentAnexoVersion > 0;
+  const canSaveAndSign =
+    tipoAnexo !== 5 &&
+    canEditDraft &&
+    hasAircraftSelectionForAnexo &&
+    (!requiresAircraftSelection || selectedAircraftId !== null);
 
   const loadOperation = async () => {
     if (!id) {
@@ -671,8 +678,32 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     void loadSharedDefaults();
   }, [operation, tipoAnexo]);
 
-  const handleSign = async () => {
+  const resetSaveAndSignState = () => {
+    saveAndSignPendingRef.current = false;
+    setSuppressSaveSuccessAlert(false);
+    setSaving(false);
+  };
+
+  const handleSaveSettled = () => {
+    if (saveAndSignPendingRef.current) {
+      resetSaveAndSignState();
+    }
+  };
+
+  const handleSign = async (anexoIdOverride?: number) => {
     if (!operation) {
+      return;
+    }
+
+    const anexoIdToSign = anexoIdOverride ?? currentAnexoId;
+    if (!anexoIdToSign) {
+      setAlertModal({
+        show: true,
+        title: "Firma no disponible",
+        message: requiresAircraftSelection
+          ? "No hay borrador para la aeronave seleccionada."
+          : "No hay borrador para firmar.",
+      });
       return;
     }
 
@@ -681,18 +712,9 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
       
       // Para anexos 6 y 7, firmar solo la aeronave seleccionada
       if (tipoAnexo === 6 || tipoAnexo === 7) {
-        if (!currentAnexoId) {
-          setAlertModal({
-            show: true,
-            title: "Firma no disponible",
-            message: "No hay borrador para la aeronave seleccionada.",
-          });
-          return;
-        }
-
         const signedData = tipoAnexo === 6
-          ? await signAnexo6Data(operation.idOperacion, currentAnexoId)
-          : await signAnexo7Data(operation.idOperacion, currentAnexoId);
+          ? await signAnexo6Data(operation.idOperacion, anexoIdToSign)
+          : await signAnexo7Data(operation.idOperacion, anexoIdToSign);
 
         if (signedData) {
           setAnexoData(signedData);
@@ -711,13 +733,13 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         let signedData: AnexoData | null = null;
         switch (tipoAnexo) {
           case 4:
-            signedData = await signAnexo4Data(operation.idOperacion, currentAnexoId!);
+            signedData = await signAnexo4Data(operation.idOperacion, anexoIdToSign);
             break;
           case 5:
-            signedData = await signAnexo5Data(operation.idOperacion, currentAnexoId!);
+            signedData = await signAnexo5Data(operation.idOperacion, anexoIdToSign);
             break;
           case 8:
-            signedData = await signAnexo8Data(operation.idOperacion, currentAnexoId!);
+            signedData = await signAnexo8Data(operation.idOperacion, anexoIdToSign);
             break;
           default:
             signedData = null;
@@ -813,6 +835,24 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     }
     setAnexoData(savedData);
     if (!operation) return null;
+
+    if (saveAndSignPendingRef.current) {
+      const savedAnexoId = savedData?.id;
+      if (!savedAnexoId) {
+        setAlertModal({
+          show: true,
+          title: "Firma no disponible",
+          message: "El anexo se ha guardado, pero no se ha recibido un borrador valido para firmar.",
+        });
+        resetSaveAndSignState();
+        return null;
+      }
+
+      await handleSign(savedAnexoId);
+      resetSaveAndSignState();
+      return null;
+    }
+
     navigate(`/operations/${operation.idOperacion}/anexo${tipoAnexo}`);
     await loadOperation();
   };
@@ -881,37 +921,59 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     );
   }
 
-  const handleTriggerSubmit = () => {
-    // Validacion fecha
+  const validateBeforeFormSubmit = () => {
     if (tipoAnexo === 7) {
       const isFechaOpValid = anexo7FormRef.current?.validateFechaOp() ?? true;
       const isTiempoVueloValid = anexo7FormRef.current?.validateTiempoVuelo() ?? true;
       if (!isFechaOpValid) {
-        return;
+        return false;
       }
       if (!isTiempoVueloValid) {
-        return;
+        return false;
       }
     }
+    return true;
+  };
+
+  const submitAnexoForm = () => {
     const form = document.getElementById('anexo-main-form') as HTMLFormElement;
     if (form) {
       setSaving(true);
       form.requestSubmit(); 
+      return true;
     }
+    return false;
+  };
+
+  const handleTriggerSubmit = () => {
+    // Validacion fecha
+    if (!validateBeforeFormSubmit()) {
+      return;
+    }
+    submitAnexoForm();
   };
 
   const handleTriggerSign = () => {
-    if (tipoAnexo === 7) {
-      const isFechaOpValid = anexo7FormRef.current?.validateFechaOp() ?? true;
-      const isTiempoVueloValid = anexo7FormRef.current?.validateTiempoVuelo() ?? true;
-      if (!isFechaOpValid) {
-        return;
-      }
-      if (!isTiempoVueloValid) {
-        return;
-      }
+    if (!validateBeforeFormSubmit()) {
+      return;
     }
     setShowSignConfirm(true);
+  };
+
+  const handleSaveAndSign = () => {
+    if (!validateBeforeFormSubmit()) {
+      return;
+    }
+
+    saveAndSignPendingRef.current = true;
+    setSuppressSaveSuccessAlert(true);
+    setShowSignConfirm(false);
+
+    window.setTimeout(() => {
+      if (!submitAnexoForm()) {
+        resetSaveAndSignState();
+      }
+    }, 0);
   };
 
   return (
@@ -1015,7 +1077,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                 className="btn btn-sm px-2 px-md-4 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{ backgroundColor: '#2563eb', color: '#ffffff', fontWeight: '600', boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)' }}
                 onClick={handleTriggerSign}
-                disabled={!canSign || signing}
+                disabled={(!canSign && !canSaveAndSign) || signing || saving}
               >
                 <img src={signIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
                 <span className="d-none d-md-inline">{signing ? "Firmando..." : "Firmar Anexo"}</span>
@@ -1254,6 +1316,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   onSaved={async (savedData) => {
                     await handleSaved(savedData as AnexoData | null);
                   }}
+                  onSaveSettled={handleSaveSettled}
+                  suppressSuccessAlert={suppressSaveSuccessAlert}
                 />
               )}
               {tipoAnexo === 7 && (
@@ -1274,6 +1338,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   onSaved={async (savedData) => {
                     await handleSaved(savedData as AnexoData | null);
                   }}
+                  onSaveSettled={handleSaveSettled}
                 />
               )}
               {tipoAnexo === 8 && (
@@ -1292,6 +1357,8 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
                   onSaved={async (savedData) => {
                     await handleSaved(savedData as AnexoData | null);
                   }}
+                  onSaveSettled={handleSaveSettled}
+                  suppressSuccessAlert={suppressSaveSuccessAlert}
                 />
               )}
             </>
@@ -1303,10 +1370,12 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         <ConfirmModal
           show={showSignConfirm}
           title={`Firmar ${getAnexoLabel(tipoAnexo)}`}
-          message="Se firmará la versión actual en borrador. Después ya no podrás editarla sin crear una nueva versión."
-          onConfirm={() => void handleSign()}
+          message="Se guardara el borrador actual y despues se firmara. Una vez firmado no podras editarlo sin crear una nueva version."
+          onConfirm={handleSaveAndSign}
           onCancel={() => setShowSignConfirm(false)}
           variant="primary"
+          confirmLabel={saving || signing ? "Guardando y firmando..." : "Guardar y firmar"}
+          confirmDisabled={saving || signing}
         />
       )}
 

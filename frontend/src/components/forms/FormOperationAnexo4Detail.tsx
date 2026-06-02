@@ -58,6 +58,8 @@ type FormOperationAnexo4DetailProps = {
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo4Data | null) => void | Promise<void>;
+  onSaveSettled?: () => void;
+  suppressSuccessAlert?: boolean;
 };
 
 type ErrorsMap = Record<string, string | null>;
@@ -159,6 +161,8 @@ export default function FormOperationAnexo4Detail({
   disabled,
   readOnlyMessage,
   onSaved,
+  onSaveSettled,
+  suppressSuccessAlert,
 }: FormOperationAnexo4DetailProps) {
   const fields = useMemo<FieldConfig[]>(() => operationAnexo4DetailFields, []);
   const [formValues, setFormValues] = useState<Record<string, any>>({
@@ -399,6 +403,7 @@ export default function FormOperationAnexo4Detail({
     if (disabled) return;
 
     if (!validate()) {
+      onSaveSettled?.();
       return;
     }
 
@@ -474,11 +479,13 @@ export default function FormOperationAnexo4Detail({
         return {};
       });
 
-      setAlertModal({
-        show: true,
-        title: "Anexo 4",
-        message: "Anexo 4 guardado correctamente.",
-      });
+      if (!suppressSuccessAlert) {
+        setAlertModal({
+          show: true,
+          title: "Anexo 4",
+          message: "Anexo 4 guardado correctamente.",
+        });
+      }
       await onSaved?.(savedData);
       // window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
@@ -489,6 +496,7 @@ export default function FormOperationAnexo4Detail({
       });
     } finally {
       setSaving(false);
+      onSaveSettled?.();
     }
   };
 

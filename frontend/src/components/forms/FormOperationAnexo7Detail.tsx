@@ -13,6 +13,7 @@ type FormOperationAnexo7DetailProps = {
   disabled?: boolean;
   readOnlyMessage?: React.ReactNode;
   onSaved?: (savedData: Anexo7Data | null) => void | Promise<void>;
+  onSaveSettled?: () => void;
 };
 
 export type FormOperationAnexo7DetailRef = {
@@ -110,6 +111,7 @@ const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormO
   disabled,
   readOnlyMessage,
   onSaved,
+  onSaveSettled,
 }: FormOperationAnexo7DetailProps, ref) {
   const { formValues, setFormValues, saving, setSaving, handleChange } = useAnexoForm({
     fields: FORM_FIELDS,
@@ -159,6 +161,7 @@ const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormO
     e.preventDefault();
     if (disabled) return;
     if (!validateFechaOp() || !validateTiempoVuelo()) {
+      onSaveSettled?.();
       return;
     }
 
@@ -181,6 +184,7 @@ const FormOperationAnexo7Detail = forwardRef<FormOperationAnexo7DetailRef, FormO
       console.error("Error al guardar el anexo 7:", err);
     } finally {
       setSaving(false);
+      onSaveSettled?.();
     }
   };
 
