@@ -21,8 +21,9 @@ export default function Pagination({
   const showPageSelect = totalPages >= 3;
 
   const handleInternalPageChangeSmooth = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
     onPageChange(newPage);
-    
+
     setTimeout(() => {
       window.scrollTo({
         top: 0,
@@ -36,16 +37,16 @@ export default function Pagination({
       <div className="d-flex align-items-center gap-3">
         <button
           type="button"
-          disabled={currentPage < totalPages}
+          disabled={currentPage <= 1} // Deshabilitado en pagina 1
           onClick={() => handleInternalPageChangeSmooth(currentPage - 1)}
-          className="btn btn-sm btn-outline-secondary"
+          className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
           style={{ borderRadius: "6px", minWidth: "32px", height: "32px" }}
         >
-          <img 
-            src={arrow_back_black} 
-            alt="Anterior" 
-            className="d-inline d-sm-none" 
-            style={{ width: "16px", height: "16px" }} 
+          <img
+            src={arrow_back_black}
+            alt="Anterior"
+            className="d-inline d-sm-none"
+            style={{ width: "16px", height: "16px" }}
           />
           <span className="d-none d-sm-inline">Anterior</span>
         </button>
@@ -58,15 +59,15 @@ export default function Pagination({
           type="button"
           className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
           onClick={() => handleInternalPageChangeSmooth(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages} // Deshabilitado al final o superior
           style={{ borderRadius: "6px", minWidth: "32px", height: "32px" }}
         >
           <span className="d-none d-sm-inline">Siguiente</span>
-          <img 
-            src={arrow_forward_black} 
-            alt="Siguiente" 
-            className="d-inline d-sm-none" 
-            style={{ width: "16px", height: "16px" }} 
+          <img
+            src={arrow_forward_black}
+            alt="Siguiente"
+            className="d-inline d-sm-none"
+            style={{ width: "16px", height: "16px" }}
           />
         </button>
       </div>
@@ -77,11 +78,11 @@ export default function Pagination({
           <small className="text-muted" style={{ fontSize: "0.75rem" }}>Ir a la página:</small>
           <select
             className="form-select form-select-sm shadow-none"
-            style={{ 
-                width: "70px", 
-                cursor: "pointer", 
-                borderColor: "#D1D5DB",
-                fontSize: "0.8rem" 
+            style={{
+              width: "70px",
+              cursor: "pointer",
+              borderColor: "#D1D5DB",
+              fontSize: "0.8rem"
             }}
             value={currentPage}
             onChange={(e) => handleInternalPageChangeSmooth(Number(e.target.value))}
