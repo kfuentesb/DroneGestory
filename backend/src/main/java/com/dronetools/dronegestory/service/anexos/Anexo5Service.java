@@ -41,6 +41,30 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
         return repository.save(saved);
     }
 
+    @Override
+    @Transactional
+    public Anexo5 firmarAnexo(Long idAnexo, String username) {
+        Anexo5 anexo = repository.findById(idAnexo)
+                .orElseThrow(() -> new RuntimeException("Anexo no encontrado: " + idAnexo));
+
+        Operation operation = anexo.getOperation();
+        if (operation != null) {
+            Set<Integer> assignedUserIds = operation.getAssignedUsers().stream()
+                    .map(User::getId)
+                    .collect(Collectors.toSet());
+
+            Set<Integer> signedUserIds = anexo.getSignedUsers().stream()
+                    .map(User::getId)
+                    .collect(Collectors.toSet());
+
+            if (!signedUserIds.containsAll(assignedUserIds)) {
+                throw new RuntimeException("No es posible firmar el Anexo 5. Todos los usuarios de la Sección 8 deben estar firmados.");
+            }
+        }
+
+        return super.firmarAnexo(idAnexo, username);
+    }
+
     @Transactional
     public Anexo5 rehacerAnexo5(Long idAnexoOrigen) {
         return rehacerAnexo(idAnexoOrigen, Operation::getNextVersionAnexo5);
@@ -125,27 +149,15 @@ public class Anexo5Service extends AnexoServiceBase<Anexo5> {
     }
 
     private void normalizeSignaturesByAssignedUsers(Anexo5 anexo, Operation operation, String signedByUsername) {
+        // 1. Mantener solo los usuarios firmantes que realmente están asignados actualmente
         Set<Integer> assignedUserIds = operation.getAssignedUsers().stream()
                 .map(User::getId)
                 .collect(Collectors.toSet());
 
         anexo.getSignedUsers().removeIf(user -> !assignedUserIds.contains(user.getId()));
 
-        Set<Integer> signedUserIds = anexo.getSignedUsers().stream()
-                .map(User::getId)
-                .collect(Collectors.toSet());
-
-        boolean allAssignedSigned = !assignedUserIds.isEmpty() && signedUserIds.containsAll(assignedUserIds);
-        if (allAssignedSigned) {
-            anexo.setEstado(AnexoStatus.FIRMADO);
-            anexo.setFirmadoPor((signedByUsername == null || signedByUsername.isBlank()) ? "FIRMA_COLECTIVA" : signedByUsername);
-            anexo.setFechaFirma(LocalDateTime.now());
-            return;
-        }
-
-        anexo.setEstado(AnexoStatus.BORRADOR);
-        anexo.setFirmadoPor(null);
-        anexo.setFechaFirma(null);
+        // ELIMINADO: Ya no cambiamos el estado (AnexoStatus) ni la fecha de firma de forma automática aquí.
+        // El estado cambiará a FIRMADO únicamente cuando se llame al método heredado 'firmarAnexo'.
     }
 
 }

@@ -42,6 +42,14 @@ public class Anexo5Controller extends AnexoControllerBase<Anexo5, Anexo5Service>
         return toResponse(anexo, operationId);
     }
 
+    @PutMapping("/{idAnexo}/firmar/documento")
+    @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
+    public Anexo5ResponseDTO firmarDocumento(@PathVariable Long operationId, @PathVariable Long idAnexo, Principal principal) {
+        String username = (principal != null) ? principal.getName() : "Sistema";
+        Anexo5 anexo = service.firmarAnexo(idAnexo, username);
+        return toResponse(anexo, operationId);
+    }
+
     @PostMapping("/{idAnexo}/rehacer/datos")
     @PreAuthorize("@operationSecurity.canEditOperation(authentication, #operationId)")
     public Anexo5ResponseDTO rehacerConDatos(@PathVariable Long operationId, @PathVariable Long idAnexo) {

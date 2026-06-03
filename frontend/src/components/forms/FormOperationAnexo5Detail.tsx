@@ -203,24 +203,9 @@ export default function FormOperationAnexo5Detail({
   const externalPersonnel = normalizeExternalPersonnel(initialValues?.externalPersonnel);
   const hasPersonnel = assignedPersonnel.length > 0 || externalPersonnel.length > 0;
   const currentUserAssignedEntry = assignedPersonnel.find((person) => person.username === username);
-  const allExternalSigned = externalPersonnel.length === 0 || externalPersonnel.every((person) => Boolean(person.signed));
-  const completesAssignedSignatures = currentUserAssignedEntry
-    ? assignedPersonnel.every((person) => person.signed || person.id === currentUserAssignedEntry.id)
-    : false;
 
   const handleSignCurrentUser = async () => {
-    if (disabled || !initialValues?.id) {
-      return;
-    }
-
-    if (completesAssignedSignatures && !allExternalSigned) {
-      setAlertModal({
-        show: true,
-        title: "Firma pendiente",
-        message: "Antes de completar la firma del Anexo 5 debes marcar todas las firmas del personal externo.",
-      });
-      return;
-    }
+    if (disabled || !initialValues?.id) return;
 
     setSigningAptitud(true);
     try {
@@ -228,11 +213,8 @@ export default function FormOperationAnexo5Detail({
       setAlertModal({ show: true, title: "Anexo 5", message: "Firma registrada correctamente." });
       await onSaved?.(signedData);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setAlertModal({ show: true, title: "Error", message: err.message || "Error al registrar la firma." });
-      } else {
-        setAlertModal({ show: true, title: "Error", message: "Error al registrar la firma." });
-      }
+      const message = err instanceof Error ? err.message : "Error al registrar la firma.";
+      setAlertModal({ show: true, title: "Error", message });
     } finally {
       setSigningAptitud(false);
     }

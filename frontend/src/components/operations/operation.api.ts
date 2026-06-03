@@ -486,6 +486,18 @@ export async function signAnexo5Data(operationId: number, anexoId: number): Prom
   return (await response.json()) as Anexo5Data;
 }
 
+export async function signAnexo5Document(operationId: number, anexoId: number): Promise<Anexo5Data | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo5/${anexoId}/firmar/documento`, {
+    method: "PUT",
+  });
+
+  if (!response) {
+    return null;
+  }
+
+  return (await response.json()) as Anexo5Data;
+}
+
 export async function signAnexo6Data(operationId: number, anexoId: number): Promise<Anexo6Data | null> {
   const response = await apiFetch(`${API_BASE_URL}/api/operations/${operationId}/anexo6/${anexoId}/firmar/datos`, {
     method: "PUT",

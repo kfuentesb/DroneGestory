@@ -25,6 +25,7 @@ import {
   remakeAnexo8Data,
   signAnexo4Data,
   signAnexo5Data,
+  signAnexo5Document,
   signAnexo6Data,
   signAnexo7Data,
   signAnexo8Data,
@@ -475,7 +476,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
   const canRemake = !isViewingHistoricalVersion && canCreate && actualIsSigned;
   const canSign = !isViewingHistoricalVersion && canCreate && actualIsSigned === false && currentAnexoVersion > 0;
   const canSaveAndSign =
-    tipoAnexo !== 5 &&
     canEditDraft &&
     hasAircraftSelectionForAnexo &&
     (!requiresAircraftSelection || selectedAircraftId !== null);
@@ -736,7 +736,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
             signedData = await signAnexo4Data(operation.idOperacion, anexoIdToSign);
             break;
           case 5:
-            signedData = await signAnexo5Data(operation.idOperacion, anexoIdToSign);
+            signedData = await signAnexo5Document(operation.idOperacion, anexoIdToSign);
             break;
           case 8:
             signedData = await signAnexo8Data(operation.idOperacion, anexoIdToSign);
@@ -957,6 +957,32 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
     if (!validateBeforeFormSubmit()) {
       return;
     }
+    if (tipoAnexo === 5) {
+      handleTriggerSignAnexo5();
+    } else {
+      setShowSignConfirm(true);
+    }
+  };
+
+  const handleTriggerSignAnexo5 = () => {
+    if (!anexoData) return;
+
+    const data = anexoData as Anexo5Data;
+    const personnel = data.assignedPersonnel ?? [];
+    const external = data.externalPersonnel ?? [];
+
+    const allAssignedSigned = personnel.every((p) => p.signed);
+    const allExternalSigned = external.every((p) => p.signed);
+
+    if (!allAssignedSigned || !allExternalSigned) {
+      setAlertModal({
+        show: true,
+        title: "Firma no posible",
+        message: "No es posible firmar el Anexo 5. Todos los usuarios de la Sección 8 deben estar firmados.",
+      });
+      return;
+    }
+
     setShowSignConfirm(true);
   };
 
@@ -1072,7 +1098,7 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
               <img src={refreshIcon} alt="" aria-hidden="true" className="d-inline d-md-none" style={{ width: 16, height: 16 }} />
               <span className="d-none d-md-inline">{remaking ? "Rehaciendo..." : "Rehacer versión"}</span>
             </ButtonProp>
-            {tipoAnexo !== 5 && (
+            {!actualIsSigned && (
               <ButtonProp
                 className="btn btn-sm px-2 px-md-4 d-inline-flex align-items-center justify-content-center gap-2"
                 style={{ backgroundColor: '#2563eb', color: '#ffffff', fontWeight: '600', boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)' }}
@@ -1179,12 +1205,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
         <div className="alert alert-info">
           La versión actual está firmada. Para editar, crea antes una nueva
           versión con "Rehacer versión".
-        </div>
-      )}
-
-      {tipoAnexo === 5 && !isViewingHistoricalVersion && !actualIsSigned && (
-        <div className="alert alert-info">
-          La firma del Anexo 5 se realiza en la Sección 8 por cada usuario asignado en Anexo 4.
         </div>
       )}
 
@@ -1365,8 +1385,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           )}
         </div>
       </div>
-
-      {tipoAnexo !== 5 && (
         <ConfirmModal
           show={showSignConfirm}
           title={`Firmar ${getAnexoLabel(tipoAnexo)}`}
@@ -1377,7 +1395,6 @@ export default function OperationAnexoDetail({ tipoAnexo }: OperationAnexoDetail
           confirmLabel={saving || signing ? "Guardando y firmando..." : "Guardar y firmar"}
           confirmDisabled={saving || signing}
         />
-      )}
 
       <ConfirmModal
         show={showRemakeConfirm}
