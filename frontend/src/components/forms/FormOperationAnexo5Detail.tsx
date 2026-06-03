@@ -59,7 +59,7 @@ const normalizeExternalPersonnel = (value: unknown): ExternalPersonnelSignature[
   }
 
   return value
-    .map((item) => {
+    .map((item) : ExternalPersonnelSignature | null => {
       if (!item || typeof item !== "object") {
         return null;
       }
