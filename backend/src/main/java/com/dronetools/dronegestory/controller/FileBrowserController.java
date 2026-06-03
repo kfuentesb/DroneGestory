@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -18,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -27,26 +27,41 @@ import java.util.stream.Stream;
 @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class FileBrowserController {
 
+    @Value("${APP_UPLOADS_ROOT:uploads}")
+    private String uploadsRootPath;
+
+    @Value("${APP_BACKUPS_ROOT:backups}")
+    private String backupsRootPath;
+
+    private Path getRootPath(String type) {
+        if ("backups".equalsIgnoreCase(type)) {
+            return Paths.get(backupsRootPath).toAbsolutePath().normalize();
+        }
+        return Paths.get(uploadsRootPath).toAbsolutePath().normalize();
+    }
+
     @GetMapping("/list")
     public List<FileBrowserItem> list(
-            @RequestParam(value = "path", required = false) String rawPath
-    ) {
-        Path uploadsRoot = uploadsRoot();
-        if (!Files.exists(uploadsRoot) || !Files.isDirectory(uploadsRoot)) {
+            @RequestParam(value = "path", required = false) String rawPath,
+            @RequestParam(value = "type", defaultValue = "uploads") String type) {
+        Path root = getRootPath(type);
+        if (!Files.exists(root) || !Files.isDirectory(root)) {
             try {
-                Files.createDirectories(uploadsRoot);
+                Files.createDirectories(root);
             } catch (IOException ex) {
-                throw new RuntimeException("Error creating uploads folder", ex);
+                throw new RuntimeException("Error creating root folder", ex);
             }
         }
-        ensureDatabaseRelatedFolders();
+        if ("uploads".equalsIgnoreCase(type)) {
+            ensureDatabaseRelatedFolders();
+        }
 
         List<FileBrowserItem> items = new ArrayList<>();
-        try (Stream<Path> stream = Files.walk(uploadsRoot)) {
-            stream.filter(path -> !path.equals(uploadsRoot))
+        try (Stream<Path> stream = Files.walk(root)) {
+            stream.filter(path -> !path.equals(root))
                     .sorted((a, b) -> {
-                        int depthA = uploadsRoot.relativize(a).getNameCount();
-                        int depthB = uploadsRoot.relativize(b).getNameCount();
+                        int depthA = root.relativize(a).getNameCount();
+                        int depthB = root.relativize(b).getNameCount();
                         if (depthA != depthB) {
                             return Integer.compare(depthA, depthB);
                         }
@@ -57,7 +72,7 @@ public class FileBrowserController {
                         }
                         return a.getFileName().toString().compareToIgnoreCase(b.getFileName().toString());
                     })
-                    .forEach(path -> items.add(toItem(uploadsRoot, path)));
+                    .forEach(path -> items.add(toItem(root, path)));
         } catch (IOException ex) {
             throw new RuntimeException("Error listing files", ex);
         }
@@ -65,8 +80,10 @@ public class FileBrowserController {
     }
 
     @GetMapping("/content")
-    public ResponseEntity<Resource> content(@RequestParam("path") String rawPath) {
-        Path target = resolveInsideUploads(rawPath);
+    public ResponseEntity<Resource> content(
+            @RequestParam("path") String rawPath,
+            @RequestParam(value = "type", defaultValue = "uploads") String type) {
+        Path target = resolveInsideRoot(rawPath, type);
         if (!Files.exists(target) || Files.isDirectory(target)) {
             return ResponseEntity.notFound().build();
         }
@@ -90,8 +107,8 @@ public class FileBrowserController {
         }
     }
 
-    private FileBrowserItem toItem(Path uploadsRoot, Path path) {
-        String relativePath = uploadsRoot.relativize(path).toString().replace("\\", "/");
+    private FileBrowserItem toItem(Path root, Path path) {
+        String relativePath = root.relativize(path).toString().replace("\\", "/");
         String id = "/" + relativePath;
         boolean folder = Files.isDirectory(path);
         Long size = null;
@@ -105,7 +122,7 @@ public class FileBrowserController {
         return new FileBrowserItem(id, folder ? "folder" : "file", size, null);
     }
 
-    private Path resolveInsideUploads(String rawPath) {
+    private Path resolveInsideRoot(String rawPath, String type) {
         if (rawPath == null || rawPath.isBlank()) {
             throw new IllegalArgumentException("path is required");
         }
@@ -113,16 +130,12 @@ public class FileBrowserController {
         String decoded = URLDecoder.decode(rawPath, StandardCharsets.UTF_8);
         String normalized = decoded.startsWith("/") ? decoded.substring(1) : decoded;
 
-        Path uploadsRoot = uploadsRoot();
-        Path target = uploadsRoot.resolve(normalized).normalize();
-        if (!target.startsWith(uploadsRoot)) {
+        Path root = getRootPath(type);
+        Path target = root.resolve(normalized).normalize();
+        if (!target.startsWith(root)) {
             throw new IllegalArgumentException("Invalid path");
         }
         return target;
-    }
-
-    private Path uploadsRoot() {
-        return Paths.get("uploads").toAbsolutePath().normalize();
     }
 
     private void ensureDatabaseRelatedFolders() {

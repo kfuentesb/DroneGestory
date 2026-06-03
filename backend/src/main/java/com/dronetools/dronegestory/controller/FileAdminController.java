@@ -25,12 +25,13 @@ public class FileAdminController {
     @PostMapping("/remove")
     public ResponseEntity<?> removeFile(@RequestBody Map<String, String> payload) {
         String path = payload.get("path");
+        String type = payload.getOrDefault("type", "uploads");
         if (path == null || path.isBlank()) {
             return ResponseEntity.badRequest().body("Path is required");
         }
 
         try {
-            fileActionService.deleteFileAndSyncDb(path);
+            fileActionService.deleteFileAndSyncDb(path, type);
             return ResponseEntity.ok(Map.of("ok", true, "message", "File and DB synced"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -41,14 +42,15 @@ public class FileAdminController {
     @PostMapping(value = "/replace", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> replaceFile(
             @RequestParam("path") String path,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "type", defaultValue = "uploads") String type
     ) {
         if (path == null || path.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Path is required"));
         }
 
         try {
-            String newPath = fileActionService.replaceFileAndSyncDb(path, file);
+            String newPath = fileActionService.replaceFileAndSyncDb(path, file, type);
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -60,12 +62,13 @@ public class FileAdminController {
     public ResponseEntity<?> createFolder(@RequestBody Map<String, String> payload) {
         String parent = payload.getOrDefault("parent", "/");
         String name = payload.get("name");
+        String type = payload.getOrDefault("type", "uploads");
         if (name == null || name.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Folder name is required"));
         }
 
         try {
-            String newPath = fileActionService.createFolder(parent, name);
+            String newPath = fileActionService.createFolder(parent, name, type);
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -76,10 +79,11 @@ public class FileAdminController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadFile(
             @RequestParam(value = "parent", required = false) String parent,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "type", defaultValue = "uploads") String type
     ) {
         try {
-            String newPath = fileActionService.uploadManualFile(parent, file);
+            String newPath = fileActionService.uploadManualFile(parent, file, type);
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -91,12 +95,13 @@ public class FileAdminController {
     public ResponseEntity<?> rename(@RequestBody Map<String, String> payload) {
         String path = payload.get("path");
         String name = payload.get("name");
+        String type = payload.getOrDefault("type", "uploads");
         if (path == null || path.isBlank() || name == null || name.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Path and name are required"));
         }
 
         try {
-            String newPath = fileActionService.renameManualPath(path, name);
+            String newPath = fileActionService.renameManualPath(path, name, type);
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

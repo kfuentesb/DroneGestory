@@ -16,6 +16,7 @@ import com.dronetools.dronegestory.repository.UserRepository;
 import com.dronetools.dronegestory.repository.anexos.Anexo4Repository;
 import com.dronetools.dronegestory.util.UploadPathUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,11 +39,24 @@ public class FileActionService {
     private final AircraftModelDocumentationRepository aircraftModelDocumentationRepository;
     private final Anexo4Repository anexo4Repository;
 
+    @Value("${APP_UPLOADS_ROOT:uploads}")
+    private String uploadsRootPath;
+
+    @Value("${APP_BACKUPS_ROOT:backups}")
+    private String backupsRootPath;
+
+    private Path getRootPath(String type) {
+        if ("backups".equalsIgnoreCase(type)) {
+            return Paths.get(backupsRootPath).toAbsolutePath().normalize();
+        }
+        return Paths.get(uploadsRootPath).toAbsolutePath().normalize();
+    }
+
     @Transactional
-    public void deleteFileAndSyncDb(String relativePath) throws IOException {
+    public void deleteFileAndSyncDb(String relativePath, String type) throws IOException {
         String cleanPath = clean(relativePath);
-        if (!UploadPathUtils.isDatabaseManagedPath(cleanPath)) {
-            deleteManualPath(cleanPath);
+        if ("backups".equalsIgnoreCase(type) || !UploadPathUtils.isDatabaseManagedPath(cleanPath)) {
+            deleteManualPath(cleanPath, type);
             return;
         }
         if (!deleteDatabaseReference(cleanPath)) {
@@ -52,14 +66,14 @@ public class FileActionService {
     }
 
     @Transactional
-    public String replaceFileAndSyncDb(String relativePath, MultipartFile file) throws IOException {
+    public String replaceFileAndSyncDb(String relativePath, MultipartFile file, String type) throws IOException {
         String cleanPath = clean(relativePath);
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("A replacement file is required.");
         }
 
-        if (!UploadPathUtils.isDatabaseManagedPath(cleanPath)) {
-            return replaceManualFile(cleanPath, file);
+        if ("backups".equalsIgnoreCase(type) || !UploadPathUtils.isDatabaseManagedPath(cleanPath)) {
+            return replaceManualFile(cleanPath, file, type);
         }
 
         String newPath = replaceDatabaseReference(cleanPath, file);
@@ -72,8 +86,8 @@ public class FileActionService {
         return newPath;
     }
 
-    public String createFolder(String parentPath, String name) throws IOException {
-        Path parent = resolveManualPath(parentPath == null || parentPath.isBlank() ? "/" : parentPath);
+    public String createFolder(String parentPath, String name, String type) throws IOException {
+        Path parent = resolveManualPath(parentPath == null || parentPath.isBlank() ? "/" : parentPath, type);
         if (!Files.exists(parent)) {
             Files.createDirectories(parent);
         }
@@ -81,16 +95,16 @@ public class FileActionService {
             throw new IllegalArgumentException("Parent path is not a folder.");
         }
         Path target = parent.resolve(UploadPathUtils.safeSegment(name)).normalize();
-        ensureManualPath(target);
+        ensureManualPath(target, type);
         Files.createDirectories(target);
-        return UploadPathUtils.uploadsRoot().relativize(target).toString().replace("\\", "/");
+        return getRootPath(type).relativize(target).toString().replace("\\", "/");
     }
 
-    public String uploadManualFile(String parentPath, MultipartFile file) throws IOException {
+    public String uploadManualFile(String parentPath, MultipartFile file, String type) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("A file is required.");
         }
-        Path parent = resolveManualPath(parentPath == null || parentPath.isBlank() ? "/" : parentPath);
+        Path parent = resolveManualPath(parentPath == null || parentPath.isBlank() ? "/" : parentPath, type);
         Files.createDirectories(parent);
         if (!Files.isDirectory(parent)) {
             throw new IllegalArgumentException("Parent path is not a folder.");
@@ -100,15 +114,16 @@ public class FileActionService {
                 ? "upload"
                 : Paths.get(originalName).getFileName().toString();
         Path target = parent.resolve(safeName).normalize();
-        ensureManualPath(target);
+        ensureManualPath(target, type);
         file.transferTo(target.toFile());
-        return UploadPathUtils.uploadsRoot().relativize(target).toString().replace("\\", "/");
+        return getRootPath(type).relativize(target).toString().replace("\\", "/");
     }
 
-    public String renameManualPath(String relativePath, String newName) throws IOException {
-        Path source = resolveManualPath(relativePath);
-        if (source.equals(UploadPathUtils.uploadsRoot())) {
-            throw new IllegalArgumentException("Cannot rename the uploads root.");
+    public String renameManualPath(String relativePath, String newName, String type) throws IOException {
+        Path source = resolveManualPath(relativePath, type);
+        Path root = getRootPath(type);
+        if (source.equals(root)) {
+            throw new IllegalArgumentException("Cannot rename the root folder.");
         }
         if (!Files.exists(source)) {
             throw new IllegalArgumentException("Path not found: " + relativePath);
@@ -118,9 +133,9 @@ public class FileActionService {
             throw new IllegalArgumentException("New name is required.");
         }
         Path target = source.getParent().resolve(safeName).normalize();
-        ensureManualPath(target);
+        ensureManualPath(target, type);
         Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
-        return UploadPathUtils.uploadsRoot().relativize(target).toString().replace("\\", "/");
+        return root.relativize(target).toString().replace("\\", "/");
     }
 
     private boolean deleteDatabaseReference(String cleanPath) {
@@ -386,10 +401,11 @@ public class FileActionService {
         return UploadPathUtils.cleanRelativePath(path);
     }
 
-    private void deleteManualPath(String cleanPath) throws IOException {
-        Path target = resolveManualPath(cleanPath);
-        if (target.equals(UploadPathUtils.uploadsRoot())) {
-            throw new IllegalArgumentException("Cannot delete the uploads root.");
+    private void deleteManualPath(String cleanPath, String type) throws IOException {
+        Path target = resolveManualPath(cleanPath, type);
+        Path root = getRootPath(type);
+        if (target.equals(root)) {
+            throw new IllegalArgumentException("Cannot delete the root folder.");
         }
         if (!Files.exists(target)) {
             return;
@@ -414,34 +430,36 @@ public class FileActionService {
         }
     }
 
-    private String replaceManualFile(String cleanPath, MultipartFile file) throws IOException {
-        Path target = resolveManualPath(cleanPath);
+    private String replaceManualFile(String cleanPath, MultipartFile file, String type) throws IOException {
+        Path target = resolveManualPath(cleanPath, type);
         if (Files.isDirectory(target)) {
             throw new IllegalArgumentException("Cannot replace a folder with a file.");
         }
         Files.createDirectories(target.getParent());
         file.transferTo(target.toFile());
-        return UploadPathUtils.uploadsRoot().relativize(target).toString().replace("\\", "/");
+        return getRootPath(type).relativize(target).toString().replace("\\", "/");
     }
 
-    private Path resolveManualPath(String relativePath) {
-        Path uploadsRoot = UploadPathUtils.uploadsRoot();
+    private Path resolveManualPath(String relativePath, String type) {
+        Path root = getRootPath(type);
         String cleanPath = clean(relativePath);
         Path target = cleanPath.isBlank() || cleanPath.equals("/")
-                ? uploadsRoot
-                : uploadsRoot.resolve(cleanPath).normalize();
-        ensureManualPath(target);
+                ? root
+                : root.resolve(cleanPath).normalize();
+        ensureManualPath(target, type);
         return target;
     }
 
-    private void ensureManualPath(Path target) {
-        Path uploadsRoot = UploadPathUtils.uploadsRoot();
-        Path databaseRoot = UploadPathUtils.databaseManagedRoot();
-        if (!target.startsWith(uploadsRoot)) {
+    private void ensureManualPath(Path target, String type) {
+        Path root = getRootPath(type);
+        if (!target.startsWith(root)) {
             throw new IllegalArgumentException("Invalid path.");
         }
-        if (target.equals(databaseRoot) || target.startsWith(databaseRoot)) {
-            throw new IllegalArgumentException("Database-managed files can only be changed by the application.");
+        if ("uploads".equalsIgnoreCase(type)) {
+            Path databaseRoot = UploadPathUtils.databaseManagedRoot();
+            if (target.equals(databaseRoot) || target.startsWith(databaseRoot)) {
+                throw new IllegalArgumentException("Database-managed files can only be changed by the application.");
+            }
         }
     }
 }
