@@ -143,7 +143,7 @@ export default function AircraftFlightTimeList() {
     const isAdmin = role === "ADMIN";
     const { aircraftId } = useParams<{ aircraftId: string }>();
     const [flightTimes, setFlightTimes] = useState<FlightTimeDetail[]>([]);
-    const [aircraftData, setAircraftData] = useState<{ manufacturer?: string; serialNumber?: string } | null>(null);
+    const [aircraftData, setAircraftData] = useState<{ manufacturer?: string; serialNumber?: string; model?: string } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -182,6 +182,7 @@ export default function AircraftFlightTimeList() {
                 if (aircraft) {
                     setAircraftData({
                         manufacturer: aircraft.aircraftModel?.manufacturer || aircraft.manufacturer,
+                        model: aircraft.aircraftModel?.model || aircraft.model,
                         serialNumber: aircraft.serialNumber
                     });
                 }
@@ -456,7 +457,7 @@ export default function AircraftFlightTimeList() {
     const aircraftManufacturer = aircraftData?.manufacturer || (aircraftId && flightTimes.length > 0
         ? flightTimes[0].aircraftManufacturer
         : null);
-    const aircraftModel = flightTimes.length > 0 ? flightTimes[0].aircraftModel : null;
+    const aircraftModel = aircraftData?.model || (flightTimes.length > 0 ? flightTimes[0].aircraftModel : null);
     const heading = aircraftId
         ? aircraftManufacturer
             ? `${aircraftManufacturer} ${aircraftModel} (S/N: ${aircraftSerial || "N/A"})`
