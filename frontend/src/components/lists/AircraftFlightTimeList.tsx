@@ -99,7 +99,7 @@ const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation)
         return;
     }
     const newTab = window.open("about:blank", "_blank");
-    
+
     if (!newTab) {
         alert("El bloqueador de ventanas emergentes impidió abrir el documento.");
         return;
@@ -112,14 +112,14 @@ const openDocumentationInNewTab = async (documentation: FlightTimeDocumentation)
 
     try {
         const response = await apiFetch(`/api/flight-time-documentation/files/${encodedPath}`);
-        
+
         if (!response) {
             throw new Error("No se obtuvo respuesta del servidor");
         }
 
         const blob = await response.blob();
         const isPdfByExtension = path.toLowerCase().endsWith(".pdf");
-        
+
         const fileBlob =
             isPdfByExtension && (!blob.type || blob.type === "application/octet-stream")
                 ? new Blob([blob], { type: "application/pdf" })
@@ -176,7 +176,7 @@ export default function AircraftFlightTimeList() {
             const flightData = flightResponse ? await flightResponse.json() : [];
             const parsedData = Array.isArray(flightData) ? flightData : [];
             setFlightTimes(parsedData);
-            
+
             if (aircraftResponse) {
                 const aircraft = await aircraftResponse.json();
                 if (aircraft) {
@@ -301,6 +301,8 @@ export default function AircraftFlightTimeList() {
         setUpdateError(null);
         setUpdateSuccess(false);
         setUpdateLoading(false);
+        setIsNewOperation(false);      // ← NUEVO
+        setNewOperationCodigo("");
     };
 
     const handleEditStart = (flight: FlightTimeDetail) => {
@@ -309,6 +311,7 @@ export default function AircraftFlightTimeList() {
         setDocumentationMarkedForDeletion(false);
         setUpdateError(null);
         setUpdateSuccess(false);
+        setNewOperationCodigo("");
         // If the current operationReference is not in the operations list, switch to "Escribir nueva"
         const exists = operations.some((op) => op.codigo === flight.operationReference);
         setIsNewOperation(!exists);
@@ -349,7 +352,7 @@ export default function AircraftFlightTimeList() {
     };
 
     const downloadPdfBlob = async (
-        pdfDocument: React.ReactElement<DocumentProps>, 
+        pdfDocument: React.ReactElement<DocumentProps>,
         fileName: string
     ) => {
         const blob = await pdf(pdfDocument).toBlob();
@@ -446,16 +449,16 @@ export default function AircraftFlightTimeList() {
         headers.push({ label: "Acciones", key: "actions", sortable: false });
     }
 
-    const aircraftSerial = aircraftData?.serialNumber || (aircraftId && flightTimes.length > 0 
-        ? flightTimes[0].aircraftSerialNumber 
+    const aircraftSerial = aircraftData?.serialNumber || (aircraftId && flightTimes.length > 0
+        ? flightTimes[0].aircraftSerialNumber
         : null);
 
-    const aircraftManufacturer = aircraftData?.manufacturer || (aircraftId && flightTimes.length > 0 
-        ? flightTimes[0].aircraftManufacturer 
+    const aircraftManufacturer = aircraftData?.manufacturer || (aircraftId && flightTimes.length > 0
+        ? flightTimes[0].aircraftManufacturer
         : null);
     const aircraftModel = flightTimes.length > 0 ? flightTimes[0].aircraftModel : null;
-    const heading = aircraftId 
-        ? aircraftManufacturer 
+    const heading = aircraftId
+        ? aircraftManufacturer
             ? `${aircraftManufacturer} ${aircraftModel} (S/N: ${aircraftSerial || "N/A"})`
             : `${aircraftSerial || aircraftId}`
         : "Registro de Horas de Vuelo";
@@ -465,18 +468,18 @@ export default function AircraftFlightTimeList() {
             <div className="card shadow-sm" style={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
                 <div className="card-body">
                     <div className="position-relative d-flex align-items-center justify-content-center mb-2 pb-3 w-100">
-                        <button 
-                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0" 
+                        <button
+                            className="btn d-flex align-items-center justify-content-center flex-shrink-0 position-absolute start-0"
                             onClick={() => navigate("/flight-hours")}
                             style={styles.backBtn}
                             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 130, 69, 0.1)")}
                             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                             title="Volver"
                         >
-                            <img 
-                                src={arroBackIcon} 
-                                alt="Volver" 
-                                style={styles.backIcon} 
+                            <img
+                                src={arroBackIcon}
+                                alt="Volver"
+                                style={styles.backIcon}
                             />
                         </button>
                         <div className="d-flex flex-column align-items-center justify-content-center p-4">
@@ -485,7 +488,7 @@ export default function AircraftFlightTimeList() {
                             </span>
                             <h2 className="mb-0 fw-bold text-center" style={{ color: "#1E1E1E", paddingLeft: "60px", paddingRight: "60px" }}>
                                 {heading}
-                            </h2> 
+                            </h2>
                         </div>
                     </div>
                     <style>{`
@@ -533,7 +536,7 @@ export default function AircraftFlightTimeList() {
 
                     <div className="row g-3 mb-4 align-items-center">
                         <div className="col-12 col-md-6">
-                        <SearchBar value={search} placeholder="Buscar por tipo o comentario..." onChange={setSearch} />
+                            <SearchBar value={search} placeholder="Buscar por tipo o comentario..." onChange={setSearch} />
                         </div>
                         <div className="col-12 col-md-6 d-flex justify-content-md-end gap-2">
                             <button
@@ -546,9 +549,9 @@ export default function AircraftFlightTimeList() {
                                 <img src={downloadIcon} alt="" style={{ width: 16, height: 16, filter: "brightness(0) invert(1)" }} />
                                 <span>{isPdfDownloading ? "Generando..." : "Descargar"}</span>
                             </button>
-                            
-                            <ButtonProp 
-                                type="button" 
+
+                            <ButtonProp
+                                type="button"
                                 onClick={() => navigate(`/flight-hours/${aircraftId}/register`)}
                             >
                                 <span className="d-none d-sm-inline">+ Registrar Horas</span>
@@ -597,13 +600,13 @@ export default function AircraftFlightTimeList() {
                                     {isAdmin && (
                                         <td>
                                             <div className="d-flex gap-1">
-                                                <button 
+                                                <button
                                                     className="btn btn-sm btn-outline-primary"
                                                     onClick={(e) => { e.stopPropagation(); handleEditStart(row); }}
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="btn btn-sm btn-outline-danger"
                                                     onClick={(e) => handleDelete(e, row.id)}
                                                 >
@@ -632,8 +635,8 @@ export default function AircraftFlightTimeList() {
                                     if (row.durationMinutes < 0) cardStyleClass = "flight-card-negative";
 
                                     return (
-                                        <div 
-                                            key={row.id} 
+                                        <div
+                                            key={row.id}
                                             className={`card shadow-sm cursor-pointer p-3 ${cardStyleClass}`}
                                             onClick={() => setSelectedFlight(row)}
                                             style={{ borderRadius: "8px", border: "1px solid #E5E7EB" }}
@@ -678,17 +681,17 @@ export default function AircraftFlightTimeList() {
                                                             <span className="text-muted">No</span>
                                                         )}
                                                     </div>
-                                                    
+
                                                     {isAdmin && (
                                                         <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
-                                                            <button 
+                                                            <button
                                                                 className="btn btn-sm btn-outline-primary p-1 d-flex align-items-center justify-content-center"
                                                                 onClick={() => handleEditStart(row)}
                                                                 style={{ width: "28px", height: "28px" }}
                                                             >
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                                             </button>
-                                                            <button 
+                                                            <button
                                                                 className="btn btn-sm btn-outline-danger p-1 d-flex align-items-center justify-content-center"
                                                                 onClick={(e) => handleDelete(e, row.id)}
                                                                 style={{ width: "28px", height: "28px" }}
@@ -742,13 +745,13 @@ export default function AircraftFlightTimeList() {
                                             </div>
                                             <div className="col-12 mb-3">
                                                 <label className="form-label small fw-bold text-muted">DURACIÓN (MINUTOS)</label>
-                                                <input type="number" className="form-control" value={editingFlight.durationMinutes} onChange={(e) => setEditingFlight({...editingFlight, durationMinutes: parseInt(e.target.value)})} required />
+                                                <input type="number" className="form-control" value={editingFlight.durationMinutes} onChange={(e) => setEditingFlight({ ...editingFlight, durationMinutes: parseInt(e.target.value) })} required />
                                             </div>
                                             <div className="col-12 mb-3">
                                                 <label className="form-label fw-bold text-secondary small text-uppercase tracking-wider mb-3">
                                                     Ref. operación
                                                 </label>
-                                                
+
                                                 <div className="btn-group w-100 mb-3" role="group" aria-label="Modo de operación">
                                                     <input
                                                         type="radio"
@@ -807,7 +810,7 @@ export default function AircraftFlightTimeList() {
 
                                             <div className="col-12 mb-3">
                                                 <label className="form-label small fw-bold text-muted">COMENTARIOS</label>
-                                                <textarea className="form-control" rows={3} value={editingFlight.comments || ""} onChange={(e) => setEditingFlight({...editingFlight, comments: e.target.value})} />
+                                                <textarea className="form-control" rows={3} value={editingFlight.comments || ""} onChange={(e) => setEditingFlight({ ...editingFlight, comments: e.target.value })} />
                                             </div>
                                             <div className="col-12">
                                                 <label className="form-label small fw-bold text-muted">DOCUMENTACIÓN ADJUNTA</label>
@@ -839,7 +842,7 @@ export default function AircraftFlightTimeList() {
                                                 ) : null}
                                                 <div className="input-group">
                                                     <input
-                                                        type="file"
+                                                        key={`file-${editingFlight.id}-${selectedFile?.name || "empty"}`} type="file"
                                                         className="form-control"
                                                         onChange={(e) => {
                                                             setSelectedFile(e.target.files?.[0] || null);
@@ -922,7 +925,7 @@ export default function AircraftFlightTimeList() {
                                                     {selectedFlight.comments || "Sin comentarios."}
                                                 </p>
                                             </div>
-                                            
+
                                             <div className="col-12 border-top pt-3 mt-2">
                                                 <label className="text-muted small d-block mb-2">Documentación adjunta</label>
                                                 {selectedFlight.documentation?.documentationName || selectedFlight.documentation?.filePath ? (
@@ -930,7 +933,7 @@ export default function AircraftFlightTimeList() {
                                                         <span className="small text-truncate me-2">
                                                             {selectedFlight.documentation?.documentationName || "Archivo adjunto"}
                                                         </span>
-                                                        <button 
+                                                        <button
                                                             className="btn btn-primary btn-sm"
                                                             onClick={() => openDocumentationInNewTab(selectedFlight.documentation as FlightTimeDocumentation)}
                                                         >
