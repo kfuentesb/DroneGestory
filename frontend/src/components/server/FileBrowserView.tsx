@@ -343,9 +343,9 @@ export default function FileBrowserView() {
                     transition: color 0.25s ease;
                     display: flex;
                     align-items: center;
-                    justify-content: center; /* <-- ESTO CENTRA EL TEXTO E ICONO HORIZONTALMENTE */
+                    justify-content: center;
                     gap: 8px;
-                    min-width: 160px;        /* <-- OPCIONAL: Asegura que ambos botones tengan el mismo ancho fijo */
+                    min-width: 160px;
                 }
                 .sliding-tab-btn:hover {
                     color: #202124;
@@ -360,11 +360,11 @@ export default function FileBrowserView() {
                     bottom: 4px;
                     left: 4px;
                     width: calc(50% - 4px);
-                    background-color: #2e7d32;
+                    background-color: #0d6efd; /* <-- Cambiado a azul (Bootstrap primary o #1a73e8) */
                     border-radius: 26px;
                     z-index: 1;
                     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    box-shadow: 0 2px 6px rgba(46, 125, 50, 0.3);
+                    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3); /* <-- Sombra azulada */
                 }
                 .sliding-bg-pill.slide-right {
                     transform: translateX(100%);
