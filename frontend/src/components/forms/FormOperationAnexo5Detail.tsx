@@ -205,11 +205,29 @@ export default function FormOperationAnexo5Detail({
   const currentUserAssignedEntry = assignedPersonnel.find((person) => person.username === username);
 
   const handleSignCurrentUser = async () => {
-    if (disabled || !initialValues?.id) return;
+    if (disabled) return;
 
     setSigningAptitud(true);
     try {
-      const signedData = await signAnexo5Data(operationId, initialValues.id);
+      let currentId = initialValues?.id;
+
+      // Si el anexo no se ha guardado aún (no tiene ID), lo guardamos primero de forma automática
+      if (!currentId) {
+        const formData = new FormData();
+        FORM_FIELDS.forEach((key) => {
+          const value = formValues[key];
+          if (value !== undefined && value !== null && value !== "") {
+            formData.append(key, value);
+          }
+        });
+        const savedData = await saveAnexo5Data(operationId, formData);
+        if (!savedData?.id) {
+          throw new Error("No se pudo autoguardar el borrador del Anexo 5 antes de firmar.");
+        }
+        currentId = savedData.id;
+      }
+
+      const signedData = await signAnexo5Data(operationId, currentId);
       setAlertModal({ show: true, title: "Anexo 5", message: "Firma registrada correctamente." });
       await onSaved?.(signedData);
     } catch (err: unknown) {
@@ -394,7 +412,7 @@ export default function FormOperationAnexo5Detail({
                       <td>{person.roles.join(", ")}</td>
                       <td>{renderSignatureStatus(person.signed)}</td>
                       <td>
-                        {currentUserAssignedEntry?.id === person.id && initialValues?.id && !person.signed ? (
+                        {currentUserAssignedEntry?.id === person.id && !person.signed ? (
                           <button
                             type="button"
                             className="btn btn-sm btn-primary"
@@ -430,11 +448,7 @@ export default function FormOperationAnexo5Detail({
               </table>
             </div>
 
-            {assignedPersonnel.length > 0 && !initialValues?.id ? (
-              <div className="text-muted small">
-                Guarda el borrador para habilitar la firma en esta sección.
-              </div>
-            ) : assignedPersonnel.length > 0 && !currentUserAssignedEntry ? (
+            {assignedPersonnel.length > 0 && !currentUserAssignedEntry ? (
               <div className="text-muted small">
                 Solo el personal asignado en Anexo 4 puede firmar su recuadro.
               </div>
