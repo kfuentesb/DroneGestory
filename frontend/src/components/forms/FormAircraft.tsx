@@ -300,6 +300,7 @@ export default function FormAircraft({ initialValues: propsInitialValues, initia
     setDocumentationFiles((prev) => ({ ...prev, [id]: file }));
     setExistingDocumentationFileNames((prev) => ({ ...prev, [id]: "" }));
     setError(null);
+    event.target.value = "";
   };
 
   const handleDocumentationClearFile = (id: string, inputId: string) => {
@@ -484,26 +485,26 @@ export default function FormAircraft({ initialValues: propsInitialValues, initia
     setShowModelDefaultImage(false);
     setFormValues({ ...formValues, image: file });
     setError("");
+    event.target.value = "";
   };
 
   const handleClearFile = () => {
     setSelectedFile(null);
     setFormValues({ ...formValues, image: null });
     setShowModelDefaultImage(false);
-    const fileInput = document.getElementById("file-upload") as HTMLInputElement;
+    const fileInput = document.getElementById("file-upload") as HTMLInputElement | null;
     if (fileInput) fileInput.value = "";
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setLoading(true);
     setError(null);
 
-    const serialRegex = /^[a-zA-Z0-9]{2,25}$/;
     const newErrors = {
-      manufacturer: !formValues.manufacturer.trim(),
-      model: !formValues.model.trim(),
-      serialNumber: !formValues.serialNumber.trim() || !serialRegex.test(formValues.serialNumber),
+      serialNumber:
+        !formValues.serialNumber.trim() ||
+        !/^[A-Z0-9]{2,25}$/.test(formValues.serialNumber),
       aircraftClass: !formValues.aircraftClass,
       mtom:
         formValues.mtom === 0 ||

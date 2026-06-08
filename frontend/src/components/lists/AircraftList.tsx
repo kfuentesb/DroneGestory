@@ -184,10 +184,6 @@ export default function AircraftList() {
     setCurrentPage(1);
   }, [search, aircrafts.length]);
 
-  if (isLoading) {
-    return <LoadingSpinner message="Cargando aeronaves..." />;
-  }
-
   const handleRequestSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
@@ -254,7 +250,7 @@ export default function AircraftList() {
     { label: "MTOM", key: "mtom", sortable: true },
     { label: "Dimensión", key: "wingspan", sortable: true },
     { label: "Configuración", key: "config", sortable: true },
-    { label: "Fecha fabricación", key: "fechaFab", sortable: true },
+    { label: "Fabricación", key: "fechaFab", sortable: true },
     { label: "Observaciones", key: "observations", sortable: false },
   ];
 
@@ -265,6 +261,36 @@ export default function AircraftList() {
   const customText = roles.includes("ADMIN") || roles.includes("MANAGER") 
     ? "Registre y modifique" 
     : "Vea";
+
+  // Función reutilizable para campos de texto largos de la tabla
+  const renderTruncatedCell = (value: string | number | null | undefined, maxChars = 10) => {
+    const str = value?.toString() || "";
+    if (!str) return "-";
+    if (str.length <= maxChars) return str;
+
+    return (
+      <div className="d-flex align-items-center justify-content-between" style={{ gap: "0px" }}>
+        <span 
+          className="text-truncate d-inline-block flex-grow-1" 
+          style={{ maxWidth: `${maxChars * 8}px`, paddingRight: "0px" }} 
+          title={str}
+        >
+          {str}
+        </span>
+        <div 
+          className="info-badge-container" 
+          style={{ zIndex: 10, display: "inline-flex", marginLeft: "0px" }} 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <InfoBadge text={str} />
+        </div>
+      </div>
+    );
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner message="Cargando aeronaves..." />;
+  }
 
   return (
     <div className="container py-4">
@@ -333,24 +359,47 @@ export default function AircraftList() {
           {/* DESKTOP VIEW: Standard Table layout */}
           <div className="d-none d-md-block">
             <div 
-              className="table-responsive w-100" 
+              className="table-responsive" 
               style={{ 
                 overflowX: "auto", 
+                width: "100%",
                 display: "block",
-                width: "100%"
+                marginRight: "auto",
+                marginLeft: "0" /* Pulls layout tightly to the left side */
               }}
             >
-              <div className="w-100" style={{ minWidth: "100%", display: "table" }}>
+              <div style={{ display: "inline-block", verticalAlign: "top", maxWidth: "100%" }}>
                 <style>{`
+                  /* Target the table directly to drop loose percentage sizing */
                   .table-responsive table {
-                    width: 100% !important;
+                    width: auto !important; /* Forces the table to shrink-wrap its exact data width */
+                    max-width: 100% !important;
                     table-layout: auto !important;
                     margin-bottom: 0 !important;
                   }
+                  
+                  /* Make sure table headers/cells do not stretch unnecessarily */
+                  .table-responsive table th,
+                  .table-responsive table td {
+                    white-space: nowrap; /* Prevents text elements from breaking awkwardly */
+                  }
+
+                  /* Enforce tight constraints for the final observations column */
                   .table-responsive table td:last-child, 
                   .table-responsive table th:last-child {
-                    width: auto !important;
-                    min-width: 150px;
+                    width: 100px !important;
+                    min-width: 100px !important;
+                    max-width: 100px !important;
+                  }
+                  
+                  .info-badge-container .info-tooltip-text {
+                    visibility: hidden;
+                    opacity: 0;
+                    transition: opacity 0.15s ease-in-out;
+                  }
+                  .info-badge-container:hover .info-tooltip-text {
+                    visibility: visible;
+                    opacity: 1;
                   }
                 `}</style>
 
@@ -371,46 +420,33 @@ export default function AircraftList() {
                           }}
                         />
                       </td>
-                      <td style={{ verticalAlign: "middle" }}>{a.manufacturer || "N/A"}</td>
-                      <td style={{ verticalAlign: "middle" }}>{a.model || "N/A"}</td>
-                      <td style={{ verticalAlign: "middle" }}>{a.serialNumber ?? "-"}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.manufacturer}</td>
+                      <td style={{ verticalAlign: "middle" }}>{renderTruncatedCell(a.model, 10)}</td>
+                      <td style={{ verticalAlign: "middle" }}>{renderTruncatedCell(a.serialNumber, 10)}</td>
                       <td style={{ verticalAlign: "middle" }}>{a.aircraftClass}</td>
-                      <td style={{ verticalAlign: "middle" }}>{a.mtom ?? "-"} <b> Kg</b></td>
-                      <td style={{ verticalAlign: "middle" }}>{a.wingspan ?? "-"} <b>m</b></td>
+                      
+                      <td style={{ verticalAlign: "middle" }}>
+                        {a.mtom ?? "-"} <b> Kg</b>
+                      </td>
+                      <td style={{ verticalAlign: "middle" }}>
+                        {a.wingspan ?? "-"} <b>m</b>
+                      </td>
+                      
                       <td style={{ verticalAlign: "middle" }}>{a.config}</td>
                       <td style={{ verticalAlign: "middle" }}>{formatMonthYear(a.fechaFab)}</td>
+                      
+                      {/* Rigged absolute constraints on observations */}
                       <td 
                         className="text-muted small" 
-                        style={{ maxWidth: "150px", position: "relative", verticalAlign: "middle" }}
-                        onClick={(e) => e.stopPropagation()} 
+                        style={{ 
+                          width: "100px",
+                          maxWidth: "100px", 
+                          position: "relative", 
+                          verticalAlign: "middle",
+                          overflow: "hidden"
+                        }}
                       >
-                        {a.observations ? (
-                          <div className="d-flex align-items-center justify-content-between">
-                            <span 
-                              className="text-truncate d-inline-block flex-grow-1" 
-                              style={{ maxWidth: "120px" }}
-                              title={a.observations}
-                            >
-                              {a.observations}
-                            </span>
-                            <div className="info-badge-container" style={{ zIndex: 10 }}>
-                              <style>{`
-                                .info-badge-container .info-tooltip-text {
-                                  visibility: hidden;
-                                  opacity: 0;
-                                  transition: opacity 0.15s ease-in-out;
-                                }
-                                .info-badge-container:hover .info-tooltip-text {
-                                  visibility: visible;
-                                  opacity: 1;
-                                }
-                              `}</style>
-                              <InfoBadge text={a.observations} />
-                            </div>
-                          </div>
-                        ) : (
-                          "-"
-                        )}
+                        {renderTruncatedCell(a.observations, 10)}
                       </td>
                     </>
                   )}
@@ -453,7 +489,6 @@ export default function AircraftList() {
                       e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.04)";
                     }}
                   >
-                    {/* Top Info Header Block */}
                     <div className="d-flex gap-3 align-items-start mb-3">
                       <img
                         src={getImageUrl(a.imagePath)}
@@ -471,7 +506,6 @@ export default function AircraftList() {
                         }}
                       />
 
-                      {/* Core Text Info */}
                       <div className="flex-grow-1 min-w-0">
                         <div className="d-flex justify-content-between align-items-start gap-2">
                           <div className="text-truncate">
@@ -483,7 +517,6 @@ export default function AircraftList() {
                             </h5>
                           </div>
                           
-                          {/* Badges Stacked Right */}
                           <div className="text-end flex-shrink-0">
                             <span className="badge bg-dark fw-semibold px-2 py-1" style={{ fontSize: "0.7rem", borderRadius: "4px" }}>
                               {a.aircraftClass}
@@ -500,7 +533,6 @@ export default function AircraftList() {
                       </div>
                     </div>
 
-                    {/* Parámetros técnicos optimizados */}
                     <div className="row g-2 text-muted mb-3" style={{ fontSize: "0.78rem" }}>
                       {[
                         { label: "MTOM", value: `${a.mtom ?? "-"} Kg` },
@@ -516,7 +548,6 @@ export default function AircraftList() {
                       ))}
                     </div>
 
-                    {/* Bloque de Observaciones en vista móvil */}
                     {a.observations && (
                       <div className="mb-3 p-2 bg-light rounded" style={{ border: "1px dashed #E5E7EB" }}>
                         <span className="d-block text-muted fw-medium mb-1" style={{ fontSize: "0.68rem" }}>Observaciones:</span>
@@ -526,7 +557,6 @@ export default function AircraftList() {
                       </div>
                     )}
 
-                    {/* Footer Action Anchor */}
                     <div className="d-flex justify-content-end pt-2 border-top" style={{ borderColor: "#F3F4F6" }}>
                       <span className="text-primary small d-flex align-items-center gap-1" style={{ fontSize: "0.8rem", fontWeight: 600 }}>
                         Ver detalles

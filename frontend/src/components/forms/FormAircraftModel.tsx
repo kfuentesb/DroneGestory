@@ -161,6 +161,7 @@ export default function FormAircraftModel() {
 
     setDocumentationFiles((prev) => ({ ...prev, [id]: file }));
     setError(null);
+    event.target.value = "";
   };
 
   const handleDocumentationClearFile = (id: string, inputId: string) => {

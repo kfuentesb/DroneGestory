@@ -511,7 +511,11 @@ export default function OperationDocumentationList() {
                                     <input
                                         className="form-control"
                                         type="file"
-                                        onChange={(e) => setForm({ ...form, file: e.target.files?.[0] ?? null })}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0] ?? null;
+                                            setForm({ ...form, file });
+                                            e.target.value = "";
+                                        }}
                                         required={!form.id}
                                     />
                                 </div>

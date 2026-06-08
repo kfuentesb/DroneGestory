@@ -214,6 +214,7 @@ function FormUser() {
         console.log(`Uploaded file for: ${id}`);
         setSelectedFiles((prev) => ({ ...prev, [id]: file }));
         setError("");
+        event.target.value = "";
     };
 
     const handleClearFile = (id: string, inputId: string) => {
@@ -445,6 +446,7 @@ function FormUser() {
             },
         }));
         setError("");
+        event.target.value = "";
     };
 
     const handleConopsClearFile = (catId: string) => {

@@ -846,10 +846,12 @@ export default function AircraftFlightTimeList() {
                                                         key={`file-${editingFlight.id}-${selectedFile?.name || "empty"}`} type="file"
                                                         className="form-control"
                                                         onChange={(e) => {
-                                                            setSelectedFile(e.target.files?.[0] || null);
-                                                            if (e.target.files?.[0]) {
+                                                            const file = e.target.files?.[0] || null;
+                                                            setSelectedFile(file);
+                                                            if (file) {
                                                                 setDocumentationMarkedForDeletion(false);
                                                             }
+                                                            e.target.value = "";
                                                         }}
                                                     />
                                                 </div>

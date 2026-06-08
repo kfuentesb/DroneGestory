@@ -101,7 +101,11 @@ export default function MultipleAdditionalsComponent<T extends MultipleAdditiona
                         fileInputId={`file-additional-${item.id}`}
                         selectedFile={item.certificate}
                         existingFileName={existingFileNames[item.id]}
-                        onFileChange={(e) => onFieldChange(item.id, "certificate" as keyof T, e.target.files?.[0] || null)}
+                        onFileChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            onFieldChange(item.id, "certificate" as keyof T, file);
+                            e.target.value = "";
+                        }}
                         onClearFile={() => onFieldChange(item.id, "certificate" as keyof T, null)}
                         expirationDate={item.dateExpire || ""}
                         onExpirationDateChange={(value) => onFieldChange(item.id, "dateExpire" as keyof T, value)}

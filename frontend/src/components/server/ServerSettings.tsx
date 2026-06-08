@@ -494,7 +494,11 @@ export default function ServerSettings (){
                                             type="file"
                                             className="form-control form-control-sm"
                                             accept=".zip,.sql"
-                                            onChange={(event) => handleSelectRestoreFile(event.target.files?.[0] ?? null)}
+                                            onChange={(event) => {
+                                                const file = event.target.files?.[0] ?? null;
+                                                handleSelectRestoreFile(file);
+                                                event.target.value = "";
+                                            }}
                                             disabled={isRestoring}
                                         />
                                     </div>

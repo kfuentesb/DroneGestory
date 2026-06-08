@@ -127,6 +127,7 @@ export default function FormMaintenance() {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
         setSelectedFile(file);
+        event.target.value = "";
     };
 
     const aircraftLabel = selectedAircraft

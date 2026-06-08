@@ -569,7 +569,12 @@ export default function MaintenanceAircraftList() {
                                                     </div>
                                                 )}
                                                 <div className="input-group">
-                                                    <input type="file" className="form-control" onChange={(e) => { setSelectedFile(e.target.files?.[0] || null); if (e.target.files?.[0]) setDocumentationMarkedForDeletion(false); }} />
+                                                    <input type="file" className="form-control" onChange={(e) => {
+                                                        const file = e.target.files?.[0] || null;
+                                                        setSelectedFile(file);
+                                                        if (file) setDocumentationMarkedForDeletion(false);
+                                                        e.target.value = "";
+                                                    }} />
                                                 </div>
                                                 {documentationMarkedForDeletion && !selectedFile && <small className="text-danger d-block mt-2">La documentacion actual se eliminara al guardar.</small>}
                                                 {selectedFile && <small className="text-muted d-block mt-2">Se subira: {selectedFile.name}</small>}

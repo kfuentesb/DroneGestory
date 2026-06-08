@@ -681,6 +681,10 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             return nextState;
         });
 
+        if (file) {
+            event.target.value = "";
+        }
+
         // Gestionar el flag de restauración (solo para aeronaves)
         if (!isModelContext && file) {
             setAircraftDocumentationRestoreDefaults((prev) => ({
@@ -704,6 +708,7 @@ export default function DetailsComponent(props: DetailsComponentProps) {
             ...prev,
             files: { ...prev.files, [key]: file }
         }));
+        event.target.value = "";
     };
 
     const handleAircraftDocumentationClearFile = (
