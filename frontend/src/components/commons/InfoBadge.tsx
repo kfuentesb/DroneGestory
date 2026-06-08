@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import infoIcon from "../../assets/commons/info_white.svg";
 
+// CORRECCIÓN: Dejamos únicamente React.ReactNode para el contenido renderizable
 export function InfoBadge({ text }: { text: React.ReactNode }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({
@@ -35,8 +36,8 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
     return (
         <div 
             ref={containerRef} 
-            className="info-tooltip-wrapper ms-2" 
-            style={{ position: "relative", display: "inline-block" }}
+            className="info-tooltip-wrapper ms-2"
+            style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
             onMouseEnter={handleMouseEnter}
         >
             <style>{`
@@ -81,6 +82,7 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
                     borderRadius: "6px",
                     fontSize: "0.75rem",
                     lineHeight: "1.4",
+                    cursor: "default", 
                 }}
             >
                 {text}

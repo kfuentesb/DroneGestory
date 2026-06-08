@@ -75,7 +75,8 @@ public class AircraftRequestDTO {
         aircraft.setHasEnsurance(resolveBoolean(hasEnsurance, hasInsurance));
         aircraft.setHasFTS(resolveBoolean(hasFTS, hasFts));
         aircraft.setCautive(resolveSelectionStatus(cautive, tether));
-        aircraft.setAccessories(resolveAccessories(accessories, observations));
+        aircraft.setAccessories(resolveAccessories(accessories, null));
+        aircraft.setObservations(observations);
         aircraft.setFlightMinutes(flightMinutes != null ? flightMinutes : 0);
 
         return aircraft;

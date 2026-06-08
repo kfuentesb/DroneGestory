@@ -29,6 +29,7 @@ type Aircraft = {
   powerSource: "Electric" | "Non_Electric";
   powerSourceType?: "Hydrogen" | "Gasoline";
   imagePath?: string | null;
+  observations?: string | null;
 };
 
 export default function AircraftList() {
@@ -46,6 +47,7 @@ export default function AircraftList() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const [isLoading, setIsLoading] = useState(true);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modelOptions, setModelOptions] = useState<any[]>([]);
@@ -117,6 +119,7 @@ export default function AircraftList() {
               powerSourceTypeDefault: modelItem.powerSourceTypeDefault,
               cautiveDefault: modelItem.cautiveDefault,
               accessoriesDefault: modelItem.accessoriesDefault,
+              observationsDefault: modelItem.observationsDefault,
             });
           }
         });
@@ -161,13 +164,20 @@ export default function AircraftList() {
     setModalError(null);
   };
 
+  // Filtrado que incluye todas las propiedades menos las observaciones
   const filteredAircrafts = useSearchFilter(aircrafts, search, (a) => [
     a.manufacturer ?? "",
     a.model ?? "",
     a.serialNumber ?? "",
-    a.aircraftClass,
-    a.config,
-    a.fechaFab ?? "",
+    a.aircraftClass ?? "",
+    a.mtom ? String(a.mtom) : "",
+    a.wingspan ? String(a.wingspan) : "",
+    a.maxSpeed ? String(a.maxSpeed) : "",
+    a.config ?? "",
+    a.impactEnergy ? String(a.impactEnergy) : "",
+    formatMonthYear(a.fechaFab),
+    a.powerSource ?? "",
+    a.powerSourceType ?? "",
   ]);
 
   useEffect(() => {
@@ -178,7 +188,31 @@ export default function AircraftList() {
     return <LoadingSpinner message="Cargando aeronaves..." />;
   }
 
-  const paginatedAircrafts = filteredAircrafts.slice(
+  const handleRequestSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedFilteredAircrafts = (() => {
+    if (!sortConfig) return filteredAircrafts;
+    const items = [...filteredAircrafts];
+    items.sort((a: any, b: any) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return sortConfig.direction === "asc" ? -1 : 1;
+      if (bValue == null) return sortConfig.direction === "asc" ? 1 : -1;
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+    return items;
+  })();
+
+  const paginatedAircrafts = sortedFilteredAircrafts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -219,11 +253,9 @@ export default function AircraftList() {
     { label: "Clase", key: "aircraftClass", sortable: true },
     { label: "MTOM", key: "mtom", sortable: true },
     { label: "Dimensión", key: "wingspan", sortable: true },
-    { label: "Velocidad", key: "maxSpeed", sortable: true },
     { label: "Configuración", key: "config", sortable: true },
-    { label: "Energia impacto", key: "impactEnergy", sortable: true },
     { label: "Fecha fabricación", key: "fechaFab", sortable: true },
-    { label: "Camara", key: "hasCamera", sortable: true },
+    { label: "Observaciones", key: "observations", sortable: false },
   ];
 
   const handleRowClick = (a: Aircraft) => {
@@ -253,7 +285,6 @@ export default function AircraftList() {
             `}</style>
 
             <div className="d-flex align-items-baseline flex-wrap">
-              
               <h2 className="card-title fw-bold mb-0 me-3" style={{ color: "#1E1E1E", whiteSpace: "nowrap" }}>
                 Aeronaves registradas
               </h2>
@@ -277,12 +308,11 @@ export default function AircraftList() {
                   {customText} aeronaves a partir de plantillas existentes y personalice sus datos individuales.
                 </span>
               </div>
-              
             </div>
           </div>
 
           <div className="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3 mb-4">
-            <SearchBar value={search} onChange={setSearch} />
+            <SearchBar value={search} onChange={setSearch} placeholder="Buscar aeronaves..." />
 
             <div className="d-flex align-items-stretch gap-2">
               {(roles.includes("ADMIN") || roles.includes("MANAGER")) && (
@@ -302,42 +332,93 @@ export default function AircraftList() {
 
           {/* DESKTOP VIEW: Standard Table layout */}
           <div className="d-none d-md-block">
-            <ReusableTable
-              headers={modelHeaders}
-              rows={paginatedAircrafts}
-              renderRow={(a) => (
-                <>
-                  {/* Put the image inside a <td> cell so it aligns with the headers */}
-                  <td>
-                    <img
-                      src={getImageUrl(a.imagePath)}
-                      alt={`${a.manufacturer} ${a.model}`}
-                      style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }}
-                      onError={(e) => {
-                        e.currentTarget.src = DefaultDroneImage;
-                      }}
-                    />
-                  </td>
-                  <td>{a.manufacturer || "N/A"}</td>
-                  <td>{a.model || "N/A"}</td>
-                  <td>{a.serialNumber ?? "-"}</td>
-                  <td>{a.aircraftClass}</td>
-                  <td>{a.mtom ?? "-"} <b> Kg</b></td>
-                  <td>{a.wingspan ?? "-"} <b>m</b></td>
-                  <td>{a.maxSpeed ?? "-"} <b>m/s</b></td>
-                  <td>{a.config}</td>
-                  <td>{a.impactEnergy ?? "-"} <b>J</b></td>
-                  <td>{formatMonthYear(a.fechaFab)}</td>
-                  <td className="text-center">
-                    <span className={`badge ${a.hasCamera ? "bg-success" : "bg-secondary"}`}>
-                      {a.hasCamera ? "Si" : "No"}
-                    </span>
-                  </td>
-                </>
-              )}
-              onRowClick={handleRowClick}
-              emptyText="No hay aeronaves registradas."
-            />
+            <div 
+              className="table-responsive w-100" 
+              style={{ 
+                overflowX: "auto", 
+                display: "block",
+                width: "100%"
+              }}
+            >
+              <div className="w-100" style={{ minWidth: "100%", display: "table" }}>
+                <style>{`
+                  .table-responsive table {
+                    width: 100% !important;
+                    table-layout: auto !important;
+                    margin-bottom: 0 !important;
+                  }
+                  .table-responsive table td:last-child, 
+                  .table-responsive table th:last-child {
+                    width: auto !important;
+                    min-width: 150px;
+                  }
+                `}</style>
+
+                <ReusableTable
+                  headers={modelHeaders}
+                  rows={paginatedAircrafts}
+                  sortConfig={sortConfig}
+                  onRequestSort={handleRequestSort}
+                  renderRow={(a) => (
+                    <>
+                      <td style={{ verticalAlign: "middle" }}>
+                        <img
+                          src={getImageUrl(a.imagePath)}
+                          alt={`${a.manufacturer} ${a.model}`}
+                          style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }}
+                          onError={(e) => {
+                            e.currentTarget.src = DefaultDroneImage;
+                          }}
+                        />
+                      </td>
+                      <td style={{ verticalAlign: "middle" }}>{a.manufacturer || "N/A"}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.model || "N/A"}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.serialNumber ?? "-"}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.aircraftClass}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.mtom ?? "-"} <b> Kg</b></td>
+                      <td style={{ verticalAlign: "middle" }}>{a.wingspan ?? "-"} <b>m</b></td>
+                      <td style={{ verticalAlign: "middle" }}>{a.config}</td>
+                      <td style={{ verticalAlign: "middle" }}>{formatMonthYear(a.fechaFab)}</td>
+                      <td 
+                        className="text-muted small" 
+                        style={{ maxWidth: "150px", position: "relative", verticalAlign: "middle" }}
+                        onClick={(e) => e.stopPropagation()} 
+                      >
+                        {a.observations ? (
+                          <div className="d-flex align-items-center justify-content-between">
+                            <span 
+                              className="text-truncate d-inline-block flex-grow-1" 
+                              style={{ maxWidth: "120px" }}
+                              title={a.observations}
+                            >
+                              {a.observations}
+                            </span>
+                            <div className="info-badge-container" style={{ zIndex: 10 }}>
+                              <style>{`
+                                .info-badge-container .info-tooltip-text {
+                                  visibility: hidden;
+                                  opacity: 0;
+                                  transition: opacity 0.15s ease-in-out;
+                                }
+                                .info-badge-container:hover .info-tooltip-text {
+                                  visibility: visible;
+                                  opacity: 1;
+                                }
+                              `}</style>
+                              <InfoBadge text={a.observations} />
+                            </div>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </>
+                  )}
+                  onRowClick={handleRowClick}
+                  emptyText="No hay aeronaves registradas."
+                />
+              </div>
+            </div>
           </div>
 
           {/* MOBILE VIEW: Clickable Mobile Cards layout */}
@@ -374,7 +455,6 @@ export default function AircraftList() {
                   >
                     {/* Top Info Header Block */}
                     <div className="d-flex gap-3 align-items-start mb-3">
-                      {/* Expanded & Cleaned Image Frame */}
                       <img
                         src={getImageUrl(a.imagePath)}
                         alt={`${a.manufacturer} ${a.model}`}
@@ -420,22 +500,12 @@ export default function AircraftList() {
                       </div>
                     </div>
 
-                    {/* Premium Parameters Grid */}
+                    {/* Parámetros técnicos optimizados */}
                     <div className="row g-2 text-muted mb-3" style={{ fontSize: "0.78rem" }}>
                       {[
                         { label: "MTOM", value: `${a.mtom ?? "-"} Kg` },
                         { label: "Dimensión", value: `${a.wingspan ?? "-"} m` },
-                        { label: "Velocidad", value: `${a.maxSpeed ?? "-"} m/s` },
-                        { label: "Energía", value: `${a.impactEnergy ?? "-"} J` },
-                        { label: "Fabricación", value: formatMonthYear(a.fechaFab) },
-                        { 
-                          label: "Cámara", 
-                          value: (
-                            <span className={`badge ${a.hasCamera ? "bg-success-subtle text-success" : "bg-light text-secondary"} border`} style={{ fontSize: "0.7rem", padding: "2px 6px" }}>
-                              {a.hasCamera ? "Sí" : "No"}
-                            </span>
-                          ) 
-                        }
+                        { label: "Fabricación", value: formatMonthYear(a.fechaFab) }
                       ].map((stat, i) => (
                         <div className="col-4" key={i}>
                           <div className="p-2" style={{ backgroundColor: "#F9FAFB", borderRadius: "6px", border: "1px solid #F3F4F6" }}>
@@ -445,6 +515,16 @@ export default function AircraftList() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Bloque de Observaciones en vista móvil */}
+                    {a.observations && (
+                      <div className="mb-3 p-2 bg-light rounded" style={{ border: "1px dashed #E5E7EB" }}>
+                        <span className="d-block text-muted fw-medium mb-1" style={{ fontSize: "0.68rem" }}>Observaciones:</span>
+                        <p className="text-dark mb-0 small lh-sm text-clamp-2" style={{ fontSize: "0.75rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          {a.observations}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Footer Action Anchor */}
                     <div className="d-flex justify-content-end pt-2 border-top" style={{ borderColor: "#F3F4F6" }}>
@@ -470,6 +550,7 @@ export default function AircraftList() {
         </div>
       </div>
 
+      {/* Pop-up / Modal */}
       {isModalOpen && (
         <>
           <div className="modal-backdrop fade show" style={{ zIndex: 1050 }} onClick={handleCloseModal}></div>
