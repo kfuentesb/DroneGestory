@@ -126,8 +126,15 @@ docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
 
 ### 5. Backups
 
-El guardado de backups solo funciona en modo desarrollo, ya que el docker de backend inlcuye pg_dump.
-Si se quisiera probar este sistema, desplegar en local la versión de producción.
+El guardado de backups para que funcione en este modo, el sistema necesita acceso a los ejecutables `pg_dump` y `psql`, o bien un contenedor Docker de PostgreSQL.
+
+En local, puedes configurar estas variables de entorno opcionales en tu `.env` o en el entorno de ejecución:
+
+* `APP_PG_DUMP_CMD`: comando o ruta de `pg_dump` (por defecto `pg_dump`).
+* `APP_PSQL_CMD`: comando o ruta de `psql` (por defecto `psql`).
+* `APP_POSTGRES_DOCKER_CONTAINER`: nombre del contenedor PostgreSQL cuando quieres usar `docker exec` como fallback.
+
+Si `pg_dump`/`psql` no están instalados en el host, el backend intentará usar `docker exec` contra un contenedor PostgreSQL válido.
 
 ## Ejecución en producción
 

@@ -8,6 +8,7 @@ import com.dronetools.dronegestory.model.BackupSettings;
 import com.dronetools.dronegestory.repository.BackupSettingsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -58,6 +59,17 @@ public class BackupService {
 
     @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
     private String auditLogsRoot;
+
+    @Value("${APP_PG_DUMP_CMD:pg_dump}")
+    private String pgDumpCommand;
+
+    @Value("${APP_PSQL_CMD:psql}")
+    private String psqlCommand;
+
+    @Value("${APP_POSTGRES_DOCKER_CONTAINER:}")
+    private String postgresDockerContainer;
+
+    private static final String[] DEFAULT_POSTGRES_CONTAINER_NAMES = {"aeronaves_db", "dronegestory-db"};
 
     @Scheduled(cron = "0 0 * * * ?", zone = "Europe/Madrid")
     @Transactional
@@ -215,9 +227,21 @@ public class BackupService {
     }
 
     private void dumpDatabase(Path databaseFile) throws IOException, InterruptedException {
+        try {
+            runPgDumpDatabase(databaseFile);
+        } catch (IOException e) {
+            if (isExecutableNotFound(e) && tryDockerFallback()) {
+                runDockerPgDumpDatabase(databaseFile);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private void runPgDumpDatabase(Path databaseFile) throws IOException, InterruptedException {
         DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "pg_dump",
+                pgDumpCommand,
                 "-h", connectionInfo.host(),
                 "-p", connectionInfo.port(),
                 "-U", datasourceUsername,
@@ -232,18 +256,78 @@ public class BackupService {
         int exitCode = process.waitFor();
 
         if (exitCode != 0) {
-            throw new IllegalStateException("pg_dump fallo con codigo " + exitCode + ": " + output);
+            throw new IllegalStateException(pgDumpCommand + " fallo con codigo " + exitCode + ": " + output);
         }
 
         if (!Files.exists(databaseFile) || Files.size(databaseFile) == 0) {
-            throw new IllegalStateException("pg_dump no genero un archivo SQL valido.");
+            throw new IllegalStateException(pgDumpCommand + " no genero un archivo SQL valido.");
+        }
+    }
+
+    private void runDockerPgDumpDatabase(Path databaseFile) throws IOException, InterruptedException {
+        String container = resolvePostgresDockerContainer();
+        if (container == null || container.isBlank()) {
+            throw new IllegalStateException("No se encontró un contenedor Docker de PostgreSQL para ejecutar pg_dump.");
+        }
+
+        System.out.println("[BACKUP] -> Usa docker exec para generar el volcado de la base de datos en: " + container);
+        DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "docker",
+                "exec",
+                "-i",
+                container,
+                pgDumpCommand,
+                "-U", datasourceUsername,
+                "-d", connectionInfo.database(),
+                "-h", "localhost"
+        );
+        processBuilder.environment().put("PGPASSWORD", datasourcePassword);
+        processBuilder.redirectErrorStream(false);
+
+        Process process = processBuilder.start();
+        var stderrCollector = new java.io.ByteArrayOutputStream();
+        Thread stderrThread = new Thread(() -> {
+            try {
+                process.getErrorStream().transferTo(stderrCollector);
+            } catch (IOException ignore) {
+            }
+        });
+        stderrThread.start();
+
+        try (var outputStream = Files.newOutputStream(databaseFile)) {
+            process.getInputStream().transferTo(outputStream);
+        }
+        stderrThread.join();
+
+        int exitCode = process.waitFor();
+        String output = stderrCollector.toString();
+
+        if (exitCode != 0) {
+            throw new IllegalStateException("docker exec pg_dump fallo con codigo " + exitCode + ": " + output);
+        }
+
+        if (!Files.exists(databaseFile) || Files.size(databaseFile) == 0) {
+            throw new IllegalStateException("docker exec pg_dump no genero un archivo SQL valido.");
         }
     }
 
     private void restoreDatabase(Path databaseFile) throws IOException, InterruptedException {
+        try {
+            runPsqlRestore(databaseFile);
+        } catch (IOException e) {
+            if (isExecutableNotFound(e) && tryDockerFallback()) {
+                runDockerPsqlRestore(databaseFile);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private void runPsqlRestore(Path databaseFile) throws IOException, InterruptedException {
         DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "psql",
+                psqlCommand,
                 "-h", connectionInfo.host(),
                 "-p", connectionInfo.port(),
                 "-U", datasourceUsername,
@@ -259,14 +343,59 @@ public class BackupService {
         int exitCode = process.waitFor();
 
         if (exitCode != 0) {
-            throw new IllegalStateException("psql fallo con codigo " + exitCode + ": " + output);
+            throw new IllegalStateException(psqlCommand + " fallo con codigo " + exitCode + ": " + output);
+        }
+    }
+
+    private void runDockerPsqlRestore(Path databaseFile) throws IOException, InterruptedException {
+        String container = resolvePostgresDockerContainer();
+        if (container == null || container.isBlank()) {
+            throw new IllegalStateException("No se encontró un contenedor Docker de PostgreSQL para ejecutar psql.");
+        }
+
+        System.out.println("[RESTORE] -> Usa docker exec para restaurar la base de datos en: " + container);
+        DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "docker",
+                "exec",
+                "-i",
+                container,
+                psqlCommand,
+                "-U", datasourceUsername,
+                "-d", connectionInfo.database(),
+                "-v", "ON_ERROR_STOP=1"
+        );
+        processBuilder.environment().put("PGPASSWORD", datasourcePassword);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+        try (var stdin = process.getOutputStream(); var fileStream = Files.newInputStream(databaseFile)) {
+            fileStream.transferTo(stdin);
+        }
+        String output = new String(process.getInputStream().readAllBytes());
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new IllegalStateException("docker exec psql fallo con codigo " + exitCode + ": " + output);
         }
     }
 
     private void resetDatabaseSchema() throws IOException, InterruptedException {
+        try {
+            runPsqlResetSchema();
+        } catch (IOException e) {
+            if (isExecutableNotFound(e) && tryDockerFallback()) {
+                runDockerPsqlResetSchema();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private void runPsqlResetSchema() throws IOException, InterruptedException {
         DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "psql",
+                psqlCommand,
                 "-h", connectionInfo.host(),
                 "-p", connectionInfo.port(),
                 "-U", datasourceUsername,
@@ -283,6 +412,77 @@ public class BackupService {
 
         if (exitCode != 0) {
             throw new IllegalStateException("No se pudo limpiar la base de datos antes de restaurar: " + output);
+        }
+    }
+
+    private void runDockerPsqlResetSchema() throws IOException, InterruptedException {
+        String container = resolvePostgresDockerContainer();
+        if (container == null || container.isBlank()) {
+            throw new IllegalStateException("No se encontró un contenedor Docker de PostgreSQL para ejecutar psql.");
+        }
+
+        System.out.println("[RESTORE] -> Usa docker exec para resetear el esquema en: " + container);
+        DatabaseConnectionInfo connectionInfo = parseDatasourceUrl();
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "docker",
+                "exec",
+                "-i",
+                container,
+                psqlCommand,
+                "-U", datasourceUsername,
+                "-d", connectionInfo.database(),
+                "-v", "ON_ERROR_STOP=1",
+                "-c", "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        );
+        processBuilder.environment().put("PGPASSWORD", datasourcePassword);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+        String output = new String(process.getInputStream().readAllBytes());
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new IllegalStateException("No se pudo limpiar la base de datos antes de restaurar: " + output);
+        }
+    }
+
+    private boolean tryDockerFallback() {
+        return resolvePostgresDockerContainer() != null;
+    }
+
+    private boolean isExecutableNotFound(IOException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        return message.contains("CreateProcess error=2")
+                || message.contains("No such file or directory")
+                || message.contains("cannot find the file")
+                || message.contains("error=2");
+    }
+
+    private String resolvePostgresDockerContainer() {
+        if (postgresDockerContainer != null && !postgresDockerContainer.isBlank()) {
+            return postgresDockerContainer;
+        }
+        for (String candidate : DEFAULT_POSTGRES_CONTAINER_NAMES) {
+            if (isDockerContainerAvailable(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private boolean isDockerContainerAvailable(String containerName) {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("docker", "inspect", containerName);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            String output = new String(process.getInputStream().readAllBytes());
+            int exitCode = process.waitFor();
+            return exitCode == 0;
+        } catch (Exception e) {
+            return false;
         }
     }
 

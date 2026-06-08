@@ -12,7 +12,6 @@ export default function FileBrowserView() {
     const [filemanagerKey, setFilemanagerKey] = useState(0);
     const [isSearchMode, setIsSearchMode] = useState(false);
 
-    // --- NUEVO: Estado de la pestaña activa y su mapeo al backend ---
     const [activeTab, setActiveTab] = useState<"database" | "backups">("database");
     const backendType = activeTab === "database" ? "uploads" : "backups";
 
@@ -36,7 +35,6 @@ export default function FileBrowserView() {
         isSearchModeRef.current = isSearchMode;
     }, [isSearchMode]);
 
-    // --- NUEVO: Efecto limpiador y reseteo absoluto al cambiar de pestaña ---
     useEffect(() => {
         setFilemanagerKey(prev => prev + 1);
         setSelectedFileId("");
@@ -53,7 +51,6 @@ export default function FileBrowserView() {
         };
     };
 
-    // --- MODIFICADO: loadRoot con parámetro type ---
     const loadRoot = useCallback(async () => {
         const res = await fetch(`${API_BASE_URL}/api/files/list?type=${backendType}`, {
             headers: authHeaders(),
@@ -70,7 +67,6 @@ export default function FileBrowserView() {
         });
     }, [loadRoot]);
 
-    // --- MODIFICADO: openFileInTab con parámetro type ---
     const openFileInTab = useCallback(async (id: string) => {
         const newTab = window.open("about:blank", "_blank");
         if (!newTab) {
@@ -93,7 +89,6 @@ export default function FileBrowserView() {
         }
     }, [backendType]);
 
-    // --- MODIFICADO: deleteFileAndSync con parámetro type ---
     const deleteFileAndSync = useCallback(async (id: string) => {
         const res = await fetch(`${API_BASE_URL}/api/admin/files/remove?type=${backendType}`, {
             method: "POST",
@@ -107,7 +102,6 @@ export default function FileBrowserView() {
         }
     }, [backendType]);
 
-    // --- MODIFICADO: replaceFileAndSync con parámetro type ---
     const replaceFileAndSync = useCallback(async (id: string, file: File) => {
         const token = localStorage.getItem("token");
         const formData = new FormData();
@@ -126,7 +120,6 @@ export default function FileBrowserView() {
         }
     }, [backendType]);
 
-    // --- MODIFICADO: Evasión automática si estamos en modo backups ---
     const isDatabaseManagedPath = (id?: string | null) => {
         if (backendType === "backups") return false;
         if (!id) return false;
@@ -134,7 +127,6 @@ export default function FileBrowserView() {
         return clean === "database-relationed" || clean.startsWith("database-relationed/");
     };
 
-    // --- MODIFICADO: createManualFolder con parámetro type ---
     const createManualFolder = useCallback(async (parent: string, name: string) => {
         const res = await fetch(`${API_BASE_URL}/api/admin/files/folder?type=${backendType}`, {
             method: "POST",
@@ -147,7 +139,6 @@ export default function FileBrowserView() {
         }
     }, [backendType]);
 
-    // --- MODIFICADO: uploadManualFile con parámetro type ---
     const uploadManualFile = useCallback(async (parent: string, file: File) => {
         const token = localStorage.getItem("token");
         const formData = new FormData();
@@ -165,7 +156,6 @@ export default function FileBrowserView() {
         }
     }, [backendType]);
 
-    // --- MODIFICADO: renameManualPath con parámetro type ---
     const renameManualPath = useCallback(async (path: string, name: string) => {
         const res = await fetch(`${API_BASE_URL}/api/admin/files/rename?type=${backendType}`, {
             method: "POST",
