@@ -58,4 +58,4 @@ databasecopy.sql
 database-pre-backup/*
 /backups/*
 !/backups/.gitkeep
-/backennd/backups/*
+/backend/backups/*

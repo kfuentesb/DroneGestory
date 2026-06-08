@@ -136,6 +136,32 @@ En local, puedes configurar estas variables de entorno opcionales en tu `.env` o
 
 Si `pg_dump`/`psql` no están instalados en el host, el backend intentará usar `docker exec` contra un contenedor PostgreSQL válido.
 
+## Estructura de logs de auditoría
+
+Los logs de auditoría se organizan por **mes y año** en la carpeta `backend/AuditLogs/`:
+
+```text
+backend/AuditLogs/
+├── 2026/
+│   ├── 06/
+│   │   └── AuditLog-2026-06.csv
+│   └── 07/
+│       └── AuditLog-2026-07.csv
+└── 2027/
+    └── 01/
+        └── AuditLog-2027-01.csv
+```
+
+Cada archivo CSV contiene registros con las columnas:
+- `timestamp` - Marca de tiempo en UTC
+- `utc_hour` - Hora UTC del evento
+- `usuario` - Usuario que ejecutó la acción
+- `funcion` - Tipo de acción realizada
+- `id` - ID de la entidad afectada
+- `detalle` - Detalles adicionales de la acción
+
+Cuando el sistema registra una acción en un mes nuevo, crea automáticamente el archivo y directorio necesarios.
+
 ## Ejecución en producción
 
 La infraestructura Docker raíz está definida en `compose.yaml`.

@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { apiFetch } from "../../api";
 import ConfirmModal from "../commons/ConfirmModal";
 import { useAuth } from "../commons/hooks/useAuth";
-import { useUserTimezone } from "../commons/hooks/useUserTimezone";
-import { InfoBadge } from "../commons/InfoBadge";
 
 type BackupSettings = {
     scheduleDay: number;
@@ -31,6 +29,17 @@ type BackupRestoreResponse = {
     auditLogsRestored: boolean;
 };
 
+type AvailableAuditLogMonth = {
+    year: number;
+    month: number;
+    displayName: string;
+};
+
+type AvailableAuditLogsResponse = {
+    years: number[];
+    monthsByYear: Record<number, AvailableAuditLogMonth[]>;
+};
+
 
 export default function ServerSettings (){
 
@@ -50,6 +59,42 @@ export default function ServerSettings (){
     const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
     const [showEmptyAlert, setShowEmptyAlert] = useState(false);
+    const [availableAuditLogs, setAvailableAuditLogs] = useState<AvailableAuditLogsResponse | null>(null);
+    const [selectedAuditYear, setSelectedAuditYear] = useState<number | null>(null);
+    const [selectedAuditMonth, setSelectedAuditMonth] = useState<number | null>(null);
+    const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState(false);
+    
+    
+    useEffect(() => {
+        if (!canDownloadAuditLog) return;
+
+        const loadAuditLogs = async () => {
+            setIsLoadingAuditLogs(true);
+            try {
+                const res = await apiFetch("/api/audit-log/available");
+                if (!res) return;
+
+                const data: AvailableAuditLogsResponse = await res.json();
+                setAvailableAuditLogs(data);
+                
+                // Set default selection to the latest month if available
+                if (data.years.length > 0) {
+                    const latestYear = data.years[0];
+                    setSelectedAuditYear(latestYear);
+                    const latestMonths = data.monthsByYear[latestYear];
+                    if (latestMonths && latestMonths.length > 0) {
+                        setSelectedAuditMonth(latestMonths[0].month);
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading audit logs:", err);
+            } finally {
+                setIsLoadingAuditLogs(false);
+            }
+        };
+
+        loadAuditLogs();
+    }, [canDownloadAuditLog]);
     
     useEffect(() => {
         if (!canManageBackups) return;
@@ -87,11 +132,16 @@ export default function ServerSettings (){
     };
     
     const handleDownloadAuditLog = async () => {
+        if (selectedAuditYear === null || selectedAuditMonth === null) {
+            setError("Selecciona un año y mes para descargar.");
+            return;
+        }
+
         setIsDownloading(true);
         setError(null);
     
         try {
-            const res = await apiFetch("/api/audit-log/download");
+            const res = await apiFetch(`/api/audit-log/download?year=${selectedAuditYear}&month=${selectedAuditMonth}`);
             if (!res) return;
         
             const blob = await res.blob();
@@ -104,7 +154,7 @@ export default function ServerSettings (){
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = "AuditLog.csv";
+            link.download = `AuditLog-${selectedAuditYear}-${String(selectedAuditMonth).padStart(2, "0")}.csv`;
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -265,28 +315,79 @@ export default function ServerSettings (){
                 <div className="card-body p-4">
                     {/* Sección del Audit Log */}
                     {canDownloadAuditLog && (
-                        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded mb-4"
-                            style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}>
-                            <div>
-                                <div className="fw-bold text-dark mb-1">Descargar Audit Log</div>
-                                <div className="text-muted small">Descarga el fichero <code className="text-danger">AuditLog.csv</code> con el historial registrado del sistema.</div>
-                            </div>
-                            <div>
-                                <button
-                                    type="button"
-                                    className="btn btn-success d-inline-flex align-items-center px-3"
-                                    onClick={handleDownloadAuditLog}
-                                    disabled={isDownloading}
-                                >
-                                    {isDownloading ? (
-                                        <>
-                                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                            Descargando...
-                                        </>
-                                    ) : (
-                                        "Descargar AuditLog.csv"
-                                    )}
-                                </button>
+                        <div className="card shadow-sm border-light mb-4" style={{ backgroundColor: "#F9FAFB" }}>
+                            <div className="card-body p-4">
+                                <div className="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+                                    
+                                    {/* Bloque de Texto e Información */}
+                                    <div className="d-flex align-items-start gap-3">
+                                        <div>
+                                            <h6 className="fw-bold text-dark mb-1">Descargar Audit Log</h6>
+                                            <p className="text-muted small mb-0">
+                                                Descarga el fichero <code className="bg-light px-1 py-0.5 rounded text-dark border small fw-mono">AuditLog-YYYY-MM.csv</code> con el historial registrado de acciones del sistema.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Bloque de Selectores y Botón */}
+                                    <div className="w-100 style-selectors" style={{ maxWidth: "480px" }}>
+                                        <div className="row g-2 align-items-center">
+                                            <div className="col-12 col-sm-4">
+                                                <select
+                                                    className="form-select form-select-sm border-secondary-subtle"
+                                                    value={selectedAuditYear ?? ""}
+                                                    onChange={(e) => {
+                                                        const year = e.target.value ? parseInt(e.target.value) : null;
+                                                        setSelectedAuditYear(year);
+                                                        if (year && availableAuditLogs?.monthsByYear[year]) {
+                                                            const months = availableAuditLogs.monthsByYear[year];
+                                                            setSelectedAuditMonth(months[0]?.month ?? null);
+                                                        }
+                                                    }}
+                                                    disabled={isDownloading || isLoadingAuditLogs || !availableAuditLogs?.years.length}
+                                                >
+                                                    <option value="">Año</option>
+                                                    {availableAuditLogs?.years.map((year) => (
+                                                        <option key={year} value={year}>{year}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="col-12 col-sm-5">
+                                                <select
+                                                    className="form-select form-select-sm border-secondary-subtle"
+                                                    value={selectedAuditMonth ?? ""}
+                                                    onChange={(e) => setSelectedAuditMonth(e.target.value ? parseInt(e.target.value) : null)}
+                                                    disabled={isDownloading || isLoadingAuditLogs || !selectedAuditYear}
+                                                >
+                                                    <option value="">Mes</option>
+                                                    {selectedAuditYear && availableAuditLogs?.monthsByYear[selectedAuditYear]?.map((m) => (
+                                                        <option key={m.month} value={m.month}>{m.displayName}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="col-12 col-sm-3">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary btn-sm d-inline-flex align-items-center justify-content-center w-100 gap-2"
+                                                    onClick={handleDownloadAuditLog}
+                                                    disabled={isDownloading || !selectedAuditYear || !selectedAuditMonth || isLoadingAuditLogs}
+                                                >
+                                                    {isDownloading ? (
+                                                        <>
+                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                            <span className="d-sm-none d-md-inline">...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span>Descargar</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     )}

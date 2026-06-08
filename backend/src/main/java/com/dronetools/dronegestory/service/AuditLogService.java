@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +73,11 @@ public class AuditLogService {
     }
 
     private Path getAuditLogPath() {
-        return Paths.get(auditLogsRoot, "AuditLog.csv").toAbsolutePath().normalize();
+        LocalDate today = LocalDate.now();
+        String year = String.format("%04d", today.getYear());
+        String month = String.format("%02d", today.getMonthValue());
+        String fileName = String.format("AuditLog-%s-%s.csv", year, month);
+        return Paths.get(auditLogsRoot, year, month, fileName).toAbsolutePath().normalize();
     }
 
     private String sanitize(String details) {
