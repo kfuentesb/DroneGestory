@@ -359,44 +359,57 @@ export default function AircraftList() {
           {/* DESKTOP VIEW: Standard Table layout */}
           <div className="d-none d-md-block">
             <div 
-              className="table-responsive" 
+              className="table-responsive w-100" 
               style={{ 
                 overflowX: "auto", 
-                width: "100%",
-                display: "block",
-                marginRight: "auto",
-                marginLeft: "0" /* Pulls layout tightly to the left side */
+                display: "block"
               }}
             >
-              <div style={{ display: "inline-block", verticalAlign: "top", maxWidth: "100%" }}>
+              {/* Setting width to max-content keeps the table perfectly snug to its cells, leaving zero phantom whitespace */}
+              <div style={{ width: "max-content", minWidth: "100%", display: "block" }}>
                 <style>{`
-                  /* Target the table directly to drop loose percentage sizing */
                   .table-responsive table {
-                    width: auto !important; /* Forces the table to shrink-wrap its exact data width */
-                    max-width: 100% !important;
-                    table-layout: auto !important;
+                    width: 100% !important;
+                    table-layout: auto !important; /* Content rules the column size naturally */
                     margin-bottom: 0 !important;
                   }
                   
-                  /* Make sure table headers/cells do not stretch unnecessarily */
                   .table-responsive table th,
                   .table-responsive table td {
-                    white-space: nowrap; /* Prevents text elements from breaking awkwardly */
+                    white-space: nowrap;
+                    overflow: visible !important; /* Lets tooltip pop over seamlessly */
                   }
 
-                  /* Enforce tight constraints for the final observations column */
+                  /* Set a comfortable explicit sizing target for the last column */
                   .table-responsive table td:last-child, 
                   .table-responsive table th:last-child {
-                    width: 100px !important;
-                    min-width: 100px !important;
-                    max-width: 100px !important;
+                    width: 180px !important;
+                    min-width: 180px !important;
+                    max-width: 180px !important;
+                  }
+                  
+                  /* Floating Tooltip engine */
+                  .info-badge-container {
+                    position: relative;
+                    display: inline-block;
                   }
                   
                   .info-badge-container .info-tooltip-text {
                     visibility: hidden;
                     opacity: 0;
+                    position: absolute;
+                    z-index: 9999;
+                    bottom: 130%;  
+                    left: 50%;
+                    transform: translateX(-50%);
                     transition: opacity 0.15s ease-in-out;
+                    pointer-events: none;
                   }
+                  
+                  .info-badge-container:hover {
+                    z-index: 9999;
+                  }
+                  
                   .info-badge-container:hover .info-tooltip-text {
                     visibility: visible;
                     opacity: 1;
@@ -435,18 +448,20 @@ export default function AircraftList() {
                       <td style={{ verticalAlign: "middle" }}>{a.config}</td>
                       <td style={{ verticalAlign: "middle" }}>{formatMonthYear(a.fechaFab)}</td>
                       
-                      {/* Rigged absolute constraints on observations */}
+                      {/* Wider observations cell with structural protection */}
                       <td 
                         className="text-muted small" 
                         style={{ 
-                          width: "100px",
-                          maxWidth: "100px", 
+                          width: "180px",
+                          maxWidth: "180px", 
                           position: "relative", 
-                          verticalAlign: "middle",
-                          overflow: "hidden"
+                          verticalAlign: "middle"
                         }}
                       >
-                        {renderTruncatedCell(a.observations, 10)}
+                        <div style={{ width: "100%", overflow: "visible" }}>
+                          {/* Bumped to 20 to display a wider, cleaner snippet of text */}
+                          {renderTruncatedCell(a.observations, 20)}
+                        </div>
                       </td>
                     </>
                   )}
