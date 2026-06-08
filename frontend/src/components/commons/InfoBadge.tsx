@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import infoIcon from "../../assets/commons/info_white.svg";
 
-// CORRECCIÓN: Dejamos únicamente React.ReactNode para el contenido renderizable
 export function InfoBadge({ text }: { text: React.ReactNode }) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState<boolean>(false);
     const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({
         left: "50%",
         transform: "translateX(-50%)",
@@ -12,6 +12,7 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
     const [arrowLeft, setArrowLeft] = useState<string>("50%");
 
     const handleMouseEnter = () => {
+        setIsVisible(true);
         if (!containerRef.current) return;
 
         const rect = containerRef.current.getBoundingClientRect();
@@ -33,14 +34,28 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
         }
     };
 
+    const handleMouseLeave = () => {
+        setIsVisible(false);
+    };
+
     return (
         <div 
             ref={containerRef} 
             className="info-tooltip-wrapper ms-2"
-            style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
+            style={{ 
+                position: "relative", 
+                display: "inline-block", 
+                cursor: "pointer",
+                zIndex: 10500 
+            }}
             onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
         >
             <style>{`
+                .info-tooltip-text {
+                    z-index: 10500 !important;
+                }
+                /* Flecha del Tooltip */
                 .info-tooltip-text::after {
                     content: "";
                     position: absolute;
@@ -50,6 +65,18 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
                     border-width: 6px;
                     border-style: solid;
                     border-color: #1e293b transparent transparent transparent;
+                    z-index: 10501 !important;
+                }
+                /* Puente invisible: Llena el espacio vacío entre el icono y el badge */
+                /* Evita que el Tooltip se cierre prematuramente al desplazar el cursor */
+                .info-tooltip-text::before {
+                    content: "";
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    width: 100%;
+                    height: 12px; /* Cubre exactamente el espacio asignado por el marginBottom */
+                    background: transparent;
                 }
             `}</style>
 
@@ -61,18 +88,22 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
                     height: "16px",
                     filter: "invert(48%) sepia(13%) saturate(623%) hue-rotate(180deg) brightness(93%) contrast(85%)",
                     cursor: "pointer",
+                    display: "block"
                 }}
             />
+
             <span 
-                className="info-tooltip-text z-3 shadow-lg"
+                className="info-tooltip-text shadow-lg"
                 style={{
                     position: "absolute",
-                    bottom: "135%", 
+                    bottom: "100%",
+                    marginBottom: "10px",
                     width: "240px", 
                     maxWidth: "calc(100vw - 32px)", 
                     whiteSpace: "normal",
                     wordBreak: "break-word",
                     
+                    display: isVisible ? "block" : "none",
                     ...positionStyle,
                     ["--arrow-left" as any]: arrowLeft,
 
@@ -83,6 +114,7 @@ export function InfoBadge({ text }: { text: React.ReactNode }) {
                     fontSize: "0.75rem",
                     lineHeight: "1.4",
                     cursor: "default", 
+                    pointerEvents: "auto",
                 }}
             >
                 {text}

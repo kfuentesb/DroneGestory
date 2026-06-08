@@ -4,6 +4,7 @@ import type { IApi, IEntity } from "@svar-ui/filemanager-store";
 import "@svar-ui/react-filemanager/all.css";
 import ConfirmModal from "../commons/ConfirmModal";
 import { API_BASE_URL } from "../../api";
+import { InfoBadge } from "../commons/InfoBadge";
 
 export default function FileBrowserView() {
     const [data, setData] = useState<IEntity[]>([]);
@@ -305,8 +306,6 @@ export default function FileBrowserView() {
 
     return (
         <div className="container py-4" style={{ width: "100%", padding: "20px" }}>
-
-            {/* Botones deslizantes */}
             <style>{`
                 .sliding-tabs-container {
                     position: relative;
@@ -317,6 +316,7 @@ export default function FileBrowserView() {
                     box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
                     user-select: none;
                     border: 1px solid #e0e0e0;
+                    width: 100%;
                 }
                 .sliding-tab-btn {
                     position: relative;
@@ -324,8 +324,8 @@ export default function FileBrowserView() {
                     background: transparent;
                     border: none;
                     outline: none;
-                    padding: 8px 32px;
-                    font-size: 0.95rem;
+                    padding: 6px 16px;
+                    font-size: 0.9rem;
                     font-weight: 500;
                     color: #5f6368;
                     cursor: pointer;
@@ -335,7 +335,8 @@ export default function FileBrowserView() {
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
-                    min-width: 160px;
+                    flex: 1;
+                    min-width: 0;
                 }
                 .sliding-tab-btn:hover {
                     color: #202124;
@@ -350,56 +351,122 @@ export default function FileBrowserView() {
                     bottom: 4px;
                     left: 4px;
                     width: calc(50% - 4px);
-                    background-color: #0d6efd; /* <-- Cambiado a azul (Bootstrap primary o #1a73e8) */
+                    background-color: #0d6efd;
                     border-radius: 26px;
                     z-index: 1;
                     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3); /* <-- Sombra azulada */
+                    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
                 }
                 .sliding-bg-pill.slide-right {
                     transform: translateX(100%);
                 }
+
+                /* Sistema Flexbox Unificado */
+                .responsive-toolbar {
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    gap: 16px;
+                    width: 100%;
+                }
+
+                .item-tabs {
+                    order: 1;
+                }
+                .item-button {
+                    order: 2;
+                }
+                .item-route {
+                    order: 3;
+                    width: 100%; /* Salto de línea por defecto en resoluciones "Phone" */
+                    min-width: 0;
+                }
+
+                /* Breakpoint personalizado antes de Phone Wide (< 992px) */
+                @media (max-width: 991px) {
+                    .item-tabs {
+                        flex: 1;
+                        min-width: 0;
+                    }
+                    .sliding-tab-btn {
+                        padding: 6px 8px;
+                        font-size: 0.8rem;
+                    }
+                    .btn-replace-responsive {
+                        padding: 6px 12px;
+                        font-size: 0.8rem;
+                    }
+                }
+
+                /* Modo escritorio / Pantallas anchas (>= 992px) */
+                @media (min-width: 992px) {
+                    .responsive-toolbar {
+                        flex-wrap: nowrap;
+                        gap: 24px;
+                    }
+                    .item-tabs {
+                        order: 1;
+                        flex-shrink: 0;
+                        width: 300px;
+                    }
+                    .item-route {
+                        order: 2;
+                        flex: 1;
+                        width: auto;
+                    }
+                    .item-button {
+                        order: 3;
+                        flex-shrink: 0;
+                    }
+                }
             `}</style>
 
-            {/* CONTROL DEL SELECTOR SUPERIOR  */}
-            <div className="d-flex justify-content-center w-100 mb-4">
-                <div className="sliding-tabs-container">
-                    <div className={`sliding-bg-pill ${activeTab === "backups" ? "slide-right" : ""}`} />
+            {/* Contenedor Adaptable Flexible */}
+            <div className="responsive-toolbar mb-4" style={{ minHeight: "46px" }}>
+                
+                {/* 1. Selector de Pestañas */}
+                <div className="item-tabs">
+                    <div className="sliding-tabs-container">
+                        <div className={`sliding-bg-pill ${activeTab === "backups" ? "slide-right" : ""}`} />
 
-                    <button
-                        type="button"
-                        className={`sliding-tab-btn ${activeTab === "database" ? "active" : ""}`}
-                        onClick={() => setActiveTab("database")}
-                    >
-                        <i className="bi bi-database"></i> Base de datos
-                    </button>
+                        <button
+                            type="button"
+                            className={`sliding-tab-btn ${activeTab === "database" ? "active" : ""}`}
+                            onClick={() => setActiveTab("database")}
+                        >
+                            <i className="bi bi-database"></i> Base de datos
+                        </button>
 
-                    <button
-                        type="button"
-                        className={`sliding-tab-btn ${activeTab === "backups" ? "active" : ""}`}
-                        onClick={() => setActiveTab("backups")}
-                    >
-                        <i className="bi bi-archive"></i> Backups
-                    </button>
-                </div>
-            </div>
-
-            {/* Header Toolbar */}
-            <div className="d-flex justify-content-between align-items-center gap-3 mb-3" style={{ minHeight: "38px" }}>
-                <div className="text-truncate" style={{ minWidth: 0, flex: 1 }}>
-                    {searchSelectedPath && (
-                        <span className="text-muted small">
-                            Ruta: <strong className="text-dark">{searchSelectedPath}</strong>
-                        </span>
-                    )}
+                        <button
+                            type="button"
+                            className={`sliding-tab-btn ${activeTab === "backups" ? "active" : ""}`}
+                            onClick={() => setActiveTab("backups")}
+                        >
+                            <i className="bi bi-archive"></i> Backups
+                        </button>
+                    </div>
                 </div>
 
-                <div className="flex-shrink-0">
-                    <label className={`btn btn-sm ${selectedFileId ? "btn-primary" : "btn-secondary disabled"} mb-0`}>
+                {/* 2. Botón de Acción */}
+                <div className="item-button">
+                    <label className={`btn btn-sm btn-replace-responsive ${selectedFileId ? "btn-primary" : "btn-secondary disabled"} mb-0`}>
                         Replace selected file
                         <input type="file" hidden disabled={!selectedFileId} onChange={onReplaceSelected} />
                     </label>
                 </div>
+
+                {/* 3. Ruta de archivos (Entre los dos componentes en escritorio, abajo en móviles) */}
+                <div className="item-route">
+                    {searchSelectedPath && (
+                        <div className="d-flex align-items-center w-100 m-0 p-0">
+                            <span className="text-muted small text-truncate">
+                                Ruta: <strong className="text-dark">{searchSelectedPath}</strong>
+                            </span>
+                            <InfoBadge text={searchSelectedPath} />
+                        </div>
+                    )}
+                </div>
+
             </div>
 
             <Willow fonts={true}>
