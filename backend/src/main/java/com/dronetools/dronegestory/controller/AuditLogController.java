@@ -1,5 +1,6 @@
 package com.dronetools.dronegestory.controller;
 
+import com.dronetools.dronegestory.service.AuditLogService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,10 +27,13 @@ record AvailableAuditLogsResponse(List<Integer> years, Map<Integer, List<Availab
 
 @RestController
 @RequestMapping("/api/audit-log")
+@RequiredArgsConstructor
 public class AuditLogController {
 
     @Value("${APP_AUDIT_LOGS_ROOT:AuditLogs}")
     private String auditLogsRoot;
+
+    private final AuditLogService auditLogService;
 
     @GetMapping("/available")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -85,6 +90,10 @@ public class AuditLogController {
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "month", required = false) Integer month
     ) throws IOException {
+        if (year == null || month == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Path auditLogPath = getAuditLogPath(year, month);
         if (!Files.exists(auditLogPath) || !Files.isReadable(auditLogPath)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -97,6 +106,11 @@ public class AuditLogController {
         }
 
         String fileName = String.format("AuditLog-%04d-%02d.csv", year, month);
+        auditLogService.record(
+                "DESCARGAR_AUDITLOG",
+                null,
+                "year=" + year + ", month=" + month + ", fileName=" + fileName
+        );
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .header(HttpHeaders.CONTENT_TYPE, contentType)

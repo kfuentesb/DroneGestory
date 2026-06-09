@@ -5,6 +5,7 @@ import com.dronetools.dronegestory.dto.BackupRestoreResponse;
 import com.dronetools.dronegestory.dto.BackupSettingsRequest;
 import com.dronetools.dronegestory.dto.BackupSettingsResponse;
 import com.dronetools.dronegestory.service.BackupService;
+import com.dronetools.dronegestory.service.AuditLogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +31,7 @@ import java.nio.file.Path;
 public class BackupController {
 
     private final BackupService backupService;
+    private final AuditLogService auditLogService;
 
     @GetMapping("/settings")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -53,6 +55,11 @@ public class BackupController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<StreamingResponseBody> downloadBackup() {
         BackupService.DownloadableBackupPackage backupPackage = backupService.prepareDownloadableBackupPackage();
+        auditLogService.record(
+                "DESCARGAR_BACKUP_ZIP",
+                null,
+                "fileName=" + backupPackage.fileName() + ", backupDir=" + backupPackage.backupDir()
+        );
 
         StreamingResponseBody body = outputStream -> {
             try {

@@ -41,6 +41,7 @@ public class BackupService {
     private static final Pattern JDBC_POSTGRES_PATTERN = Pattern.compile("^jdbc:postgresql://([^/:?]+)(?::(\\d+))?/([^?]+).*$");
 
     private final BackupSettingsRepository backupSettingsRepository;
+    private final AuditLogService auditLogService;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -84,7 +85,7 @@ public class BackupService {
             return;
         }
 
-        runBackup(settings);
+        runBackup(settings, "scheduled");
     }
 
     @Transactional
@@ -101,7 +102,7 @@ public class BackupService {
 
     @Transactional
     public BackupRunResponse runManualBackup() {
-        return runBackup(getOrCreateEntity());
+        return runBackup(getOrCreateEntity(), "manual");
     }
 
     public DownloadableBackupPackage prepareDownloadableBackupPackage() {
@@ -132,7 +133,7 @@ public class BackupService {
             BackupRunResponse preRestoreBackup = null;
             if (saveCurrentBeforeRestore) {
                 System.out.println("[RESTORE] -> Creando backup de seguridad previo...");
-                preRestoreBackup = runBackup(getOrCreateEntity());
+                preRestoreBackup = runBackup(getOrCreateEntity(), "pre-restore");
             }
 
         Path tempDir = null;
@@ -168,7 +169,7 @@ public class BackupService {
             String restoredBackupName = backupFile.getOriginalFilename() == null
                     ? "backup subido"
                     : backupFile.getOriginalFilename();
-            return new BackupRestoreResponse(
+            BackupRestoreResponse response = new BackupRestoreResponse(
                     restoredBackupName,
                     preRestoreBackup != null,
                     preRestoreBackup != null ? preRestoreBackup.backupPath() : null,
@@ -176,6 +177,18 @@ public class BackupService {
                     uploadsRestored,
                     auditLogsRestored
             );
+            auditLogService.record(
+                    "RESTAURAR_BACKUP",
+                    null,
+                    "backupFile=" + restoredBackupName
+                            + ", preRestoreBackupCreated=" + (preRestoreBackup != null)
+                            + ", preRestoreBackupPath=" + (preRestoreBackup != null ? preRestoreBackup.backupPath() : null)
+                            + ", restoredDatabaseFile=" + archiveContents.sqlFile()
+                            + ", uploadsRestored=" + uploadsRestored
+                            + ", auditLogsRestored=" + auditLogsRestored
+                            + ", restoreAuditLogsRequested=" + restoreAuditLogs
+            );
+            return response;
         } catch (IOException | InterruptedException e) {
             System.out.println("[RESTORE ERROR] -> Excepción catastrófica: " + e.getMessage());
             if (e instanceof InterruptedException) {
@@ -193,7 +206,7 @@ public class BackupService {
         }
     }
 
-    private BackupRunResponse runBackup(BackupSettings settings) {
+    private BackupRunResponse runBackup(BackupSettings settings, String source) {
         try {
             LocalDate backupDate = LocalDate.now(MADRID_ZONE);
             Path backupDir = Path.of(backupsRoot).toAbsolutePath().normalize().resolve(backupDate.toString());
@@ -203,6 +216,18 @@ public class BackupService {
             settings.setLastRunDate(backupDate);
             settings.setLastBackupPath(backupDir.toString());
             backupSettingsRepository.save(settings);
+
+            auditLogService.record(
+                    "CREAR_BACKUP",
+                    null,
+                    "source=" + source
+                            + ", backupDate=" + backupDate
+                            + ", backupPath=" + backupDir
+                            + ", databaseFile=" + bundle.databaseFile()
+                            + ", backupSizeBytes=" + backupSizeBytes
+                            + ", uploadsCopied=" + bundle.uploadsCopied()
+                            + ", auditLogsCopied=" + bundle.auditLogsCopied()
+            );
 
             return new BackupRunResponse(
                     backupDate,

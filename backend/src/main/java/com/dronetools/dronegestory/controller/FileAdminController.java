@@ -1,6 +1,7 @@
 package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.service.FileActionService;
+import com.dronetools.dronegestory.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileAdminController {
 
     private final FileActionService fileActionService;
+    private final AuditLogService auditLogService;
 
     @PostMapping("/remove")
     public ResponseEntity<?> removeFile(@RequestBody Map<String, String> payload) {
@@ -32,6 +34,11 @@ public class FileAdminController {
 
         try {
             fileActionService.deleteFileAndSyncDb(path, type);
+            auditLogService.record(
+                    "BORRAR_ELEMENTO",
+                    null,
+                    "path=" + path + ", type=" + type
+            );
             return ResponseEntity.ok(Map.of("ok", true, "message", "File and DB synced"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -51,6 +58,11 @@ public class FileAdminController {
 
         try {
             String newPath = fileActionService.replaceFileAndSyncDb(path, file, type);
+            auditLogService.record(
+                    "REEMPLAZAR_ARCHIVO",
+                    null,
+                    "path=" + path + ", newPath=" + newPath + ", type=" + type
+            );
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -69,6 +81,11 @@ public class FileAdminController {
 
         try {
             String newPath = fileActionService.createFolder(parent, name, type);
+            auditLogService.record(
+                    "CREAR_CARPETA",
+                    null,
+                    "parent=" + parent + ", name=" + name + ", path=" + newPath + ", type=" + type
+            );
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -84,6 +101,11 @@ public class FileAdminController {
     ) {
         try {
             String newPath = fileActionService.uploadManualFile(parent, file, type);
+            auditLogService.record(
+                    "CREAR_ARCHIVO",
+                    null,
+                    "parent=" + parent + ", file=" + file.getOriginalFilename() + ", path=" + newPath + ", type=" + type
+            );
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -102,6 +124,11 @@ public class FileAdminController {
 
         try {
             String newPath = fileActionService.renameManualPath(path, name, type);
+            auditLogService.record(
+                    "RENOMBRAR_ELEMENTO",
+                    null,
+                    "path=" + path + ", newName=" + name + ", newPath=" + newPath + ", type=" + type
+            );
             return ResponseEntity.ok(Map.of("ok", true, "path", "/" + newPath));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

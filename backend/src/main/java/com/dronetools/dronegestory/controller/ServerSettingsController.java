@@ -2,6 +2,7 @@ package com.dronetools.dronegestory.controller;
 
 import com.dronetools.dronegestory.dto.ServerAttributesRequest;
 import com.dronetools.dronegestory.dto.ServerAttributesResponse;
+import com.dronetools.dronegestory.service.AuditLogService;
 import com.dronetools.dronegestory.service.ServerSettingsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServerSettingsController {
 
     private final ServerSettingsService serverSettingsService;
+    private final AuditLogService auditLogService;
 
     @GetMapping("/attributes")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -29,6 +31,14 @@ public class ServerSettingsController {
     @PutMapping("/attributes")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ServerAttributesResponse> updateAttributes(@Valid @RequestBody ServerAttributesRequest request) {
-        return ResponseEntity.ok(serverSettingsService.updateAttributes(request));
+        ServerAttributesResponse response = serverSettingsService.updateAttributes(request);
+        auditLogService.record(
+                "CAMBIAR_ATRIBUTOS_SERVIDOR",
+                null,
+                "maxFileSizeMb=" + response.maxFileSizeMb()
+                        + ", mail=" + response.mail()
+                        + ", smtpsKey=<hidden>"
+        );
+        return ResponseEntity.ok(response);
     }
 }
