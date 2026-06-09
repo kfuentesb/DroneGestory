@@ -75,9 +75,10 @@ public class BackupController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public BackupRestoreResponse restoreBackup(
             @RequestParam("backupFile") MultipartFile backupFile,
-            @RequestParam(value = "saveCurrentBeforeRestore", defaultValue = "false") boolean saveCurrentBeforeRestore
+            @RequestParam(value = "saveCurrentBeforeRestore", defaultValue = "false") boolean saveCurrentBeforeRestore,
+            @RequestParam(value = "restoreAuditLogs", defaultValue = "true") boolean restoreAuditLogs
     ) {
-        return backupService.restoreBackup(backupFile, saveCurrentBeforeRestore);
+        return backupService.restoreBackup(backupFile, saveCurrentBeforeRestore, restoreAuditLogs);
     }
 
     private void deleteDirectory(Path directory) throws IOException {

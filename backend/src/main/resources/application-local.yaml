@@ -5,7 +5,7 @@ app:
 server:
     max-http-request-header-size: 16KB
     tomcat:
-        max-swallow-size: 50MB
+        max-swallow-size: 500MB
         max-part-count: 100
         max-part-header-size: 2048
 
@@ -15,8 +15,8 @@ spring:
     servlet:
         multipart:
             enabled: true
-            max-file-size: 50MB
-            max-request-size: 50MB
+            max-file-size: 500MB
+            max-request-size: 500MB
 
     application:
         name: DroneGestory

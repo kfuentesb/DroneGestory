@@ -11,6 +11,7 @@ interface ConfirmModalProps {
     onConfirm: () => void;
     onCancel: () => void;
     variant?: "primary" | "danger" | "warning";
+    cancelLabel?: string;
     inputValue?: string;
     inputLabel?: string;
     inputPlaceholder?: string;
@@ -29,6 +30,7 @@ export default function ConfirmModal({
     onConfirm,
     onCancel,
     variant = "primary",
+    cancelLabel,
     inputValue,
     inputLabel,
     inputPlaceholder,
@@ -46,6 +48,7 @@ export default function ConfirmModal({
     const titleClass = variant === "danger" ? "text-danger" : variant === "warning" ? "text-warning" : "text-primary";
     const shouldShowCancel = showCancelButton ?? variant !== "warning";
     const confirmButtonLabel = confirmLabel ?? (variant === "warning" ? "Entendido" : "Confirmar");
+    const cancelButtonLabel = cancelLabel ?? "Cancelar";
 
     return (
         <div className="modal-backdrop" style={{
@@ -82,7 +85,7 @@ export default function ConfirmModal({
                                 className="d-inline d-md-none"
                                 style={{ width: 16, height: 16 }}
                             />
-                            <span className="d-none d-md-inline">Cancelar</span>
+                            <span className="d-none d-md-inline">{cancelButtonLabel}</span>
                         </button>
                     )}
                     <button

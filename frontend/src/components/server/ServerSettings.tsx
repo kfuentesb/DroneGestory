@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../../api";
 import ConfirmModal from "../commons/ConfirmModal";
+import LoadingSpinner from "../commons/Loading";
 import { useAuth } from "../commons/hooks/useAuth";
 
 type BackupSettings = {
@@ -56,6 +57,8 @@ export default function ServerSettings (){
     const [selectedBackupDay, setSelectedBackupDay] = useState(1);
     const [selectedRestoreFile, setSelectedRestoreFile] = useState<File | null>(null);
     const [restoreCurrentBefore, setRestoreCurrentBefore] = useState(true);
+    const [restoreAuditLogs, setRestoreAuditLogs] = useState(true);
+    const [showAuditLogRestoreConfirm, setShowAuditLogRestoreConfirm] = useState(false);
     const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
     const [showEmptyAlert, setShowEmptyAlert] = useState(false);
@@ -262,9 +265,22 @@ export default function ServerSettings (){
     
     const handleOpenRestoreConfirm = () => {
         if (!selectedRestoreFile) {
-        setError("Selecciona un archivo de backup antes de restaurar.");
+            setError("Selecciona un archivo de backup antes de restaurar.");
             return;
         }
+        const shouldAskAboutAuditLogs = selectedRestoreFile.name.toLowerCase().endsWith(".zip");
+        setRestoreAuditLogs(true);
+        setRestoreCurrentBefore(true);
+        if (shouldAskAboutAuditLogs) {
+            setShowAuditLogRestoreConfirm(true);
+            return;
+        }
+        setShowRestoreConfirm(true);
+    };
+
+    const openRestoreConfirm = (shouldRestoreAuditLogs: boolean) => {
+        setRestoreAuditLogs(shouldRestoreAuditLogs);
+        setShowAuditLogRestoreConfirm(false);
         setRestoreCurrentBefore(true);
         setShowRestoreConfirm(true);
     };
@@ -276,6 +292,8 @@ export default function ServerSettings (){
         }
     
         setIsRestoring(true);
+        setShowRestoreConfirm(false);
+        setShowAuditLogRestoreConfirm(false);
         setError(null);
         setBackupMessage(null);
     
@@ -283,6 +301,7 @@ export default function ServerSettings (){
         const formData = new FormData();
         formData.append("backupFile", selectedRestoreFile);
         formData.append("saveCurrentBeforeRestore", String(restoreCurrentBefore));
+        formData.append("restoreAuditLogs", String(restoreAuditLogs));
     
         const res = await apiFetch("/api/backups/restore", {
             method: "POST",
@@ -298,8 +317,8 @@ export default function ServerSettings (){
         setBackupMessage(
             `Backup restaurado desde ${data.restoredBackupName}.${preRestoreText} Recargando la página...`
         );
-            setShowRestoreConfirm(false);
             setSelectedRestoreFile(null);
+            setRestoreAuditLogs(true);
             window.setTimeout(() => window.location.reload(), 1200);
         } catch (err) {
             setError(err instanceof Error ? err.message : "No se pudo restaurar el backup");
@@ -395,6 +414,10 @@ export default function ServerSettings (){
                     {/* Sección de Gestión de Backups */}
                     {canManageBackups && (
                         <div className="p-4 rounded" style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}>
+                            {isRestoring ? (
+                                <LoadingSpinner message="Restaurando backup..." />
+                            ) : (
+                                <>
                             
                             {/* Cabecera e Información de Backups */}
                             <div className="row g-4 align-items-start">
@@ -527,6 +550,8 @@ export default function ServerSettings (){
                                     <div>{backupMessage}</div>
                                 </div>
                             )}
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -539,6 +564,18 @@ export default function ServerSettings (){
             </div>
 
             <ConfirmModal
+                show={showAuditLogRestoreConfirm}
+                title="Restaurar backup"
+                message="¿Quieres reescribir el AuditLog con el nuevo?"
+                variant="warning"
+                confirmLabel="Sí"
+                cancelLabel="No"
+                showCancelButton
+                onConfirm={() => openRestoreConfirm(true)}
+                onCancel={() => openRestoreConfirm(false)}
+            />
+
+            <ConfirmModal
                 show={showRestoreConfirm}
                 title="Restaurar backup"
                 message="La restauración sobrescribirá los datos actuales con el backup seleccionado."
@@ -548,23 +585,28 @@ export default function ServerSettings (){
                 onConfirm={() => void handleRestoreBackup()}
                 onCancel={() => {
                     if (!isRestoring) {
-                    setShowRestoreConfirm(false);
+                        setShowRestoreConfirm(false);
                     }
                 }}
                 >
                 <div className="form-check">
                     <input
-                    id="save-current-before-restore"
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={restoreCurrentBefore}
-                    onChange={(event) => setRestoreCurrentBefore(event.target.checked)}
-                    disabled={isRestoring}
+                        id="save-current-before-restore"
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={restoreCurrentBefore}
+                        onChange={(event) => setRestoreCurrentBefore(event.target.checked)}
+                        disabled={isRestoring}
                     />
                     <label className="form-check-label" htmlFor="save-current-before-restore">
-                    Guardar un backup del estado actual antes de restaurar
+                        Guardar un backup del estado actual antes de restaurar
                     </label>
                 </div>
+                {selectedRestoreFile?.name.toLowerCase().endsWith(".zip") && (
+                    <div className="text-muted small mt-2">
+                        AuditLog: <span className="font-monospace">{restoreAuditLogs ? "se sobrescribirá" : "se conservará"}</span>
+                    </div>
+                )}
                 <div className="text-muted small mt-2">
                     Archivo: <span className="font-monospace">{selectedRestoreFile?.name ?? "-"}</span>
                 </div>

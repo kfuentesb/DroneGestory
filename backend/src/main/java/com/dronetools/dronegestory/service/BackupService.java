@@ -122,7 +122,7 @@ public class BackupService {
         }
     }
 
-    public BackupRestoreResponse restoreBackup(MultipartFile backupFile, boolean saveCurrentBeforeRestore) {
+    public BackupRestoreResponse restoreBackup(MultipartFile backupFile, boolean saveCurrentBeforeRestore, boolean restoreAuditLogs) {
         System.out.println("[RESTORE] -> Iniciando proceso de restauración...");
         
         if (backupFile == null || backupFile.isEmpty()) {
@@ -156,8 +156,13 @@ public class BackupService {
             System.out.println("[RESTORE] -> Restaurando directorio de uploads...");
             boolean uploadsRestored = restoreDirectoryIfPresent(archiveContents.uploadsDir(), Path.of(uploadsRoot));
             
-            System.out.println("[RESTORE] -> Restaurando logs de auditoría...");
-            boolean auditLogsRestored = restoreDirectoryIfPresent(archiveContents.auditLogsDir(), Path.of(auditLogsRoot));
+            boolean auditLogsRestored = false;
+            if (restoreAuditLogs) {
+                System.out.println("[RESTORE] -> Restaurando logs de auditoría...");
+                auditLogsRestored = restoreDirectoryIfPresent(archiveContents.auditLogsDir(), Path.of(auditLogsRoot));
+            } else {
+                System.out.println("[RESTORE] -> Se conserva el AuditLog actual; no se restaura el directorio de auditoría.");
+            }
 
             System.out.println("[RESTORE] -> ¡Todo completado con éxito!");
             String restoredBackupName = backupFile.getOriginalFilename() == null
