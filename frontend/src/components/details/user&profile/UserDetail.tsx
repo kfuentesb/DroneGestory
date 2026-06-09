@@ -81,7 +81,6 @@ export default function UserDetail() {
                                         type="button"
                                         className="btn btn-sm btn-outline-danger d-flex align-items-center px-2"
                                         style={{ height: "32px" }}
-                                        onClick={handleDelete}
                                     >
                                         {Icons.Trash}
                                         <span className="ms-2 d-none d-sm-inline">Borrar</span>

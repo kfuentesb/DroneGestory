@@ -221,11 +221,27 @@ export default function AircraftList() {
       return cleanedPath;
     }
 
+    const modelMarker = "/api/aircraft-models/images/";
+    const modelMarkerNoLeadingSlash = "api/aircraft-models/images/";
     const marker = "/api/aircraft/images/";
     const markerNoLeadingSlash = "api/aircraft/images/";
     let relativePath = cleanedPath;
+    let endpoint = `${API_BASE_URL}/api/aircraft/images`;
 
-    if (cleanedPath.includes(marker)) {
+    if (
+      cleanedPath.startsWith("aircraft-model/") ||
+      cleanedPath.startsWith("database-relationed/aircraft-model/")
+    ) {
+      endpoint = `${API_BASE_URL}/api/aircraft-models/images`;
+    }
+
+    if (cleanedPath.includes(modelMarker)) {
+      relativePath = cleanedPath.substring(cleanedPath.indexOf(modelMarker) + modelMarker.length);
+      endpoint = `${API_BASE_URL}/api/aircraft-models/images`;
+    } else if (cleanedPath.includes(modelMarkerNoLeadingSlash)) {
+      relativePath = cleanedPath.substring(cleanedPath.indexOf(modelMarkerNoLeadingSlash) + modelMarkerNoLeadingSlash.length);
+      endpoint = `${API_BASE_URL}/api/aircraft-models/images`;
+    } else if (cleanedPath.includes(marker)) {
       relativePath = cleanedPath.substring(cleanedPath.indexOf(marker) + marker.length);
     } else if (cleanedPath.includes(markerNoLeadingSlash)) {
       relativePath = cleanedPath.substring(cleanedPath.indexOf(markerNoLeadingSlash) + markerNoLeadingSlash.length);
@@ -238,7 +254,7 @@ export default function AircraftList() {
       .map((segment) => encodeURIComponent(segment))
       .join("/");
 
-    return `${API_BASE_URL}/api/aircraft/images/${encodedPath}`;
+    return `${endpoint}/${encodedPath}`;
   };
 
   const modelHeaders: TableHeader[] = [
@@ -370,25 +386,21 @@ export default function AircraftList() {
                 <style>{`
                   .table-responsive table {
                     width: 100% !important;
-                    table-layout: auto !important; /* Content rules the column size naturally */
+                    table-layout: auto !important;
                     margin-bottom: 0 !important;
                   }
                   
                   .table-responsive table th,
                   .table-responsive table td {
                     white-space: nowrap;
-                    overflow: visible !important; /* Lets tooltip pop over seamlessly */
+                    overflow: visible !important;
                   }
-
-                  /* Set a comfortable explicit sizing target for the last column */
                   .table-responsive table td:last-child, 
                   .table-responsive table th:last-child {
                     width: 180px !important;
                     min-width: 180px !important;
                     max-width: 180px !important;
                   }
-                  
-                  /* Floating Tooltip engine */
                   .info-badge-container {
                     position: relative;
                     display: inline-block;
@@ -434,8 +446,8 @@ export default function AircraftList() {
                         />
                       </td>
                       <td style={{ verticalAlign: "middle" }}>{a.manufacturer}</td>
-                      <td style={{ verticalAlign: "middle" }}>{renderTruncatedCell(a.model, 10)}</td>
-                      <td style={{ verticalAlign: "middle" }}>{renderTruncatedCell(a.serialNumber, 10)}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.model}</td>
+                      <td style={{ verticalAlign: "middle" }}>{a.serialNumber}</td>
                       <td style={{ verticalAlign: "middle" }}>{a.aircraftClass}</td>
                       
                       <td style={{ verticalAlign: "middle" }}>
@@ -444,11 +456,8 @@ export default function AircraftList() {
                       <td style={{ verticalAlign: "middle" }}>
                         {a.wingspan ?? "-"} <b>m</b>
                       </td>
-                      
                       <td style={{ verticalAlign: "middle" }}>{a.config}</td>
                       <td style={{ verticalAlign: "middle" }}>{formatMonthYear(a.fechaFab)}</td>
-                      
-                      {/* Wider observations cell with structural protection */}
                       <td 
                         className="text-muted small" 
                         style={{ 
@@ -459,7 +468,6 @@ export default function AircraftList() {
                         }}
                       >
                         <div style={{ width: "100%", overflow: "visible" }}>
-                          {/* Bumped to 20 to display a wider, cleaner snippet of text */}
                           {renderTruncatedCell(a.observations, 20)}
                         </div>
                       </td>

@@ -15,8 +15,8 @@ spring:
     servlet:
         multipart:
             enabled: true
-            max-file-size: 500MB
-            max-request-size: 500MB
+            max-file-size: ${APP_MAX_FILE_SIZE_MB:500}MB
+            max-request-size: ${APP_MAX_FILE_SIZE_MB:500}MB
 
     application:
         name: DroneGestory

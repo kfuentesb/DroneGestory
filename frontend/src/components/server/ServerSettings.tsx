@@ -12,6 +12,12 @@ type BackupSettings = {
     lastBackupSizeBytes: number | null;
 };
 
+type ServerAttributes = {
+    maxFileSizeMb: number;
+    mail: string;
+    smtpsKey: string;
+};
+
 type BackupRunResponse = {
     backupDate: string;
     backupPath: string;
@@ -55,6 +61,9 @@ export default function ServerSettings (){
     const [backupMessage, setBackupMessage] = useState<string | null>(null);
     const [backupSettings, setBackupSettings] = useState<BackupSettings | null>(null);
     const [selectedBackupDay, setSelectedBackupDay] = useState(1);
+    const [selectedMaxFileSizeMb, setSelectedMaxFileSizeMb] = useState(500);
+    const [selectedServerMail, setSelectedServerMail] = useState("");
+    const [selectedServerSmtpsKey, setSelectedServerSmtpsKey] = useState("");
     const [selectedRestoreFile, setSelectedRestoreFile] = useState<File | null>(null);
     const [restoreCurrentBefore, setRestoreCurrentBefore] = useState(true);
     const [restoreAuditLogs, setRestoreAuditLogs] = useState(true);
@@ -66,6 +75,8 @@ export default function ServerSettings (){
     const [selectedAuditYear, setSelectedAuditYear] = useState<number | null>(null);
     const [selectedAuditMonth, setSelectedAuditMonth] = useState<number | null>(null);
     const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState(false);
+    const [isSavingServerAttributes, setIsSavingServerAttributes] = useState(false);
+    const [serverAttributesMessage, setServerAttributesMessage] = useState<string | null>(null);
     
     
     useEffect(() => {
@@ -118,6 +129,26 @@ export default function ServerSettings (){
         loadBackupSettings();
     }, [canManageBackups]);
 
+    useEffect(() => {
+        if (!canManageBackups) return;
+
+        const loadServerAttributes = async () => {
+            try {
+                const res = await apiFetch("/api/server-settings/attributes");
+                if (!res) return;
+
+                const data: ServerAttributes = await res.json();
+                setSelectedMaxFileSizeMb(data.maxFileSizeMb ?? 500);
+                setSelectedServerMail(data.mail ?? "");
+                setSelectedServerSmtpsKey(data.smtpsKey ?? "");
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "No se pudieron cargar los atributos del servidor");
+            }
+        };
+
+        loadServerAttributes();
+    }, [canManageBackups]);
+
     const formatBackupSize = (bytes?: number | null) => {
         if (bytes === null || bytes === undefined) {
             return "-";
@@ -130,7 +161,7 @@ export default function ServerSettings (){
         if (!contentDisposition) {
             return "DroneGestory_backup.zip";
         }
-        const match = contentDisposition.match(/filename=\"?([^\";]+)\"?/i);
+        const match = contentDisposition.match(/filename="?([^";]+)"?/i);
         return match?.[1] ?? "DroneGestory_backup.zip";
     };
     
@@ -163,12 +194,13 @@ export default function ServerSettings (){
             link.remove();
             window.URL.revokeObjectURL(url);
     
-        } catch (err: any) {
-        if (err.status === 404) {
-            setShowEmptyAlert(true);
-        } else {
-            setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.csv");
-        }
+        } catch (err) {
+            const status = typeof err === "object" && err !== null ? (err as { status?: number }).status : undefined;
+            if (status === 404) {
+                setShowEmptyAlert(true);
+            } else {
+                setError(err instanceof Error ? err.message : "No se pudo descargar el AuditLog.csv");
+            }
         } finally {
             setIsDownloading(false);
         }
@@ -194,6 +226,35 @@ export default function ServerSettings (){
             setError(err instanceof Error ? err.message : "No se pudo guardar la configuracion de backup");
         } finally {
             setIsSavingBackupSettings(false);
+        }
+    };
+
+    const handleSaveServerAttributes = async () => {
+        setIsSavingServerAttributes(true);
+        setError(null);
+        setServerAttributesMessage(null);
+
+        try {
+            const res = await apiFetch("/api/server-settings/attributes", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    maxFileSizeMb: selectedMaxFileSizeMb,
+                    mail: selectedServerMail.trim(),
+                    smtpsKey: selectedServerSmtpsKey.trim(),
+                }),
+            });
+            if (!res) return;
+
+            const data: ServerAttributes = await res.json();
+            setSelectedMaxFileSizeMb(data.maxFileSizeMb ?? 500);
+            setSelectedServerMail(data.mail ?? "");
+            setSelectedServerSmtpsKey(data.smtpsKey ?? "");
+            setServerAttributesMessage("Atributos del servidor guardados en .env.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "No se pudieron guardar los atributos del servidor");
+        } finally {
+            setIsSavingServerAttributes(false);
         }
     };
     
@@ -551,6 +612,79 @@ export default function ServerSettings (){
                                 </div>
                             )}
                                 </>
+                            )}
+                        </div>
+                    )}
+
+                    {canManageBackups && (
+                        <div className="mt-4 p-4 rounded" style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB" }}>
+                            <div className="fw-bold text-dark mb-1 fs-5">Atributos del servidor</div>
+                            <p className="text-muted small mb-3">
+                                Guarda en <code className="text-primary">.env</code> el límite de archivos y las credenciales SMTPs usadas por el backend.
+                            </p>
+
+                            <div className="row g-3">
+                                <div className="col-12 col-md-4">
+                                    <label className="form-label fw-semibold text-secondary small" htmlFor="server-max-file-size">
+                                        Max file value (MB)
+                                    </label>
+                                    <input
+                                        id="server-max-file-size"
+                                        type="number"
+                                        min={1}
+                                        max={1024}
+                                        className="form-control"
+                                        value={selectedMaxFileSizeMb}
+                                        onChange={(event) => setSelectedMaxFileSizeMb(Number(event.target.value))}
+                                        disabled={isSavingServerAttributes}
+                                    />
+                                </div>
+                                <div className="col-12 col-md-4">
+                                    <label className="form-label fw-semibold text-secondary small" htmlFor="server-mail">
+                                        Mail
+                                    </label>
+                                    <input
+                                        id="server-mail"
+                                        type="email"
+                                        className="form-control"
+                                        value={selectedServerMail}
+                                        onChange={(event) => setSelectedServerMail(event.target.value)}
+                                        disabled={isSavingServerAttributes}
+                                    />
+                                </div>
+                                <div className="col-12 col-md-4">
+                                    <label className="form-label fw-semibold text-secondary small" htmlFor="server-smtps-key">
+                                        Key for SMTPS
+                                    </label>
+                                    <input
+                                        id="server-smtps-key"
+                                        type="password"
+                                        className="form-control"
+                                        value={selectedServerSmtpsKey}
+                                        onChange={(event) => setSelectedServerSmtpsKey(event.target.value)}
+                                        disabled={isSavingServerAttributes}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-3">
+                                <div className="text-muted small">
+                                    Los cambios se escriben en el archivo <code className="text-primary">.env</code>. Reinicia el backend para que el límite de subida se aplique.
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-primary px-4"
+                                    onClick={handleSaveServerAttributes}
+                                    disabled={isSavingServerAttributes}
+                                >
+                                    {isSavingServerAttributes ? "Guardando..." : "Guardar atributos"}
+                                </button>
+                            </div>
+
+                            {serverAttributesMessage && (
+                                <div className="alert alert-success d-flex align-items-center mt-3 mb-0 small" role="alert">
+                                    <div>{serverAttributesMessage}</div>
+                                </div>
                             )}
                         </div>
                     )}

@@ -7,9 +7,10 @@ Capturas de pantalla: [screenshots.md](screenshots.md)
 ## Qué hay en el repositorio
 
 * `backend/`: API de Spring Boot, integración con PostgreSQL, gestión de archivos y endpoints de respaldo.
+* `backend/backups/`: Salidas generadas de las copias de seguridad.
+* `backend/AuditLogs/`: Salidas generadas por funcionalidades limitadas.
 * `frontend/`: Interfaz de usuario con Vite + React.
 * `compose.yaml`: Infraestructura de Docker raíz para despliegues similares a producción.
-* `backups/`: Salidas generadas de las copias de seguridad.
 * `download_backup.sh`, `monthly_backup.sh`, `restore_local_with_backup.sh`: Scripts auxiliares para la gestión de respaldos.
 
 ## Requisitos
@@ -46,6 +47,7 @@ JWT_EXPIRATION_MS=86400000
 
 EMAIL_USER=tu-correo@gmail.com
 EMAIL_PASSWORD=tu-contraseña-de-aplicación-de-google
+APP_MAX_FILE_SIZE_MB=500
 
 APP_FRONTEND_URL=http://localhost:5173
 VITE_API_BASE_URL=http://localhost:8080
@@ -59,11 +61,12 @@ Utilizado por la aplicación Spring Boot cuando se ejecuta localmente con el per
 ```properties
 EMAIL_USER=tu-correo@gmail.com
 EMAIL_PASSWORD=tu-contraseña-de-aplicación-de-google
+APP_MAX_FILE_SIZE_MB=500
 
 JWT_SECRET=cambia-esto-por-un-valor-largo-y-aleatorio
 JWT_EXPIRATION_MS=86400000
 
-APP_FRONTEND_URL=http://localhost:5173,[http://127.0.0.1:5173](http://127.0.0.1:5173)
+APP_FRONTEND_URL=http://localhost:5173,http://127.0.0.1:5173
 
 ```
 
@@ -78,6 +81,16 @@ VITE_API_BASE_URL=http://localhost:8080
 ```
 
 Si compilas el frontend para producción, establece `VITE_API_BASE_URL` con la URL pública del backend antes de ejecutar `npm run build`.
+
+### Atributos editables desde la web
+
+Desde `Server Settings` puedes modificar y guardar en el `.env` del proyecto estos valores:
+
+* `APP_MAX_FILE_SIZE_MB`: tamaño máximo de subida en megabytes para archivos multipart.
+* `EMAIL_USER`: correo que usa el backend para enviar mails.
+* `EMAIL_PASSWORD`: contraseña de aplicación o clave SMTP asociada a ese correo.
+
+Los cambios se escriben en el archivo `.env` que esté usando el backend en ese entorno. En desarrollo local normalmente es el `.env` del backend; en despliegue con Docker es el `.env` de la raíz. Para que Spring aplique el nuevo límite de subida y la nueva configuración de correo, reinicia el backend después de guardar.
 
 ## Ejecución en local
 
@@ -126,7 +139,7 @@ docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
 
 ### 5. Backups
 
-El guardado de backups para que funcione en este modo, el sistema necesita acceso a los ejecutables `pg_dump` y `psql`, o bien un contenedor Docker de PostgreSQL.
+Para que el guardado de backups funcione en este modo, el sistema necesita acceso a los ejecutables `pg_dump` y `psql`, o bien a un contenedor Docker de PostgreSQL.
 
 En local, puedes configurar estas variables de entorno opcionales en tu `.env` o en el entorno de ejecución:
 
@@ -135,6 +148,7 @@ En local, puedes configurar estas variables de entorno opcionales en tu `.env` o
 * `APP_POSTGRES_DOCKER_CONTAINER`: nombre del contenedor PostgreSQL cuando quieres usar `docker exec` como fallback.
 
 Si `pg_dump`/`psql` no están instalados en el host, el backend intentará usar `docker exec` contra un contenedor PostgreSQL válido.
+El límite de subida de archivos para la restauración también depende de `APP_MAX_FILE_SIZE_MB`.
 
 ## Estructura de logs de auditoría
 
@@ -220,6 +234,9 @@ Desde la interfaz de usuario puedes:
 * Ejecutar un respaldo manual de forma inmediata.
 * Descargar un paquete de copia de seguridad.
 * Restaurar un respaldo a partir de un archivo `.zip` o `.sql`.
+* Cambiar el límite máximo de subida y las credenciales SMTP sin editar a mano el archivo `.env`.
+
+La restauración muestra una pantalla de carga mientras el backend aplica el backup y, si se activa la opción, crea antes un respaldo previo del estado actual.
 
 Los paquetes de respaldo generados contienen:
 
@@ -227,7 +244,7 @@ Los paquetes de respaldo generados contienen:
 * `backend/uploads/`
 * `backend/AuditLogs/` (si está presente)
 
-El servicio de respaldo almacena los metadatos de la última ejecución en la base de datos y escribe los respaldos programados en `backups/AAAA-MM-DD/`.
+El servicio de respaldo almacena los metadatos de la última ejecución en la base de datos y escribe los respaldos programados en `backups/YYYY-MM-DD/`.
 
 ### Respaldo mensual automático en el servidor
 
@@ -244,7 +261,7 @@ Esto instalará una tarea programada (cron job) que ejecuta `monthly_backup.sh` 
 El script escribe los respaldos en:
 
 ```text
-backups/AAAA-MM-DD/
+backups/YYYY-MM-DD/
   postgredatabase.sql
   backend/uploads/
   backend/AuditLogs/
@@ -252,6 +269,7 @@ backups/AAAA-MM-DD/
 ```
 
 Si `backend/AuditLogs` no existe, se omitirá.
+Si el directorio de `backend/uploads` está vacío, el paquete se genera igualmente con la base de datos y el resto de carpetas disponibles.
 
 ### Descarga manual y restauración local
 
@@ -266,6 +284,7 @@ chmod +x download_backup.sh restore_local_with_backup.sh
 * `restore_local_with_backup.sh` restaura una copia de seguridad local heredada en un proyecto local existente.
 
 Nota: El script de restauración heredado espera encontrar `databasecopy.sql` y `uploads/`. El nuevo flujo de respaldo de la aplicación utiliza `postgredatabase.sql` dentro del paquete de copia de seguridad generado.
+En la restauración desde la web, `.zip` restaura base de datos, uploads y audit logs si están presentes; `.sql` restaura solo la base de datos.
 
 ## Almacenamiento de archivos
 

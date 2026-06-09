@@ -179,8 +179,20 @@ export default function DetailsComponent(props: DetailsComponentProps) {
                 return;
             }
 
+            const normalizedPath = data.imagePath.trim().replace(/\\/g, "/").replace(/^\/+/, "");
+            const isAircraftModelImage =
+                normalizedPath.startsWith("aircraft-model/") ||
+                normalizedPath.startsWith("database-relationed/aircraft-model/");
+            const endpoint = props.entityType === "aircraft" && isAircraftModelImage
+                ? props.imageEndpoint.replace(/\/api\/aircraft\/images\/?$/, "/api/aircraft-models/images")
+                : props.imageEndpoint.replace(/\/$/, "");
+            const imagePath = normalizedPath
+                .replace(/^api\/aircraft-models\/images\//, "")
+                .replace(/^api\/aircraft\/images\//, "")
+                .replace(/^\/+/, "");
+
             try {
-                const res = await fetch(`${props.imageEndpoint}/${data.imagePath}?v=${imageVersion}`, {
+                const res = await fetch(`${endpoint}/${imagePath}?v=${imageVersion}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
