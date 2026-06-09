@@ -135,6 +135,7 @@ Si necesitas cargar datos iniciales en la base de datos manualmente:
 docker exec -it aeronaves_db psql -U admin -d aeronaves_db
 docker exec -i aeronaves_db psql -U admin -d aeronaves_db < ./backend/init.sql
 
+Get-Content ./backend/init.sql -Raw | docker exec -i aeronaves_db psql -U admin -d aeronaves_db
 ```
 
 ### 5. Backups

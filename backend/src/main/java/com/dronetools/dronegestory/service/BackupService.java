@@ -125,22 +125,16 @@ public class BackupService {
 
     public BackupRestoreResponse restoreBackup(MultipartFile backupFile, boolean saveCurrentBeforeRestore, boolean restoreAuditLogs) {
         System.out.println("[RESTORE] -> Iniciando proceso de restauración...");
-        
+
         if (backupFile == null || backupFile.isEmpty()) {
             throw new IllegalStateException("Debes subir un archivo de backup valido.");
         }
-
-            BackupRunResponse preRestoreBackup = null;
-            if (saveCurrentBeforeRestore) {
-                System.out.println("[RESTORE] -> Creando backup de seguridad previo...");
-                preRestoreBackup = runBackup(getOrCreateEntity(), "pre-restore");
-            }
 
         Path tempDir = null;
         try {
             System.out.println("[RESTORE] -> Creando directorio temporal...");
             tempDir = Files.createTempDirectory("backup-restore-");
-            
+
             System.out.println("[RESTORE] -> Desempaquetando archivo ZIP: " + backupFile.getOriginalFilename());
             BackupArchiveContents archiveContents = unpackBackupFile(backupFile, tempDir);
 
@@ -148,19 +142,25 @@ public class BackupService {
                 throw new IllegalStateException("El backup no contiene un archivo SQL de base de datos.");
             }
 
+            BackupRunResponse preRestoreBackup = null;
+            if (saveCurrentBeforeRestore) {
+                System.out.println("[RESTORE] -> Creando backup de seguridad previo...");
+                preRestoreBackup = runBackup(getOrCreateEntity(), "pre-restore");
+            }
+
             System.out.println("[RESTORE] -> Reiniciando esquema de base de datos...");
             resetDatabaseSchema();
-            
+
             System.out.println("[RESTORE] -> Ejecutando script SQL de restauración...");
             restoreDatabase(archiveContents.sqlFile());
-            
+
             System.out.println("[RESTORE] -> Restaurando directorio de uploads...");
-            boolean uploadsRestored = restoreDirectoryIfPresent(archiveContents.uploadsDir(), Path.of(uploadsRoot));
-            
+            boolean uploadsRestored = restoreDirectoryFromBackup(archiveContents.uploadsDir(), Path.of(uploadsRoot));
+
             boolean auditLogsRestored = false;
             if (restoreAuditLogs) {
                 System.out.println("[RESTORE] -> Restaurando logs de auditoría...");
-                auditLogsRestored = restoreDirectoryIfPresent(archiveContents.auditLogsDir(), Path.of(auditLogsRoot));
+                auditLogsRestored = restoreDirectoryFromBackup(archiveContents.auditLogsDir(), Path.of(auditLogsRoot));
             } else {
                 System.out.println("[RESTORE] -> Se conserva el AuditLog actual; no se restaura el directorio de auditoría.");
             }
@@ -186,7 +186,7 @@ public class BackupService {
                             + ", restoredDatabaseFile=" + archiveContents.sqlFile()
                             + ", uploadsRestored=" + uploadsRestored
                             + ", auditLogsRestored=" + auditLogsRestored
-                            + ", restoreAuditLogsRequested=" + restoreAuditLogs
+                    + ", restoreAuditLogsRequested=" + restoreAuditLogs
             );
             return response;
         } catch (IOException | InterruptedException e) {
@@ -593,26 +593,22 @@ public class BackupService {
         }
     }
 
-    private boolean restoreDirectoryIfPresent(Path source, Path destination) throws IOException {
+    private boolean restoreDirectoryFromBackup(Path source, Path destination) throws IOException {
+        Path normalizedDestination = destination.toAbsolutePath().normalize();
+        clearDirectoryContents(normalizedDestination);
+        Files.createDirectories(normalizedDestination);
+
         if (source == null || !Files.isDirectory(source)) {
-            System.out.println("[RESTORE] -> No se encontró directorio origen para: " + destination.getFileName());
+            System.out.println("[RESTORE] -> No se encontró directorio origen para: " + normalizedDestination.getFileName());
             return false;
         }
 
-        // Limpieza radical y nativa del contenido interno
-        clearContentsNative(destination);
-
-        // Asegurar que la estructura base existe
-        Files.createDirectories(destination);
-
-        // Copiar archivos uno a uno de forma limpia
         try (var paths = Files.walk(source)) {
             for (Path sourcePath : paths.toList()) {
-                Path targetPath = destination.resolve(source.relativize(sourcePath).toString());
+                Path targetPath = normalizedDestination.resolve(source.relativize(sourcePath).toString());
                 if (Files.isDirectory(sourcePath)) {
                     Files.createDirectories(targetPath);
                 } else {
-                    // Usamos StandardCopyOption.REPLACE_EXISTING por seguridad extra
                     Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
                 }
             }
@@ -620,26 +616,21 @@ public class BackupService {
         return true;
     }
 
-    private void clearContentsNative(Path directory) {
-        String absolutePath = directory.toAbsolutePath().normalize().toString();
-        System.out.println("[RESTORE] -> Vaciando de forma nativa el contenido de: " + absolutePath);
-        
-        try {
-            // Ejecuta "rm -rf /app/uploads/*" de forma segura usando el shell del contenedor
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    "sh", "-c", "rm -rf " + absolutePath + "/* " + absolutePath + "/.[!.]*"
-            );
-            processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
-            
-            String output = new String(process.getInputStream().readAllBytes());
-            int exitCode = process.waitFor();
-            
-            if (exitCode != 0) {
-                System.out.println("[RESTORE WARNING] -> El comando de limpieza nativa retornó código " + exitCode + ": " + output);
+    private void clearDirectoryContents(Path directory) throws IOException {
+        if (!Files.exists(directory)) {
+            return;
+        }
+        if (Files.isRegularFile(directory)) {
+            Files.deleteIfExists(directory);
+            return;
+        }
+
+        try (var paths = Files.walk(directory)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                if (!path.equals(directory)) {
+                    Files.deleteIfExists(path);
+                }
             }
-        } catch (Exception e) {
-            System.out.println("[RESTORE WARNING] -> No se pudo realizar la limpieza nativa preventiva: " + e.getMessage());
         }
     }
 
